@@ -10,7 +10,7 @@ class HelpersControllerTest extends TestCase
 	 */
 	public function testController()
 	{
-		$name = Zbase\Http\Controllers\Page::class;
+		$name = Zbase\Http\Controllers\__FRAMEWORK__\Page::class;
 		$this->assertEquals(Zbase\Http\Controllers\Laravel\Page::class, zbase_controller_create_name($name));
 	}
 

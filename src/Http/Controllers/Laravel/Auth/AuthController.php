@@ -1,6 +1,6 @@
 <?php
 
-namespace Zbase\Http\Controllers\Laravel;
+namespace Zbase\Http\Controllers\Laravel\Auth;
 
 /**
  *
@@ -53,12 +53,7 @@ use AuthenticatesAndRegistersUsers,
 	 */
 	public function getLogin()
 	{
-		if(view()->exists('auth.authenticate'))
-		{
-			return view('auth.authenticate');
-		}
-
-		return view('auth.login');
+		return $this->view(zbase_view_file('auth.login'));
 	}
 
 	/**

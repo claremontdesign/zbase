@@ -16,7 +16,7 @@ return [
 	'entity' => [
 		'user' => [
 			'enable' => true,
-			'model' => Zbase\Entity\Framework\User\User::class,
+			'model' => Zbase\Entity\__FRAMEWORK__\User\User::class,
 			'data' => [
 				'factory' => [
 					'enable' => true,
@@ -205,7 +205,7 @@ return [
 		],
 		'user_profile' => [
 			'enable' => true,
-			'model' => Zbase\Entity\Framework\User\UserProfile::class,
+			'model' => Zbase\Entity\__FRAMEWORK__\User\UserProfile::class,
 			'data' => [
 				'factory' => [
 					'enable' => true,
@@ -341,7 +341,7 @@ return [
 		],
 		'user_roles' => [
 			'enable' => true,
-			'model' => Zbase\Entity\Framework\User\Role::class,
+			'model' => Zbase\Entity\__FRAMEWORK__\User\Role::class,
 			'relations' => [
 				'user_roles' => [
 					'type' => 'manytomany',
@@ -446,6 +446,69 @@ return [
 							'onDelete' => 'cascade'
 						],
 						'comment' => 'Role ID'
+					],
+				]
+			]
+		],
+		'user_tokens' => [
+			'enable' => true,
+			'model' => [],
+			'data' => [],
+			'table' => [
+				'name' => 'user_tokens',
+				'description' => 'User - Tokens',
+				'polymorphic' => [
+					'prefix' => 'taggable'
+				],
+				'primaryKey' => 'token_id',
+				'columns' => [
+					'token_id' => [
+						'sortable' => [
+							'name' => 'tokenid',
+							'enable' => true
+						],
+						'label' => 'Token ID',
+						'hidden' => false,
+						'fillable' => false,
+						'type' => 'integer',
+						'unique' => true,
+						'unsigned' => true,
+						'length' => 16,
+						'comment' => 'Token Id'
+					],
+					'user_id' => [
+						'length' => 16,
+						'hidden' => false,
+						'fillable' => true,
+						'nullable' => true,
+						'type' => 'integer',
+						'unsigned' => true,
+						'foreign' => [
+							'table' => 'users',
+							'column' => 'user_id',
+							'onDelete' => 'cascade'
+						],
+						'comment' => 'User ID'
+					],
+					'token' => [
+						'length' => 64,
+						'hidden' => false,
+						'fillable' => true,
+						'type' => 'string',
+						'comment' => 'Token'
+					],
+					'email' => [
+						'length' => 64,
+						'hidden' => false,
+						'fillable' => true,
+						'nullable' => true,
+						'type' => 'string',
+						'foreign' => [
+							'table' => 'users',
+							'column' => 'email',
+							'onDelete' => 'cascade'
+						],
+						'comment' => 'Email Address'
 					],
 				]
 			]

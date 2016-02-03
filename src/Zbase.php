@@ -102,7 +102,7 @@ class Zbase
 		}
 		if(!empty($entityConfig))
 		{
-			$modelName = str_replace('Framework', ucfirst(zbase_framework()), !empty($entityConfig['model']) ? $entityConfig['model'] : null);
+			$modelName = zbase_class_name(!empty($entityConfig['model']) ? $entityConfig['model'] : null);
 			if(!empty($modelName))
 			{
 				return $this->entityModels[$entityName] = new $modelName();

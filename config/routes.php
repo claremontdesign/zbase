@@ -46,6 +46,16 @@ return [
 			'url' => '/home',
 			'auth' => false,
 			'enable' => true
-		]
+		],
+		'login' => [
+			'controller' => [
+				'name' => 'auth',
+				'method' => 'getLogin',
+				'enable' => true
+			],
+			'url' => '/login',
+			'auth' => false,
+			'enable' => true
+		],
 	],
 ];

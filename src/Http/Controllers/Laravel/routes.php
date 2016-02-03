@@ -49,7 +49,7 @@ if(!empty($routes))
 						$controllerConfig = zbase_config_get('controller.class.' . $controllerName, null);
 						if(!empty($controllerConfig) && !empty($controllerConfig['enable']))
 						{
-							$controllerClass = zbase_controller_create_name(zbase_config_get('controller.class.' . $controllerName . '.name', Zbase\Http\Controllers\PageController::class));
+							$controllerClass = zbase_controller_create_name(zbase_config_get('controller.class.' . $controllerName . '.name', Zbase\Http\Controllers\__FRAMEWORK__\PageController::class));
 							$controllerObject = zbase_object_factory($controllerClass, !empty($route['params']) ? $route['params'] : []);
 							zbase()->setController($controllerObject->setName($controllerName)->setActionName($controllerMethod)->setRouteParameters($params));
 							zbase()->setCurrentRouteName($name);

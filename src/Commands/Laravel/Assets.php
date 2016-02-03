@@ -1,9 +1,9 @@
 <?php
 
-namespace Zbase\Commands;
+namespace Zbase\Commands\Laravel;
 
 /**
- * Zbase-Command Clear
+ * Zbase-Command Assets
  *
  * @link http://zbase.dennesabing.com
  * @author Dennes B Abing <dennes.b.abing@gmail.com>
@@ -15,7 +15,7 @@ namespace Zbase\Commands;
  */
 use Illuminate\Console\Command;
 
-class Clear extends Command
+class Assets extends Command
 {
 
 	/**
@@ -23,14 +23,14 @@ class Clear extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'zbase:clear';
+	protected $signature = 'zbase:assets';
 
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = 'Clear all cache and views';
+	protected $description = 'Publish public files';
 
 	/**
 	 * Create a new command instance.
@@ -49,12 +49,8 @@ class Clear extends Command
 	 */
 	public function handle()
 	{
-		echo shell_exec('php artisan clear-compiled');
-		echo shell_exec('php artisan cache:clear');
-		echo shell_exec('php artisan view:clear');
-		echo shell_exec('php artisan config:clear');
-		echo shell_exec('php artisan route:clear');
-		$commands = [];// zbase()->commands('clear');
+		echo shell_exec('php artisan vendor:publish --tag=public --force');
+		$commands = [];// zbase()->commands('public');
 		if(!empty($commands))
 		{
 			foreach ($commands as $command)

@@ -10,80 +10,26 @@
  * @file nav.php
  * @project Zbase
  * @package config
+ *
+ * nav.front.main.indexName
+ * nav.front.main.indexName.breadcrumb if to show in a breadcrumb
+ * nav.front.main.indexName.inMenu if to show in Main Menu
+ * nav.front.main.indexName.title HTML title-attribute
+ * nav.front.main.indexName.label The label to use. default to title
+ * nav.front.main.indexName.icon
+ * nav.front.main.indexName.enable enable/disable
+ * nav.front.main.indexName.url
+ * nav.front.main.indexName.url.route
+ * nav.front.main.indexName.url.route.name the routeName
+ * nav.front.main.indexName.children
  */
 return [
 	'nav' => [
 		'front' => [
 			'main' => [
-				'repositories' => [
-					'breadcrumb' => false,
-					'title' => 'Repositories',
-					'label' => 'Repositories',
-					'icon' => 'fa fa-home',
-					'enable' => true,
-					'url' => [
-						'route' => [
-							'name' => 'home'
-						],
-					],
-					'children' => [
-						'repositories' => [
-							'breadcrumb' => false,
-							'title' => 'Repositories',
-							'label' => 'Repositories',
-							'icon' => 'fa fa-home',
-							'enable' => true,
-							'url' => [
-								'route' => [
-									'name' => 'home'
-								],
-							],
-							'children' => []
-						],
-						'contacts' => [
-							'breadcrumb' => false,
-							'title' => 'Contacts',
-							'label' => 'Contact',
-							'icon' => 'fa fa-home',
-							'enable' => true,
-							'url' => [
-								'route' => [
-									'name' => 'home'
-								],
-							],
-							'children' => [
-								'repositories' => [
-									'breadcrumb' => false,
-									'title' => 'Repositories',
-									'label' => 'Repositories',
-									'icon' => 'fa fa-home',
-									'enable' => true,
-									'url' => [
-										'route' => [
-											'name' => 'home'
-										],
-									],
-									'children' => []
-								],
-								'contacts' => [
-									'breadcrumb' => false,
-									'title' => 'Contacts',
-									'label' => 'Contact',
-									'icon' => 'fa fa-home',
-									'enable' => true,
-									'url' => [
-										'route' => [
-											'name' => 'home'
-										],
-									],
-									'children' => []
-								],
-							]
-						],
-					]
-				],
 				'contacts' => [
 					'breadcrumb' => false,
+					'inMenu' => false,
 					'title' => 'Contacts',
 					'label' => 'Contact',
 					'icon' => 'fa fa-home',

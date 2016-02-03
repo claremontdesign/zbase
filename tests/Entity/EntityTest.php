@@ -15,7 +15,7 @@ class EntityTest extends TestCase
 
 		$model = zbase_entity('user');
 		$this->assertTrue($model->find(2) instanceof \Zbase\Entity\Laravel\User\User);
-		$this->assertTrue($user->email_address == $model->find(2)->email_address);
+		$this->assertTrue($user->email == $model->find(2)->email);
 
 		/**
 		 * Test Dynamic Call to relationship
@@ -72,8 +72,8 @@ class EntityTest extends TestCase
 			],
 			'email' => [
 				'eq' => [
-					'field' => 'email_address',
-					'value' => $userFilter->email_address
+					'field' => 'email',
+					'value' => $userFilter->email
 				],
 			],
 		];

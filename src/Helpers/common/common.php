@@ -30,6 +30,16 @@ function zbase_framework()
 }
 
 /**
+ * Localized to current framework the Class name
+ * @param string $className
+ * @return string
+ */
+function zbase_class_name($className)
+{
+	return str_replace('__FRAMEWORK__', zbase_framework(), $className);
+}
+
+/**
  * The Zbase Tag/Prefix
  *
  * @return string

@@ -33,7 +33,7 @@ class ZbaseTest extends TestCase
 	{
 		$this->assertTrue(Schema::hasTable('users'));
 		$this->assertTrue(Schema::hasTable('users_profile'));
-		$this->assertTrue(Schema::hasColumn('users', 'email_address'));
+		$this->assertTrue(Schema::hasColumn('users', 'email'));
 		$this->assertTrue(Schema::hasColumn('users_profile', 'first_name'));
 	}
 
@@ -66,6 +66,6 @@ class ZbaseTest extends TestCase
 	 */
 	public function testEntityDynamicCall()
 	{
-		
+
 	}
 }

@@ -190,6 +190,13 @@ class CreateTable extends Migration
 							$table->string('alpha_id', 64)->nullable();
 							$table->unique('alpha_id');
 						}
+						$polymorphic = zbase_data_get($entity, 'table.polymorphic', []);
+						if(!empty($polymorphic))
+						{
+							$polymorphicPrefix = zbase_data_get($entity, 'table.polymorphic.prefix', 'taggable');
+							$table->integer($polymorphicPrefix . '_id')->nullable();
+							$table->string($polymorphicPrefix . '_type', 64)->nullable();
+						}
 					});
 					$description = zbase_data_get($entity, 'table.description', null);
 					if(!is_null($description))

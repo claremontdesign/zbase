@@ -1,6 +1,6 @@
 <?php
 
-namespace Zbase\Commands;
+namespace Zbase\Commands\Laravel;
 
 /**
  * Zbase-Command Migrate

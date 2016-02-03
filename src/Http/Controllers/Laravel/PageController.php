@@ -21,8 +21,6 @@ class PageController extends Controller
 
 	public function index()
 	{
-		$model = zbase_entity('user');
-		$model->repository()->byId(5)->roles()->where('user_roles.role_id','3')->get();
 		return $this->view(zbase_view_file('index'));
 	}
 

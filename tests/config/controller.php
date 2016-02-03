@@ -15,7 +15,7 @@ return [
 	'controller' => [
 		'class' => [
 			'page' => [
-				'name' => Zbase\Http\Controllers\PageController::class,
+				'name' => Zbase\Http\Controllers\__FRAMEWORK__\PageController::class,
 				'enable' => true
 			]
 		],

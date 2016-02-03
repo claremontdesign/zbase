@@ -68,44 +68,6 @@ function zbase_view_asset_package_theme($file, $package, $theme)
 }
 
 /**
- * Render HTML between <head></head>
- *
- * @return string
- */
-function zbase_view_render_head()
-{
-	$str = '';
-	zbase()->view()->prepare();
-	$str .= '<title>' . zbase()->view()->pageTitle() . '</title>';
-	$str .= zbase_view_head_metas_render();
-	$str .= zbase_view_stylesheets_render();
-	$str .= zbase_view_head_links_render();
-	$str .= zbase_view_placeholder_render('head_javascripts');
-	$str .= zbase_view_placeholder_render('head_scripts');
-	$str .= zbase_view_styles_render();
-	return $str;
-}
-
-/**
- * Render HTML before </body>
- *
- * @return string
- */
-function zbase_view_render_body()
-{
-	$str = '';
-	zbase()->view()->prepare();
-	$str .= zbase_view_placeholder_render('body_javascripts');
-	$str .= EOF . '<script type="text/javascript">';
-	$str .= EOF . zbase_view_placeholder_render('body_scripts');
-	$str .= EOF . 'jQuery(document).ready(function(){'
-			. EOF . zbase_view_placeholder_render('body_scripts_onload')
-			. EOF . '});';
-	$str .= EOF . '</script>';
-	return $str;
-}
-
-/**
  * Render a view file
  *
  * 	zbase_view_render('index', []);
