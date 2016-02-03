@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * Test class for {@see \Zbase\Zbase}.
+ * @covers \Zbase\Zbase
+ */
+class ZbaseTest extends TestCase
+{
+
+	/**
+	 * @return void
+	 * @test
+	 * @coversDefaultClass view
+	 */
+	public function testViewReturnsViewModel()
+	{
+		$zbase = new Zbase\Zbase;
+		$this->assertInstanceOf('\Zbase\Models\View', $zbase->view());
+	}
+
+	/**
+	 * Test DB Connection established
+	 */
+	public function testDbConnection()
+	{
+		$this->assertTrue(DB::connection() instanceof Illuminate\Database\MySqlConnection);
+	}
+
+	/**
+	 * Test table was created based from config
+	 */
+	public function testTableWasCreatedFromConfig()
+	{
+		$this->assertTrue(Schema::hasTable('users'));
+		$this->assertTrue(Schema::hasTable('users_profile'));
+		$this->assertTrue(Schema::hasColumn('users', 'email_address'));
+		$this->assertTrue(Schema::hasColumn('users_profile', 'first_name'));
+	}
+
+	/**
+	 * Test factory was generated automatically
+	 */
+	public function testDbFactoryFromConfig()
+	{
+		$model = zbase_entity('user');
+		$this->assertSame(zbase_config_get('entity.user.data.factory.rows'), count($model->all()));
+	}
+
+	/**
+	 * Test that entity model can be created
+	 *
+	 * @coversDefaultClass entity
+	 */
+	public function testEntityModelCanBeCreated()
+	{
+		$this->assertTrue(zbase_entity('user') instanceof \Zbase\Entity\Laravel\Entity);
+		$this->assertTrue(zbase_entity('user') instanceof \Zbase\Entity\Laravel\User\User);
+		/**
+		 * Dynamic creation of entity, default to \Zbase\Entity\Laravel\Entity
+		 */
+		$this->assertTrue(zbase_entity('user_profile') instanceof \Zbase\Entity\Laravel\Entity);
+	}
+
+	/**
+	 * Test dynamic call to entties
+	 */
+	public function testEntityDynamicCall()
+	{
+		
+	}
+}

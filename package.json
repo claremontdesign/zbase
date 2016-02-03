@@ -1,0 +1,36 @@
+{
+	"name": "dennesabing/zbase",
+	"description": "Dennesabing Zbase",
+	"keywords": ["dennesabing", "zbase"],
+	"license": "proprietary",
+	"authors": [
+		{
+			"name": "Dennes B Abing",
+			"email": "dennes.b.abing@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0",
+		"illuminate/support": "~5.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~3.0",
+		"orchestra/testbench": "~3.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Zbase": "src/"
+		},
+		"files": [
+			"src/Helpers/helpers.php"
+		]
+	},
+	"autoload-dev": {
+		"classmap": [
+			"tests/TestCase.php"
+		],
+		"psr-4": {
+			"Zbase\\": "src/"
+		}
+	}
+}

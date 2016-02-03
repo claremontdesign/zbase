@@ -1,0 +1,29 @@
+{
+	"name": "dennesabing/zbase",
+	"description": "The Zbase NoFramework.",
+	"keywords": ["framework", "laravel","zbase","dennesabing"],
+	"license": "MIT",
+	"type": "project",
+	"require": {
+		"php": ">=5.5.9"
+	},
+	"require-dev": {
+		"nesbot/carbon": "~1.14"
+	},
+	"autoload": {
+		"psr-4": {
+			"Zbase\\": "src/"
+		},
+		"files": [
+			"src/Helpers/helpers.php"
+		]
+	},
+	"autoload-dev": {
+		"classmap": [
+			"tests/TestCase.php"
+		],
+		"psr-4": {
+			"Zbase\\": "src/"
+		}
+	}
+}
