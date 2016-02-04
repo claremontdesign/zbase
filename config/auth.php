@@ -10,9 +10,16 @@
  * @file auth.php
  * @project Zbase
  * @package config
+ *
+ * auth.enable disable/enable user authentication; default: true
+ * auth.messages
+ * auth.messages.failed message to show if auth failed
  */
 return [
 	'auth' => [
-		'enable' => false
+		'enable' => true,
+		'messages' => [
+			'failed' => 'These credentials do not match our records'
+		],
 	],
 ];

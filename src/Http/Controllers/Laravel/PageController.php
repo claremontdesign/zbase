@@ -15,13 +15,21 @@ namespace Zbase\Http\Controllers\Laravel;
  * @package Zbase\Http\Controllers
  */
 use Zbase\Http\Controllers\Laravel\Controller;
+use Zbase\Traits\Auth as ZbaseAuth;
 
 class PageController extends Controller
 {
 
+	use ZbaseAuth;
+
 	public function index()
 	{
 		return $this->view(zbase_view_file('index'));
+	}
+
+	public function home()
+	{
+		return $this->view(zbase_view_file('home'));
 	}
 
 	/**

@@ -189,23 +189,3 @@ function zbase_view_template_layout($tag = null)
 }
 
 // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="CSRF">
-/**
- * CSRF TOKEN
- * @return string
- */
-function zbase_csrf_token()
-{
-	return csrf_token();
-}
-
-/**
- * CSRF Hidden Element
- * @return string
- */
-function zbase_csrf_token_field()
-{
-	return csrf_field();
-}
-
-// </editor-fold>

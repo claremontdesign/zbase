@@ -39,4 +39,12 @@ trait Auth
 		return false;
 	}
 
+	/**
+	 * Check if application user authentication is enabled
+	 * @return boolean
+	 */
+	public function authEnabled()
+	{
+		return zbase_config_get('auth.enable', true);
+	}
 }

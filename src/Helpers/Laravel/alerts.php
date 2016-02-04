@@ -36,15 +36,18 @@ function zbase_alert($type, $msg, $options = [])
 		$msg = [];
 		if(!empty($messages))
 		{
-			foreach ($messages as $m)
+			foreach ($messages as $key => $ms)
 			{
-				if(!empty($m[0]))
-				{
-					$msg[] = $m[0];
-				}
-				else
+				foreach($ms as $m)
 				{
 					$msg[] = $m;
+					/**
+					 * When validating through controller
+					 */
+					if(!empty($options['formvalidation']))
+					{
+						zbase_form_message_flash($key, $m, 'error');
+					}
 				}
 			}
 		}

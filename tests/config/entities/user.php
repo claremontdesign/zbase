@@ -383,7 +383,7 @@ return [
 			'table' => [
 				'name' => 'user_roles',
 				'primaryKey' => 'role_id',
-				'description' => 'List of Roles',
+				'description' => 'User - List of Roles',
 				'columns' => [
 					'parent_id' => [
 						'hidden' => false,

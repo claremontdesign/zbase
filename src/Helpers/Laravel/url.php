@@ -42,14 +42,14 @@ function zbase_url_from_current($params = [])
  * @param boolean $secure
  * @return string
  */
-function zbase_url_create($path, $parameters, $secure = false)
+function zbase_url_create($path, array $parameters = null, $secure = false)
 {
 	return url($path, $parameters, $secure);
 }
 
 /**
  * Create a URL based from configuration
- * 
+ *
  * url.route.name
  * url.route.name.params
  *

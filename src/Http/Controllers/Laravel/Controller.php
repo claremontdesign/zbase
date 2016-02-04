@@ -237,6 +237,18 @@ class Controller extends BaseController implements \Zbase\Interfaces\ControllerI
 	}
 
 	/**
+	 * Format the validation errors to be returned.
+	 *
+	 * @param  \Illuminate\Contracts\Validation\Validator  $validator
+	 * @return array
+	 */
+	protected function formatValidationErrors(\Illuminate\Contracts\Validation\Validator $validator)
+	{
+		zbase_alert('error', $validator->getMessageBag(), ['formvalidation' => true]);
+		return $validator->errors()->getMessages();
+	}
+
+	/**
 	 * Add Message
 	 *
 	 * @param string $type

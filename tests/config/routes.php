@@ -34,7 +34,6 @@ return [
 				'enable' => true
 			],
 			'url' => '/',
-			'auth' => false,
 			'enable' => true
 		],
 		'testParams' => [
@@ -44,7 +43,6 @@ return [
 				'enable' => true
 			],
 			'url' => '/testparams/{paramOne?}/{paramTwo?}',
-			'auth' => false,
 			'enable' => true
 		],
 		'testForm' => [
@@ -57,7 +55,6 @@ return [
 				'enable' => true
 			],
 			'url' => '/tests/form',
-			'auth' => false,
 			'enable' => true
 		],
 		'viewroute' => [
@@ -66,7 +63,6 @@ return [
 				'enable' => true
 			],
 			'url' => '/tests/view-route',
-			'auth' => false,
 			'enable' => true
 		],
 		'rout-auth' => [
@@ -75,7 +71,9 @@ return [
 				'enable' => true
 			],
 			'url' => '/tests/route-auth',
-			'auth' => true,
+			'middleware' => [
+				'auth' => true
+			],
 			'enable' => true
 		],
 	],
