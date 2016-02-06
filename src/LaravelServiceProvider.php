@@ -30,13 +30,36 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 
 	public function boot()
 	{
-
 		if(!zbase_is_testing())
 		{
-			$this->loadViewsFrom(__DIR__ . '/../resources/views', zbase_tag());
 			$this->mergeConfigFrom(
 					__DIR__ . '/../config/config.php', zbase_tag()
 			);
+			$packages = zbase()->packages();
+			if(!empty($packages))
+			{
+				$configs = [];
+				foreach ($packages as $packageName)
+				{
+					$configFiles = zbase_package($packageName)->config();
+					if(is_array($configFiles))
+					{
+						foreach ($configFiles as $configFile)
+						{
+							if(file_exists($configFile))
+							{
+								$configs = array_replace_recursive($configs, require $configFile);
+							}
+						}
+					}
+					else
+					{
+						$configs = array_replace_recursive($configs, require $configFiles);
+					}
+				}
+			}
+			$this->app['config'][zbase_tag()] = array_replace_recursive($this->app['config'][zbase_tag()], $configs);
+			$this->loadViewsFrom(__DIR__ . '/../resources/views', zbase_tag());
 		}
 		else
 		{

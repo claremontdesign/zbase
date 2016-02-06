@@ -24,6 +24,15 @@ function zbase()
 }
 
 /**
+ * Return the Package ServiceProvider
+ * @return Interfaces\ZbaseInterface
+ */
+function zbase_package($packageName)
+{
+	return app($packageName);
+}
+
+/**
  * Create an object that implements ArrayAccess, Arrayable, Countable, IteratorAggregate, Jsonable, JsonSerializable
  *
  * @param array $array

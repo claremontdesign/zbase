@@ -15,9 +15,16 @@ namespace Zbase;
  * @package Zbase
  */
 use Zbase\Models;
+use Zbase\Interfaces;
 
-class Zbase
+class Zbase implements Interfaces\ZbaseInterface
 {
+
+	/**
+	 * Zbase Added packages
+	 * @var array
+	 */
+	protected $packages = [];
 
 	/**
 	 * Current site section
@@ -173,4 +180,42 @@ class Zbase
 		return $this;
 	}
 
+	/**
+	 * Add a packageName
+	 * @param string $packageName
+	 */
+	public function addPackage($packageName)
+	{
+		if(!in_array($packageName, $this->packages()))
+		{
+			$this->packages[] = $packageName;
+		}
+	}
+
+	/**
+	 * Return all packages
+	 * @return array
+	 */
+	public function packages()
+	{
+		return $this->packages;
+	}
+
+
+	/**
+	 * REturn configuration
+	 */
+	public function config()
+	{
+		return [];
+	}
+
+	/**
+	 * Path to this package src
+	 * @return string
+	 */
+	public function path()
+	{
+		return __DIR__ . '/../';
+	}
 }

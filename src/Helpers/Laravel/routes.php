@@ -57,15 +57,21 @@ function zbase_route_response($name, $route)
 	}
 	if(!empty($guestOnly) && \Auth::check())
 	{
-		return redirect('home');
+		return redirect(zbase_url_from_route('home'));
 	}
 	if(!empty($authed) && !\Auth::check())
 	{
-		return redirect(zbase_url('login'));
+		return redirect(zbase_url_from_route('login'));
 	}
 	$params = zbase_route_inputs();
 	$requestMethod = zbase_request_method();
 	$controller = !empty($route['controller']) ? $route['controller'] : null;
+	$command = !empty($route['command']) ? $route['command'] : false;
+	if(!empty($command) && $command instanceof \Closure)
+	{
+		$command();
+		exit();
+	}
 	if(!empty($controller) && !empty($controller['name']) && !empty($route['controller']['enable']))
 	{
 		$controllerName = !empty($route['controller']['name']) ? $route['controller']['name'] : null;

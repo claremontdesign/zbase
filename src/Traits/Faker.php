@@ -25,7 +25,6 @@ trait Faker
 	 */
 	public function faker()
 	{
-		$faker = \Faker\Factory::create();
 		$valueMap = $this->getValueMap();
 		if(!empty($valueMap))
 		{
@@ -40,10 +39,22 @@ trait Faker
 				$valueCounter++;
 			}
 		}
-		switch (strtolower($this->getType()))
+		return self::f($this->getType(), $this->getSubType(), $this->getLength());
+	}
+
+	/**
+	 *
+	 * @param type $type
+	 * @param type $subType
+	 * @return type
+	 */
+	public static function f($type, $subType = 'string', $length = 64)
+	{
+		$faker = \Faker\Factory::create();
+		switch (strtolower($type))
 		{
 			case 'string':
-				switch (strtolower($this->getSubType()))
+				switch (strtolower($subType))
 				{
 					case 'username':
 						return $faker->userName();
@@ -66,7 +77,7 @@ trait Faker
 					case 'avatarurl':
 						return 'http://api.adorable.io/avatars/285/' . $faker->email() . '.png';
 					default;
-						return $faker->text($this->getLength());
+						return $faker->text($length);
 				}
 				break;
 			case 'tinyint':

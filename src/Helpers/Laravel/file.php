@@ -17,9 +17,9 @@
  * Return the Asset base path
  * @return string
  */
-function zbase_path_asset()
+function zbase_path_asset($path = null)
 {
-	return '/' . zbase_tag() . '/assets/';
+	return '/' . zbase_tag() . '/assets/' . $path;
 }
 
 /**

@@ -88,6 +88,7 @@ function zbase_view_render($file, $params = [])
 // <editor-fold defaultstate="collapsed" desc="Template">
 /**
  * Return the systems template package to use
+ * This is the main package to load
  * 	default: zbase
  *
  * @param string $tag [optional]
@@ -126,13 +127,14 @@ function zbase_view_template_theme($tag = null)
  */
 function zbase_view_file($name, $section = 'front')
 {
-	$package = zbase_view_template_package();
-	$theme = zbase_view_template_theme();
 	if(preg_match('/\:\:/', $name))
 	{
 		return $name;
 	}
 
+
+	$package = zbase_view_template_package();
+	$theme = zbase_view_template_theme();
 	// - check $package.templates.$section.theme.$name
 	$viewFile = $package . '::templates.' . $section . '.' . $theme . '.' . $name;
 	if(\View::exists($viewFile))
@@ -142,6 +144,13 @@ function zbase_view_file($name, $section = 'front')
 
 	// - check contents.$name
 	$viewFile = $package . '::contents.' . $section . '.' . $name;
+	if(\View::exists($viewFile))
+	{
+		return $viewFile;
+	}
+
+	// - check contents.$name
+	$viewFile = $package . '::contents.' . $name;
 	if(\View::exists($viewFile))
 	{
 		return $viewFile;

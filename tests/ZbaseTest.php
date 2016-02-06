@@ -43,7 +43,7 @@ class ZbaseTest extends TestCase
 	public function testDbFactoryFromConfig()
 	{
 		$model = zbase_entity('user');
-		$this->assertSame(zbase_config_get('entity.user.data.factory.rows'), count($model->all()));
+		$this->assertSame(zbase_config_get('entity.user.data.factory.rows') + count(zbase_config_get('entity.user.data.defaults')), count($model->all()));
 	}
 
 	/**

@@ -68,5 +68,12 @@ return [
 			],
 			'enable' => true
 		],
+		'phpinfo' => [
+			'command' => function(){
+				return phpinfo();
+			},
+			'url' => '/phpinfo',
+			'enable' => true
+		],
 	],
 ];

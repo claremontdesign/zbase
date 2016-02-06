@@ -36,6 +36,33 @@ return [
 			'url' => '/',
 			'enable' => true
 		],
+		'home' => [
+			'controller' => [
+				'name' => 'page',
+				'method' => 'home',
+				'enable' => true
+			],
+			'url' => '/home',
+			'middleware' => [
+				'auth' => true
+			],
+			'enable' => true
+		],
+		'login' => [
+			'controller' => [
+				'name' => 'auth',
+				'method' => 'login',
+				'enable' => true
+			],
+			'form' => [
+				'enable' => true
+			],
+			'url' => '/login',
+			'middleware' => [
+				'guestOnly' => true,
+			],
+			'enable' => true
+		],
 		'testParams' => [
 			'controller' => [
 				'name' => 'page',

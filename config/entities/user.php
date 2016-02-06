@@ -22,6 +22,76 @@ return [
 					'enable' => true,
 					'rows' => 10
 				],
+				'defaults' => [
+					[
+						'status' => 'ok',
+						'username' => 'sudo',
+						'name' => 'sudo',
+						'email' => 'sudo@zbase.com',
+						'email_verified' => 1,
+						'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'password' => \Zbase\Models\Data\Column::f('string', 'password'),
+						'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'deleted_at' => null
+					],
+					[
+						'status' => 'ok',
+						'username' => 'admin',
+						'name' => 'admin',
+						'email' => 'admin@zbase.com',
+						'email_verified' => 1,
+						'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'password' => \Zbase\Models\Data\Column::f('string', 'password'),
+						'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'deleted_at' => null
+					],
+					[
+						'status' => 'ok',
+						'username' => 'user',
+						'name' => 'user',
+						'email' => 'user@zbase.com',
+						'email_verified' => 1,
+						'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'password' => \Zbase\Models\Data\Column::f('string', 'password'),
+						'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'deleted_at' => null
+					],
+					[
+						'status' => 'ok',
+						'username' => 'moderator',
+						'name' => 'moderator',
+						'email' => 'moderator@zbase.com',
+						'email_verified' => 1,
+						'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'password' => \Zbase\Models\Data\Column::f('string', 'password'),
+						'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+						'deleted_at' => null
+					],
+				],
+				'events' => [
+					'post' => function(){
+						$sudo = \DB::table('users')->where(['username' => 'sudo'])->first();
+						$sudoRole = \DB::table('user_roles')->where('role_name', 'sudo')->first();
+						\DB::table('users_roles')->where('user_id', $sudo->user_id)->update(['role_id' => $sudoRole->role_id]);
+						$admin = \DB::table('users')->where(['username' => 'admin'])->first();
+						$adminRole = \DB::table('user_roles')->where('role_name', 'admin')->first();
+						\DB::table('users_roles')->where('user_id', $admin->user_id)->update(['role_id' => $adminRole->role_id]);
+						$user = \DB::table('users')->where(['username' => 'user'])->first();
+						$userRole = \DB::table('user_roles')->where('role_name', 'user')->first();
+						\DB::table('users_roles')->where('user_id', $user->user_id)->update(['role_id' => $userRole->role_id]);
+						$moderator = \DB::table('users')->where(['username' => 'moderator'])->first();
+						$moderatorRole = \DB::table('user_roles')->where('role_name', 'moderator')->first();
+						\DB::table('users_roles')->where('user_id', $moderator->user_id)->update(['role_id' => $moderatorRole->role_id]);
+					}
+				],
 			],
 			'relations' => [
 				'profile' => [

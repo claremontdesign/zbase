@@ -26,17 +26,84 @@ class DatabaseSeeder extends Seeder
 		{
 			foreach ($entities as $entityName => $entity)
 			{
+				$preEvent = zbase_data_get($entity, 'data.events.pre', false);
+				if(!empty($preEvent))
+				{
+					if($preEvent instanceof \Closure)
+					{
+						$preEvent();
+					}
+				}
+			}
+			foreach ($entities as $entityName => $entity)
+			{
+				$this->_defaults($entityName, $entity);
+			}
+			foreach ($entities as $entityName => $entity)
+			{
 				$this->_factory($entityName, $entity);
+			}
+			foreach ($entities as $entityName => $entity)
+			{
+				$postEvent = zbase_data_get($entity, 'data.events.post', false);
+				if(!empty($postEvent))
+				{
+					if($postEvent instanceof \Closure)
+					{
+						$postEvent();
+					}
+				}
 			}
 		}
 		LaravelModel::reguard();
 	}
 
 	/**
-	 * Run factory for an entity
-	 * @param array $entity
+	 * Run all default
+	 * @param type $entityName
+	 * @param type $entityConfig
 	 */
-	protected function _factory($entityName, $entityConfig)
+	protected function _defaults($entityName, $entityConfig, $related = false)
+	{
+		if(in_array($entityName, $this->processedEntities))
+		{
+			return;
+		}
+		$defaults = zbase_data_get($entityConfig, 'data.defaults', []);
+		$factory = zbase_data_get($entityConfig, 'data.factory.enable', false);
+		if(empty($factory))
+		{
+			$this->processedEntities[] = $entityName;
+		}
+		if(!empty($defaults))
+		{
+			$tableName = zbase_data_get($entityConfig, 'table.name', null);
+			$primaryKey = zbase_data_get($entityConfig, 'table.primaryKey', null);
+			foreach ($defaults as $default)
+			{
+				$insertedId = \DB::table($tableName)->insertGetId($default);
+				if(empty($related))
+				{
+					if(!empty($insertedId))
+					{
+						$default[$primaryKey] = $insertedId;
+						$relations = zbase_data_get($entityConfig, 'relations', []);
+						if(!empty($relations))
+						{
+							$this->_relations($relations, $default);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Run factory for an entity
+	 * @param string $entityName
+	 * @param array $entityConfig
+	 */
+	protected function _factory($entityName, $entityConfig, $related = false)
 	{
 		if(in_array($entityName, $this->processedEntities))
 		{
@@ -54,17 +121,7 @@ class DatabaseSeeder extends Seeder
 			$rows = zbase_data_get($entityConfig, 'data.factory.rows', 5);
 			for ($x = 0; $x < $rows; $x++)
 			{
-				$this->_rows($entityName, $entityConfig);
-			}
-			return;
-		}
-		$defaults = zbase_data_get($entityConfig, 'data.defaults', []);
-		if(!empty($defaults))
-		{
-			$tableName = zbase_data_get($entityConfig, 'table.name', null);
-			foreach ($defaults as $default)
-			{
-				\DB::table($tableName)->insert($default);
+				$this->_rows($entityName, $entityConfig, $related);
 			}
 		}
 	}
@@ -124,6 +181,19 @@ class DatabaseSeeder extends Seeder
 		}
 		if(!empty($relations) && empty($related))
 		{
+			$this->_relations($relations, $f);
+		}
+	}
+
+	/**
+	 * Seed Related tables/models
+	 * @param array $relations
+	 * @param array $f
+	 */
+	protected function _relations($relations, $f)
+	{
+		if(!empty($relations))
+		{
 			foreach ($relations as $rEntityName => $rEntityConfig)
 			{
 				$rInverse = !empty($rEntityConfig['inverse']) ? true : false;
@@ -155,7 +225,8 @@ class DatabaseSeeder extends Seeder
 						/**
 						 * We need to run factory for the related entity
 						 */
-						$this->_factory($rEntityName, $rEntity);
+						$this->_defaults($rEntityName, $rEntity, true);
+						$this->_factory($rEntityName, $rEntity, true);
 						/**
 						 * https://laravel.com/docs/5.2/eloquent-relationships#many-to-many
 						 *
@@ -174,6 +245,7 @@ class DatabaseSeeder extends Seeder
 						 */
 						$foreignKey = zbase_data_get($rEntityConfig, 'keys.local', []);
 						$fTableName = zbase_data_get($rEntity, 'table.name', null);
+						// dd($foreignKey, $fTableName);
 						$foreignTwoValue = collect(\DB::table($fTableName)->lists($foreignKey))->random();
 						\DB::table($pivotTableName)->insert([$localKey => $f[$localKey], $foreignKey => $foreignTwoValue]);
 					}
