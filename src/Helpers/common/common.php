@@ -19,6 +19,21 @@ use Zbase\Interfaces;
 define("EOF", "\n");
 define("ZBASE", "zbase");
 
+if(!function_exists('env'))
+{
+
+	function env($varname, $default)
+	{
+		$val = getenv($varname);
+		if($val === false)
+		{
+			return $default;
+		}
+		return $val;
+	}
+
+}
+
 /**
  * Return the current zbase framework
  *
