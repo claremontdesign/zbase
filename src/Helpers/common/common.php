@@ -22,7 +22,7 @@ define("ZBASE", "zbase");
 if(!function_exists('env'))
 {
 
-	function env($varname, $default)
+	function env($varname, $default = null)
 	{
 		$val = getenv($varname);
 		if($val === false)

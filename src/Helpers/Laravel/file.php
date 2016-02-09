@@ -88,7 +88,7 @@ function zbase_base_path($path = null)
  */
 function zbase_public_path($path = null)
 {
-	return public_path($path);
+	return env('PUBLIC_PATH' . $path,public_path($path));
 }
 
 /**
