@@ -106,6 +106,15 @@ function zbase_is_back()
 }
 
 /**
+ * Check if in maintenance mode
+ * @return boolean
+ */
+function zbase_is_maintenance()
+{
+	return env('MAINTENANCE', false);
+}
+
+/**
  * Get an item from an array or object using "dot" notation.
  * 	If the value retrieved is an array, it will check for "merge" index
  * 		and will get the value of the merge and array_replace_recursive it with the

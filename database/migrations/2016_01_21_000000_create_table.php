@@ -203,7 +203,7 @@ class CreateTable extends Migration
 					if(!is_null($description))
 					{
 						$tableName = $dbTblPrefix . $tableName;
-						DB::select(DB::raw("ALTER TABLE `{$tableName}` COMMENT='{$description}'"));
+						// DB::select(DB::raw("ALTER TABLE `{$tableName}` COMMENT='{$description}'"));
 					}
 				}
 			}

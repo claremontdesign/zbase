@@ -30,6 +30,9 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 
 	public function boot()
 	{
+		$this->app->bind('path.public', function() {
+			return env('PUBLIC_PATH', public_path());
+		});
 		$this->loadViewsFrom(__DIR__ . '/../resources/views', zbase_tag());
 		if(!zbase_is_testing())
 		{
