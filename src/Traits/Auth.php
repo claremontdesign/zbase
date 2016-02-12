@@ -47,4 +47,45 @@ trait Auth
 	{
 		return zbase_config_get('auth.enable', true);
 	}
+
+	/**
+	 * If registration is enabled
+	 * @return boolean
+	 */
+	public function registerEnabled()
+	{
+		if($this->authEnabled())
+		{
+			return zbase_config_get('auth.register.enable', true);
+		}
+		return false;
+	}
+
+	/**
+	 * If email verification is enabled
+	 * @return boolean
+	 */
+	public function emailVerificationEnabled()
+	{
+		return zbase_config_get('auth.emailverify.enable', true);
+	}
+
+	/**
+	 * New registrant default status
+	 * @return string
+	 */
+	public function defaultNewUserStatus()
+	{
+		return zbase_config_get('auth.register.defaultStatus', 'ok');
+	}
+
+	/**
+	 * The Default new user Role
+	 * @return string
+	 */
+	public function defaultNewUserRole()
+	{
+		return zbase_config_get('auth.role.default', 'user');
+	}
+
 }

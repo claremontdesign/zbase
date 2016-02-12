@@ -313,7 +313,7 @@ function zbase_alerts_render($type = null)
 		if(!empty($alerts))
 		{
 			$params = ['type' => $type, 'alerts' => $alerts];
-			$template = zbase_config_get('view.templates.alerts.' . $type, 'alerts.' . $type);
+			$template = zbase_view_file_contents(zbase_config_get('view.templates.alerts.' . $type, 'alerts.' . $type));
 			return zbase_view_render($template, $params);
 		}
 		return null;

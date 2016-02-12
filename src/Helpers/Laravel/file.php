@@ -13,6 +13,7 @@
  * @project Zbase
  * @package Zbase/Laravel/Helpers
  */
+
 /**
  * Return the Asset base path
  * @return string
@@ -88,7 +89,7 @@ function zbase_base_path($path = null)
  */
 function zbase_public_path($path = null)
 {
-	return env('PUBLIC_PATH' . $path,public_path($path));
+	return env('PUBLIC_PATH' . $path, public_path($path));
 }
 
 /**
@@ -100,4 +101,24 @@ function zbase_public_path($path = null)
 function zbase_storage_path($path = null)
 {
 	return storage_path($path);
+}
+
+/**
+ * Check if directory exists, else create it
+ * @param string $path
+ * @param boolean $create
+ * @return string|false
+ */
+function zbase_directory_check($path, $create = false)
+{
+	if(!is_dir($path))
+	{
+		if($create)
+		{
+			mkdir($path, 0777, true);
+			return $path;
+		}
+		return false;
+	}
+	return false;
 }

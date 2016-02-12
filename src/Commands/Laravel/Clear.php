@@ -49,17 +49,18 @@ class Clear extends Command
 	 */
 	public function handle()
 	{
-		echo shell_exec('php artisan clear-compiled');
-		echo shell_exec('php artisan cache:clear');
-		echo shell_exec('php artisan view:clear');
-		echo shell_exec('php artisan config:clear');
-		echo shell_exec('php artisan route:clear');
+		$phpCommand = env('PHP_COMMAND', 'php');
+		echo shell_exec($phpCommand . ' artisan clear-compiled');
+		echo shell_exec($phpCommand . ' artisan cache:clear');
+		echo shell_exec($phpCommand . ' artisan view:clear');
+		echo shell_exec($phpCommand . ' artisan config:clear');
+		echo shell_exec($phpCommand . ' artisan route:clear');
 		$commands = [];// zbase()->commands('clear');
 		if(!empty($commands))
 		{
 			foreach ($commands as $command)
 			{
-				echo shell_exec('php artisan ' . $command);
+				echo shell_exec($phpCommand . ' artisan ' . $command);
 			}
 		}
 	}

@@ -68,6 +68,8 @@ trait Faker
 						return $faker->lastName();
 					case 'personmiddlename':
 						return $faker->lastName();
+					case 'persontitle':
+						return 'Mr.';
 					case 'email':
 						return $faker->email();
 					case 'alphaid':

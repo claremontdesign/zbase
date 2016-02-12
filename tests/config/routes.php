@@ -63,6 +63,58 @@ return [
 			],
 			'enable' => true
 		],
+		'register' => [
+			'controller' => [
+				'name' => 'auth',
+				'method' => 'register',
+				'enable' => true
+			],
+			'form' => [
+				'enable' => true
+			],
+			'url' => '/register',
+			'middleware' => [
+				'guestOnly' => true,
+			],
+			'enable' => true
+		],
+		'password' => [
+			'controller' => [
+				'name' => 'password',
+				'method' => 'index',
+				'enable' => true
+			],
+			'form' => [
+				'enable' => true
+			],
+			'url' => '/password',
+			'middleware' => [
+				'guestOnly' => true,
+			],
+			'enable' => true
+		],
+		'password-reset' => [
+			'controller' => [
+				'name' => 'password',
+				'method' => 'reset',
+				'enable' => true
+			],
+			'form' => [
+				'enable' => true
+			],
+			'url' => '/password/reset/{token?}',
+			'middleware' => [
+				'guestOnly' => true,
+			],
+			'enable' => true
+		],
+		'phpinfo' => [
+			'command' => function(){
+				return phpinfo();
+			},
+			'url' => '/phpinfo',
+			'enable' => true
+		],
 		'testParams' => [
 			'controller' => [
 				'name' => 'page',

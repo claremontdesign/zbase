@@ -98,7 +98,7 @@ function zbase_view_template_package($tag = null)
 {
 	$tag = !empty($tag) ? $tag . '.' : null;
 	$section = zbase_section();
-	return zbase_config_get('view.templates.' . $tag . $section . '.package', zbase_tag());
+	return zbase_config_get('view.templates.' . $tag . $section . '.package', 'zbase');
 }
 
 /**
@@ -142,28 +142,36 @@ function zbase_view_file($name, $section = 'front')
 		return $viewFile;
 	}
 
-	// - check contents.$name
-	$viewFile = $package . '::contents.' . $section . '.' . $name;
-	if(\View::exists($viewFile))
-	{
-		return $viewFile;
-	}
-
-	// - check contents.$name
-	$viewFile = $package . '::contents.' . $name;
-	if(\View::exists($viewFile))
-	{
-		return $viewFile;
-	}
-
 	// check default from templates
 	$viewFile = zbase_tag() . '::templates.' . $section . '.default.' . $name;
 	if(\View::exists($viewFile))
 	{
 		return $viewFile;
 	}
+	return $name;
+}
 
-	// check default from contents
+/**
+ * Search for a view file on the contents folder
+ * @param string $name
+ * @param string $section
+ * @return string
+ */
+function zbase_view_file_contents($name)
+{
+	if(preg_match('/\:\:/', $name))
+	{
+		return $name;
+	}
+
+	$package = zbase_view_template_package();
+	// - check contents.$name
+	$viewFile = $package . '::contents.' . $name;
+	if(\View::exists($viewFile))
+	{
+		return $viewFile;
+	}
+	// - check zbase.contents.$name
 	$viewFile = zbase_tag() . '::contents.' . $name;
 	if(\View::exists($viewFile))
 	{

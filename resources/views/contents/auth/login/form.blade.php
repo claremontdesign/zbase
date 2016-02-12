@@ -1,6 +1,4 @@
-@extends(zbase_view_template_layout())
-@section('content')
-<form class="form-horizontal" role="form" method="POST" action="{{ url('/login') }}">
+<form class="form-horizontal" role="form" method="POST" action="{{ zbase_url_create('login') }}">
 	{!! zbase_csrf_token_field('login') !!}
 
 	<div class="form-group <?php echo zbase_form_input_has_error('email') ? 'has-error' : '' ?>">
@@ -35,8 +33,10 @@
 				<i class="fa fa-btn fa-sign-in"></i>Login
 			</button>
 
-			<a class="btn btn-link" href="{{ zbase_url_create('/password/reset') }}">Forgot Your Password?</a>
+			<a class="btn btn-link" href="{{ zbase_url_create('password') }}">Forgot Your Password?</a>
 		</div>
 	</div>
 </form>
-@stop
+
+
+

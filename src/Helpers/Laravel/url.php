@@ -65,3 +65,22 @@ function zbase_url_from_config($config)
 		return zbase_url_from_route($name, $params);
 	}
 }
+
+/**
+ * Convert an array to GET parameters
+ * @param array $array Assoc Array
+ * @return string
+ */
+function zbase_url_array_to_get($array)
+{
+	if(!empty($array))
+	{
+		$a = [];
+		foreach ($array as $k => $v)
+		{
+			$a[] = $k . '=' . $v;
+		}
+		return implode('&', $a);
+	}
+	return null;
+}

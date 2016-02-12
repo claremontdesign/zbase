@@ -11,9 +11,9 @@ class RoutesTest extends TestCase
 	 */
 	public function testRoutesFromConfig()
 	{
-		$this->visit('/tests/view-route')
-				->see('View from Route')
-				->dontSee('The Test Content');
+//		$this->visit('/tests/view-route')
+//				->see('View from Route')
+//				->dontSee('The Test Content');
 
 		$this->visit('/')
 				->dontSee('Route One Test')

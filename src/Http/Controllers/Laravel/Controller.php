@@ -230,7 +230,7 @@ class Controller extends BaseController implements \Zbase\Interfaces\ControllerI
 		$validator = \Validator::make($inputs, $rules, $messages);
 		if($validator->fails())
 		{
-			zbase_alert('error', $validator->messages());
+			zbase_alert(\Zbase\Zbase::ALERT_ERROR, $validator->messages());
 			return false;
 		}
 		return true;
@@ -244,7 +244,7 @@ class Controller extends BaseController implements \Zbase\Interfaces\ControllerI
 	 */
 	protected function formatValidationErrors(\Illuminate\Contracts\Validation\Validator $validator)
 	{
-		zbase_alert('error', $validator->getMessageBag(), ['formvalidation' => true]);
+		zbase_alert(\Zbase\Zbase::ALERT_ERROR, $validator->getMessageBag(), ['formvalidation' => true]);
 		return $validator->errors()->getMessages();
 	}
 

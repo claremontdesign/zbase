@@ -19,6 +19,7 @@ require_once __DIR__ . '/common/view.php';
 require_once __DIR__ . '/common/file.php';
 require_once __DIR__ . '/common/data.php';
 require_once __DIR__ . '/' . zbase_framework() . '/config.php';
+require_once __DIR__ . '/' . zbase_framework() . '/auth.php';
 require_once __DIR__ . '/' . zbase_framework() . '/cache.php';
 require_once __DIR__ . '/' . zbase_framework() . '/requests.php';
 require_once __DIR__ . '/' . zbase_framework() . '/routes.php';

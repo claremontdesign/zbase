@@ -20,6 +20,12 @@ use Zbase\Interfaces;
 class Zbase implements Interfaces\ZbaseInterface
 {
 
+	const ALERT_INFO = 'info';
+	const ALERT_ERROR = 'error';
+	const ALERT_WARNING = 'warning';
+	const ALERT_SUCCESS = 'success';
+
+
 	/**
 	 * Zbase Added packages
 	 * @var array

@@ -14,12 +14,17 @@
  * auth.enable disable/enable user authentication; default: true
  * auth.messages
  * auth.messages.failed message to show if auth failed
+ * auth.password.loginAfterReset = boolean, if to login after reset
+ * auth.emailVerify
+ * auth.emailVerify.enable = if to enable email verification
+ * auth.role
+ * auth.role.default = the default role to a new registered user
+ * auth.register
+ * auth.register.enable
+ * auth.register.defaultStatus = ok
  */
 return [
 	'auth' => [
-		'enable' => true,
-		'messages' => [
-			'failed' => 'These credentials do not match our records'
-		],
+		'enable' => true
 	],
 ];

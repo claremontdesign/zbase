@@ -49,19 +49,20 @@ class Migrate extends Command
 	 */
 	public function handle()
 	{
+		$phpCommand = env('PHP_COMMAND', 'php');
 		\File::cleanDirectory(database_path() . '/migrations');
 		\File::cleanDirectory(database_path() . '/seeds');
 		\File::cleanDirectory(database_path() . '/factories');
 		// echo shell_exec('php artisan cdbase:clear');
-		echo shell_exec('php artisan vendor:publish --tag=migrations --force');
-		echo shell_exec('php artisan optimize');
-		echo shell_exec('php artisan migrate:refresh --seed --force');
+		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=migrations --force');
+		echo shell_exec($phpCommand . ' artisan optimize');
+		echo shell_exec($phpCommand . ' artisan migrate:refresh --seed --force');
 		$commands = [];// zbase()->commands('migrate');
 		if(!empty($commands))
 		{
 			foreach ($commands as $command)
 			{
-				echo shell_exec('php artisan ' . $command);
+				echo shell_exec($phpCommand . ' artisan ' . $command);
 			}
 		}
 	}

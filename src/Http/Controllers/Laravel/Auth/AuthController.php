@@ -61,13 +61,92 @@ use AuthenticatesAndRegistersUsers,
 		$this->middleware('guest', ['except' => 'logout']);
 	}
 
+	public function register()
+	{
+		if(!$this->registerEnabled())
+		{
+			return $this->notfound('User registration is disabled.');
+		}
+		if($this->isPost())
+		{
+			return $this->postRegister(zbase_request());
+		}
+		return $this->view(zbase_view_file('auth.register'));
+	}
+
+	/**
+	 * Handle a registration request for the application.
+	 *
+	 * @param  \Illuminate\Http\Request  $request
+	 * @return \Illuminate\Http\Response
+	 */
+	public function postRegister(Request $request)
+	{
+		$validator = $this->registerValidator($request->all());
+
+		if($validator->fails())
+		{
+			$this->throwValidationException(
+					$request, $validator
+			);
+		}
+
+		\Auth::login($this->create($request->all()));
+
+		return redirect($this->redirectPath());
+	}
+
+	/**
+	 * Get a validator for an incoming registration request.
+	 *
+	 * @param  array  $data
+	 * @return \Illuminate\Contracts\Validation\Validator
+	 */
+	protected function registerValidator(array $data)
+	{
+		return Validator::make($data, [
+					'name' => 'required|max:255',
+					'email' => 'required|email|max:255|unique:' . zbase_config_get('entity.user.table.name'),
+					'username' => 'required|min:3|max:32|unique:' . zbase_config_get('entity.user.table.name'),
+					'password' => 'required|confirmed|min:6',
+		]);
+	}
+
+	/**
+	 * Create a new user instance after a valid registration.
+	 *
+	 * @param  array  $data
+	 * @return User
+	 */
+	protected function create(array $data)
+	{
+		$user = [
+			'status' => $this->defaultNewUserStatus(),
+			'username' => !empty($data['username']) ? $data['username'] : null,
+			'name' => $data['name'],
+			'email' => $data['email'],
+			'email_verified' => $this->emailVerificationEnabled() ? 0 : 1,
+			'email_verified_at' => null,
+			'password' => bcrypt($data['password']),
+			'password_updated_at' => null,
+			'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
+			'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+			'deleted_at' => null,
+		];
+		return zbase_entity('user')->create($user);
+	}
+
+	/**
+	 * Login
+	 * @return
+	 */
 	public function login()
 	{
 		if(!$this->authEnabled())
 		{
 			return $this->notfound('User authentication is disabled.');
 		}
-		if($this->isPost() == 'post')
+		if($this->isPost())
 		{
 			return $this->postLogin(zbase_request());
 		}
@@ -123,6 +202,19 @@ use AuthenticatesAndRegistersUsers,
 	}
 
 	/**
+	 * Process initial authentication
+	 * Checking if user can Auth
+	 */
+	public function authenticated(Request $request, $user)
+	{
+		if(!$user->canAuth())
+		{
+			\Auth::logout();
+		}
+		$user->authenticated();
+	}
+
+	/**
 	 * Get a validator for an incoming registration request.
 	 *
 	 * @param  array  $data
@@ -154,22 +246,7 @@ use AuthenticatesAndRegistersUsers,
 	 */
 	protected function getFailedLoginMessage()
 	{
-		return zbase_config_get('auth.messages.failed');
-	}
-
-	/**
-	 * Create a new user instance after a valid registration.
-	 *
-	 * @param  array  $data
-	 * @return User
-	 */
-	protected function create(array $data)
-	{
-		return zbase_entity('user')->create([
-					'name' => $data['name'],
-					'email' => $data['email'],
-					'password' => bcrypt($data['password']),
-		]);
+		return zbase_config_get('auth.messages.failed', 'These credentials do not match our records');
 	}
 
 }

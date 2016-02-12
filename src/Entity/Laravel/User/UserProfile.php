@@ -25,5 +25,4 @@ class UserProfile extends BaseEntity
 	 * @var string
 	 */
 	protected $entityName = 'user_profile';
-
 }

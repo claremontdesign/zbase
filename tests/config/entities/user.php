@@ -216,6 +216,7 @@ return [
 							'name' => 'email',
 							'enable' => true
 						],
+						'name' => 'email',
 						'length' => 64,
 						'hidden' => false,
 						'fillable' => true,
@@ -314,6 +315,23 @@ return [
 						],
 						'comment' => 'User ID'
 					],
+					'title' => [
+						'filterable' => [
+							'name' => 'title',
+							'enable' => true
+						],
+						'sortable' => [
+							'name' => 'title',
+							'enable' => true
+						],
+						'length' => 64,
+						'nullable' => true,
+						'hidden' => false,
+						'fillable' => true,
+						'type' => 'string',
+						'subType' => 'personTitle',
+						'comment' => 'Title'
+					],
 					'first_name' => [
 						'filterable' => [
 							'name' => 'fname',
@@ -324,6 +342,7 @@ return [
 							'enable' => true
 						],
 						'length' => 64,
+						'nullable' => true,
 						'hidden' => false,
 						'fillable' => true,
 						'type' => 'string',
@@ -342,6 +361,7 @@ return [
 						'length' => 64,
 						'hidden' => false,
 						'fillable' => true,
+						'nullable' => true,
 						'type' => 'string',
 						'subType' => 'personLastName',
 						'comment' => 'User Last name'
@@ -357,6 +377,7 @@ return [
 						],
 						'length' => 64,
 						'hidden' => false,
+						'nullable' => true,
 						'fillable' => true,
 						'type' => 'string',
 						'subType' => 'personMiddleName',
@@ -376,6 +397,7 @@ return [
 						'fillable' => true,
 						'nullable' => true,
 						'default' => null,
+						'nullable' => true,
 						'type' => 'timestamp',
 						'subType' => 'birthdate',
 						'comment' => 'Date of birth'
@@ -391,6 +413,7 @@ return [
 						],
 						'hidden' => false,
 						'fillable' => true,
+						'nullable' => true,
 						'type' => 'string',
 						'valueMap' => [
 							'f' => 'Female',
@@ -401,6 +424,7 @@ return [
 					'avatar' => [
 						'hidden' => false,
 						'fillable' => false,
+						'nullable' => true,
 						'type' => 'string',
 						'subType' => 'avatarurl',
 						'length' => 255,
@@ -580,6 +604,12 @@ return [
 						],
 						'comment' => 'Email Address'
 					],
+					'created_at' => [
+						'hidden' => false,
+						'fillable' => false,
+						'type' => 'timestamp',
+						'nullable' => false,
+					]
 				]
 			]
 		],

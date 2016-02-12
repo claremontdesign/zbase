@@ -22,5 +22,18 @@ class AuthControllerTest extends TestCase
 				->visit('/login')
 				->seePageIs(zbase_url_from_route('home'));
 	}
+//
+//	function testRegisterPage()
+//	{
+//		dd($this->visit('/register'));
+//		$this->visit('/register')
+//				->type('Taylor', 'name')
+//				->type('theUsername', 'username')
+//				->type('taylor@zbase.com', 'email')
+//				->type('password', 'password')
+//				->type('password', 'password_confirmation')
+//				->press('Register')
+//				->seePageIs('/home');
+//	}
 
 }

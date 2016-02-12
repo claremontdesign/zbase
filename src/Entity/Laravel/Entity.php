@@ -45,6 +45,14 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 	protected $entityName = null;
 
 	/**
+	 * The Relation mode
+	 * if relationshipMode == result, will return results when relationship method is called
+	 * else, will return the Relation Model
+	 * @var string
+	 */
+	protected $relationshipMode = 'result';
+
+	/**
 	 *
 	 * @var Interfaces\EntityRepositoryInterface
 	 */
@@ -111,9 +119,15 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 	{
 		$entityAttributes = zbase_config_get('entity.' . $this->entityName);
 		$this->table = zbase_data_get($entityAttributes, 'table.name', $this->table);
-		$this->primaryKey = zbase_data_get($entityAttributes, 'table.primaryKey', $this->primaryKey);
+		$this->primaryKey = zbase_data_get($entityAttributes, 'table.primaryKey', false);
+		if(empty($this->primaryKey))
+		{
+			$this->incrementing = false;
+		}
 		$this->dbColumns = zbase_data_get($entityAttributes, 'table.columns', $this->dbColumns);
 		$this->relationship = zbase_data_get($entityAttributes, 'relations', $this->relationship);
+		$this->timestamps = zbase_data_get($entityAttributes, 'table.timestamp', false);
+		$this->perPage = zbase_data_get($entityAttributes, 'table.perPage', $this->perPage);
 		if(!empty($this->dbColumns))
 		{
 			foreach ($this->dbColumns as $columnName => $column)
@@ -256,11 +270,15 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 					}
 					if(!empty($relObj))
 					{
-						return zbase_cache(
-								$this->cacheKey($relObj), function() use ($relObj){
-							return $relObj->getResults();
+						if($this->relationshipMode == 'result')
+						{
+							return zbase_cache(
+									$this->cacheKey($relObj), function() use ($relObj){
+								return $relObj->getResults();
 							}, [$this->getTable()]
-						);
+							);
+						}
+						return $relObj;
 					}
 				}
 			}
@@ -280,4 +298,21 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 		}
 		return $this->repository;
 	}
+
+	/**
+	 * Toggle the relationMode
+	 * @return void
+	 */
+	public function toggleRelationshipMode()
+	{
+		if($this->relationshipMode == 'result')
+		{
+			$this->relationshipMode = false;
+		}
+		else
+		{
+			$this->relationshipMode = 'result';
+		}
+	}
+
 }

@@ -55,11 +55,11 @@ function zbase_route_response($name, $route)
 			$guestOnly = isset($middleware['guestOnly']) ? $middleware['guestOnly'] : false;
 		}
 	}
-	if(!empty($guestOnly) && \Auth::check())
+	if(!empty($guestOnly) && zbase_auth_has())
 	{
 		return redirect(zbase_url_from_route('home'));
 	}
-	if(!empty($authed) && !\Auth::check())
+	if(!empty($authed) && !zbase_auth_has())
 	{
 		return redirect(zbase_url_from_route('login'));
 	}

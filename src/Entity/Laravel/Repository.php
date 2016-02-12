@@ -60,7 +60,23 @@ class Repository implements Interfaces\EntityRepositoryInterface
 			return $this->getModel()->find(intval($id), $columns);
 				}, [$this->getModel()->getTable()]
 		);
-		//return $this->getModel()->find(intval($id), $columns);
+	}
+
+	/**
+	 * Find rows by attributes
+	 * @param string $attribute Attribute name
+	 * @param string $value Attribute value
+	 *
+	 * @see $this->all();
+	 */
+	public function by($attribute, $value, $columns = ['*'], $sorting = null, $joins = null, $paginate = null, $unions = null, $group = null, $options = null)
+	{
+		if(is_null($value) || empty($attribute))
+		{
+			throw new InvalidArgumentException('Invalid arguments for $attribute or $value');
+		}
+		$filters = [$attribute => $value];
+		return $this->all($columns, $filters, $sorting, $joins, $paginate, $unions, $group, $options);
 	}
 
 	/**
@@ -110,13 +126,13 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			return zbase_cache(
 					zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder){
-					return $builder->get();
+				return $builder->get();
 				}, [$this->getModel()->getTable()]
 			);
 		}
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder, $paginate, $columns){
-				return $builder->paginate($paginate, $columns);
+			return $builder->paginate($paginate, $columns);
 				}, [$this->getModel()->getTable()]
 		);
 	}

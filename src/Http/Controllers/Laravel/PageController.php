@@ -24,12 +24,12 @@ class PageController extends Controller
 
 	public function index()
 	{
-		return $this->view(zbase_view_file('index'));
+		return $this->view(zbase_view_file('index.index'));
 	}
 
 	public function home()
 	{
-		return $this->view(zbase_view_file('home'));
+		return $this->view(zbase_view_file('index.home'));
 	}
 
 	/**

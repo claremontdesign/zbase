@@ -55,6 +55,7 @@ class CreateTable extends Migration
 						}
 						foreach ($columns as $columnName => $column)
 						{
+							$columnName = zbase_data_get($column, 'name', $columnName);
 							if($columnName == $primaryKey)
 							{
 								continue;

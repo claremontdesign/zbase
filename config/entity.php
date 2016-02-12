@@ -38,6 +38,9 @@
  * entity.$entityName.table.compositeKeys = boolean
  * entity.$entityName.table.columns
  * entity.$entityName.table.columns.$columnName
+ * entity.$entityName.table.columns.$columnName.name = columnName, if diff from the index
+ * entity.$entityName.table.columns.$columnName.title = Title
+ * entity.$entityName.table.columns.$columnName.label = Label
  * entity.$entityName.table.columns.$columnName.hidden = boolean
  * entity.$entityName.table.columns.$columnName.index = boolean
  * entity.$entityName.table.columns.$columnName.fillable = boolean
