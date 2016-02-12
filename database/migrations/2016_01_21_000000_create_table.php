@@ -203,6 +203,7 @@ class CreateTable extends Migration
 					if(!is_null($description))
 					{
 						$tableName = $dbTblPrefix . $tableName;
+						\DB::statement("ALTER TABLE `{$tableName}` COMMENT='{$description}'");
 						// DB::select(DB::raw("ALTER TABLE `{$tableName}` COMMENT='{$description}'"));
 					}
 				}
@@ -220,7 +221,7 @@ class CreateTable extends Migration
 		$entities = zbase_config_get('entity', []);
 		if(!empty($entities))
 		{
-			DB::select(DB::raw("SET FOREIGN_KEY_CHECKS=0"));
+			\DB::statement('SET FOREIGN_KEY_CHECKS = 0');
 			foreach ($entities as $entity)
 			{
 				$enable = zbase_data_get($entity, 'enable', false);
@@ -233,7 +234,7 @@ class CreateTable extends Migration
 					}
 				}
 			}
-			DB::select(DB::raw("SET FOREIGN_KEY_CHECKS=1"));
+			\DB::statement('SET FOREIGN_KEY_CHECKS = 1');
 		}
 	}
 

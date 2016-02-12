@@ -89,7 +89,7 @@ function zbase_base_path($path = null)
  */
 function zbase_public_path($path = null)
 {
-	$pubPath = env('ZBASE_PATH_PUBLIC');
+	$pubPath = env('ZBASE_PUBLIC_PATH');
 	if(empty($pubPath))
 	{
 		return public_path($path);
@@ -121,7 +121,7 @@ function zbase_directory_check($path, $create = false)
 		if($create)
 		{
 			mkdir($path, 0777, true);
-			return $path;
+			return true;
 		}
 		return false;
 	}

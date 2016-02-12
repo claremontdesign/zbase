@@ -483,7 +483,7 @@ class View
 	 */
 	protected function _setDefaults()
 	{
-		$this->setPageTitle(zbase_config_get('view.default.title.title', 'Welcome!'));
+		$this->setPageTitle(zbase_config_get('view.default.title.title', null));
 		zbase_view_meta_description(zbase_config_get('view.default.description', 'Zbase - aims to provide an effortless module to the world, regardless of the framework!'));
 		zbase_view_meta_keywords(zbase_config_get('view.default.keywords', 'laravel, zend framework, php, framework, module'));
 		$this->placeholders['body_class'][zbase_tag()] = zbase_tag();

@@ -23,7 +23,18 @@ return [
 				'name' => 'author',
 				'content' => 'Dennes B Abing'
 			],
+//			'_token' => [
+//				'type' => \Zbase\Models\View::HEADMETA,
+//				'enable' => true,
+//				'name' => '_token',
+//				'content' => zbase_csrf_token(),
+//			],
 			// <editor-fold defaultstate="collapsed" desc="Jquery">
+			'zbase' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('js/js.js'),
+				'enable' => true
+			],
 			'jquery' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
 				'src' => '//code.jquery.com/jquery-1.11.0.min.js',
@@ -118,7 +129,7 @@ return [
 			],
 		],
 		'autoload' => [
-			'plugins' => ['meta-viewport', 'meta-charset', 'meta-http-equiv', 'meta-author', 'jquery', 'bootstrap']
+			'plugins' => ['meta-viewport', 'meta-charset', 'meta-http-equiv', 'meta-author', 'jquery', 'bootstrap', 'zbase']
 		]
 	// </editor-fold>
 	],

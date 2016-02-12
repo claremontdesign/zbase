@@ -49,7 +49,7 @@ class Clear extends Command
 	 */
 	public function handle()
 	{
-		$phpCommand = env('PHP_COMMAND', 'php');
+		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
 		echo shell_exec($phpCommand . ' artisan clear-compiled');
 		echo shell_exec($phpCommand . ' artisan cache:clear');
 		echo shell_exec($phpCommand . ' artisan view:clear');

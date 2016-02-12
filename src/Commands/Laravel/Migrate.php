@@ -49,7 +49,7 @@ class Migrate extends Command
 	 */
 	public function handle()
 	{
-		$phpCommand = env('PHP_COMMAND', 'php');
+		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
 		\File::cleanDirectory(database_path() . '/migrations');
 		\File::cleanDirectory(database_path() . '/seeds');
 		\File::cleanDirectory(database_path() . '/factories');

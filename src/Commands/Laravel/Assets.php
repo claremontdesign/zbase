@@ -49,7 +49,7 @@ class Assets extends Command
 	 */
 	public function handle()
 	{
-		$phpCommand = env('PHP_COMMAND', 'php');
+		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
 		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=public --force');
 		$commands = [];// zbase()->commands('public');
 		if(!empty($commands))
