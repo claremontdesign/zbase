@@ -65,9 +65,9 @@ function zbase_form_input_has_error($key)
  * @param type $name
  * @return integer|string
  */
-function zbase_form_old($name)
+function zbase_form_old($name, $default = null)
 {
-	return old($name);
+	return old($name, $default);
 }
 
 // <editor-fold defaultstate="collapsed" desc="CSRF">

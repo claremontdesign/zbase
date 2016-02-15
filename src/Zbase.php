@@ -25,6 +25,11 @@ class Zbase implements Interfaces\ZbaseInterface
 	const ALERT_WARNING = 'warning';
 	const ALERT_SUCCESS = 'success';
 
+	/**
+	 * Commands
+	 * @var array
+	 */
+	protected $commands = ['public' => [], 'clear' => [], 'migrate' => []];
 
 	/**
 	 * Zbase Added packages
@@ -199,6 +204,16 @@ class Zbase implements Interfaces\ZbaseInterface
 	}
 
 	/**
+	 * Add a new Command
+	 * @param string $type
+	 * @param string $command
+	 */
+	public function addCommand($type, $command)
+	{
+		$this->commands[$type] = $command;
+	}
+
+	/**
 	 * Return all packages
 	 * @return array
 	 */
@@ -206,7 +221,6 @@ class Zbase implements Interfaces\ZbaseInterface
 	{
 		return $this->packages;
 	}
-
 
 	/**
 	 * REturn configuration
@@ -224,4 +238,5 @@ class Zbase implements Interfaces\ZbaseInterface
 	{
 		return __DIR__ . '/../';
 	}
+
 }

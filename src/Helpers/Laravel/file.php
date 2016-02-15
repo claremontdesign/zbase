@@ -127,3 +127,51 @@ function zbase_directory_check($path, $create = false)
 	}
 	return false;
 }
+
+/**
+ * Create a file name from file using the $file extension
+ * @param string $file The file path
+ * @param string $fileName the new file naame without the extension
+ * @return string
+ */
+function zbase_file_name_from_file($file, $fileName, $isUpload = false)
+{
+	if($isUpload)
+	{
+		$file = explode('.', $file);
+		if(!empty($file[1]))
+		{
+			return $fileName . '.' . $file[1];
+		}
+	}
+	if(file_exists($file))
+	{
+		$f = new \SplFileInfo($file);
+		return $fileName . '.' . $f->getExtension();
+	}
+	return false;
+}
+
+/**
+ * Upload a file
+ * @param string $index The form Index
+ * @param string $folder the Folder to save the new file
+ * @param string $newFilename the new filename (just filename no folder)
+ * @param string $encodingFormat The Format the file to be encoded. jpg, png
+ * @param array $size The Size to encode [$width, $height], [$width, null]
+ * @return string The Path to the new file
+ */
+function zbase_file_upload_image($index, $folder, $newFilename, $encodingFormat = 'jpg', $size = [])
+{
+	$newFile = $folder . str_replace(array('.png', '.jpg', '.gif', '.bmp', '.jpeg'), '.' . $encodingFormat, $newFilename);
+	zbase_directory_check($folder, true);
+	$im = \Image::make($_FILES[$index]['tmp_name']);
+	if(!empty($size))
+	{
+		$im->resize($size[0], $size[1], function ($constraint) {
+			$constraint->aspectRatio();
+		});
+	}
+	$im->encode($encodingFormat, 100)->save($newFile);
+	return $newFile;
+}

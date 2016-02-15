@@ -16,7 +16,7 @@
 use Illuminate\Support\Debug\Dumper;
 use Zbase\Interfaces;
 
-define("EOF", "\n");
+!defined('EOF') ? define("EOF", "\n") : '';
 define("ZBASE", "zbase");
 
 if(!function_exists('env'))
@@ -112,6 +112,15 @@ function zbase_is_back()
 function zbase_is_maintenance()
 {
 	return env('MAINTENANCE', false);
+}
+
+/**
+ * Check if zbase is on DEV
+ * @return boolean
+ */
+function zbase_is_dev()
+{
+	return env('APP_ENV', false) != 'production';
 }
 
 /**

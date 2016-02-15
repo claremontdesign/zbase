@@ -1,4 +1,23 @@
 // PHP JS START
+function in_array(needle, haystack, argStrict) {
+	var key = '',
+			strict = !!argStrict;
+	if (strict) {
+		for (key in haystack) {
+			if (haystack[key] === needle) {
+				return true;
+			}
+		}
+	} else {
+		for (key in haystack) {
+			if (haystack[key] == needle) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 /**
  *
  * @param {type} mixed_var
@@ -22,7 +41,32 @@ function empty(mixed_var) {
 	return false;
 }
 // PHP JS END
-
+// ZBASE COMMONS START
+/**
+ * Return Checkbox Value
+ * @param {type} selector
+ * @returns {undefined|jQuery}
+ */
+function zbase_get_checkbox_value(selector)
+{
+	if (jQuery(selector + ':checked').length > 0)
+	{
+		return jQuery(selector + ':checked').val();
+	}
+	return undefined;
+}
+/**
+ * Add checkbox Event
+ * @param string selector Selector
+ * @param string event The Event Name
+ * @param \Closure cb Callback
+ * @returns {undefined}
+ */
+function zbase_event_checkbox(selector, event, cb)
+{
+	$(selector).on(event, cb);
+}
+// ZBASE COMMONS END
 
 
 $.ajaxSetup({

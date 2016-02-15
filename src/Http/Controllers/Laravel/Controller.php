@@ -260,5 +260,4 @@ class Controller extends BaseController implements \Zbase\Interfaces\ControllerI
 	{
 		zbase_alert($type, $msg, $options);
 	}
-
 }

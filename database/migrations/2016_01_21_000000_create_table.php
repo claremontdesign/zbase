@@ -80,11 +80,13 @@ class CreateTable extends Migration
 							{
 								if($type == 'decimal')
 								{
+									$length = zbase_data_get($column, 'length', 16);
 									$decimal = zbase_data_get($column, 'decimal', 2);
 									$col = $table->decimal($columnName, $length, $decimal);
 								}
 								elseif($type == 'double')
 								{
+									$length = zbase_data_get($column, 'length', 16);
 									$decimal = zbase_data_get($column, 'decimal', 2);
 									$col = $table->double($columnName, $length, $decimal);
 								}
@@ -218,6 +220,11 @@ class CreateTable extends Migration
 	 */
 	public function down()
 	{
+		if(!zbase_is_dev())
+		{
+			echo 'You are in PRODUCTION Mode. Cannot drop tables.';
+			return false;
+		}
 		$entities = zbase_config_get('entity', []);
 		if(!empty($entities))
 		{

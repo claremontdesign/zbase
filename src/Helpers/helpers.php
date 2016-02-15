@@ -29,6 +29,7 @@ require_once __DIR__ . '/' . zbase_framework() . '/sessions.php';
 require_once __DIR__ . '/' . zbase_framework() . '/form.php';
 require_once __DIR__ . '/' . zbase_framework() . '/file.php';
 require_once __DIR__ . '/' . zbase_framework() . '/string.php';
+require_once __DIR__ . '/' . zbase_framework() . '/date.php';
 require_once __DIR__ . '/' . zbase_framework() . '/utility.php';
 require_once __DIR__ . '/' . zbase_framework() . '/controller.php';
 require_once __DIR__ . '/' . zbase_framework() . '/url.php';
