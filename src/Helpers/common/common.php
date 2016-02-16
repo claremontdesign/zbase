@@ -367,3 +367,13 @@ function zbase_entity($entityName)
 {
 	return zbase()->entity($entityName);
 }
+
+/**
+ * Return whitespace
+ * @param string $string
+ * @return string
+ */
+function zbase_remove_whitespaces($string)
+{
+	return preg_replace('/\s+/', ' ', $string);
+}
