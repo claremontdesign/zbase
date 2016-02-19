@@ -68,9 +68,9 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 	 *
 	 * @return Collection
 	 */
-	public function parents()
+	public function children()
 	{
-		return $this->where('parent_id', '<', $this->parent()->first()->id())->orderBy('parent_id')->get();
+		return $this->where('parent_id', '<', $this->parent_id)->where($this->getKeyName(), '!=', $this->id())->orderBy('parent_id')->get();
 	}
 
 	/**
@@ -78,9 +78,9 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 	 *
 	 * @return Collection
 	 */
-	public function children()
+	public function parents()
 	{
-		return $this->where('parent_id', '>', $this->parent()->first()->id())->orderBy('parent_id')->get();
+		return $this->where('parent_id', '>', $this->parent_id)->orderBy('parent_id')->get();
 	}
 
 }

@@ -86,7 +86,6 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		require __DIR__ . '/Http/Controllers/Laravel/routes.php';
 		if(!zbase_is_testing())
 		{
-
 		}
 	}
 

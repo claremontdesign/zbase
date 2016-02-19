@@ -457,7 +457,7 @@ return [
 			'data' => [
 				'defaults' => [
 					[
-						'parent_id' => NULL,
+						'parent_id' => 0,
 						'role_name' => 'user'
 					],
 					[

@@ -57,12 +57,19 @@ class Migrate extends Command
 		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=migrations --force');
 		echo shell_exec($phpCommand . ' artisan optimize');
 		echo shell_exec($phpCommand . ' artisan migrate:refresh --seed --force');
-		$commands = [];// zbase()->commands('migrate');
+		$commands = []; // zbase()->commands('migrate');
 		if(!empty($commands))
 		{
 			foreach ($commands as $command)
 			{
-				echo shell_exec($phpCommand . ' artisan ' . $command);
+				if($command instanceof \Closure)
+				{
+					$command();
+				}
+				else
+				{
+					echo shell_exec($phpCommand . ' artisan ' . $command);
+				}
 			}
 		}
 	}

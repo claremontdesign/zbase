@@ -67,14 +67,17 @@ function zbase_tag()
 /**
  * Dump the passed variables
  *
- * @param  mixed
+ * @param  mixed $x
  * @return void
  */
-function z()
+function z($x)
 {
-	array_map(function ($x) {
-		(new Dumper)->dump($x);
+	if(zbase_is_dev())
+	{
+		array_map(function ($x) {
+			(new Dumper)->dump($x);
 		}, func_get_args());
+	}
 }
 
 /**
@@ -111,7 +114,7 @@ function zbase_is_back()
  */
 function zbase_is_maintenance()
 {
-	return env('MAINTENANCE', false);
+	return env('ZBASE_MAINTENANCE', false);
 }
 
 /**
@@ -231,6 +234,38 @@ function zbase_abort($code, $message = null)
 	return abort($code, $message);
 }
 
+/**
+ * Return the DB Prefix
+ * @return stroiing
+ */
+function zbase_db_prefix()
+{
+	return zbase_config_get('db.prefix');
+}
+
+/**
+ * Return the Entity Model of a given entityName
+ *
+ * @param string $entityName
+ * @param array $entityConfig
+ *
+ * @return Zbase\Entity\Entity
+ */
+function zbase_entity($entityName)
+{
+	return zbase()->entity($entityName);
+}
+
+/**
+ * Return whitespace
+ * @param string $string
+ * @return string
+ */
+function zbase_remove_whitespaces($string)
+{
+	return preg_replace('/\s+/', ' ', $string);
+}
+
 // <editor-fold defaultstate="collapsed" desc="View">
 /**
  * Return an HTML Attribute of the given selector
@@ -345,35 +380,3 @@ function zbase_alerts_render($type = null)
 }
 
 // </editor-fold>
-
-/**
- * Return the DB Prefix
- * @return stroiing
- */
-function zbase_db_prefix()
-{
-	return zbase_config_get('db.prefix');
-}
-
-/**
- * Return the Entity Model of a given entityName
- *
- * @param string $entityName
- * @param array $entityConfig
- *
- * @return Zbase\Entity\Entity
- */
-function zbase_entity($entityName)
-{
-	return zbase()->entity($entityName);
-}
-
-/**
- * Return whitespace
- * @param string $string
- * @return string
- */
-function zbase_remove_whitespaces($string)
-{
-	return preg_replace('/\s+/', ' ', $string);
-}

@@ -12,4 +12,4 @@
  * @package config
  */
 $config = [];
-return array_merge($config, require __DIR__ . '/db.php', require __DIR__ . '/email.php', require __DIR__ . '/entity.php', require __DIR__ . '/auth.php', require __DIR__ . '/view.php', require __DIR__ . '/controller.php', require __DIR__ . '/routes.php', require __DIR__ . '/ui.php', require __DIR__ . '/nav.php');
+return array_merge($config, require __DIR__ . '/db.php', require __DIR__ . '/widgets.php', require __DIR__ . '/email.php', require __DIR__ . '/entity.php', require __DIR__ . '/auth.php', require __DIR__ . '/view.php', require __DIR__ . '/controller.php', require __DIR__ . '/routes.php', require __DIR__ . '/ui.php', require __DIR__ . '/nav.php');

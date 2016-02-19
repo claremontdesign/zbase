@@ -7,4 +7,12 @@
 class UserEntityTest extends TestCase
 {
 
+	public function testHasAccess()
+	{
+		$user = zbase_entity('user')->repository()->by('username', 'admin')->first();
+		$this->assertTrue($user->hasAccess('admin'));
+		$this->assertTrue($user->hasAccess('user'));
+		$this->assertFalse($user->hasAccess('sudo'));
+	}
+
 }

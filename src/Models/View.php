@@ -134,7 +134,20 @@ class View
 		$prefix = zbase_config_get('view.default.title.prefix', 'Zbase');
 		$suffix = zbase_config_get('view.default.title.suffix', null);
 		$separator = zbase_config_get('view.default.title.separator', ' | ');
-		return (!empty($prefix) ? $prefix . $separator : '') . $this->pageTitle . (!empty($suffix) ? $separator . $suffix : '');
+		$arr = [];
+		if(!is_null($prefix))
+		{
+			$arr[] = $prefix;
+		}
+		if(!empty($this->pageTitle))
+		{
+			$arr[] = $this->pageTitle;
+		}
+		if(!is_null($suffix))
+		{
+			$arr[] = $suffix;
+		}
+		return implode($separator, $arr);
 	}
 
 	/**

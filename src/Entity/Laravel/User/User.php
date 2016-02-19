@@ -111,6 +111,38 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 	}
 
 	/**
+	 * Check for access on the resource
+	 * @param string|array $access The Access needed
+	 * @param string $resource The resource
+	 * @return boolean
+	 */
+	public function hasAccess($access, $resource = null)
+	{
+		$role = $this->roles()->getModel()->repository()->by('role_name', $access)->first();
+		$roleClassname = get_class(zbase_entity('user_roles'));
+		if($role instanceof $roleClassname)
+		{
+			$userHighestRole = $this->roles()->orderBy('parent_id', 'DESC')->first();
+			if($userHighestRole->name() == $role->name())
+			{
+				return true;
+			}
+			$roles = $userHighestRole->children();
+			if(!empty($roles))
+			{
+				foreach ($roles as $r)
+				{
+					if($r->name() == $role->name())
+					{
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Save a new model and return the instance.
 	 *
 	 * @param  array  $attributes
