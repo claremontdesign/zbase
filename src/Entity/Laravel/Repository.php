@@ -75,7 +75,20 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			throw new InvalidArgumentException('Invalid arguments for $attribute or $value');
 		}
-		$filters = [$attribute => $value];
+		$filters = [];
+		if(is_array($attribute) && is_array($value))
+		{
+			$counter = 0;
+			foreach ($attribute as $att)
+			{
+				$filters[] = [$att => $value[$counter]];
+				$counter++;
+			}
+		}
+		else
+		{
+			$filters = [$attribute => $value];
+		}
 		return $this->all($columns, $filters, $sorting, $joins, $paginate, $unions, $group, $options);
 	}
 
@@ -258,7 +271,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		$model->select($columns);
 		if(!empty($this->getDebug()))
 		{
-			dd($model->getQuery()->toSql(), $model->getQuery(), $model->getQuery()->getBindings(), $model, $model->get());
+			dd($model->getQuery()->toSql(), $model->getQuery()->getBindings());
 		}
 		return $model;
 	}

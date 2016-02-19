@@ -22,3 +22,37 @@ function zbase_date_now()
 {
 	return \Carbon\Carbon::now();
 }
+
+/**
+ * Convert instance of \Datetime to \Carbon\Carbon
+ * @param \Datetime $date
+ * @return \Carbon\Carbon
+ */
+function zbase_date_instance(\Datetime $date)
+{
+	return \Carbon\Carbon::instance($date);
+}
+
+/**
+ * $second date should be before the $first date
+ *
+ * @param \Datetime|\Carbon\Carbon $first
+ * @param \Datetime|\Carbon\Carbon $second
+ * @return boolean
+ */
+function zbase_date_before($first, $second)
+{
+	if($first instanceof \DateTime)
+	{
+		$first = zbase_date_instance($first);
+	}
+	if($second instanceof \DateTime)
+	{
+		$second = zbase_date_instance($second);
+	}
+	if($first instanceof \Carbon\Carbon && $second instanceof \Carbon\Carbon)
+	{
+		return $first->gt($second);
+	}
+	return false;
+}

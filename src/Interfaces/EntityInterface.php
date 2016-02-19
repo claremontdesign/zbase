@@ -26,11 +26,6 @@ interface EntityInterface
 	public function fixDataArray(array $data, $mode = null);
 
 	/**
-	 * REturn the tableName
-	 */
-	public function getTable();
-
-	/**
 	 * Create or return repository
 	 */
 	public function repository();
