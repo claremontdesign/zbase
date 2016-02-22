@@ -22,6 +22,10 @@
  * nav.front.main.indexName.url.route
  * nav.front.main.indexName.url.route.name the routeName
  * nav.front.main.indexName.children
+ * nav.front.main.indexName.meta
+ * nav.front.main.indexName.page.pageTitle
+ * nav.front.main.indexName.page.meta.keywords
+ * nav.front.main.indexName.page.meta.description
  */
 return [
 	'nav' => [

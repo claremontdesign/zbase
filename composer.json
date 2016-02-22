@@ -1,9 +1,12 @@
 {
 	"name": "dennesabing/zbase",
 	"description": "The Zbase NoFramework.",
-	"keywords": ["framework", "laravel","zbase","dennesabing"],
+	"keywords": ["framework", "laravel", "zbase", "dennesabing"],
 	"license": "MIT",
-	"repositories": [ { "type": "composer", "url": "http://claremontdesign.com/repo/" } ],
+	"repositories": [{
+			"type": "composer",
+			"url": "http://claremontdesign.com/repo/"
+		}],
 	"type": "project",
 	"require": {
 		"php": ">=5.5.9",
@@ -12,7 +15,6 @@
 		"nesbot/carbon": "~1.14"
 	},
 	"require-dev": {
-
 	},
 	"autoload": {
 		"psr-4": {

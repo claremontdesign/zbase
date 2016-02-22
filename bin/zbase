@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+$currentFolder = str_replace('\\', '/', getcwd());
+include_once $currentFolder . '/../src/Helpers/common/file.php';
+
+if(preg_match('/\/vendor\/dennesabing\/zbase\/bin/', $currentFolder))
+{
+	$appFolder = str_replace('/vendor/dennesabing/zbase/bin', '', $currentFolder);
+}
+if(preg_match('/\/packages\/dennesabing\/zbase\/bin/', $currentFolder))
+{
+	$appFolder = str_replace('/packages/dennesabing/zbase/bin', '', $currentFolder);
+}
+zbase_copy_recursively($currentFolder . '/../install/app', $appFolder . '/app');
+zbase_copy_recursively($currentFolder . '/../install/config', $appFolder . '/config');
+zbase_copy_recursively($currentFolder . '/../install/resources', $appFolder . '/resources');

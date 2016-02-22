@@ -183,9 +183,10 @@ function zbase_cookie($key, $default = null)
  * @param type $value
  * @param type $minutes
  */
-function zbase_cookie_make($key, $value, $minutes)
+function zbase_cookie_make($key, $value, $minutes = 60)
 {
-	\Cookie::make($key, $value, $minutes);
+	\Cookie::queue($key, $value, $minutes);
+	//\Cookie::make($key, $value, $minutes);
 }
 
 /**

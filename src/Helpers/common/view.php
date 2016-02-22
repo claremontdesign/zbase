@@ -776,6 +776,49 @@ function zbase_view_breadcrumb_render()
 // </editor-fold>
 
 /**
+ * Extract Page Details from the given $config/array
+ * Will check for index: navIndex => nav.front.main.navIndex.meta
+ * Will check for index: pageIndex => nav.front.main.navIndex.meta
+ * @param array $config
+ */
+function zbase_view_page_details($config)
+{
+	if(!empty($config['navIndex']))
+	{
+		$navIndex = $config['navIndex'];
+		$meta = zbase_config_get('nav.front.main.' . $navIndex . '.meta', zbase_config_get('nav.main.' . $navIndex . '.meta', false));
+	}
+	if(!empty($config['pageIndex']))
+	{
+		$pageIndex = $config['pageIndex'];
+		$meta = zbase_config_get('page.front.' . $pageIndex . '.meta', zbase_config_get('page.' . $pageIndex . '.meta', false));
+	}
+	zbase_view_extract_meta($meta);
+}
+
+/**
+ * Extract page metas from given array
+ * @param array $meta
+ */
+function zbase_view_extract_meta($meta)
+{
+	if(!empty($meta))
+	{
+		if(!empty($meta['pageTitle']))
+		{
+			zbase_view_pageTitle($meta['pageTitle']);
+		}
+		if(!empty($meta['meta']) && is_array($meta['meta']))
+		{
+			foreach ($meta['meta'] as $name => $content)
+			{
+				zbase_view_head_meta_add($name, $content);
+			}
+		}
+	}
+}
+
+/**
  * Set the Page Title
  * @param string $pageTitle
  */
@@ -820,4 +863,16 @@ function zbase_view_render_body()
 			. EOF . '});';
 	$str .= EOF . '</script>';
 	return $str;
+}
+
+/**
+ * Display an error page
+ * @param string|int $code
+ * @param string $msg
+ * @return string
+ */
+function zbase_view_error($code, $msg = null)
+{
+	$common = [403, 404, 500, 503];
+	return \View::make(zbase_view_file('errors.' . (in_array($code, $common) ? $code : 500)), compact('msg', 'code'));
 }

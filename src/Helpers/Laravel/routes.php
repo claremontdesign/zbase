@@ -42,6 +42,10 @@ function zbase_route_inputs()
  */
 function zbase_route_response($name, $route)
 {
+	if(!empty(zbase_is_maintenance()))
+	{
+		return zbase_response(view(zbase_view_file('maintenance')));
+	}
 	$guest = true;
 	$authed = false;
 	$guestOnly = false;
@@ -85,6 +89,7 @@ function zbase_route_response($name, $route)
 				$controllerObject = zbase_object_factory($controllerClass, !empty($route['params']) ? $route['params'] : []);
 				zbase()->setController($controllerObject->setName($controllerName)->setActionName($controllerMethod)->setRouteParameters($params));
 				zbase()->setCurrentRouteName($name);
+				zbase_view_page_details($route);
 				return zbase_response($controllerObject->$controllerMethod());
 			}
 		}
@@ -92,6 +97,7 @@ function zbase_route_response($name, $route)
 	$view = !empty($route['view']) ? $route['view'] : null;
 	if(!empty($view) && !empty($view['name']) && !empty($route['view']['enable']))
 	{
+		zbase_view_page_details($route);
 		return zbase_response(zbase_view_render($view['name'], $params));
 	}
 }

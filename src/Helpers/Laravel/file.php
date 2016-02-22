@@ -129,6 +129,17 @@ function zbase_directory_check($path, $create = false)
 }
 
 /**
+ * Copy directory to another directory
+ * @param string $src
+ * @param string $dst
+ * @param array|mixed $options
+ */
+function zbase_directory_copy($src, $dst, $options = null)
+{
+	\File::copyDirectory($src, $dst, $options = null);
+}
+
+/**
  * Create a file name from file using the $file extension
  * @param string $file The file path
  * @param string $fileName the new file naame without the extension

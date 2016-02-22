@@ -24,6 +24,7 @@
  * routes.home.url = /
  * routes.home.params = []
  * routes.home.middleware =
+ * routes.home.navIndex = The Index name relative to nav.front.main or nav.main
  * routes.home.middleware.guest = true|false,
  * routes.home.middleware.guestOnly = true|false,
  * routes.home.middleware.auth = true|false,

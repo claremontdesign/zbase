@@ -70,6 +70,18 @@ class Clear extends Command
 				}
 			}
 		}
+		$packages = zbase()->packages();
+		if(!empty($packages))
+		{
+			foreach ($packages as $packageName)
+			{
+				$zbase = zbase_package($packageName);
+				if($zbase instanceof Interfaces\ClearCommandInterface)
+				{
+					$zbase->clearCommand($phpCommand);
+				}
+			}
+		}
 	}
 
 	/**

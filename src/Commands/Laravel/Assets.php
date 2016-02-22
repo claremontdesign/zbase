@@ -9,11 +9,12 @@ namespace Zbase\Commands\Laravel;
  * @author Dennes B Abing <dennes.b.abing@gmail.com>
  * @license proprietary
  * @copyright Copyright (c) 2016 ClaremontDesign/MadLabs-Dx
- * @file Clear.php
+ * @file Assets.php
  * @project Zbase
  * @package Zbase/Traits
  */
 use Illuminate\Console\Command;
+use Zbase\Interfaces;
 
 class Assets extends Command
 {
@@ -51,7 +52,7 @@ class Assets extends Command
 	{
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
 		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=public --force');
-		$commands = []; // zbase()->commands('public');
+		$commands = [];
 		if(!empty($commands))
 		{
 			foreach ($commands as $command)
@@ -63,6 +64,18 @@ class Assets extends Command
 				else
 				{
 					echo shell_exec($phpCommand . ' artisan ' . $command);
+				}
+			}
+		}
+		$packages = zbase()->packages();
+		if(!empty($packages))
+		{
+			foreach ($packages as $packageName)
+			{
+				$zbase = zbase_package($packageName);
+				if($zbase instanceof Interfaces\AssetsCommandInterface)
+				{
+					$zbase->assetsCommand($phpCommand);
 				}
 			}
 		}

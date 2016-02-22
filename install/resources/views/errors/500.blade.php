@@ -1,0 +1,1 @@
+<?php echo zbase_view_error(500);?>

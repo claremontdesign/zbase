@@ -17,7 +17,7 @@ namespace Zbase;
 use Zbase\Models;
 use Zbase\Interfaces;
 
-class Zbase implements Interfaces\ZbaseInterface
+class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInterface, Interfaces\AssetsCommandInterface
 {
 
 	const ALERT_INFO = 'info';
@@ -29,7 +29,7 @@ class Zbase implements Interfaces\ZbaseInterface
 	 * Commands
 	 * @var array
 	 */
-	protected $commands = ['public' => [], 'clear' => [], 'migrate' => []];
+	protected $commands = ['assets' => [], 'clear' => [], 'migrate' => [], 'install' => []];
 
 	/**
 	 * Zbase Added packages
@@ -239,4 +239,25 @@ class Zbase implements Interfaces\ZbaseInterface
 		return __DIR__ . '/../';
 	}
 
+	/**
+	 * zbase installation
+	 * @param string $phpCommand
+	 */
+	public function installCommand($phpCommand)
+	{
+		$this->__install($phpCommand);
+	}
+
+	public function assetsCommand($phpCommand)
+	{
+		$this->__install($phpCommand);
+	}
+
+	/**
+	 * Install this package
+	 */
+	protected function __install($phpCommand)
+	{
+
+	}
 }

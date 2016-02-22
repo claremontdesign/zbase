@@ -3,19 +3,19 @@
 namespace Zbase\Commands\Laravel;
 
 /**
- * Zbase-Command Migrate
+ * Zbase-Command Install
  *
  * @link http://zbase.dennesabing.com
  * @author Dennes B Abing <dennes.b.abing@gmail.com>
  * @license proprietary
  * @copyright Copyright (c) 2016 ClaremontDesign/MadLabs-Dx
- * @file Migrate.php
+ * @file Install.php
  * @project Zbase
  * @package Zbase/Traits
  */
 use Illuminate\Console\Command;
 
-class Migrate extends Command
+class Install extends Command
 {
 
 	/**
@@ -23,14 +23,14 @@ class Migrate extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'zbase:migrate';
+	protected $signature = 'zbase:install';
 
 	/**
 	 * The console command description.
 	 *
 	 * @var string
 	 */
-	protected $description = 'Database Migration and Seeding';
+	protected $description = 'Install Zbase';
 
 	/**
 	 * Create a new command instance.
@@ -49,15 +49,7 @@ class Migrate extends Command
 	 */
 	public function handle()
 	{
-		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
-		\File::cleanDirectory(database_path() . '/migrations');
-		\File::cleanDirectory(database_path() . '/seeds');
-		\File::cleanDirectory(database_path() . '/factories');
-		// echo shell_exec('php artisan cdbase:clear');
-		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=migrations --force');
-		echo shell_exec($phpCommand . ' artisan optimize');
-		echo shell_exec($phpCommand . ' artisan migrate:refresh --seed --force');
-		$commands = []; // zbase()->commands('migrate');
+		$commands = [];
 		if(!empty($commands))
 		{
 			foreach ($commands as $command)
@@ -66,12 +58,10 @@ class Migrate extends Command
 				{
 					$command();
 				}
-				else
-				{
-					echo shell_exec($phpCommand . ' artisan ' . $command);
-				}
 			}
 		}
+		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
+		zbase_package('zbase')->installCommand($phpCommand);
 		$packages = zbase()->packages();
 		if(!empty($packages))
 		{
@@ -80,7 +70,7 @@ class Migrate extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\InstallCommandInterface)
 				{
-					$zbase->migrateCommand($phpCommand);
+					$zbase->installCommand($phpCommand);
 				}
 			}
 		}

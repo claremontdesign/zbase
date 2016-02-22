@@ -32,6 +32,11 @@ class PageController extends Controller
 		return $this->view(zbase_view_file('index.home'));
 	}
 
+	public function maintenance()
+	{
+		return $this->view(zbase_view_file('maintenance'));
+	}
+
 	/**
 	 * Used only for testing
 	 * @return view
