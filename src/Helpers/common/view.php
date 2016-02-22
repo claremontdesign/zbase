@@ -793,7 +793,10 @@ function zbase_view_page_details($config)
 		$pageIndex = $config['pageIndex'];
 		$meta = zbase_config_get('page.front.' . $pageIndex . '.meta', zbase_config_get('page.' . $pageIndex . '.meta', false));
 	}
-	zbase_view_extract_meta($meta);
+	if(!empty($meta))
+	{
+		zbase_view_extract_meta($meta);
+	}
 }
 
 /**
