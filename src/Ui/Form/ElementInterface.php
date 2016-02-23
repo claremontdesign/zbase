@@ -1,16 +1,23 @@
 <?php
 
+namespace Zbase\Ui\Form;
+
 /**
- * Zbase-Laravel Routes
+ * Zbase-Form Element
  *
- * Laravel Routes
+ * Element Base Model
  *
  * @link http://zbase.dennesabing.com
  * @author Dennes B Abing <dennes.b.abing@gmail.com>
  * @license proprietary
  * @copyright Copyright (c) 2016 ClaremontDesign/MadLabs-Dx
- * @file routes.php
+ * @file Element.php
  * @project Zbase
- * @package Zbase/Laravel/Helpers
+ * @package Zbase/Widgets
  */
-zbase_routes_init();
+interface ElementInterface
+{
+	public function __toString();
+
+	public function getType();
+}

@@ -154,15 +154,18 @@ function zbase_data_get($target, $key, $default = null)
 	{
 		return $target->getAttribute($key);
 	}
-	if(!empty($target))
+	if(!empty($key))
 	{
-		$value = data_get($target, $key, $default);
+		if(!empty($target))
+		{
+			$value = data_get($target, $key, $default);
+		}
+		else
+		{
+			$value = app()['config'][$key];
+		}
 	}
-	else
-	{
-		$value = config($key, $default);
-	}
-	if(is_array($value))
+	if(!empty($value) && is_array($value))
 	{
 		if(!empty($value['configInherit']))
 		{
@@ -182,18 +185,28 @@ function zbase_data_get($target, $key, $default = null)
 			unset($value['configMerge']);
 			return array_merge_recursive($value, zbase_config_get($mergeValue, []));
 		}
+		return $value;
 	}
-	if(is_string($value))
+	if(!empty($value) && is_string($value))
 	{
 		if(preg_match('/^inheritValue::/', $value))
 		{
 			$inheritedKey = str_replace('inheritValue::', '', $value);
 			return zbase_config_get($inheritedKey);
 		}
+		return $value;
 	}
-	if($value instanceof \Closure)
+	if(!empty($value) && $value instanceof \Closure)
 	{
 		return value($value);
+	}
+	if(isset($value) && $value === null)
+	{
+		return $default;
+	}
+	if(!isset($value))
+	{
+		return $default;
 	}
 	return $value;
 }
@@ -264,6 +277,11 @@ function zbase_entity($entityName)
 function zbase_remove_whitespaces($string)
 {
 	return preg_replace('/\s+/', ' ', $string);
+}
+
+function zbase_sort_object()
+{
+
 }
 
 // <editor-fold defaultstate="collapsed" desc="View">

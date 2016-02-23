@@ -7,6 +7,9 @@
 class UserEntityTest extends TestCase
 {
 
+	/**
+	 * @group entity
+	 */
 	public function testHasAccess()
 	{
 		$user = zbase_entity('user')->repository()->by('username', 'admin')->first();

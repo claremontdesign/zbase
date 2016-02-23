@@ -136,7 +136,17 @@ function zbase_directory_check($path, $create = false)
  */
 function zbase_directory_copy($src, $dst, $options = null)
 {
-	\File::copyDirectory($src, $dst, $options = null);
+	\File::copyDirectory($src, $dst, $options);
+}
+
+/**
+ * Recursively remove folder
+ * @param string $dir
+ * @param boolean $preserve if not delete the folder, just clean up
+ */
+function zbase_directory_remove($dir, $preserve = false)
+{
+	\File::deleteDirectory($dir, $preserve);
 }
 
 /**

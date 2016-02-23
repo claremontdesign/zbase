@@ -44,17 +44,28 @@ trait Html
 	/**
 	 * Return the HTML Attributes in string format
 	 *
+	 * @param array $htmlAttributes
 	 * @return array
 	 */
-	public function renderHtmlAttributes()
+	public function renderHtmlAttributes($htmlAttributes = null)
 	{
-		$htmlAttributes = $this->getHtmlAttributes();
+		if(is_null($htmlAttributes))
+		{
+			$htmlAttributes = $this->getHtmlAttributes();
+		}
 		if(!empty($htmlAttributes))
 		{
 			$attributes = [];
 			foreach ($htmlAttributes as $key => $value)
 			{
-				$attributes[] = $key . '="' . $value . '"';
+				if(is_array($value))
+				{
+					$attributes[] = $key . '="' . implode(' ', $value) . '"';
+				}
+				else
+				{
+					$attributes[] = $key . '="' . $value . '"';
+				}
 			}
 			return implode(' ', $attributes);
 		}

@@ -98,6 +98,63 @@ function zbase_route_response($name, $route)
 	if(!empty($view) && !empty($view['name']) && !empty($route['view']['enable']))
 	{
 		zbase_view_page_details($route);
+		if(!empty($route['view']['content']))
+		{
+			$params['content'] = zbase_data_get($route['view']['content'], null);
+		}
 		return zbase_response(zbase_view_render($view['name'], $params));
+	}
+}
+
+/**
+ * Run Routing
+ * @return void
+ */
+function zbase_routes_init()
+{
+	$routes = zbase_config_get(strtolower('routes'));
+	if(!empty($routes))
+	{
+		foreach ($routes as $name => $route)
+		{
+			zbase_route_init($name, $route);
+		}
+	}
+}
+
+/**
+ * Initialize a Route
+ * @param type $name
+ * @param type $route
+ * @return type
+ */
+function zbase_route_init($name, $route)
+{
+	$url = !empty($route['url']) ? $route['url'] : null;
+	if(empty($url))
+	{
+		return null;
+	}
+	$middleware = 'web';
+	$children = !empty($route['children']) ? $route['children'] : false;
+	$httpVerb = !empty($route['httpVerb']) ? $route['httpVerb'] : ['get'];
+	if(!empty($route['form']['enable']))
+	{
+		$httpVerb[] = 'post';
+	}
+	foreach ($httpVerb as $verb)
+	{
+		switch ($verb)
+		{
+			case 'post':
+				\Route::post($url, ['as' => $name, 'middleware' => $middleware, function() use ($route, $name){
+						return zbase_route_response($name, $route);
+					}]);
+				break;
+			default;
+				\Route::get($url, ['as' => $name, 'middleware' => $middleware, function() use ($route, $name){
+						return zbase_route_response($name, $route);
+					}]);
+		}
 	}
 }

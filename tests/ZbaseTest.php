@@ -28,6 +28,7 @@ class ZbaseTest extends TestCase
 
 	/**
 	 * Test table was created based from config
+	 * @group entity
 	 */
 	public function testTableWasCreatedFromConfig()
 	{
@@ -62,10 +63,17 @@ class ZbaseTest extends TestCase
 	}
 
 	/**
-	 * Test dynamic call to entties
+	 * Test if we can set a configuration
+	 * at runtime
 	 */
-	public function testEntityDynamicCall()
+	public function testConfigSetGet()
 	{
-
+		$commandTest = [
+			'url' => '/tests/commandtest',
+			'enable' => true
+		];
+		zbase_config_set('routes.commandtest', $commandTest);
+		$this->assertTrue(zbase_config_get('routes.commandtest.enable'));
 	}
+
 }

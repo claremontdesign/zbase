@@ -24,7 +24,7 @@ return [
 			 * minimum|role name
 			 * minimum is the minimum role for the current section, else a role name or array of role names
 			 */
-			'access' => 'minimum',
+			// 'access' => 'minimum',
 			/**
 			 * Widget-form configuration
 			 */

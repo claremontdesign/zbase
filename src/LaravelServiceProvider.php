@@ -63,6 +63,7 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		}
 		else
 		{
+			$this->loadViewsFrom(__DIR__ . '/../tests/resources/views', zbase_tag() . 'test');
 			copy(__DIR__ . '/../config/entities/user.php', __DIR__ . '/../tests/config/entities/user.php');
 			copy(__DIR__ . '/../config/entities/user.php', __DIR__ . '/../tests/config/entities/user.php');
 			$this->mergeConfigFrom(

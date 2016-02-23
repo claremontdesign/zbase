@@ -7,6 +7,9 @@
 class EntityTest extends TestCase
 {
 
+	/**
+	 * @group entity
+	 */
 	public function testEntityInstance()
 	{
 		$user = \DB::table('users')->where('user_id', 2)->first();
@@ -33,6 +36,9 @@ class EntityTest extends TestCase
 		$this->assertTrue($model->find(2)->roles()->first()->id() == $roles[0]->role_id);
 	}
 
+	/**
+	 * @group entity
+	 */
 	public function testRepositoryById()
 	{
 		$model = zbase_entity('user');
@@ -47,6 +53,9 @@ class EntityTest extends TestCase
 		$this->assertTrue($model->repository()->byId(2, ['user_id'])->user_id == 2);
 	}
 
+	/**
+	 * @group entity
+	 */
 	public function testRepositoryAll()
 	{
 		$model = zbase_entity('user');

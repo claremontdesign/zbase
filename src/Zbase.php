@@ -32,6 +32,12 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	protected $commands = ['assets' => [], 'clear' => [], 'migrate' => [], 'install' => []];
 
 	/**
+	 * Current Widgets
+	 * @return \Zbase\Widgets\WidgetInterface[]
+	 */
+	protected $widgets = [];
+
+	/**
 	 * Zbase Added packages
 	 * @var array
 	 */
@@ -131,6 +137,30 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	}
 
 	/**
+	 * Return a Widget
+	 * @param string $widgetName
+	 * @return \Zbase\Widgets\WidgetInterface[] | null
+	 */
+	public function widget($widgetName)
+	{
+		if(!empty($this->widgets[$widgetName]))
+		{
+			return $this->widgets[$widgetName];
+		}
+		$widget = zbase_config_get('widgets.' . $widgetName, false);
+		if(!empty($widget))
+		{
+			$w = new \Zbase\Widgets\Type\Form($widgetName, $widget);
+			dd($w, $w->enabled());
+			if($w->enabled())
+			{
+				return $this->widgets[$widgetName] = $w;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Current Section
 	 *
 	 * @return string
@@ -204,6 +234,15 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	}
 
 	/**
+	 * Return all packages
+	 * @return array
+	 */
+	public function packages()
+	{
+		return $this->packages;
+	}
+
+	/**
 	 * Add a new Command
 	 * @param string $type
 	 * @param string $command
@@ -211,15 +250,6 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	public function addCommand($type, $command)
 	{
 		$this->commands[$type] = $command;
-	}
-
-	/**
-	 * Return all packages
-	 * @return array
-	 */
-	public function packages()
-	{
-		return $this->packages;
 	}
 
 	/**
@@ -260,4 +290,5 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	{
 
 	}
+
 }

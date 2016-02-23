@@ -23,6 +23,18 @@ trait Position
 	protected $position = null;
 
 	/**
+	 * Sort Objects by position
+	 * @param array $collection
+	 * @return Collection
+	 */
+	public function sortPosition($collection)
+	{
+		return $collection->sortBy(function ($itm) {
+					return $itm->getPosition();
+		});
+	}
+
+	/**
 	 * Return the position
 	 *
 	 * @return integer

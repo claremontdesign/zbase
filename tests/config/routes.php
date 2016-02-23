@@ -138,21 +138,10 @@ return [
 		],
 		'viewroute' => [
 			'view' => [
-				'name' => 'viewroute',
+				'name' => 'zbasetest::contents.test.viewroute',
 				'enable' => true
 			],
 			'url' => '/tests/view-route',
-			'enable' => true
-		],
-		'rout-auth' => [
-			'view' => [
-				'name' => 'route-auth',
-				'enable' => true
-			],
-			'url' => '/tests/route-auth',
-			'middleware' => [
-				'auth' => true
-			],
 			'enable' => true
 		],
 	],

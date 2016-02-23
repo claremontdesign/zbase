@@ -38,7 +38,7 @@ function zbase_config_get($key, $default = null)
 {
 	$path = zbase_tag() . '.' . $key;
 	$envPath = strtoupper(str_replace('.', '_', $path));
-	return ENV($envPath, zbase_data_get(null, $path, $default));
+	return env($envPath, zbase_data_get(null, $path, $default));
 }
 
 /**
@@ -50,5 +50,6 @@ function zbase_config_get($key, $default = null)
  */
 function zbase_config_set($key, $value)
 {
-	config([zbase_tag() . '.'. $key => $value]);
+	$k = zbase_tag() . '.' . $key;
+	app()['config'][$k] = $value;
 }

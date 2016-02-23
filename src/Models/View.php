@@ -172,6 +172,7 @@ class View
 			$typeName = zbase_string_camel_case($type);
 			$className = 'Zbase\Models\View\\' . ucfirst($typeName);
 			$class = zbase_config_get('class.view.' . strtolower($typeName) . '.class', $className);
+			// dd($type, $this->_hasKey($type), $className, $class);
 			if(class_exists($class))
 			{
 				$object = new $class($config);
