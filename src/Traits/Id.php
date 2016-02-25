@@ -66,6 +66,10 @@ trait Id
 	 */
 	public function name()
 	{
+		if($this->name == '')
+		{
+			return $this->id();
+		}
 		return $this->name;
 	}
 

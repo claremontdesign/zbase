@@ -16,6 +16,7 @@ namespace Zbase;
  */
 use Zbase\Models;
 use Zbase\Interfaces;
+use Zbase\Exceptions;
 
 class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInterface, Interfaces\AssetsCommandInterface
 {
@@ -74,6 +75,12 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	protected $view = null;
 
 	/**
+	 *
+	 * @var Models\Ui
+	 */
+	protected $ui = null;
+
+	/**
 	 * Collection of Entity Models
 	 * @var array
 	 */
@@ -88,10 +95,26 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	{
 		if(!$this->view instanceof Models\View)
 		{
-			$this->view = new Models\View;
+			$className = zbase_model_name('view', null, '\Zbase\Models\View');
+			$this->view = new $className;
 			$this->view->start();
 		}
 		return $this->view;
+	}
+
+	/**
+	 * Return UiModel
+	 *
+	 * @return Models\View
+	 */
+	public function ui()
+	{
+		if(!$this->ui instanceof Models\Ui)
+		{
+			$className = zbase_model_name('ui', null, '\Zbase\Models\Ui');
+			$this->ui = new $className;
+		}
+		return $this->ui;
 	}
 
 	/**
@@ -102,7 +125,8 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	{
 		if(!$this->request instanceof Models\Request)
 		{
-			$this->request = new Models\Request;
+			$className = zbase_model_name('request', null, 'Models\Request');
+			$this->request = new $className;
 			$this->request->start();
 		}
 		return $this->request;

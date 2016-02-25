@@ -29,9 +29,9 @@ trait Position
 	 */
 	public function sortPosition($collection)
 	{
-		return $collection->sortBy(function ($itm) {
+		return zbase_collection($collection)->sortByDesc(function ($itm) {
 					return $itm->getPosition();
-		});
+		})->toArray();
 	}
 
 	/**

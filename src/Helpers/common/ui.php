@@ -25,12 +25,35 @@ function zbase_widget($widgetName)
 }
 
 /**
+ * Create a UI Element
+ * @param array $configuration
+ * @return Ui\UiInterface
+ */
+function zbase_ui($configuration)
+{
+	return \Zbase\Ui\Ui::factory($configuration);
+}
+
+/**
+ * Create a Tab UI
+ * @param array $tabs Multiple Tab Configuration
+ * @return \Zbase\Ui\Tabs
+ */
+function zbase_ui_tabs($tabs)
+{
+	foreach ($tabs as $tab)
+	{
+		$tab = zbase_ui($tab);
+	}
+	return $tab->group();
+}
+
+/**
  * Create an Element
- * @param string $name
- * @param array $element
+ * @param array $configuration
  * @return \Zbase\Ui\Form\ElementInterface
  */
-function zbase_ui_form_element($name, $element)
+function zbase_ui_form_element($configuration)
 {
-	return \Zbase\Ui\Form\Element::factory($name, $element);
+	return \Zbase\Ui\Form\Element::factory($configuration);
 }

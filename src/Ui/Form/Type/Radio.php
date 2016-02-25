@@ -138,7 +138,7 @@ class Radio extends \Zbase\Ui\Form\Type\Multi
 				{
 					$elementOptions['html']['attributes']['input']['checked'] = true;
 				}
-				$options[] = self::factory($elementName, $elementOptions)->__toString();
+				$options[] = self::factory($elementOptions)->__toString();
 				$counter++;
 			}
 			return implode('', $options);

@@ -14,10 +14,35 @@ namespace Zbase\Ui\Form;
  * @file Element.php
  * @project Zbase
  * @package Zbase/Widgets
+ *
+ * $configuration.type
+ * $configuration.subtype
+ * $configuration.label
+ * $configuration.title
+ * $configuration.description
+ * $configuration.help
+ * $configuration.validation
+ * $configuration.id
+ * $configuration.multipOptions
+ * $configuration.multipOptions.type
+ * $configuration.value
+ * $configuration.value.default
+ * $configuration.value.post
+ * $configuration.value.get
+ * $configuration.html
+ * $configuration.html.attributes
+ * $configuration.html.attributes.input
+ * $configuration.html.attributes.label
+ * $configuration.html.attributes.wrapper
+ * $configuration.viewFile
+ * $configuration.elements
+ *
  */
 use Zbase\Traits;
+use Zbase\Interfaces;
+use Zbase\Exceptions;
 
-class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface
+class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, Interfaces\IdInterface
 {
 
 	use Traits\Attribute,
@@ -54,22 +79,6 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface
 	 * @var string|integer
 	 */
 	protected $_value = null;
-
-	/**
-	 * Constructor
-	 * @param string $id
-	 * @param array $configuration
-	 */
-	public function __construct($id, $configuration)
-	{
-		$this->id = $id;
-		$this->setAttributes($configuration);
-		$this->setName($id);
-		if(empty($configuration['id']))
-		{
-			$this->setId($id);
-		}
-	}
 
 	/**
 	 * Set the Value
@@ -136,6 +145,9 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface
 	public function wrapperAttributes()
 	{
 		$attr = $this->_v('html.attributes.wrapper', []);
+		$attr['class'][] = 'zbase-ui-wrapper';
+		$attr['class'][] = 'zbase-ui-wrapper-form-element';
+		$attr['class'][] = 'zbase-ui-wrapper-form-element-' . $this->_type;
 		$attr['class'][] = 'form-group';
 		return $attr;
 	}
@@ -192,17 +204,21 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface
 
 	/**
 	 * Element Factory
-	 * @param string $name
 	 * @param array $configuration
 	 * @return \Zbase\Ui\Form\Element
 	 */
-	public static function factory($name, $configuration)
+	public static function factory($configuration)
 	{
 		$type = !empty($configuration['type']) ? $configuration['type'] : 'text';
+		$id = !empty($configuration['id']) ? $configuration['id'] : null;
+		if(is_null($id))
+		{
+			throw new Exceptions\ConfigNotFoundException('Index:id is not set on Form Element Factory');
+		}
 		if(!empty($type))
 		{
-			$className = zbase_config_get('class.ui.form.element.' . strtolower($type), '\Zbase\Ui\Form\Type\\' . ucfirst($type));
-			$element = new $className($name, $configuration);
+			$className = zbase_model_name(null, 'class.ui.form.type.' . strtolower($type), '\Zbase\Ui\Form\Type\\' . ucfirst($type));
+			$element = new $className($configuration);
 			$element->prepare();
 			return $element;
 		}

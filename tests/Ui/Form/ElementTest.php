@@ -23,21 +23,20 @@ class ElementTest extends TestCase
 	 */
 	public function testElementFactoryText()
 	{
-		$elementName = 'username';
 		$element = [
 			'type' => 'text',
 			'label' => 'Element Label',
 			'id' => 'elementId'
 		];
-		$ele = zbase_ui_form_element($elementName, $element);
+		$ele = zbase_ui_form_element($element);
 		$this->assertTrue($ele instanceof \Zbase\Ui\Form\Element);
 
 		$elementRoute = [
 			'view' => [
 				'name' => zbase_tag() . 'test::contents.test.content',
 				'enable' => true,
-				'content' => function() use($elementName, $element){
-					return zbase_ui_form_element($elementName, $element);
+				'content' => function() use($element){
+					return zbase_ui_form_element($element);
 				},
 			],
 			'url' => '/test/ui-form-element-text',
@@ -54,7 +53,6 @@ class ElementTest extends TestCase
 	 */
 	public function testElementFactoryRadio()
 	{
-		$elementName = 'username';
 		$element = [
 			'type' => 'radio',
 			'label' => 'Element Label',
@@ -70,8 +68,8 @@ class ElementTest extends TestCase
 			'view' => [
 				'name' => zbase_tag() . 'test::contents.test.content',
 				'enable' => true,
-				'content' => function() use($elementName, $element){
-					return zbase_ui_form_element($elementName, $element);
+				'content' => function() use($element){
+					return zbase_ui_form_element($element);
 				},
 			],
 			'url' => '/test/ui-form-element-radio',
@@ -88,7 +86,6 @@ class ElementTest extends TestCase
 	 */
 	public function testElementFactoryCheckbox()
 	{
-		$elementName = 'username';
 		$element = [
 			'type' => 'checkbox',
 			'label' => 'Element Label',
@@ -101,8 +98,8 @@ class ElementTest extends TestCase
 			'view' => [
 				'name' => zbase_tag() . 'test::contents.test.content',
 				'enable' => true,
-				'content' => function() use($elementName, $element){
-					return zbase_ui_form_element($elementName, $element);
+				'content' => function() use($element){
+					return zbase_ui_form_element($element);
 				},
 			],
 			'url' => '/test/ui-form-element-checkbox',
@@ -119,7 +116,6 @@ class ElementTest extends TestCase
 	 */
 	public function testElementFactorySelect()
 	{
-		$elementName = 'username';
 		$element = [
 			'type' => 'select',
 			'label' => 'Select Element Label',
@@ -132,8 +128,8 @@ class ElementTest extends TestCase
 			'view' => [
 				'name' => zbase_tag() . 'test::contents.test.content',
 				'enable' => true,
-				'content' => function() use($elementName, $element){
-					return zbase_ui_form_element($elementName, $element);
+				'content' => function() use( $element){
+					return zbase_ui_form_element($element);
 				},
 			],
 			'url' => '/test/ui-form-element-select',

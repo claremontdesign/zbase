@@ -270,6 +270,38 @@ function zbase_entity($entityName)
 }
 
 /**
+ * Return a Model ClassName
+ * @param string $modelName If not null, will search on config: models.modelName
+ * @param string $key if key was given, it will search config based on the key
+ * @param string $default The Default classname to return
+ * @return string
+ */
+function zbase_model_name($modelName, $key = null, $default = null)
+{
+	if(!is_null($modelName) && is_null($key))
+	{
+		return zbase_config_get('models.' . $modelName, $default);
+	}
+	if(!is_null($key))
+	{
+		return zbase_config_get($key, $default);
+	}
+	return $default;
+}
+
+/**
+ * Return an instance of a Model
+ * @param string $modelName
+ * @param string $key
+ * @param string $default
+ * @return object
+ */
+function zbase_model($modelName)
+{
+	return '';
+}
+
+/**
  * Return whitespace
  * @param string $string
  * @return string
