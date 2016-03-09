@@ -14,13 +14,26 @@ namespace Zbase\Widgets;
  * @file Widget.php
  * @project Zbase
  * @package Zbase/Widgets
+ *
+ * type = Type of Widget eg. form
+ * id = name of widget; unique; [optional], default to name of widget file
+ * enable = true|false
+ * access = access [optional], default to minimum access
+ * 		string: minimum|admin
+ * 		array: [admin, user]
+ * 		Who has access.
+ * 		minimum|role name
+ * 		minimum is the minimum role for the current section, else a role name or array of role names
+ * 
+ * config = array; widget-type-specific configuration
  */
 use Zbase\Traits;
 
-class Widget extends \Zbase\Ui\Ui
+class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 {
 
 	use Traits\Attribute,
+	 Traits\Id,
 	 Traits\Position;
 
 	/**

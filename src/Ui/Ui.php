@@ -225,7 +225,7 @@ abstract class Ui
 		{
 			$configuration = $content;
 		}
-		if(!$content instanceof Interfaces\ContentInterface && !empty($configuration))
+		if(!$content instanceof Interfaces\ContentInterface && !empty($configuration) && is_array($configuration))
 		{
 			if(empty($configuration['id']))
 			{
@@ -241,6 +241,10 @@ abstract class Ui
 			}
 			$className = zbase_model_name('', 'ui.content', '\Zbase\Ui\Content');
 			$c = new $className($configuration);
+		}
+		else
+		{
+			$c = $content;
 		}
 		if($c instanceof ContentInterface || $c instanceof UiInterface)
 		{
@@ -340,6 +344,8 @@ abstract class Ui
 		return '';
 	}
 
+	// </editor-fold>
+
 	/**
 	 * UI Factory
 	 * @param array $configuration
@@ -347,7 +353,13 @@ abstract class Ui
 	 */
 	public static function factory($configuration)
 	{
-		$type = !empty($configuration['type']) ? $configuration['type'] : 'text';
+		$type = !empty($configuration['type']) ? $configuration['type'] : 'ui';
+		$prefix = '';
+		if(!empty(preg_match('/component./', $type)))
+		{
+			$prefix = '\\Component';
+			$type = zbase_string_camel_case(str_replace('component.', '', $type));
+		}
 		$id = !empty($configuration['id']) ? $configuration['id'] : null;
 		if(is_null($id))
 		{
@@ -355,12 +367,11 @@ abstract class Ui
 		}
 		if(!empty($type))
 		{
-			$className = zbase_model_name(null, 'class.ui.' . strtolower($type), '\Zbase\Ui\\' . ucfirst($type));
+			$className = zbase_model_name(null, 'class.ui.' . strtolower($type), '\Zbase\Ui' . $prefix . '\\' . ucfirst($type));
 			$element = new $className($configuration);
 			return $element;
 		}
 		return null;
 	}
 
-	// </editor-fold>
 }

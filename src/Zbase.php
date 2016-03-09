@@ -33,16 +33,22 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	protected $commands = ['assets' => [], 'clear' => [], 'migrate' => [], 'install' => []];
 
 	/**
-	 * Current Widgets
-	 * @return \Zbase\Widgets\WidgetInterface[]
-	 */
-	protected $widgets = [];
-
-	/**
-	 * Zbase Added packages
+	 * Zbase packages
 	 * @var array
 	 */
 	protected $packages = [];
+
+	/**
+	 * Modules
+	 * @return \Zbase\Module\ModuleInterface[]
+	 */
+	protected $modules = [];
+
+	/**
+	 * Widgets
+	 * @return \Zbase\Widgets\WidgetInterface[]
+	 */
+	protected $widgets = [];
 
 	/**
 	 * Current site section
@@ -161,47 +167,192 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	}
 
 	/**
-	 * Return a Widget
-	 * @param string $widgetName
-	 * @return \Zbase\Widgets\WidgetInterface[] | null
+	 * Add a module
+	 * 	Module will be created only f they are called.
+	 * @param string $path Path to module folder with a module.php returning an array
+	 * @retur Zbase
 	 */
-	public function widget($widgetName)
+	public function addModule($name, $path)
 	{
-		if(!empty($this->widgets[$widgetName]))
+		if(zbase_file_exists($path . '/module.php'))
 		{
-			return $this->widgets[$widgetName];
-		}
-		$widget = zbase_config_get('widgets.' . $widgetName, false);
-		if(!empty($widget))
-		{
-			$w = new \Zbase\Widgets\Type\Form($widgetName, $widget);
-			dd($w, $w->enabled());
-			if($w->enabled())
+			$config = require zbase_directory_separator_fix($path . '/module.php');
+			$name = !empty($config['id']) ? $config['id'] : null;
+			if(empty($name))
 			{
-				return $this->widgets[$widgetName] = $w;
+				throw new Exceptions\ConfigNotFoundException('Module configuration ID not found.');
+			}
+			if(!empty($name))
+			{
+				if(empty($this->modules[$name]))
+				{
+					$this->modules[$name] = $config;
+				}
+				return $this;
+			}
+		}
+		throw new Exceptions\ConfigNotFoundException('Module ' . $path . ' folder or ' . zbase_directory_separator_fix($path . '/module.ph') . ' not found.');
+	}
+
+	/**
+	 * Return Module
+	 * @param string $name
+	 * @return null|\Zbase\Module\ModuleInterface
+	 */
+	public function module($name)
+	{
+		if(!empty($this->modules[$name]))
+		{
+			if(!$this->modules[$name] instanceof \Zbase\Module\ModuleInterface)
+			{
+				$moduleClassname = !empty($this->modules[$name]['class']) ? $this->modules[$name]['class'] : zbase_model_name('module', 'class.module', \Zbase\Module\Module::class);
+				$module = new $moduleClassname;
+				$module->setConfiguration($this->modules[$name]);
+				$this->modules[$name] = $module;
+			}
+			if($this->modules[$name] instanceof \Zbase\Module\ModuleInterface)
+			{
+				return $this->modules[$name];
 			}
 		}
 		return null;
 	}
 
 	/**
-	 * Current Section
-	 *
-	 * @return string
+	 * Modules can be added automatically by providing a path to the modules
+	 * EAch module folder should have at least a module.php file
+	 * @param string $path Folders to module
 	 */
-	public function section()
+	public function loadModuleFrom($path)
 	{
-		return $this->section;
+		if(zbase_directory_check($path))
+		{
+			$folders = zbase_directories($path);
+			if(!empty($folders))
+			{
+				foreach ($folders as $folder)
+				{
+					$this->addModule(basename($folder), $folder);
+					if(zbase_directory_check($folder . '/widgets'))
+					{
+						$this->loadWidgetFrom($folder . '/widgets');
+					}
+				}
+			}
+		}
 	}
 
 	/**
-	 * Set the current Section
-	 * @param string $section
+	 * Return all packages
+	 * @return array
+	 */
+	public function modules()
+	{
+		return $this->modules;
+	}
+
+	/**
+	 *
+	 */
+	public function loadWidgetFrom($path)
+	{
+		if(zbase_directory_check($path))
+		{
+			$files = zbase_directory_files($path);
+			if(!empty($files))
+			{
+				foreach ($files as $file)
+				{
+					$widget = require $file;
+					if(empty($widget['id']))
+					{
+						$widget['id'] = str_replace('.php', '', basename($file));
+					}
+					$this->widget($widget);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Return/Create a Widget
+	 * @param string|array $widget
+	 * @return \Zbase\Widgets\WidgetInterface[] | null
+	 */
+	public function widget($widget)
+	{
+		if(is_array($widget))
+		{
+			$name = !empty($widget['id']) ? $widget['id'] : null;
+			$config = !empty($widget['config']) ? $widget['config'] : [];
+		}
+		else
+		{
+			$name = $widget;
+		}
+		if(!empty($name))
+		{
+			if(!empty($this->widgets[$name]))
+			{
+				return $this->widgets[$name];
+			}
+			if(empty($config))
+			{
+				$config = zbase_config_get('widgets.' . $name, false);
+			}
+			if(!empty($config))
+			{
+				$w = new \Zbase\Widgets\Type\Form($name, $config);
+				if($w->enabled())
+				{
+					return $this->widgets[$name] = $w;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Return all widgets
+	 * @return array
+	 */
+	public function widgets()
+	{
+		return $this->widgets;
+	}
+
+	// <editor-fold defaultstate="collapsed" desc="PACKAGES">
+	/**
+	 * Add a packageName
+	 * @param string $packageName
+	 */
+	public function addPackage($packageName)
+	{
+		if(!in_array($packageName, $this->packages()))
+		{
+			$this->packages[] = $packageName;
+		}
+	}
+
+	/**
+	 * Return all packages
+	 * @return array
+	 */
+	public function packages()
+	{
+		return $this->packages;
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="CONTROLLER">
+	/**
+	 * Set the Current Controller
+	 * @param \Zbase\Interfaces\ControllerInterface $controller
 	 * @return \Zbase\Zbase
 	 */
-	public function setSection($section)
+	public function setController(\Zbase\Interfaces\ControllerInterface $controller)
 	{
-		$this->section = $section;
+		$this->controller = $controller;
 		return $this;
 	}
 
@@ -212,17 +363,6 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	public function controller()
 	{
 		return $this->controller;
-	}
-
-	/**
-	 * Set the Current Controller
-	 * @param \Zbase\Interfaces\ControllerInterface $controller
-	 * @return \Zbase\Zbase
-	 */
-	public function setController(\Zbase\Interfaces\ControllerInterface $controller)
-	{
-		$this->controller = $controller;
-		return $this;
 	}
 
 	/**
@@ -245,26 +385,30 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 		return $this;
 	}
 
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="SECTION">
 	/**
-	 * Add a packageName
-	 * @param string $packageName
+	 * Current Section
+	 *
+	 * @return string
 	 */
-	public function addPackage($packageName)
+	public function section()
 	{
-		if(!in_array($packageName, $this->packages()))
-		{
-			$this->packages[] = $packageName;
-		}
+		return $this->section;
 	}
 
 	/**
-	 * Return all packages
-	 * @return array
+	 * Set the current Section
+	 * @param string $section
+	 * @return \Zbase\Zbase
 	 */
-	public function packages()
+	public function setSection($section)
 	{
-		return $this->packages;
+		$this->section = $section;
+		return $this;
 	}
+
+	// </editor-fold>
 
 	/**
 	 * Add a new Command

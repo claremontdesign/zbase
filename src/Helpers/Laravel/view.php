@@ -131,8 +131,10 @@ function zbase_view_file($name, $section = 'front')
 	{
 		return $name;
 	}
-
-
+	if(zbase_is_back())
+	{
+		$section = 'back';
+	}
 	$package = zbase_view_template_package();
 	$theme = zbase_view_template_theme();
 	// - check $package.templates.$section.theme.$name

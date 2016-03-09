@@ -29,6 +29,19 @@ trait Position
 	 */
 	public function sortPosition($collection)
 	{
+		if(!empty($collection))
+		{
+			$i = 0;
+			foreach($collection as $coll)
+			{
+				$position = $coll->getPosition();
+				if(empty($position))
+				{
+					$coll->setPosition(count($collection) - $i);
+				}
+				$i++;
+			}
+		}
 		return zbase_collection($collection)->sortByDesc(function ($itm) {
 					return $itm->getPosition();
 		})->toArray();

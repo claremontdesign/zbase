@@ -879,3 +879,12 @@ function zbase_view_error($code, $msg = null)
 	$common = [403, 404, 500, 503];
 	return \View::make(zbase_view_file('errors.' . (in_array($code, $common) ? $code : 500)), compact('msg', 'code'));
 }
+
+/**
+ * Check if we have to use CDN
+ * @return boolean
+ */
+function zbase_view_cdn()
+{
+	return env('ZBASE_CDN', zbase_config_get('view.cdn.enable', false));
+}

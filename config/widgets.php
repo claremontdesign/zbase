@@ -26,7 +26,7 @@ return [
 			 */
 			// 'access' => 'minimum',
 			/**
-			 * Widget-form configuration
+			 * Widget configuration
 			 */
 			'config' => [],
 		],

@@ -28,6 +28,14 @@ interface AttributeInterface
 	public function setAttribute($name, $value);
 
 	/**
+	 * Set multiple attributes
+	 *
+	 * @param array $attributes Key-Value attributes
+	 * @return void
+	 */
+	public function setAttributes($attributes);
+
+	/**
 	 * Return an Attribute value
 	 *
 	 * @param string $name Attribute name

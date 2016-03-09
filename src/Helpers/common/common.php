@@ -100,12 +100,20 @@ function zbase_is_front()
 
 /**
  * Check if we are in the backend
- *
  * @return boolean
  */
 function zbase_is_back()
 {
 	return zbase_section() == 'back';
+}
+
+/**
+ * Set the system to backend mode
+ * @return boolean
+ */
+function zbase_in_back()
+{
+	return zbase()->setSection('back');
 }
 
 /**
@@ -232,13 +240,26 @@ function zbase_value_get($target, $key = null, $default = null)
 function zbase_object_factory($className, $config = [])
 {
 	$object = new $className();
+	if(!empty($config))
+	{
+		foreach ($config as $k => $v)
+		{
+			$method = zbase_string_camel_case('set_' . $k);
+			if(method_exists($object, $method))
+			{
+				$object->$method($v);
+			}
+		}
+	}
 	$object->setZbase(zbase());
 	return $object;
 }
 
 /**
  * Application abort
- *
+ * 404 - Not found
+ * 401 - Unathorized
+ * 505 - Error
  * @param integer $code abort code
  * @param string $message Abort message
  */

@@ -40,6 +40,12 @@ class HeadLink implements Interfaces\IdInterface, Interfaces\HtmlInterface, Inte
 	protected $href = null;
 
 	/**
+	 * The CDN value of the resource
+	 * @var string
+	 */
+	protected $cdn = null;
+
+	/**
 	 * Specifies the media type of the linked document
 	 * @var string
 	 */
@@ -87,6 +93,10 @@ class HeadLink implements Interfaces\IdInterface, Interfaces\HtmlInterface, Inte
 	 */
 	public function getHref()
 	{
+		if(zbase_view_cdn() && !is_null($this->cdn))
+		{
+			return $this->cdn;
+		}
 		return $this->href;
 	}
 
@@ -114,6 +124,22 @@ class HeadLink implements Interfaces\IdInterface, Interfaces\HtmlInterface, Inte
 	public function setHref($href)
 	{
 		$this->href = $href;
+	}
+
+	/**
+	 * @see class::$cdn
+	 */
+	public function setCdn($cdn)
+	{
+		$this->cdn = $cdn;
+	}
+
+	/**
+	 * @see class::$cdn
+	 */
+	public function getCdn($cdn)
+	{
+		return $this->cdn;
 	}
 
 	/**

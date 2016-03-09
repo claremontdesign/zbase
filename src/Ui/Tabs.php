@@ -101,11 +101,14 @@ class Tabs extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	 */
 	public function add(UIs\Tab $tab)
 	{
-		if($tab->isActive())
+		if($tab->enabled() && $tab->hasAccess())
 		{
-			$this->_hasActiveTab = true;
+			if($tab->isActive())
+			{
+				$this->_hasActiveTab = true;
+			}
+			$this->_tabs[] = $tab;
 		}
-		$this->_tabs[] = $tab;
 		return $this;
 	}
 

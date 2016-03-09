@@ -13,6 +13,25 @@
  * @project Zbase
  * @package Zbase\Helpers
  */
+/**
+ * Check if file exists
+ * @param string $filename Path to file
+ * @return boolean
+ */
+function zbase_file_exists($filename)
+{
+	return file_exists(zbase_directory_separator_fix($filename));
+}
+
+/**
+ * Fix double forward slash to single forward slash
+ * @param string $path
+ * @return string
+ */
+function zbase_directory_separator_fix($path)
+{
+	return str_replace(array('//'), array('/'), $path);
+}
 
 /**
  * Copy source to destination

@@ -26,6 +26,7 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		$this->app->singleton(zbase_tag(), function(){
 			return new Zbase;
 		});
+		zbase()->loadModuleFrom(__DIR__ . '/../modules');
 	}
 
 	public function boot()
@@ -87,6 +88,7 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		require __DIR__ . '/Http/Controllers/Laravel/routes.php';
 		if(!zbase_is_testing())
 		{
+
 		}
 	}
 

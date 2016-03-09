@@ -37,19 +37,29 @@ return [
 			],
 			'jquery' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
-				'src' => '//code.jquery.com/jquery-1.11.0.min.js',
+				'cdn' => '//code.jquery.com/jquery-1.11.0.min.js',
+				'src' => zbase_path_asset('jquery/jquery-1.11.0.min.js'),
 				'enable' => true,
+				'position' => 0,
 				'dependents' => [
 					[
 						'id' => 'migrate',
 						'type' => \Zbase\Models\View::JAVASCRIPT,
-						'src' => '//code.jquery.com/jquery-migrate-1.2.1.min.js',
+						'cdn' => '//code.jquery.com/jquery-migrate-1.2.1.min.js',
+						'src' => zbase_path_asset('jquery/jquery-migrate-1.2.1.min.js'),
 						'enable' => true,
+					],
+					[
+						'id' => 'jqueryMobile',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'cdn' => '//code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js',
+						'enable' => false,
 					],
 					[
 						'id' => 'ui',
 						'type' => \Zbase\Models\View::JAVASCRIPT,
-						'src' => '//code.jquery.com/ui/1.11.4/jquery-ui.min.js',
+						'cdn' => '//code.jquery.com/ui/1.11.4/jquery-ui.min.js',
+						'src' => zbase_path_asset('jquery/jquery-ui-1.11.4.min.js'),
 						'enable' => true,
 					]
 				]
@@ -58,7 +68,8 @@ return [
 			// <editor-fold defaultstate="collapsed" desc="Bootstrap">
 			'bootstrap' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
-				'src' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js',
+				'cdn' => '//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js',
+				'src' => zbase_path_asset('bootstrap/js/bootstrap.min.js'),
 				'enable' => true,
 				'dependents' => [
 					[
@@ -95,19 +106,22 @@ return [
 					[
 						'id' => 'theme',
 						'type' => \Zbase\Models\View::STYLESHEET,
-						'href' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css',
+						'cdn' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css',
+						'href' => zbase_path_asset('bootstrap/css/bootstrap-theme.min.css'),
 						'enable' => true,
 					],
 					[
 						'id' => 'base',
 						'type' => \Zbase\Models\View::STYLESHEET,
-						'href' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css',
+						'cdn' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css',
+						'href' => zbase_path_asset('bootstrap/css/bootstrap.min.css'),
 						'enable' => true,
 					],
 					[
 						'id' => 'html5shiv',
 						'type' => \Zbase\Models\View::JAVASCRIPT,
-						'src' => '//oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js',
+						'cdn' => '//oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js',
+						'src' => zbase_path_asset('bootstrap/js/html5shiv-3.7.2.min.js'),
 						'enable' => true,
 						'placeholder' => 'head_javascripts',
 						'html' => [
@@ -117,7 +131,8 @@ return [
 					[
 						'id' => 'respond',
 						'type' => \Zbase\Models\View::JAVASCRIPT,
-						'src' => '//oss.maxcdn.com/respond/1.4.2/respond.min.js"',
+						'cdn' => '//oss.maxcdn.com/respond/1.4.2/respond.min.js',
+						'src' => zbase_path_asset('bootstrap/js/respond-1.4.2.min.js'),
 						'enable' => true,
 						'placeholder' => 'head_javascripts',
 						'html' => [

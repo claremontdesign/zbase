@@ -85,6 +85,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 	}
 
 	/**
+	 * Check if user is an admin
+	 * @return type
+	 */
+	public function isAdmin()
+	{
+		return $this->hasAccess(zbase_auth_minimum());
+	}
+
+	/**
 	 * Check if user is Banned
 	 * @return boolean
 	 */

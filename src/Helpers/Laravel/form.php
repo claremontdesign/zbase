@@ -57,7 +57,19 @@ function zbase_form_message_flash($key, $msg, $type = 'error')
  */
 function zbase_form_input_has_error($key)
 {
-	return zbase_session_has('_form_error_' . $key);
+	return zbase_session_get('_form_error_' . $key);
+	// return zbase_session_has('_form_error_' . $key);
+}
+
+/**
+ * GEt form input has error
+ *
+ * @param string $key
+ * @return boolean
+ */
+function zbase_form_input_get_error($key)
+{
+	return zbase_session_get('_form_error_' . $key);
 }
 
 /**

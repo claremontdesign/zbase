@@ -14,8 +14,20 @@
 return [
 	'controller' => [
 		'class' => [
+			'backend' => [
+				'name' => Zbase\Http\Controllers\__FRAMEWORK__\BackendController::class,
+				'enable' => true
+			],
+			'backendModule' => [
+				'name' => Zbase\Http\Controllers\__FRAMEWORK__\BackendModuleController::class,
+				'enable' => true
+			],
 			'page' => [
 				'name' => Zbase\Http\Controllers\__FRAMEWORK__\PageController::class,
+				'enable' => true
+			],
+			'pageModule' => [
+				'name' => Zbase\Http\Controllers\__FRAMEWORK__\PageModuleController::class,
 				'enable' => true
 			],
 			'auth' => [

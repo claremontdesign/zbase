@@ -46,3 +46,12 @@ function zbase_auth_minimum()
 	}
 	return zbase_config_get('auth.access.minimum.front', 'guest');
 }
+
+/**
+ * Check if user is of $role Role
+ * @return boolean
+ */
+function zbase_auth_is($role)
+{
+	return zbase_auth_check_access($role);
+}

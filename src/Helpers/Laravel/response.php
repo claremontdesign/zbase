@@ -47,3 +47,16 @@ function zbase_response_file($filepath, $filename, $headers)
 {
 	return \Response::download($filepath, $filename, $headers);
 }
+
+/**
+ * Redirect with message
+ * @param string $to
+ * @param string $message
+ * @TODO Add message
+ * @return \Illuminate\Routing\Redirector|\Illuminate\Http\RedirectResponse
+ */
+function zbase_redirect_with_message($to, $message)
+{
+	zbase_alert('error', $message);
+	return redirect($to);
+}

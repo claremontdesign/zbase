@@ -41,11 +41,14 @@ function zbase_ui($configuration)
  */
 function zbase_ui_tabs($tabs)
 {
-	foreach ($tabs as $tab)
+	if(!empty($tabs))
 	{
-		$tab = zbase_ui($tab);
+		foreach ($tabs as $tab)
+		{
+			$tab = zbase_ui($tab);
+		}
+		return $tab->group();
 	}
-	return $tab->group();
 }
 
 /**

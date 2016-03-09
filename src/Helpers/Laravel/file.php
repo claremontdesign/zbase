@@ -116,6 +116,10 @@ function zbase_storage_path($path = null)
  */
 function zbase_directory_check($path, $create = false)
 {
+	if(empty($create))
+	{
+		return is_dir($path);
+	}
 	if(!is_dir($path))
 	{
 		if($create)
@@ -123,9 +127,41 @@ function zbase_directory_check($path, $create = false)
 			mkdir($path, 0777, true);
 			return true;
 		}
-		return false;
 	}
 	return false;
+}
+
+/**
+ * Return all directories/folders from a given path
+ * @param string $path Path to folder/directory
+ * @return array|null
+ */
+function zbase_directories($path)
+{
+	if(zbase_directory_check($path))
+	{
+		return \File::directories($path);
+	}
+	return null;
+}
+
+/**
+ * Return all files inside a directory/folder
+ * @param string $path Path to folder/directory
+ * @param boolean $recursive If to return all files recursively; default: false
+ * @return array|null
+ */
+function zbase_directory_files($path, $recursive = false)
+{
+	if(zbase_directory_check($path))
+	{
+		if(!empty($recursive))
+		{
+			return \File::allFiles($path);
+		}
+		return \File::files($path);
+	}
+	return null;
 }
 
 /**

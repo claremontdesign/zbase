@@ -42,6 +42,12 @@ class Javascript implements Interfaces\IdInterface, Interfaces\HtmlInterface, In
 	protected $src = null;
 
 	/**
+	 * The CDN value of the resource
+	 * @var string
+	 */
+	protected $cdn = null;
+
+	/**
 	 * Constructor
 	 * @param array $attributes
 	 */
@@ -73,6 +79,10 @@ class Javascript implements Interfaces\IdInterface, Interfaces\HtmlInterface, In
 	 */
 	function getSrc()
 	{
+		if(zbase_view_cdn() && !is_null($this->cdn))
+		{
+			return $this->cdn;
+		}
 		return $this->src;
 	}
 
@@ -83,6 +93,22 @@ class Javascript implements Interfaces\IdInterface, Interfaces\HtmlInterface, In
 	function setSrc($src)
 	{
 		$this->src = $src;
+	}
+
+	/**
+	 * @see class::$cdn
+	 */
+	public function setCdn($cdn)
+	{
+		$this->cdn = $cdn;
+	}
+
+	/**
+	 * @see class::$cdn
+	 */
+	public function getCdn($cdn)
+	{
+		return $this->cdn;
 	}
 
 }

@@ -159,5 +159,4 @@ class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 		$attr['id'] = $this->getHtmlId();
 		return $attr;
 	}
-
 }

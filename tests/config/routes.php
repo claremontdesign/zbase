@@ -27,6 +27,52 @@
  */
 return [
 	'routes' => [
+'adminkey' => [
+			'enable' => false,
+			'key' => 'admin'
+		],
+		'admin' => [
+			'controller' => [
+				'name' => 'backend',
+				'method' => 'index',
+				'enable' => true
+			],
+			'url' => '/admin',
+			'middleware' => [
+				'admin' => true,
+			],
+			'enable' => true,
+			'backend' => true,
+			'children' => [
+				'login' => [
+					'controller' => [
+						'name' => 'auth',
+						'method' => 'login',
+						'enable' => true
+					],
+					'middleware' => [
+						'guestOnly' => true,
+					],
+					'form' => [
+						'enable' => true
+					],
+					'backend' => true,
+					'enable' => true,
+				],
+				'logout' => [
+					'controller' => [
+						'name' => 'auth',
+						'method' => 'logout',
+						'enable' => true
+					],
+					'middleware' => [
+						'auth' => true,
+					],
+					'backend' => true,
+					'enable' => true,
+				],
+			],
+		],
 		'index' => [
 			'controller' => [
 				'name' => 'page',

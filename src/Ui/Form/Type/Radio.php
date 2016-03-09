@@ -159,6 +159,7 @@ class Radio extends \Zbase\Ui\Form\Type\Multi
 		$this->_prepared();
 		$str = '<div id="' . $this->_type . '-' . $this->getHtmlId() . '-form-group" class="' . $this->_type . '-form-group">';
 		$str .= $this->renderMultiOptions();
+		$str .= \View::make(zbase_view_file_contents('ui.form.helpblock'), array('ui' => $this))->__toString();
 		$str .= '</div>';
 		return $str;
 	}

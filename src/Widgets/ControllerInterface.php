@@ -15,16 +15,17 @@ namespace Zbase\Widgets;
  * @project Zbase
  * @package Zbase/Widgets
  */
+
 interface ControllerInterface
 {
 
 	/**
 	 * Controller Actions|methods
 	 */
-	public function controller();
+	public function controller($action);
 
 	/**
-	 * Validate Inputs
+	 * Validate widget
 	 */
-	public function validate();
+	public function validateWidget();
 }

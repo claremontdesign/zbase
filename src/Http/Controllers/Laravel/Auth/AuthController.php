@@ -59,6 +59,10 @@ use AuthenticatesAndRegistersUsers,
 	public function __construct()
 	{
 		$this->middleware('guest', ['except' => 'logout']);
+		if(zbase_is_back())
+		{
+			$this->redirectTo = '/admin';
+		}
 	}
 
 	public function register()
@@ -183,7 +187,17 @@ use AuthenticatesAndRegistersUsers,
 
 		if(\Auth::attempt($credentials, $request->has('remember')))
 		{
-			return $this->handleUserWasAuthenticated($request, $throttles);
+			if(zbase_is_back())
+			{
+				if(\Auth::guard($this->getGuard())->user()->isAdmin())
+				{
+					return $this->handleUserWasAuthenticated($request, $throttles);
+				}
+			}
+			else
+			{
+				return $this->handleUserWasAuthenticated($request, $throttles);
+			}
 		}
 
 		// If the login attempt was unsuccessful we will increment the number of attempts
@@ -212,6 +226,7 @@ use AuthenticatesAndRegistersUsers,
 			\Auth::logout();
 		}
 		$user->authenticated();
+		return redirect()->intended($this->redirectPath());
 	}
 
 	/**
@@ -236,7 +251,11 @@ use AuthenticatesAndRegistersUsers,
 	 */
 	public function loginPath()
 	{
-		return zbase_url('login');
+		if(zbase_is_back())
+		{
+			return zbase_url_from_route('admin.login');
+		}
+		return zbase_url_from_route('login');
 	}
 
 	/**

@@ -1,4 +1,4 @@
-<form class="form-horizontal" role="form" method="POST" action="{{ zbase_url_create('login') }}">
+<form class="form-horizontal" role="form" method="POST" action="{{ zbase_url_from_route(zbase_is_back() ? 'admin.login' : 'login') }}">
 	{!! zbase_csrf_token_field('login') !!}
 
 	<div class="form-group <?php echo zbase_form_input_has_error('email') ? 'has-error' : '' ?>">

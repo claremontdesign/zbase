@@ -42,7 +42,7 @@ use Zbase\Traits;
 use Zbase\Interfaces;
 use Zbase\Exceptions;
 
-class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, Interfaces\IdInterface
+class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, Interfaces\IdInterface, \Zbase\Ui\UiInterface, \Zbase\Widgets\Type\FormInterface
 {
 
 	use Traits\Attribute,
@@ -55,6 +55,12 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	 * @var string
 	 */
 	protected $_type = null;
+
+	/**
+	 * The form
+	 * @var \Zbase\Widgets\Type\FormInterface
+	 */
+	protected $_form = null;
 
 	/**
 	 * Child Elements
@@ -81,6 +87,52 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	protected $_value = null;
 
 	/**
+	 * Validation Rules
+	 * @var array|null
+	 */
+	protected $_validationMessages = null;
+
+	/**
+	 * Validation Messages
+	 * @var array|null
+	 */
+	protected $_validationRules = null;
+
+	/**
+	 * Array of Error Messages
+	 * @var array
+	 */
+	protected $_errors = [];
+
+	/**
+	 * Add Errors
+	 * @param array $errors
+	 * @return \Zbase\Ui\Form\ElementInterface
+	 */
+	public function setErrors($errors)
+	{
+		$this->_errors = $errors;
+		return $this;
+	}
+
+	/**
+	 * Check if there is an error
+	 * @return boolean
+	 */
+	public function hasError()
+	{
+		if($msg = zbase_form_input_has_error($this->name()))
+		{
+			if(!in_array($msg, $this->_errors))
+			{
+				$this->_errors[] = $msg;
+			}
+			return true;
+		}
+		return !empty($this->_errors);
+	}
+
+	/**
 	 * Set the Value
 	 * @param integer|string $value
 	 * @return \Zbase\Ui\Form\Element
@@ -97,6 +149,10 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	 */
 	public function getValue()
 	{
+		if(is_null($this->_value))
+		{
+			$this->_value = $this->getForm()->getElementValue($this->name());
+		}
 		return $this->_value;
 	}
 
@@ -149,6 +205,10 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		$attr['class'][] = 'zbase-ui-wrapper-form-element';
 		$attr['class'][] = 'zbase-ui-wrapper-form-element-' . $this->_type;
 		$attr['class'][] = 'form-group';
+		if($this->hasError())
+		{
+			$attr['class'][] = 'has-error';
+		}
 		return $attr;
 	}
 
@@ -173,6 +233,7 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		$attr['type'] = $this->getType();
 		$attr['id'] = $this->getHtmlId();
 		$attr['name'] = $this->name();
+		$attr['value'] = $this->getValue();
 		$attr['class'][] = 'form-control';
 		return $attr;
 	}
@@ -209,6 +270,17 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	 */
 	public static function factory($configuration)
 	{
+		/**
+		 * Load a widget
+		 */
+		if(!empty($configuration['widget']))
+		{
+			return zbase()->widget($configuration['widget']);
+		}
+		if(!empty($configuration['ui']))
+		{
+			return \Zbase\Ui\Ui::factory($configuration['ui']);
+		}
 		$type = !empty($configuration['type']) ? $configuration['type'] : 'text';
 		$id = !empty($configuration['id']) ? $configuration['id'] : null;
 		if(is_null($id))
@@ -223,6 +295,107 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 			return $element;
 		}
 		return null;
+	}
+
+	/**
+	 * Return the form
+	 * @return \Zbase\Widgets\Type\FormInterface
+	 */
+	public function getForm()
+	{
+		return $this->_form;
+	}
+
+	/**
+	 * Set the Form
+	 * @param \Zbase\Widgets\Type\FormInterface $form
+	 * @return \Zbase\Ui\Form\Element
+	 */
+	public function setForm(\Zbase\Widgets\Type\FormInterface $form)
+	{
+		$this->_form = $form;
+		return $this;
+	}
+
+	/**
+	 * Return all validation rules
+	 * @return array
+	 */
+	public function getValidationRules()
+	{
+		if(is_null($this->_validationRules))
+		{
+			$this->_validation();
+		}
+		return $this->_validationRules;
+	}
+
+	/**
+	 * REturn the validation messages
+	 * @return array
+	 */
+	public function getValidationMessages()
+	{
+		if(is_null($this->_validationRules))
+		{
+			$this->_validation();
+		}
+		return $this->_validationMessages;
+	}
+
+	/**
+	 * Extract validation
+	 * validations.type = configuration
+	 * validations.required = configuration
+	 *
+	 * validations.required
+	 * validations.required.message
+	 */
+	protected function _validation()
+	{
+		$validations = $this->_v('validations', []);
+		$this->_validationRules = [];
+		$this->_validationMessages = [];
+		if(!empty($validations))
+		{
+			$v = [];
+			foreach ($validations as $type => $config)
+			{
+				if(!empty($config['text']))
+				{
+					$v[] = $config['text'];
+				}
+				else
+				{
+					$v[] = $type;
+				}
+				if(!empty($config['message']))
+				{
+					$this->_validationMessages[$this->name() . '.' . $type] = $config['message'];
+				}
+			}
+			if(!empty($v))
+			{
+				$this->_validationRules[$this->name()] = implode('|', $v);
+			}
+		}
+	}
+
+	/**
+	 * Return the HelpText
+	 */
+	public function helpText()
+	{
+		$helpText = [];
+		$helpText[] = $this->_v('help.text', null);
+		if($this->hasError())
+		{
+			foreach ($this->_errors as $error)
+			{
+				$helpText[] = '<span class="error-msg">' . $error . '</span>';
+			}
+		}
+		return implode('<br />', $helpText);
 	}
 
 }

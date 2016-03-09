@@ -20,4 +20,8 @@ interface ElementInterface
 	public function __toString();
 
 	public function getType();
+
+	public function getValidationRules();
+
+	public function getValidationMessages();
 }
