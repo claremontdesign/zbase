@@ -29,7 +29,13 @@ return [
 			'password' => [
 				'type' => 'password',
 				'id' => 'account_password',
-				'label' => 'Account Password'
+				'label' => 'Account Password',
+				'validations' => [
+					'required' => [
+						'enable' => true,
+						'message' => 'Please enter your account password.'
+					],
+				],
 			],
 		],
 	],

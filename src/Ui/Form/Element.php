@@ -63,6 +63,12 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	protected $_form = null;
 
 	/**
+	 * The entity
+	 * @var Zbase\Widgets\EntityInterface
+	 */
+	protected $_entity = null;
+
+	/**
 	 * Child Elements
 	 * @var \Zbase\Ui\Form\Element
 	 */
@@ -87,16 +93,22 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	protected $_value = null;
 
 	/**
-	 * Validation Rules
-	 * @var array|null
+	 * Fix validations flag
+	 * @var boolean
 	 */
-	protected $_validationMessages = null;
+	protected $_fixValidation = false;
+
+	/**
+	 * Validation Rules
+	 * @var array|
+	 */
+	protected $_validationMessages = [];
 
 	/**
 	 * Validation Messages
-	 * @var array|null
+	 * @var array
 	 */
-	protected $_validationRules = null;
+	protected $_validationRules = [];
 
 	/**
 	 * Array of Error Messages
@@ -149,10 +161,6 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	 */
 	public function getValue()
 	{
-		if(is_null($this->_value))
-		{
-			$this->_value = $this->getForm()->getElementValue($this->name());
-		}
 		return $this->_value;
 	}
 
@@ -298,23 +306,40 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	}
 
 	/**
-	 * Return the form
-	 * @return \Zbase\Widgets\Type\FormInterface
-	 */
-	public function getForm()
-	{
-		return $this->_form;
-	}
-
-	/**
 	 * Set the Form
 	 * @param \Zbase\Widgets\Type\FormInterface $form
 	 * @return \Zbase\Ui\Form\Element
 	 */
-	public function setForm(\Zbase\Widgets\Type\FormInterface $form)
+	public function form(\Zbase\Widgets\Type\FormInterface $form = null)
 	{
-		$this->_form = $form;
-		return $this;
+		if(!is_null($form))
+		{
+			$this->_form = $form;
+			return $this;
+		}
+		return $this->_form;
+	}
+
+	/**
+	 * Set/Get the entity
+	 * @param \Zbase\Widgets\EntityInterface $entity
+	 */
+	public function entity(\Zbase\Widgets\EntityInterface $entity = null)
+	{
+		if(!is_null($entity))
+		{
+			$this->_entity = $entity;
+			if(!$this->hasError())
+			{
+				$entityProperty = $this->_v('entity.property', null);
+				if(!is_null($entityProperty))
+				{
+					$this->setValue($this->_entity->getAttribute($entityProperty));
+				}
+			}
+			return $this;
+		}
+		return $this->_entity;
 	}
 
 	/**
@@ -323,11 +348,14 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	 */
 	public function getValidationRules()
 	{
-		if(is_null($this->_validationRules))
+		if(empty($this->_fixValidation))
 		{
 			$this->_validation();
 		}
-		return $this->_validationRules;
+		if($this->hasValidations())
+		{
+			return implode('|', $this->_validationRules);
+		}
 	}
 
 	/**
@@ -336,11 +364,24 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	 */
 	public function getValidationMessages()
 	{
-		if(is_null($this->_validationRules))
+		if(empty($this->_fixValidation))
 		{
 			$this->_validation();
 		}
 		return $this->_validationMessages;
+	}
+
+	/**
+	 * Check if there are validations
+	 * @return boolean
+	 */
+	public function hasValidations()
+	{
+		if(empty($this->_fixValidation))
+		{
+			$this->_validation();
+		}
+		return !empty($this->_validationRules);
 	}
 
 	/**
@@ -354,29 +395,30 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	protected function _validation()
 	{
 		$validations = $this->_v('validations', []);
-		$this->_validationRules = [];
-		$this->_validationMessages = [];
+		$this->_fixValidation = true;
 		if(!empty($validations))
 		{
-			$v = [];
 			foreach ($validations as $type => $config)
 			{
-				if(!empty($config['text']))
+				$enable = !empty($config['enable']) ? true : false;
+				if(!empty($enable))
 				{
-					$v[] = $config['text'];
+					if(!empty($config['text']))
+					{
+						$this->_validationRules[] = $config['text'];
+					}
+					else
+					{
+						if(!in_array($type, $this->_validationRules))
+						{
+							$this->_validationRules[] = $type;
+						}
+					}
+					if(!empty($config['message']))
+					{
+						$this->_validationMessages[$this->name() . '.' . $type] = $config['message'];
+					}
 				}
-				else
-				{
-					$v[] = $type;
-				}
-				if(!empty($config['message']))
-				{
-					$this->_validationMessages[$this->name() . '.' . $type] = $config['message'];
-				}
-			}
-			if(!empty($v))
-			{
-				$this->_validationRules[$this->name()] = implode('|', $v);
 			}
 		}
 	}

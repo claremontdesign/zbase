@@ -24,7 +24,7 @@ namespace Zbase\Widgets;
  * 		Who has access.
  * 		minimum|role name
  * 		minimum is the minimum role for the current section, else a role name or array of role names
- * 
+ *
  * config = array; widget-type-specific configuration
  */
 use Zbase\Traits;
@@ -73,23 +73,25 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
-	 * Set Task
-	 * @param string $task
-	 * @return \Zbase\Widgets\Widget|string
+	 * Return the entity
+	 * @return Zbase\Widget\EntityInterface
 	 */
-	public function setTask($task)
+	public function entity()
 	{
-		$this->_task = $task;
-		return $this;
+		if(is_null($this->_entity))
+		{
+			$entityName = $this->_v('entity.name', null);
+			if(!is_null($entityName))
+			{
+				// $repoById = $this->_v('entity.name.repo.byId', null);
+				// $repoBy = $this->_v('entity.repo.by', null);
+				$repoMethod = $this->_v('entity.method', null);
+				if(!is_null($repoMethod))
+				{
+					$this->_entity = zbase_entity($entityName)->$repoMethod();
+				}
+			}
+		}
+		return $this->_entity;
 	}
-
-	/**
-	 * Get Task
-	 * @return string
-	 */
-	public function task()
-	{
-		return $this->_task;
-	}
-
 }

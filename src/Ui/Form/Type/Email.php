@@ -24,4 +24,16 @@ class Email extends \Zbase\Ui\Form\Element
 	 */
 	protected $_type = 'email';
 
+//	/**
+//	 * Constructor
+//	 * @param string $id
+//	 * @param array $configuration
+//	 */
+//	public function __construct($configuration = null)
+//	{
+//		parent::__construct($configuration);
+//		$this->_validationMessages[$this->name() . '.email'] = 'Invalid email address';
+//		$this->_validationRules[] = 'email';
+//	}
+
 }

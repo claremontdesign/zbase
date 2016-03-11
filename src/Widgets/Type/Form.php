@@ -50,26 +50,37 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	protected $_tabs = null;
 
 	/**
-	 * The Element Values
+	 * The Current entity
+	 * @var Zbase\Interfaces\EntityInterface
+	 */
+	protected $_entity = null;
+
+	/**
+	 * Validation rules
 	 * @var array
 	 */
 	protected $_validationRules = [];
+
+	/**
+	 * Validation messages
+	 * @var array
+	 */
 	protected $_validationMessages = [];
 
 	/**
 	 * form has error
 	 * @var boolean
 	 */
-	protected $_formHasError = false;
+	protected $_hasError = false;
 
 	// <editor-fold defaultstate="collapsed" desc="CONTROLLERInterface">
 
 	/**
 	 * set that form has error
 	 */
-	public function setFormHasError($errors = null)
+	public function setHasError()
 	{
-		$this->_formHasError = true;
+		$this->_hasError = true;
 		zbase_session_flash('errorForm' . $this->id(), true);
 	}
 
@@ -77,18 +88,26 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 * Check if form has error
 	 * @return boolean
 	 */
-	public function formHasError()
+	public function hasError()
 	{
-		return $this->_formHasError = zbase_session_flash('errorForm' . $this->id());
+		return zbase_session_has('errorForm' . $this->id());
 	}
 
 	/**
 	 * Controller Action
+	 * 	This will be called validating the form
 	 * @param string $action
 	 */
 	public function controller($action)
 	{
-
+		if(zbase_request_method() == 'post')
+		{
+			if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
+			{
+				$this->entity()->widgetController('post', $action, zbase_request_inputs(), $this);
+			}
+			return;
+		}
 	}
 
 	/**
@@ -96,23 +115,28 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function validateWidget()
 	{
+		$this->prepare();
 		if(zbase_request_method() == 'post')
 		{
-			$v = \Validator::make(zbase_request_inputs(), ['account_password' => 'required'], $this->getValidationMessages());
-			if($v->fails())
+			$validationRules = $this->getValidationRules();
+			if(!empty($validationRules))
 			{
-				$this->setFormHasError($v->errors()->getMessages());
-				$messageBag = $v->getMessageBag();
-				zbase_alert(\Zbase\Zbase::ALERT_ERROR, $messageBag, ['formvalidation' => true]);
-				return $v;
-			}
-			$inputs = zbase_request_inputs();
-			foreach ($inputs as $k => $v)
-			{
-				$e = $this->element($k);
-				if($e instanceof \Zbase\Ui\Form\ElementInterface)
+				$v = \Validator::make(zbase_request_inputs(), $this->getValidationRules(), $this->getValidationMessages());
+				if($v->fails())
 				{
-					$e->setValue($v);
+					$this->setHasError($v->errors()->getMessages());
+					$messageBag = $v->getMessageBag();
+					zbase_alert(\Zbase\Zbase::ALERT_ERROR, $messageBag, ['formvalidation' => true]);
+					return $v;
+				}
+				$inputs = zbase_request_inputs();
+				foreach ($inputs as $k => $v)
+				{
+					$e = $this->element($k);
+					if($e instanceof \Zbase\Ui\Form\ElementInterface)
+					{
+						$e->setValue($v);
+					}
 				}
 			}
 		}
@@ -144,11 +168,37 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	protected function _pre()
 	{
+		$this->entity();
 		$this->_tabs();
 		$this->_elements();
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="Element and Tabs">
+
+	/**
+	 * Create an element
+	 * @param type $element
+	 * @return Zbase\Ui\Form\ElementInterface
+	 */
+	protected function _createElement($element)
+	{
+		$e = \Zbase\Ui\Form\Element::factory($element);
+		if($e instanceof FormInterface)
+		{
+			$e->form($this);
+		}
+		if($this->_entity instanceof \Zbase\Widgets\EntityInterface)
+		{
+			$e->entity($this->_entity);
+		}
+		if($e->hasValidations())
+		{
+			$this->_validationRules[$e->name()] = $e->getValidationRules();
+			$this->_validationMessages = array_merge($this->_validationMessages, $e->getValidationMessages());
+		}
+		return $e;
+	}
+
 	/**
 	 * Process all elements
 	 * @return void
@@ -162,61 +212,11 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			{
 				foreach ($elements as $element)
 				{
-					$e = \Zbase\Ui\Form\Element::factory($element);
-					if($e instanceof \Zbase\Ui\Form\ElementInterface)
-					{
-						$this->_validationRules = array_merge($this->_validationRules, $e->getValidationRules());
-						$this->_validationMessages = array_merge($this->_validationMessages, $e->getValidationMessages());
-					}
-					if($e instanceof FormInterface)
-					{
-						$e->setForm($this);
-					}
-					$this->_elements[] = $e;
+					$this->_elements[] = $this->_createElement($element);
 				}
 			}
 			$this->_elements = $this->sortPosition($this->_elements);
 		}
-	}
-
-	/**
-	 * Process tabs
-	 */
-	protected function _tabs()
-	{
-		$tabs = $this->_v('tabs', null);
-		if(!is_null($tabs) && is_array($tabs))
-		{
-			foreach ($tabs as $tabName => $tab)
-			{
-				$tab['group'] = $this->id() . 'tabs';
-				if(!empty($tab['elements']))
-				{
-					foreach ($tab['elements'] as $elementName => $element)
-					{
-						if(empty($element['id']))
-						{
-							$element['id'] = $elementName;
-							$element['name'] = $elementName;
-						}
-						$e = \Zbase\Ui\Form\Element::factory($element);
-						if($e instanceof FormInterface)
-						{
-							$e->setForm($this);
-						}
-						if($e instanceof \Zbase\Ui\Form\ElementInterface)
-						{
-							$this->_validationRules = array_merge($this->_validationRules, $e->getValidationRules());
-							$this->_validationMessages = array_merge($this->_validationMessages, $e->getValidationMessages());
-						}
-						$tab['contents'][] = $e;
-					}
-					unset($tab['elements']);
-				}
-				$tabs[$tabName] = $tab;
-			}
-		}
-		$this->_tabs = zbase_ui_tabs($tabs);
 	}
 
 	/**
@@ -271,6 +271,36 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	}
 
 	/**
+	 * Process tabs
+	 */
+	protected function _tabs()
+	{
+		$tabs = $this->_v('tabs', null);
+		if(!is_null($tabs) && is_array($tabs))
+		{
+			foreach ($tabs as $tabName => $tab)
+			{
+				$tab['group'] = $this->id() . 'tabs';
+				if(!empty($tab['elements']))
+				{
+					foreach ($tab['elements'] as $elementName => $element)
+					{
+						if(empty($element['id']))
+						{
+							$element['id'] = $elementName;
+							$element['name'] = $elementName;
+						}
+						$tab['contents'][] = $this->_createElement($element);
+					}
+					unset($tab['elements']);
+				}
+				$tabs[$tabName] = $tab;
+			}
+		}
+		$this->_tabs = zbase_ui_tabs($tabs);
+	}
+
+	/**
 	 *
 	 * @return \Zbase\Ui\Tabs
 	 */
@@ -313,23 +343,18 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	}
 
 	/**
-	 * Return the parent form
-	 * @return \Zbase\Widgets\Type\FormInterface
-	 */
-	public function getForm()
-	{
-		return $this->_form;
-	}
-
-	/**
-	 * Set the parent Form
+	 * Set/Get the parent Form
 	 * @param \Zbase\Widgets\Type\FormInterface $form
 	 * @return \Zbase\Ui\Form\Element
 	 */
-	public function setForm(\Zbase\Widgets\Type\FormInterface $form)
+	public function form(\Zbase\Widgets\Type\FormInterface $form = null)
 	{
-		$this->_form = $form;
-		return $this;
+		if(!is_null($form))
+		{
+			$this->_form = $form;
+			return $this;
+		}
+		return $this->_form;
 	}
 
 }

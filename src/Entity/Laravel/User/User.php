@@ -16,6 +16,7 @@ namespace Zbase\Entity\Laravel\User;
  * @package Zbase/Entity/User
  */
 use Zbase\Entity\Laravel\Entity as BaseEntity;
+use Zbase\Widgets\EntityInterface as WidgetEntityInterface;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Foundation\Auth\Access\Authorizable;
@@ -24,7 +25,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 
 class User extends BaseEntity implements
-AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
+AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetEntityInterface
 {
 
 	use Authenticatable,
@@ -40,6 +41,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 	 * @var string
 	 */
 	protected $entityName = 'user';
+
+	/**
+	 * The Entity Id
+	 * @return integer
+	 */
+	public function id()
+	{
+		return $this->user_id;
+	}
 
 	/**
 	 * Fix/Manipulate entity data
@@ -195,6 +205,27 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 		$model->toggleRelationshipMode();
 		\DB::commit();
 		return $model;
+	}
+
+	/**
+	 * Return the current authed user
+	 * @return User
+	 */
+	public function currentUser()
+	{
+		return $this->repository()->byId(zbase_auth_user()->id());
+	}
+
+	/**
+	 * Widget entity interface
+	 * @param string $method post|get
+	 * @param string $action
+	 * @param array $data
+	 * @param Zbase\Widgets\Widget $widget
+	 */
+	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
+	{
+
 	}
 
 }

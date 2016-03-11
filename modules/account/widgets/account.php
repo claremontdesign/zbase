@@ -29,6 +29,38 @@ return [
 	 * Widget configuration
 	 */
 	'config' => [
+		/**
+		 * Model configuration
+		 * The Current Data to manipulate
+		 * entity
+		 * entity.name
+		 * entity.method = entity->method()
+		 * entity.repo = entity->repository() method of an entity will be called
+		 * entity.repo.byId = entity->repository()->byId(); ['request' => 'indexName']
+		 * widget->controller(actionName)
+		 */
+		'entity' => [
+			'name' => 'user',
+			'method' => 'currentUser',
+			'repo' => [
+				'method' => 'currentUser',
+			],
+		],
+		/**
+		 * controller
+		 * controller.post.actionName
+		 * controller.post.actionName.entity.method = The method to call on the entity
+		 * widget()->controller(actionName);
+		 */
+		'controller' => [
+			'post' => [
+				'index' => [
+					'entity' => [
+						'method' => 'updateAccount'
+					],
+				],
+			],
+		],
 		'tabs' => [
 			'account' => [
 				'type' => 'tab',
@@ -47,12 +79,30 @@ return [
 					'username' => [
 						'type' => 'text',
 						'id' => 'username',
-						'label' => 'Username'
+						'label' => 'Username',
+						'entity' => [
+							'property' => 'username'
+						],
+						'validations' => [
+							'required' => [
+								'enable' => true,
+								'message' => 'Username is required.'
+							],
+						],
 					],
 					'email' => [
 						'type' => 'email',
 						'id' => 'email',
-						'label' => 'Email Address'
+						'label' => 'Email Address',
+						'entity' => [
+							'property' => 'email'
+						],
+						'validations' => [
+							'required' => [
+								'enable' => true,
+								'message' => 'Email address is required.'
+							],
+						],
 					],
 					'passwordHeader' => [
 						'ui' => [

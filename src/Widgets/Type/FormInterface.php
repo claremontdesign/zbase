@@ -19,10 +19,10 @@ interface FormInterface
 {
 
 	/**
-	 * Set the form or the parent Form
+	 * Set/Get the form or the parent Form
 	 * @param \Zbase\Widgets\Type\FormInterface $form
 	 */
-	public function setForm(\Zbase\Widgets\Type\FormInterface $form);
+	public function form(\Zbase\Widgets\Type\FormInterface $form = null);
 
 	/**
 	 * Render the form
