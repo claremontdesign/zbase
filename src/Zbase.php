@@ -277,14 +277,16 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	/**
 	 * Return/Create a Widget
 	 * @param string|array $widget
+	 * @param boolean $clone Will clone if widget was already created
 	 * @return \Zbase\Widgets\WidgetInterface[] | null
 	 */
-	public function widget($widget)
+	public function widget($widget, $clone = null)
 	{
 		if(is_array($widget))
 		{
 			$name = !empty($widget['id']) ? $widget['id'] : null;
 			$config = !empty($widget['config']) ? $widget['config'] : [];
+			$type = !empty($widget['type']) ? $widget['type'] : [];
 		}
 		else
 		{
@@ -294,6 +296,10 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 		{
 			if(!empty($this->widgets[$name]))
 			{
+				if(!empty($clone))
+				{
+					return clone $this->widgets[$name];
+				}
 				return $this->widgets[$name];
 			}
 			if(empty($config))
@@ -302,7 +308,14 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			}
 			if(!empty($config))
 			{
-				$w = new \Zbase\Widgets\Type\Form($name, $config);
+				if($type == 'form')
+				{
+					$w = new \Zbase\Widgets\Type\Form($name, $config);
+				}
+				if($type == 'datatable')
+				{
+					$w = new \Zbase\Widgets\Type\Datatable($name, $config);
+				}
 				if($w->enabled())
 				{
 					return $this->widgets[$name] = $w;

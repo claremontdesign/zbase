@@ -24,9 +24,4 @@ interface EntityInterface
 	 * @param type $mode
 	 */
 	public function fixDataArray(array $data, $mode = null);
-
-	/**
-	 * Create or return repository
-	 */
-	public function repository();
 }

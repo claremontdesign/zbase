@@ -41,6 +41,10 @@ class EntityTest extends TestCase
 	 */
 	public function testRepositoryById()
 	{
+		$user = zbase_entity('user')->repository()->by('username', 'admin')->first();
+		$user->email = 'admin@zbase.com';
+		$user->unsetAllOptions();
+		$user->save();
 		$model = zbase_entity('user');
 		$this->assertTrue($model->repository() instanceof \Zbase\Interfaces\EntityRepositoryInterface);
 

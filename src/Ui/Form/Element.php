@@ -57,6 +57,13 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	protected $_type = null;
 
 	/**
+	 * Display Mode
+	 * input|display
+	 * @var string
+	 */
+	protected $_mode = 'input';
+
+	/**
 	 * The form
 	 * @var \Zbase\Widgets\Type\FormInterface
 	 */
@@ -117,6 +124,12 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	protected $_errors = [];
 
 	/**
+	 * The Tab that this element belongs
+	 * @var string
+	 */
+	protected $_tab = null;
+
+	/**
 	 * Add Errors
 	 * @param array $errors
 	 * @return \Zbase\Ui\Form\ElementInterface
@@ -133,6 +146,14 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	 */
 	public function hasError()
 	{
+		$currentTab = zbase_session_get('sessiontab', false);
+		if(!empty($currentTab))
+		{
+			if($this->getTab() != $currentTab)
+			{
+				return false;
+			}
+		}
 		if($msg = zbase_form_input_has_error($this->name()))
 		{
 			if(!in_array($msg, $this->_errors))
@@ -142,6 +163,27 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 			return true;
 		}
 		return !empty($this->_errors);
+	}
+
+	/**
+	 * Check if was posted
+	 * @return boolean
+	 */
+	public function wasPosted()
+	{
+		$currentTab = zbase_session_get('sessiontab', false);
+		if(!empty($currentTab))
+		{
+			if($this->getTab() != $currentTab)
+			{
+				return false;
+			}
+		}
+		if($this->form() instanceof \Zbase\Widgets\Type\FormInterface)
+		{
+			return $this->form()->wasPosted();
+		}
+		return false;
 	}
 
 	/**
@@ -161,6 +203,10 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	 */
 	public function getValue()
 	{
+		if($this->wasPosted())
+		{
+			return zbase_form_old($this->name());
+		}
 		return $this->_value;
 	}
 
@@ -283,7 +329,7 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		 */
 		if(!empty($configuration['widget']))
 		{
-			return zbase()->widget($configuration['widget']);
+			return zbase()->widget($configuration['widget'], true);
 		}
 		if(!empty($configuration['ui']))
 		{
@@ -334,7 +380,10 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 				$entityProperty = $this->_v('entity.property', null);
 				if(!is_null($entityProperty))
 				{
-					$this->setValue($this->_entity->getAttribute($entityProperty));
+					if(!$this->wasPosted())
+					{
+						$this->setValue($this->_entity->getAttribute($entityProperty));
+					}
 				}
 			}
 			return $this;
@@ -405,7 +454,7 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 				{
 					if(!empty($config['text']))
 					{
-						$this->_validationRules[] = $config['text'];
+						$this->_validationRules[] = zbase_data_get($config, 'text');
 					}
 					else
 					{
@@ -440,4 +489,38 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		return implode('<br />', $helpText);
 	}
 
+	/**
+	 * Set the Tab that this element blong
+	 * @param string $tabName The Tab Name
+	 * @return \Zbase\Ui\Form\Element
+	 */
+	public function setTab($tabName)
+	{
+		$this->_tab = $tabName;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTab()
+	{
+		return $this->_tab;
+	}
+
+	/**
+	 * Set Mode
+	 * @param string $mode
+	 * @return \Zbase\Ui\Form\Element
+	 */
+	public function setMode($mode)
+	{
+		$this->_mode = $mode;
+		return $this;
+	}
+
+	public function getMode()
+	{
+		return $this->_mode;
+	}
 }

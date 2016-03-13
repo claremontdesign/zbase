@@ -19,10 +19,10 @@
 /**
  * Add an alert
  *
- * @param string $type
- * @param string $msg
- * @param string $title
- * @param array $options
+ * @param string $type The Type of alert info|warning|error|success
+ * @param string $msg The Message/Alert
+ * @param string $title The title of the message/alert
+ * @param array $options Some Options
  * @return void
  */
 function zbase_alert($type, $msg, $options = [])
@@ -38,7 +38,7 @@ function zbase_alert($type, $msg, $options = [])
 		{
 			foreach ($messages as $key => $ms)
 			{
-				foreach($ms as $m)
+				foreach ($ms as $m)
 				{
 					$msg[] = $m;
 					/**
@@ -107,4 +107,16 @@ function zbase_alerts_has($type = null)
 	$tag = zbase_tag() . '_alert_' . $type . '_pool';
 	$session = zbase_session();
 	return $session->has($tag);
+}
+
+/**
+ * Reset all alerts
+ * @return void
+ */
+function zbase_alerts_reset()
+{
+	zbase_alerts('error');
+	zbase_alerts('info');
+	zbase_alerts('success');
+	zbase_alerts('warning');
 }

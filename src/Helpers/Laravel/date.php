@@ -13,6 +13,16 @@
  * @project Expression project.name is undefined on line 13, column 15 in Templates/Scripting/EmptyPHP.php.
  * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
  */
+define('DATE_FORMAT_DB', 'Y-m-d H:i:s');
+
+/**
+ * Return the default timezone
+ * @return string
+ */
+function zbase_date_default_timezone()
+{
+	return 'Asia/Manila';
+}
 
 /**
  * Return a Caron Date
@@ -20,7 +30,7 @@
  */
 function zbase_date_now()
 {
-	return \Carbon\Carbon::now();
+	return \Carbon\Carbon::now(new \DateTimeZone(zbase_date_default_timezone()));
 }
 
 /**

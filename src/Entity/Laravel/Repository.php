@@ -34,6 +34,12 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	protected $debug = false;
 
 	/**
+	 * If to include softDeleted columns
+	 * @var boolean
+	 */
+	protected $withTrashed = false;
+
+	/**
 	 * Constructor
 	 * @param Interfaces\EntityInterface $model
 	 */
@@ -55,8 +61,13 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			throw new InvalidArgumentException('Invalid id');
 		}
+		$withTrashed = $this->withTrashed;
 		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args()), function() use ($id, $columns){
+				zbase_cache_key($this, __FUNCTION__, func_get_args()), function() use ($id, $columns, $withTrashed){
+			if(!empty($withTrashed))
+			{
+				return $this->getModel()->withTrashed()->find(intval($id), $columns);
+			}
 			return $this->getModel()->find(intval($id), $columns);
 				}, [$this->getModel()->getTable()]
 		);
@@ -311,6 +322,16 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	public function setDebug($debug)
 	{
 		$this->debug = $debug;
+		return $this;
+	}
+
+	/**
+	 * If to include trashed rows
+	 * @param boolean $flag
+	 */
+	public function withTrashed($flag = true)
+	{
+		$this->withTrashed = $flag;
 		return $this;
 	}
 

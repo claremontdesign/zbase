@@ -76,7 +76,7 @@ function zbase_routes_init($routes = null)
 								'form' => [
 									'enable' => true
 								],
-								'url' => $module->url('back'),
+								'url' => $module->sectionUrl('backend'),
 								'backend' => true,
 								'enable' => true
 							];
@@ -96,7 +96,7 @@ function zbase_routes_init($routes = null)
 								'form' => [
 									'enable' => true
 								],
-								'url' => $module->url('front'),
+								'url' => $module->sectionUrl(),
 								'enable' => true
 							];
 							$routes[$module->id()] = $frontRoute;

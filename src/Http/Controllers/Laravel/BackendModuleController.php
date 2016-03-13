@@ -28,7 +28,7 @@ class BackendModuleController extends Controller implements Interfaces\Attribute
 	{
 		if(!$this->getModule()->hasAccess())
 		{
-			return $this->unathorized('You don\'t have enough access to the resource.');
+			return $this->unathorized(_zt('You don\'t have enough access to the resource.'));
 		}
 		/**
 		 * Check for widgets
@@ -45,7 +45,11 @@ class BackendModuleController extends Controller implements Interfaces\Attribute
 									->withInput(zbase_request_inputs())
 									->withErrors($v->errors()->getMessages());
 				}
-				$widget->controller($this->getRouteParameter('action', 'index'));
+				$ret = $widget->controller($this->getRouteParameter('action', 'index'));
+				if($ret instanceof \Illuminate\Http\RedirectResponse)
+				{
+					return $ret;
+				}
 			}
 		}
 		return $this->view(zbase_view_file('module.index'), array('module' => $this->getModule(), 'widgets' => $widgets));

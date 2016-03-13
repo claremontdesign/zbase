@@ -49,6 +49,14 @@ function zbase_response_file($filepath, $filename, $headers)
 }
 
 /**
+ * Throw an exception
+ */
+function zbase_exception_throw()
+{
+
+}
+
+/**
  * Redirect with message
  * @param string $to
  * @param string $message
@@ -59,4 +67,13 @@ function zbase_redirect_with_message($to, $message)
 {
 	zbase_alert('error', $message);
 	return redirect($to);
+}
+
+/**
+ * Redirect
+ * @return redirect
+ */
+function zbase_redirect()
+{
+	return redirect();
 }

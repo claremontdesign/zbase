@@ -53,124 +53,198 @@ class CreateTable extends Migration
 						{
 							$table->increments($primaryKey);
 						}
-						foreach ($columns as $columnName => $column)
+						$nodeable = zbase_data_get($entity, 'table.nodeable', false);
+						if(!empty($nodeable))
 						{
-							$columnName = zbase_data_get($column, 'name', $columnName);
-							if($columnName == $primaryKey)
+							$columns = array_merge_recursive($columns, \Zbase\Entity\Laravel\Node\Node::columns());
+						}
+						$nesteable = zbase_data_get($entity, 'table.nesteable', false);
+						if(!empty($nesteable))
+						{
+							$columns = array_merge_recursive($columns, \Zbase\Entity\Laravel\Node\Nested::columns());
+						}
+						$pivotable = zbase_data_get($entity, 'table.pivotable', false);
+						if(!empty($pivotable))
+						{
+							$pivotEntityTable = zbase_config_get('entity.' . $pivotable['entity'], null);
+							$nestedEntityTable = zbase_config_get('entity.' . $pivotable['nested'], null);
+							if(!is_null($pivotEntityTable) && !is_null($nestedEntityTable))
 							{
-								continue;
+								$entityPrimaryKey = zbase_data_get($pivotEntityTable, 'table.primaryKey', null);
+								$nestedPrimaryKey = zbase_data_get($nestedEntityTable, 'table.primaryKey', null);
+								$columns = [];
+								$columns[$entityPrimaryKey] = [
+									'length' => 16,
+									'hidden' => false,
+									'fillable' => true,
+									'type' => 'integer',
+									'unsigned' => true,
+									'foreign' => [
+										'table' => zbase_data_get($pivotEntityTable, 'table.name', null),
+										'column' => $entityPrimaryKey,
+										'onDelete' => 'cascade'
+									],
+									'comment' => zbase_data_get($pivotEntityTable, 'table.description', null) . ' ID'
+								];
+								$columns[$nestedPrimaryKey] = [
+									'length' => 16,
+									'hidden' => false,
+									'fillable' => true,
+									'type' => 'integer',
+									'unsigned' => true,
+									'foreign' => [
+										'table' => zbase_data_get($nestedEntityTable, 'table.name', null),
+										'column' => $nestedPrimaryKey,
+										'onDelete' => 'cascade'
+									],
+									'comment' => zbase_data_get($nestedEntityTable, 'table.description', null) . ' ID'
+								];
 							}
-							$type = zbase_data_get($column, 'type', 'string');
-							if($type == 'string')
+						}
+						// <editor-fold defaultstate="collapsed" desc="Columns">
+						if(!empty($columns))
+						{
+							foreach ($columns as $columnName => $column)
 							{
-								$defaultLength = 255;
-							}
-							elseif($type == 'integer')
-							{
-								$defaultLength = 16;
-							}
-							$index = zbase_data_get($column, 'index', false);
-							$unique = zbase_data_get($column, 'unique', false);
-							$length = zbase_data_get($column, 'length', $defaultLength);
-							$comment = zbase_data_get($column, 'comment', false);
-							$default = zbase_data_get($column, 'default', null);
-							$unsigned = zbase_data_get($column, 'unsigned', false);
-							$nullable = zbase_data_get($column, 'nullable', false);
-							if(!is_null($type))
-							{
-								if($type == 'decimal')
+								$columnName = zbase_data_get($column, 'name', $columnName);
+								if($columnName == $primaryKey)
 								{
-									$length = zbase_data_get($column, 'length', 16);
-									$decimal = zbase_data_get($column, 'decimal', 2);
-									$col = $table->decimal($columnName, $length, $decimal);
+									continue;
 								}
-								elseif($type == 'double')
+								$type = zbase_data_get($column, 'type', 'string');
+								if($type == 'string')
 								{
-									$length = zbase_data_get($column, 'length', 16);
-									$decimal = zbase_data_get($column, 'decimal', 2);
-									$col = $table->double($columnName, $length, $decimal);
+									$defaultLength = 255;
 								}
 								elseif($type == 'integer')
 								{
-									$col = $table->integer($columnName);
+									$defaultLength = 16;
 								}
-								elseif($type == 'bigint')
+								$index = zbase_data_get($column, 'index', false);
+								$unique = zbase_data_get($column, 'unique', false);
+								$length = zbase_data_get($column, 'length', $defaultLength);
+								$comment = zbase_data_get($column, 'comment', false);
+								$default = zbase_data_get($column, 'default', null);
+								$unsigned = zbase_data_get($column, 'unsigned', false);
+								$nullable = zbase_data_get($column, 'nullable', false);
+								if(!is_null($type))
 								{
-									$col = $table->bigInteger($columnName);
-								}
-								elseif($type == 'tinyint')
-								{
-									$col = $table->tinyInteger($columnName);
-								}
-								elseif($type == 'enum')
-								{
-									$enum = zbase_data_get($column, 'enum', []);
-									if(!empty($enum))
+									if($type == 'decimal')
 									{
-										$enums = [];
-										foreach ($enum as $eV => $eK)
-										{
-											$enums[] = $eV;
-										}
-										$col = $table->enum($columnName, $enums);
+										$length = zbase_data_get($column, 'length', 16);
+										$decimal = zbase_data_get($column, 'decimal', 2);
+										$col = $table->decimal($columnName, $length, $decimal);
 									}
-								}
-								else
-								{
-									if(empty($length))
+									elseif($type == 'double')
 									{
-										$col = $table->{$type}($columnName);
+										$length = zbase_data_get($column, 'length', 16);
+										$decimal = zbase_data_get($column, 'decimal', 2);
+										$col = $table->double($columnName, $length, $decimal);
+									}
+									elseif($type == 'json')
+									{
+										$col = $table->text($columnName);
+									}
+									elseif($type == 'integer')
+									{
+										$col = $table->integer($columnName);
+									}
+									elseif($type == 'bigint')
+									{
+										$col = $table->bigInteger($columnName);
+									}
+									elseif($type == 'tinyint')
+									{
+										$col = $table->tinyInteger($columnName);
+									}
+									elseif($type == 'enum')
+									{
+										$enum = zbase_data_get($column, 'enum', []);
+										if(!empty($enum))
+										{
+											$enums = [];
+											foreach ($enum as $eV => $eK)
+											{
+												$enums[] = $eV;
+											}
+											$col = $table->enum($columnName, $enums);
+										}
 									}
 									else
 									{
-										$col = $table->{$type}($columnName, $length);
+										if(empty($length))
+										{
+											$col = $table->{$type}($columnName);
+										}
+										else
+										{
+											$col = $table->{$type}($columnName, $length);
+										}
 									}
-								}
-								if(!is_null($default))
-								{
-									$col->default($default);
-								}
-								else
-								{
-									$col->default(null);
-								}
-								if(!empty($nullable))
-								{
-									$col->nullable();
-								}
-								if(!empty($index))
-								{
-									$table->index($columnName);
-								}
-								if(!empty($unique))
-								{
-									$table->unique($columnName);
-								}
-								if(!empty($unsigned))
-								{
-									$col->unsigned();
-								}
-								if(!empty($comment))
-								{
-									$col->comment($comment);
-								}
-								$foreignTable = zbase_data_get($column, 'foreign.table', null);
-								$foreignColumn = zbase_data_get($column, 'foreign.column', null);
-								$foreignOnDelete = zbase_data_get($column, 'foreign.onDelete', null);
-								$foreignOnUpdate = zbase_data_get($column, 'foreign.onUpdate', null);
-								if(!is_null($foreignTable) && !is_null($foreignColumn))
-								{
-									$col = $table->foreign($columnName)->references($foreignColumn)->on($foreignTable);
-									if(!is_null($foreignOnDelete))
+									if(!is_null($default))
 									{
-										$col->onDelete($foreignOnDelete);
+										$col->default($default);
 									}
-									if(!is_null($foreignOnUpdate))
+									else
 									{
-										$col->onUpdate($foreignOnUpdate);
+										$col->default(null);
+									}
+									if(!empty($nullable))
+									{
+										$col->nullable();
+									}
+									if(!empty($index))
+									{
+										$table->index($columnName);
+									}
+									if(!empty($unique))
+									{
+										$table->unique($columnName);
+									}
+									if(!empty($unsigned))
+									{
+										$col->unsigned();
+									}
+									if(!empty($comment))
+									{
+										$col->comment($comment);
+									}
+									$foreignTable = zbase_data_get($column, 'foreign.table', null);
+									$foreignColumn = zbase_data_get($column, 'foreign.column', null);
+									$foreignOnDelete = zbase_data_get($column, 'foreign.onDelete', null);
+									$foreignOnUpdate = zbase_data_get($column, 'foreign.onUpdate', null);
+									if(!is_null($foreignTable) && !is_null($foreignColumn))
+									{
+										$col = $table->foreign($columnName)->references($foreignColumn)->on($foreignTable);
+										if(!is_null($foreignOnDelete))
+										{
+											$col->onDelete($foreignOnDelete);
+										}
+										if(!is_null($foreignOnUpdate))
+										{
+											$col->onUpdate($foreignOnUpdate);
+										}
 									}
 								}
 							}
+						}
+						// </editor-fold>
+						$orderable = zbase_data_get($entity, 'table.orderable', false);
+						if(!empty($orderable))
+						{
+							$table->integer('position')->unsigned()->comment('Row Order/Position');
+						}
+						$optionable = zbase_data_get($entity, 'table.optionable', false);
+						if(!empty($optionable))
+						{
+							$table->text('option')->nullable();
+						}
+						$sluggable = zbase_data_get($entity, 'table.sluggable', false);
+						if(!empty($sluggable))
+						{
+							$table->string('slug', 255)->nullable()->comment('Slug/URL key');
+							$table->index('slug');
+							$table->unique('slug');
 						}
 						$timestamp = zbase_data_get($entity, 'table.timestamp', false);
 						if($timestamp)

@@ -66,7 +66,6 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		{
 			$this->loadViewsFrom(__DIR__ . '/../tests/resources/views', zbase_tag() . 'test');
 			copy(__DIR__ . '/../config/entities/user.php', __DIR__ . '/../tests/config/entities/user.php');
-			copy(__DIR__ . '/../config/entities/user.php', __DIR__ . '/../tests/config/entities/user.php');
 			$this->mergeConfigFrom(
 					__DIR__ . '/../tests/config/config.php', zbase_tag()
 			);
@@ -86,10 +85,48 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		$this->app['config']['auth.providers.users.model'] = get_class(zbase_entity('user'));
 		$this->app['config']['auth.passwords.users.table'] = zbase_config_get('entity.user_tokens.table.name');
 		require __DIR__ . '/Http/Controllers/Laravel/routes.php';
-		if(!zbase_is_testing())
-		{
 
-		}
+		/**
+		 * Validator to check for account password
+		 * @TODO should be placed somewhere else other than here, and just call
+		 */
+		\Validator::extend('accountPassword', function($attribute, $value, $parameters, $validator) {
+			if(zbase_auth_has())
+			{
+				$user = zbase_auth_user();
+				if(zbase_bcrypt_check($value, $user->password))
+				{
+					return true;
+				}
+			}
+			return false;
+		});
+
+		\Validator::replacer('accountPassword', function($message, $attribute, $rule, $parameters) {
+			return _zt('Account password don\'t match.');
+		});
+
+		/**
+		 *
+		 */
+		\Validator::extend('passwordStrengthCheck', function($attribute, $value, $parameters, $validator) {
+//			if(!preg_match("#[0-9]+#", $value))
+//			{
+//				//$errors[] = "Password must include at least one number!";
+//				return false;
+//			}
+//
+//			if(!preg_match("#[a-zA-Z]+#", $value))
+//			{
+//				//$errors[] = "Password must include at least one letter!";
+//				return false;
+//			}
+			return true;
+		});
+
+		\Validator::replacer('passwordStrengthCheck', function($message, $attribute, $rule, $parameters) {
+			return _zt('New password is too weak.');
+		});
 	}
 
 }

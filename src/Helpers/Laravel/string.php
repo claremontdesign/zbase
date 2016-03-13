@@ -85,3 +85,13 @@ function zbase_string_from_array($array, $glue = '_')
 	}
 	return implode($glue, $newArgs);
 }
+
+/**
+ * generates a URL friendly key from the given string
+ * @param string $string
+ * @return string
+ */
+function zbase_string_slug($string)
+{
+	return str_slug($string);
+}

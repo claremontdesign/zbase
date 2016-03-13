@@ -36,6 +36,15 @@ function zbase_url_from_current($params = [])
 }
 
 /**
+ * Return the Previous URL
+ * @return string
+ */
+function zbase_url_previous()
+{
+	return app(\Illuminate\Routing\UrlGenerator::class)->previous();
+}
+
+/**
  * Create a URL
  * @param string $path
  * @param array $parameters

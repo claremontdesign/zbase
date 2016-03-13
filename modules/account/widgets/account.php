@@ -30,6 +30,10 @@ return [
 	 */
 	'config' => [
 		/**
+		 * Form on each tab
+		 */
+		'form_tab' => false,
+		/**
 		 * Model configuration
 		 * The Current Data to manipulate
 		 * entity
@@ -69,9 +73,9 @@ return [
 				'group' => 'accountTab',
 				'enable' => false,
 			],
-			'login' => [
+			'email' => [
 				'type' => 'tab',
-				'label' => 'Login',
+				'label' => 'Email Address',
 				'id' => 'email',
 				'group' => 'accountTab',
 				'enable' => true,
@@ -88,6 +92,13 @@ return [
 								'enable' => true,
 								'message' => 'Username is required.'
 							],
+							'unique' => [
+								'enable' => true,
+								'text' => function(){
+									return 'unique:' . zbase_entity('user')->getTable() . ',username,' . zbase_auth_user()->id() . ',user_id';
+								},
+								'message' => 'Username already exists.'
+							],
 						],
 					],
 					'email' => [
@@ -102,26 +113,65 @@ return [
 								'enable' => true,
 								'message' => 'Email address is required.'
 							],
+							'unique' => [
+								'enable' => true,
+								'text' => function(){
+									return 'unique:' . zbase_entity('user')->getTable() . ',email,' . zbase_auth_user()->id() . ',user_id';
+								},
+								'message' => 'Email address already exists.'
+							],
 						],
 					],
-					'passwordHeader' => [
-						'ui' => [
-							'type' => 'component.pageHeader',
-							'id' => 'passwordHeader',
-							'text' => 'Password'
-						],
+					'account_password' => [
+						'widget' => 'accountConfirm',
 					],
+				],
+			],
+			'password' => [
+				'type' => 'tab',
+				'label' => 'Password',
+				'id' => 'password',
+				'group' => 'accountTab',
+				'enable' => true,
+				'elements' => [
 					'password' => [
 						'type' => 'password',
 						'id' => 'password',
-						'label' => 'New Password'
+						'label' => 'New Password',
+						'validations' => [
+							'required' => [
+								'enable' => true,
+								'message' => 'A new password is required.'
+							],
+							'min' => [
+								'enable' => true,
+								'text' => 'min:6',
+								'message' => 'Password too short.'
+							],
+							'passwordStrengthCheck' => [
+								'enable' => true,
+								'message' => 'Password is too weak.'
+							],
+						],
 					],
 					'password_confirm' => [
 						'type' => 'password',
 						'id' => 'password_confirm',
-						'label' => 'Confirm New Password'
+						'label' => 'Confirm New Password',
+						'validations' => [
+							'required_with' => [
+								'enable' => true,
+								'text' => 'required_with:password',
+								'message' => 'Please verify new password.'
+							],
+							'same' => [
+								'enable' => true,
+								'text' => 'same:password',
+								'message' => 'New passwords are not the same.'
+							],
+						],
 					],
-					'accountConfirm' => [
+					'account_password' => [
 						'widget' => 'accountConfirm',
 					],
 				],

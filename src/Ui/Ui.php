@@ -303,10 +303,11 @@ abstract class Ui
 	 */
 	public function wrapperAttributes()
 	{
+		$someAttributes = property_exists($this, '_htmlWrapperAttributes') ? $this->_htmlWrapperAttributes : [];
 		$generalAttributes = zbase_config_get('ui.' . $this->_type . '.html.attributes.wrapper', []);
-		$attr = array_merge_recursive($this->_v('html.attributes.wrapper', []), $generalAttributes);
+		$attr = array_merge_recursive($this->_v('html.attributes.wrapper', []), $someAttributes, $generalAttributes);
 		$attr['class'][] = 'zbase-ui-wrapper';
-		$attr['id'] = 'zbase-ui-wrapper-' . $this->htmlId();
+		$attr['id'] = 'zbase-ui-wrapper-' . $this->id();
 		return $attr;
 	}
 

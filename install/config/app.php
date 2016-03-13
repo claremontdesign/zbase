@@ -139,6 +139,7 @@ return [
 		App\Providers\RouteServiceProvider::class,
 		Intervention\Image\ImageServiceProvider::class,
 		Zbase\LaravelServiceProvider::class,
+		Baum\Providers\BaumServiceProvider
 	],
 	/*
 	  |--------------------------------------------------------------------------

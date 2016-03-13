@@ -97,7 +97,7 @@ class PasswordController extends Controller
 		);
 
 		$response = \Password::reset($credentials, function ($user, $password) {
-					$user->passwordResseted($password);
+					$user->updatePassword($password);
 					$this->resetPassword($user, $password);
 		});
 
@@ -168,9 +168,6 @@ class PasswordController extends Controller
 	 */
 	protected function resetPassword($user, $password)
 	{
-		$user->password = bcrypt($password);
-
-		$user->save();
 		if($this->loginAfterReset())
 		{
 			Auth::login($user);

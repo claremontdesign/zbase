@@ -124,19 +124,14 @@ class Radio extends \Zbase\Ui\Form\Type\Multi
 					'type' => $this->_type,
 					'id' => $elementName . $counter,
 					'label' => $v,
+					'name' => $elementName,
 					'renderOption' => true,
 					'inline' => $this->_inline,
-					'html' => [
-						'attributes' => [
-							'input' => [
-								'value' => $k
-							],
-						],
-					],
+					'value' => $k
 				];
 				if($k == $this->getValue())
 				{
-					$elementOptions['html']['attributes']['input']['checked'] = true;
+					$elementOptions['html']['attributes']['input']['checked'] = 'checked';
 				}
 				$options[] = self::factory($elementOptions)->__toString();
 				$counter++;

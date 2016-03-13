@@ -34,7 +34,8 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 
 	use Traits\Attribute,
 	 Traits\Id,
-	 Traits\Position;
+	 Traits\Position,
+	 Traits\Html;
 
 	/**
 	 * Widget Type
@@ -62,6 +63,12 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	protected $_entityTask = null;
 
 	/**
+	 * The Module
+	 * @var \Zbase\Module\ModuleInterface
+	 */
+	protected $_module = null;
+
+	/**
 	 * Constructor
 	 * @param string $widgetId
 	 * @param array $configuration
@@ -70,6 +77,30 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	{
 		$this->_widgetId = $widgetId;
 		$this->setAttributes($configuration);
+	}
+
+
+	public function id()
+	{
+		return $this->_widgetId;
+	}
+
+	/**
+	 * Set the Module
+	 * @param \Zbase\Module\ModuleInterface $module
+	 */
+	public function setModule(\Zbase\Module\ModuleInterface $module)
+	{
+		$this->_module = $module;
+	}
+
+	/**
+	 *
+	 * @return \Zbase\Module\ModuleInterface $module
+	 */
+	public function getModule()
+	{
+		return $this->_module;
 	}
 
 	/**
@@ -83,15 +114,36 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 			$entityName = $this->_v('entity.name', null);
 			if(!is_null($entityName))
 			{
-				// $repoById = $this->_v('entity.name.repo.byId', null);
-				// $repoBy = $this->_v('entity.repo.by', null);
+				$repoById = $this->_v('entity.repo.byId', null);
+				if(is_array($repoById))
+				{
+					if(!empty($repoById['route']))
+					{
+						$id = zbase_route_input($repoById['route']);
+					}
+					if(!empty($repoById['request']) && zbase_is_post() == 'post')
+					{
+						$id = zbase_request_input($repoById['request']);
+					}
+					if(!empty($id))
+					{
+						$entity = zbase_entity($entityName);
+						if($entity->hasSoftDelete())
+						{
+							return $this->_entity = $entity->repository()->withTrashed()->byId($id);
+						}
+						return $this->_entity = $entity->repository()->byId($id);
+					}
+				}
 				$repoMethod = $this->_v('entity.method', null);
 				if(!is_null($repoMethod))
 				{
-					$this->_entity = zbase_entity($entityName)->$repoMethod();
+					return $this->_entity = zbase_entity($entityName)->$repoMethod();
 				}
+				return $this->_entity = zbase_entity($entityName);
 			}
 		}
 		return $this->_entity;
 	}
+
 }

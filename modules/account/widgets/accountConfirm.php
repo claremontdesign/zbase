@@ -35,6 +35,10 @@ return [
 						'enable' => true,
 						'message' => 'Please enter your account password.'
 					],
+					'accountPassword' => [
+						'enable' => true,
+						'message' => 'Account password don\'t match.'
+					],
 				],
 			],
 		],

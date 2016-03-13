@@ -62,12 +62,23 @@ class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	protected $_active = false;
 
 	/**
+	 * Form
+	 * @var true
+	 */
+	protected $_form = null;
+
+	/**
 	 * REturn the Id
 	 * @return type
 	 */
 	public function id()
 	{
 		return $this->_group->id() . '-' . $this->id;
+	}
+
+	public function tabId()
+	{
+		return $this->id;
 	}
 
 	/**
@@ -142,6 +153,25 @@ class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	}
 
 	/**
+	 *
+	 */
+	public function renderContents()
+	{
+		$contents = parent::renderContents();
+		if($this->getForm() instanceof \Zbase\Widgets\WidgetInterface)
+		{
+			$str = $this->_form->startTag();
+			$str .= $contents;
+			$str .= $this->_form->renderSubmitButton();
+			$str .= $this->_form->renderCSRFToken();
+			$str .= '<input type="hidden" value="' . $this->id . '" name="tab" />';
+			$str .= $this->_form->endTag();
+			return $str;
+		}
+		return $contents;
+	}
+
+	/**
 	 * Return the Wrapper Attributes
 	 * @return array
 	 */
@@ -159,4 +189,25 @@ class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 		$attr['id'] = $this->getHtmlId();
 		return $attr;
 	}
+
+	/**
+	 * Set/Get the parent Form
+	 * @param \Zbase\Widgets\Type\FormInterface $form
+	 * @return \Zbase\Ui\Form\Element
+	 */
+	public function setForm(\Zbase\Widgets\Type\FormInterface $form = null)
+	{
+		if(!is_null($form))
+		{
+			$this->_form = $form;
+			return $this;
+		}
+		return $this->_form;
+	}
+
+	public function getForm()
+	{
+		return $this->_form;
+	}
+
 }

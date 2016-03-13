@@ -27,6 +27,21 @@ namespace Zbase\Module;
  * Add: zbase()->addModule('module', module[]);
  * Get: zbase()->module('module');
  * Get All: zbase()->modules()
+ *
+ * @TODO
+ * modules.module.controller
+ * modules.module.controller.class = If you want to call an action, this is required; else, will load the default module controller
+ * modules.module.controller.action = will be called, do whatever you want with the action. be sure to define a controller.class value
+ * modules.module.controller.action.view = Will load the value of this returning a view() response
+ *
+ * controller will be check first, then widgets.
+ *
+ * modules.module.widgets
+ * modules.module.widgets.controller
+ * modules.module.widgets.controller = array|string; Widget/s will be loaded when actions will is defined, unless specific action is defined.
+ * modules.module.widgets.controller.actionName = array|string; widgets[]|widget, will be loaded;
+ * modules.module.widgets.controller.actionName.widgetId = null (will check from added widget)
+ * modules.module.widgets.controller.actionName.widgetId = PATH_TO_WIDGET (will load widget and configuration by the path provided)
  */
 use Zbase\Traits;
 use Zbase\Interfaces;
@@ -85,13 +100,33 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	 * @param string $section
 	 * @return string
 	 */
-	public function url($section)
+	public function sectionUrl($section = 'frontend')
 	{
-		if($section == 'back')
+		if($section == 'backend')
 		{
 			return $this->_v('url.backend', $this->id());
 		}
 		return $this->_v('url.frontend', $this->id());
+	}
+
+	/**
+	 * Create a URL based from params
+	 * @param string $section The Section to generate the route
+	 * @param array $params Params to generate route
+	 * @return string
+	 */
+	public function url($section, $params)
+	{
+		if($section == 'backend' || $section == 'back')
+		{
+			$adminKey = zbase_config_get('routes.adminkey.key', 'admin');
+			$routeName = $adminKey . '.' . $this->id();
+		}
+		else
+		{
+			$routeName = $this->id();
+		}
+		return zbase_url_from_route($routeName, $params);
 	}
 
 	/**
@@ -176,11 +211,16 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 					{
 						$config['id'] = $name;
 					}
-					$widgets[$name] = zbase_widget(['id' => $name, 'config' => $config]);
+					$widget = zbase_widget(['id' => $name, 'config' => $config]);
 				}
 				if(is_null($path))
 				{
-					$widgets[$name] = zbase()->widget($name);
+					$widget = zbase()->widget($name);
+				}
+				if($widget instanceof \Zbase\Widgets\WidgetInterface)
+				{
+					$widget->setModule($this);
+					$widgets[$name] = $widget;
 				}
 			}
 			return $widgets;

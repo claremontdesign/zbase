@@ -50,3 +50,24 @@ function zbase_is_testing()
 {
 	return \App::environment('testing');
 }
+
+/**
+ * Encrypt a string
+ * @param string $string The RAW string to encrypt
+ * @return string
+ */
+function zbase_bcrypt($string)
+{
+	return bcrypt($string);
+}
+
+/**
+ * Check that the given $hashed is the same as the given plain text
+ * @param string $plainText The Plain Text to compare
+ * @param string $hashed The hashed text to compare
+ * @return boolean
+ */
+function zbase_bcrypt_check($plainText, $hashed)
+{
+	return \Hash::check($plainText, $hashed);
+}

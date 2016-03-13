@@ -35,6 +35,9 @@
  * entity.$entityName.table.sampleData = boolean
  * entity.$entityName.table.softDelete = boolean
  * entity.$entityName.table.timestamps = boolean
+ * entity.$entityName.table.sluggable = boolean
+ * entity.$entityName.table.optionable = boolean
+ * entity.$entityName.table.nodeable = boolean
  * entity.$entityName.table.compositeKeys = boolean
  * entity.$entityName.table.columns
  * entity.$entityName.table.columns.$columnName
@@ -59,4 +62,4 @@
  * entity.$entityName.table.columns.$columnName.foreign.onChange
  *
  */
-return array_merge(require_once __DIR__ . '/entities/user.php');
+return array_merge_recursive(require_once __DIR__ . '/entities/user.php', require_once __DIR__ . '/entities/node.php');

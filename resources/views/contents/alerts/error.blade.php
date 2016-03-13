@@ -3,7 +3,7 @@
 		<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
 		<?php if(is_array($alerts)): ?>
 			<?php foreach ($alerts as $msg): ?>
-				{{ $msg }}<br />
+				{!! $msg !!}<br />
 			<?php endforeach; ?>
 		<?php else: ?>
 			{{ $msgs }}

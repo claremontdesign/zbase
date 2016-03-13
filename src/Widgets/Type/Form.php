@@ -19,6 +19,7 @@ namespace Zbase\Widgets\Type;
  *
  * elements
  * nested
+ * form_tag = boolean
  */
 use Zbase\Widgets;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -36,6 +37,13 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 * @var FormInterface
 	 */
 	protected $_form = null;
+
+	/**
+	 * Form Mode
+	 * input|display
+	 * @var string
+	 */
+	protected $_mode = 'input';
 
 	/**
 	 * Element
@@ -73,6 +81,12 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	protected $_hasError = false;
 
+	/**
+	 * Form Tag
+	 * @var true
+	 */
+	protected $_formTag = true;
+
 	// <editor-fold defaultstate="collapsed" desc="CONTROLLERInterface">
 
 	/**
@@ -100,14 +114,86 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function controller($action)
 	{
-		if(zbase_request_method() == 'post')
+		if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
 		{
-			if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
+			if($this->entity()->hasSoftDelete())
 			{
-				$this->entity()->widgetController('post', $action, zbase_request_inputs(), $this);
+				if($this->entity()->trashed())
+				{
+					$this->_mode = 'display';
+				}
+				else
+				{
+					if($action == 'restore' || $action == 'ddelete')
+					{
+						return zbase_redirect()->to(zbase_url_previous());
+					}
+				}
 			}
-			return;
+			$inputs = zbase_route_inputs();
+			if(zbase_request_method() == 'post')
+			{
+				$inputs = zbase_request_inputs();
+			}
+			$ret = $this->entity()->widgetController(zbase_request_method(), $action, $inputs, $this);
+			$actionMessages = $this->entity()->getActionMessages($action);
+			if(!empty($actionMessages))
+			{
+				foreach ($actionMessages as $alertType => $alertMessages)
+				{
+					if(is_array($alertMessages))
+					{
+						foreach ($alertMessages as $alertMessage)
+						{
+							zbase_alert($alertType, $alertMessage);
+						}
+					}
+				}
+			}
+			if(!empty($ret))
+			{
+				if($action == 'create')
+				{
+					$action = 'update';
+				}
+				$params = ['action' => $action, 'id' => $this->entity()->id()];
+				if($action == 'delete')
+				{
+					$params = [];
+				}
+				$url = $this->getModule()->url(zbase_section(), $params);
+				if($action == 'restore' || $action == 'ddelete')
+				{
+					$url = zbase_url_previous();
+				}
+				return zbase_redirect()->to($url);
+			}
+			if($action == 'create')
+			{
+				if(zbase_is_dev())
+				{
+					if(method_exists($this->entity(), 'fakeValues'))
+					{
+						$entity = $this->_entity;
+						$this->setValues($entity::fakeValues());
+					}
+				}
+			}
 		}
+		else
+		{
+			return zbase_abort(404);
+		}
+		return false;
+	}
+
+	/**
+	 * Check if was posted
+	 * @return boolean
+	 */
+	public function wasPosted()
+	{
+		return !empty(zbase_session_get('posted', false));
 	}
 
 	/**
@@ -118,12 +204,18 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		$this->prepare();
 		if(zbase_request_method() == 'post')
 		{
+			$currentTab = zbase_request_input('tab', false);
+			if(!empty($currentTab))
+			{
+				zbase_session_flash('sessiontab', $currentTab);
+			}
 			$validationRules = $this->getValidationRules();
 			if(!empty($validationRules))
 			{
-				$v = \Validator::make(zbase_request_inputs(), $this->getValidationRules(), $this->getValidationMessages());
+				$v = \Validator::make(zbase_request_inputs(), $validationRules, $this->getValidationMessages());
 				if($v->fails())
 				{
+					zbase_session_flash('posted', true);
 					$this->setHasError($v->errors()->getMessages());
 					$messageBag = $v->getMessageBag();
 					zbase_alert(\Zbase\Zbase::ALERT_ERROR, $messageBag, ['formvalidation' => true]);
@@ -177,26 +269,89 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 
 	/**
 	 * Create an element
-	 * @param type $element
+	 * @param array $element Element configuration
+	 * @param string $tabName The tabName the element belongs
 	 * @return Zbase\Ui\Form\ElementInterface
 	 */
-	protected function _createElement($element)
+	protected function _createElement($element, $tabName = null)
 	{
 		$e = \Zbase\Ui\Form\Element::factory($element);
 		if($e instanceof FormInterface)
 		{
 			$e->form($this);
 		}
+		if($e instanceof \Zbase\Ui\Form\ElementInterface)
+		{
+			if(!empty($tabName))
+			{
+				$e->setTab($tabName);
+			}
+		}
 		if($this->_entity instanceof \Zbase\Widgets\EntityInterface)
 		{
 			$e->entity($this->_entity);
 		}
+		if($e instanceof \Zbase\Widgets\WidgetInterface)
+		{
+			$e->form($this)->prepare();
+			if(!empty($tabName))
+			{
+				$widgetElements = $e->elements();
+				if(!empty($widgetElements))
+				{
+					foreach ($widgetElements as $widgetElement)
+					{
+						if($widgetElement instanceof \Zbase\Ui\Form\ElementInterface)
+						{
+							if(!empty($tabName))
+							{
+								$widgetElement->setTab($tabName);
+							}
+						}
+					}
+				}
+			}
+			$this->_validationRules = array_replace_recursive($this->_validationRules, $e->getValidationRules());
+			$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
+		}
+		$currentTab = zbase_request_input('tab', false);
 		if($e->hasValidations())
 		{
-			$this->_validationRules[$e->name()] = $e->getValidationRules();
-			$this->_validationMessages = array_merge($this->_validationMessages, $e->getValidationMessages());
+			$formTag = $this->_v('form_tab', true);
+			if(zbase_request_method() == 'post' && empty($formTag) && !empty($currentTab))
+			{
+				if($tabName == $currentTab)
+				{
+					$this->_validationRules[$e->name()] = $e->getValidationRules();
+					$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
+				}
+			}
+			else
+			{
+				$this->_validationRules[$e->name()] = $e->getValidationRules();
+				$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
+			}
 		}
 		return $e;
+	}
+
+	/**
+	 * Set the Form Values
+	 * @param array $values
+	 */
+	public function setValues($values)
+	{
+		if(!empty($values))
+		{
+			foreach ($values as $key => $val)
+			{
+				$e = $this->element($key);
+				if($e instanceof \Zbase\Ui\Form\ElementInterface)
+				{
+					$e->setValue($val);
+				}
+			}
+		}
 	}
 
 	/**
@@ -276,10 +431,18 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	protected function _tabs()
 	{
 		$tabs = $this->_v('tabs', null);
+		/**
+		 * If $formTag is TRUE, will create a form on each tabs
+		 */
+		$formTag = $this->_v('form_tab', true);
 		if(!is_null($tabs) && is_array($tabs))
 		{
 			foreach ($tabs as $tabName => $tab)
 			{
+				if(!is_array($tab))
+				{
+					continue;
+				}
 				$tab['group'] = $this->id() . 'tabs';
 				if(!empty($tab['elements']))
 				{
@@ -290,9 +453,14 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 							$element['id'] = $elementName;
 							$element['name'] = $elementName;
 						}
-						$tab['contents'][] = $this->_createElement($element);
+						$tab['contents'][] = $this->_createElement($element, $tabName);
 					}
 					unset($tab['elements']);
+				}
+				if(empty($formTag))
+				{
+					$tab['form'] = $this;
+					$this->setFormTag(false);
 				}
 				$tabs[$tabName] = $tab;
 			}
@@ -321,6 +489,15 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	}
 
 	/**
+	 * Render CSRF Token
+	 * @return string
+	 */
+	public function renderCSRFToken()
+	{
+		return zbase_csrf_token_field($this->id());
+	}
+
+	/**
 	 * Check if to add a submit button, default: true
 	 * @return boolean
 	 */
@@ -331,6 +508,15 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			return false;
 		}
 		return $this->_v('submit.button.enable', true);
+	}
+
+	/**
+	 * REnder submit button
+	 * @return boolean
+	 */
+	public function renderSubmitButton()
+	{
+		return '<button type="submit" class="btn btn-default">' . $this->submitButtonLabel() . '</button>';
 	}
 
 	/**
@@ -355,6 +541,42 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			return $this;
 		}
 		return $this->_form;
+	}
+
+	/**
+	 * Form Start Tag
+	 * @return string
+	 */
+	public function startTag()
+	{
+		return '<form action="" method="POST">';
+	}
+
+	/**
+	 * Form end tag
+	 * @return string
+	 */
+	public function endTag()
+	{
+		return '</form>';
+	}
+
+	/**
+	 * Set form tag
+	 * @param boolean $flag
+	 */
+	public function setFormTag($flag)
+	{
+		$this->_formTag = $flag;
+	}
+
+	/**
+	 * If this widget has a form Tag
+	 * @return boolean
+	 */
+	public function hasFormTag()
+	{
+		return $this->_formTag;
 	}
 
 }

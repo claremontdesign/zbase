@@ -6,11 +6,14 @@ $elements = $ui->elements();
 $tabs = $ui->tabs();
 $submitButton = $ui->submitButton();
 $submitButtonLabel = $ui->submitButtonLabel();
+$formTag = $ui->hasFormTag();
 ?>
 <div <?php echo $wrapperAttributes ?>>
 	<?php if(empty($ui->isNested())): ?>
-		<form action="" method="POST">
-			<?php echo zbase_csrf_token_field($ui->id())?>
+		<?php if(!empty($formTag)): ?>
+			<?php echo $ui->startTag();?>
+			<?php endif; ?>
+			<?php echo $ui->renderCSRFToken(); ?>
 		<?php endif; ?>
 		<?php if(!empty($elements)): ?>
 			<?php foreach ($elements as $element): ?>
@@ -21,11 +24,13 @@ $submitButtonLabel = $ui->submitButtonLabel();
 			<?php echo $tabs ?>
 		<?php endif; ?>
 
-		<?php if(!empty($submitButton)): ?>
-			<button type="submit" class="btn btn-default"><?php echo $submitButtonLabel ?></button>
+		<?php if(!empty($submitButton) && !empty($formTag)): ?>
+			<?php echo $ui->renderSubmitButton();?>
 		<?php endif; ?>
 
 		<?php if(empty($ui->isNested())): ?>
-		</form>
+			<?php if(!empty($formTag)): ?>
+			<?php echo $ui->endTag();?>
+		<?php endif; ?>
 	<?php endif; ?>
 </div>

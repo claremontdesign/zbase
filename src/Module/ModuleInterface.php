@@ -36,9 +36,10 @@ interface ModuleInterface
 	 * The URL Key per section
 	 * default: /$moduleId()/$action/$record/$task
 	 * @param string $section
+	 * @param array $params
 	 * @return string
 	 */
-	public function url($section);
+	public function url($section, $params);
 
 	/**
 	 * If backend is enabled

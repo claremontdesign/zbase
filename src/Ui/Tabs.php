@@ -103,6 +103,19 @@ class Tabs extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	{
 		if($tab->enabled() && $tab->hasAccess())
 		{
+			$activeTab = zbase_request_input('tab', false);
+			if(empty($activeTab))
+			{
+				$activeTab = zbase_session_get('sessiontab', false);
+			}
+			if(!empty($activeTab))
+			{
+				$tab->setActive(false);
+				if($tab->tabId() == $activeTab)
+				{
+					$tab->setActive(true);
+				}
+			}
 			if($tab->isActive())
 			{
 				$this->_hasActiveTab = true;
