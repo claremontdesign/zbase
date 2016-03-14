@@ -73,6 +73,20 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	protected $_rows = [];
 
 	/**
+	 * Has Actions Flag?
+	 * @var boolean
+	 */
+	protected $_hasActions = false;
+	protected $_actions = [];
+	protected $_actionButtons = [];
+
+	/**
+	 * Create Action Button
+	 * @var \Zbase\Ui\Component
+	 */
+	protected $_actionCreateButton = null;
+
+	/**
 	 * Rows are prepared?
 	 * @var boolean
 	 */
@@ -87,6 +101,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		parent::_pre();
 		$this->entity();
 		$this->_rows();
+		$this->_actions();
 		$this->_columns();
 	}
 
@@ -98,8 +113,15 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	{
 		if(empty($this->_rowsPrepared))
 		{
-			$this->entity();
-			$this->_rows = $this->_entity->all();
+			$repo = $this->_entity->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
+			if($this->_entity->hasSoftDelete())
+			{
+				$this->_rows = $repo->withTrashed()->all(['*'], null, null, null, true);
+			}
+			else
+			{
+				$this->_rows = $repo->all(['*'], null, null, null, true);
+			}
 			$this->_rowsPrepared = true;
 		}
 	}
@@ -172,6 +194,164 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	}
 
 	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Actions">
+
+	public function setActions($actions)
+	{
+		$this->_actions = $actions;
+		return $this;
+	}
+
+	/**
+	 * Prepare the Actions
+	 */
+	protected function _actions()
+	{
+		if(!empty($this->_actions))
+		{
+			foreach ($this->_actions as $action)
+			{
+				$enable = !empty($action['enable']) ? true : false;
+				if(!empty($enable))
+				{
+					$this->_hasActions = true;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Render the actions
+	 */
+	public function renderRowActions($row)
+	{
+		if(!$row instanceof \Zbase\Interfaces\EntityInterface)
+		{
+			return;
+		}
+		$rowTrashed = false;
+		if($this->_entity->hasSoftDelete())
+		{
+			$rowTrashed = $row->trashed();
+		}
+		if(!empty($this->_actions))
+		{
+			$this->_actionButtons = [];
+			foreach ($this->_actions as $actionName => $action)
+			{
+				if($actionName == 'delete' || $actionName == 'update')
+				{
+					if($rowTrashed)
+					{
+						continue;
+					}
+				}
+				if($actionName == 'restore' || $actionName == 'ddelete')
+				{
+					if(empty($rowTrashed))
+					{
+						continue;
+					}
+				}
+				$label = !empty($action['label']) ? $action['label'] : ucfirst($actionName);
+				if(strtolower($label) == 'ddelete')
+				{
+					$label = _zt('Forever Delete');
+				}
+				$action['type'] = 'component.button';
+				$action['id'] = $this->id() . 'Action' . $actionName;
+				$action['size'] = 'extrasmall';
+				$action['label'] = _zt($label);
+				$action['tag'] = 'a';
+				if(!empty($action['route']['name']))
+				{
+					if(!empty($action['route']['params']))
+					{
+						foreach ($action['route']['params'] as $paramName => $paramValue)
+						{
+							if(preg_match('/row::/', $paramValue))
+							{
+								$rowIndex = str_replace('row::', '', $paramValue);
+								$action['route']['params'][$paramName] = zbase_data_get($row, $rowIndex);
+							}
+						}
+					}
+					$action['routeParams'] = $action['route']['params'];
+					$action['route'] = $action['route']['name'];
+				}
+				if($actionName == 'create')
+				{
+					$action['color'] = 'blue';
+				}
+				if($actionName == 'update')
+				{
+					$action['color'] = 'green';
+				}
+				if($actionName == 'delete')
+				{
+					$action['color'] = 'red';
+				}
+				if($actionName == 'restore')
+				{
+					$action['color'] = 'warning';
+				}
+				if($actionName == 'ddelete')
+				{
+					$action['color'] = 'red';
+				}
+				$btn = \Zbase\Ui\Ui::factory($action);
+				if($actionName == 'create' && !$this->_actionCreateButton instanceof \Zbase\Ui\UiInterface)
+				{
+					$this->_actionCreateButton = $btn;
+					continue;
+				}
+				$this->_actionButtons[] = $btn;
+			}
+			return implode("\n", $this->_actionButtons);
+		}
+	}
+
+	/**
+	 * Has Actions?
+	 * return boolean
+	 */
+	public function hasActions()
+	{
+		return $this->_hasActions;
+	}
+
+	/**
+	 * Return an Action by ID
+	 * @param type $actionName
+	 * @return \Zbase\Ui\UiInterface|null
+	 */
+	public function getActionButton($actionName)
+	{
+		$this->_actions();
+		if(!empty($this->_actionButtons))
+		{
+			foreach ($this->_actionButtons as $action)
+			{
+				if($action instanceof \Zbase\Ui\UiInterface && $action->id() == $this->id() . 'Action' . $actionName)
+				{
+					return $action;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Return Create Action Button
+	 * @return Zbase\Ui\UiInterface
+	 */
+	public function getActionCreateButton()
+	{
+		$this->_actions();
+		return $this->_actionCreateButton;
+	}
+
+	// </editor-fold>
 
 	/**
 	 * Controller Action
@@ -190,7 +370,6 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	{
 
 	}
-
 
 	/**
 	 * Return the Wrapper Attributes

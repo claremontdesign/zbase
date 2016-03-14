@@ -21,18 +21,68 @@ return [
 		'entity' => [
 			'name' => 'node'
 		],
+		'actions' => [
+			'create' => [
+				'enable' => true,
+				'label' => 'Create new node',
+				'route' => [
+					'name' => 'admin.nodes',
+					'params' => ['action' => 'create']
+				],
+			],
+			'update' => [
+				'enable' => true,
+				'route' => [
+					'name' => 'admin.nodes',
+					'params' => ['action' => 'update', 'id' => 'row::node_id']
+				],
+			],
+			'delete' => [
+				'enable' => true,
+				'route' => [
+					'name' => 'admin.nodes',
+					'params' => ['action' => 'delete', 'id' => 'row::node_id']
+				],
+			],
+			'restore' => [
+				'enable' => true,
+				'route' => [
+					'name' => 'admin.nodes',
+					'params' => ['action' => 'restore', 'id' => 'row::node_id']
+				],
+			],
+			'ddelete' => [
+				'enable' => true,
+				'route' => [
+					'name' => 'admin.nodes',
+					'params' => ['action' => 'ddelete', 'id' => 'row::node_id']
+				],
+			],
+		],
 		'columns' => [
 			'id' => [
 				'label' => 'ID',
-				'enable' => true
+				'enable' => true,
+				'data' => [
+					'type' => 'integer',
+					'index' => 'node_id'
+				],
 			],
 			'title' => [
 				'label' => 'Title',
-				'enable' => true
+				'enable' => true,
+				'data' => [
+					'type' => 'string',
+					'index' => 'title'
+				],
 			],
 			'status' => [
 				'label' => 'Status',
-				'enable' => true
+				'enable' => true,
+				'data' => [
+					'type' => 'displayStatus',
+					'index' => 'status'
+				],
 			],
 		],
 	],

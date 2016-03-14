@@ -79,7 +79,6 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 		$this->setAttributes($configuration);
 	}
 
-
 	public function id()
 	{
 		return $this->_widgetId;
@@ -145,5 +144,4 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 		}
 		return $this->_entity;
 	}
-
 }

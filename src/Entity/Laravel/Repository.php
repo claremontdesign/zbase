@@ -146,17 +146,18 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$paginate = $this->getModel()->getPerPage();
 		}
-		if(empty($paginate))
+		if(!empty($paginate))
 		{
 			return zbase_cache(
-					zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder){
-				return $builder->get();
+					zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder, $paginate, $columns){
+				return $builder->paginate($paginate, $columns);
 				}, [$this->getModel()->getTable()]
 			);
 		}
+
 		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder, $paginate, $columns){
-			return $builder->paginate($paginate, $columns);
+				zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder){
+			return $builder->get();
 				}, [$this->getModel()->getTable()]
 		);
 	}
@@ -240,6 +241,10 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	protected function _query($columns, $filters, $sorting, $joins, $unions, $group)
 	{
 		$model = $this->getModel();
+		if(!empty($this->withTrashed))
+		{
+			$model = $model->withTrashed();
+		}
 		if(!empty($joins))
 		{
 			$model = $model->joinModels($joins);

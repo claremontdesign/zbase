@@ -121,6 +121,7 @@ trait Attribute
 			return $this;
 		}
 		$this->attributes[$name] = $value;
+		return $this;
 	}
 
 	/**
@@ -142,6 +143,7 @@ trait Attribute
 			$names = str_replace('set_', '', zbase_string_snake_case($name));
 			return $this->__set(zbase_string_camel_case($names), $arguments);
 		}
+		// throw new \Zbase\Exceptions\RuntimeException($name . ' method or property doesn\'t exists');
 	}
 
 }

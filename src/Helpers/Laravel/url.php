@@ -28,11 +28,25 @@ function zbase_url_from_route($name, $params = [])
  * Create URL based from current
  *
  * @param array $params Array of params to place/replace to the url
+ * @param boolean $addReplace If replace, will add and replace params, else, will create new based on params
  * @return string
  */
-function zbase_url_from_current($params = [])
+function zbase_url_from_current($params = [], $addReplace = true)
 {
-	return url(zbase_uri(), $params);
+	if(!empty($addReplace))
+	{
+		$queryStrings = array_replace_recursive(zbase_request_query_inputs(), $params);
+	}
+	else
+	{
+		$queryStrings = $params;
+	}
+	$urlQ = [];
+	foreach ($queryStrings as $k => $v)
+	{
+		$urlQ[] = $k . '=' . $v;
+	}
+	return zbase_url() . '?' . implode('&', $urlQ);
 }
 
 /**

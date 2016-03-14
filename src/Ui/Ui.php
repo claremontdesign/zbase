@@ -179,6 +179,7 @@ abstract class Ui
 				$this->_post();
 			}
 		}
+		return $this;
 	}
 
 	// </editor-fold>
@@ -345,6 +346,11 @@ abstract class Ui
 		return '';
 	}
 
+	public function render()
+	{
+		return $this->__toString();
+	}
+
 	// </editor-fold>
 
 	/**
@@ -354,12 +360,18 @@ abstract class Ui
 	 */
 	public static function factory($configuration)
 	{
+
 		$type = !empty($configuration['type']) ? $configuration['type'] : 'ui';
 		$prefix = '';
 		if(!empty(preg_match('/component./', $type)))
 		{
 			$prefix = '\\Component';
 			$type = zbase_string_camel_case(str_replace('component.', '', $type));
+		}
+		if(!empty(preg_match('/data./', $type)))
+		{
+			$prefix = '\\Data';
+			$type = zbase_string_camel_case(str_replace('data.', '', $type));
 		}
 		$id = !empty($configuration['id']) ? $configuration['id'] : null;
 		if(is_null($id))

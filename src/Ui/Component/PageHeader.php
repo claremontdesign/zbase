@@ -3,7 +3,7 @@
 namespace Zbase\Ui\Component;
 
 /**
- * Zbase-Ui-PageHeader
+ * Zbase-Ui-Component-PageHeader
  *
  * PageHeader
  *
@@ -13,7 +13,7 @@ namespace Zbase\Ui\Component;
  * @copyright Copyright (c) 2016 ClaremontDesign/MadLabs-Dx
  * @file PageHeader.php
  * @project Zbase
- * @package Zbase/Ui/Form/Elements
+ * @package Zbase/Ui/Components
  */
 use Zbase\Traits;
 use Zbase\Interfaces;
@@ -37,7 +37,7 @@ class PageHeader extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterfa
 	 * The view File to use
 	 * @var string
 	 */
-	protected $_viewFile = 'ui.pageheader';
+	protected $_viewFile = 'ui.components.pageheader';
 
 	/**
 	 * Tag to use
