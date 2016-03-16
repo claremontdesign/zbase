@@ -79,4 +79,26 @@ function zbase_generate_password($length = 9, $available_sets = 'luds')
 	return $dash_str;
 }
 
+/**
+ * GEnerate a hash string based on the given argument
+ * @param string $value The value to hash
+ * @param string $salt Salt/Key
+ * @return string
+ */
+function zbase_generate_hash($value, $salt = null)
+{
+	$hash = new \Zbase\Utility\Hash\Hash($salt);
+	return $hash->encode($value);
+}
 
+/**
+ * Reverse of zbase_generate_hash
+ * @param string $hashedValue The hashedValue to decode
+ * @param string $salt Salt/Keys
+ * @return mixed
+ */
+function zbase_generate_hash_reverse($hashedValue, $salt = null)
+{
+	$hash = new \Zbase\Utility\Hash\Hash($salt);
+	return $hash->decode($hashedValue);
+}

@@ -29,6 +29,14 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	 */
 	protected $entityName = 'node';
 
+	protected static function boot()
+	{
+		parent::boot();
+		static::saved(function($node) {
+			$node->_updateAlphaId();
+		});
+	}
+
 	/**
 	 * Widget entity interface.
 	 * 	Data should be validated first before passing it here

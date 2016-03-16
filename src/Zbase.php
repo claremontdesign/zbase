@@ -308,13 +308,17 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			}
 			if(!empty($config))
 			{
-				if($type == 'form')
+				if(strtolower($type) == 'form')
 				{
 					$w = new \Zbase\Widgets\Type\Form($name, $config);
 				}
-				if($type == 'datatable')
+				if(strtolower($type) == 'datatable')
 				{
 					$w = new \Zbase\Widgets\Type\Datatable($name, $config);
+				}
+				if(strtolower($type) == 'treeview')
+				{
+					$w = new \Zbase\Widgets\Type\TreeView($name, $config);
 				}
 				if($w->enabled())
 				{

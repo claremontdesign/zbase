@@ -300,9 +300,12 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 					$action['color'] = 'red';
 				}
 				$btn = \Zbase\Ui\Ui::factory($action);
-				if($actionName == 'create' && !$this->_actionCreateButton instanceof \Zbase\Ui\UiInterface)
+				if($actionName == 'create')
 				{
-					$this->_actionCreateButton = $btn;
+					if(!$this->_actionCreateButton instanceof \Zbase\Ui\UiInterface)
+					{
+						$this->_actionCreateButton = $btn;
+					}
 					continue;
 				}
 				$this->_actionButtons[] = $btn;
@@ -379,6 +382,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	{
 		$attr = parent::wrapperAttributes();
 		$attr['class'][] = 'zbase-widget-wrapper';
+		$attr['class'][] = 'zbase-widget-wrapper-' . $this->_type;
 		$attr['id'] = 'zbase-widget-wrapper-' . $this->id();
 		return $attr;
 	}

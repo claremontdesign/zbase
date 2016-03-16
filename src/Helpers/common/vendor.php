@@ -91,6 +91,7 @@
  */
 function alphaID($in, $to_num = false, $pad_up = false, $pass_key = null)
 {
+	$pass_key = null;
 	$out = '';
 	$index = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	$base = strlen($index);

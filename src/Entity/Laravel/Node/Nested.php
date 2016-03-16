@@ -4,7 +4,7 @@ namespace Zbase\Entity\Laravel\Node;
 
 /**
  * Zbase-Node Nested
- *
+ * https://github.com/etrepat/baum
  * Node Entity Base Model
  *
  * @link http://zbase.dennesabing.com
@@ -15,32 +15,33 @@ namespace Zbase\Entity\Laravel\Node;
  * @project Nested
  * @package Zbase/Entity/Node
  */
-use Zbase\Entity\Laravel\Entity as BaseEntity;
-use Zbase\Widgets\EntityInterface as WidgetEntityInterface;
+use Zbase\Entity\Laravel\Traits as LaravelTraits;
+use Zbase\Traits;
 
-class Nested extends BaseEntity implements WidgetEntityInterface
+
+class Nested extends \Baum\Node
 {
 
+	use LaravelTraits\Filterable,
+	 LaravelTraits\Joinable,
+	 LaravelTraits\Sortable,
+	 LaravelTraits\Entity,
+	 \Zbase\Entity\Laravel\Node\Traits\Node,
+	 Traits\Cache;
+
 	/**
-	 * Widget entity interface.
-	 * 	Data should be validated first before passing it here
-	 * @param string $method post|get
-	 * @param string $action the controller action
-	 * @param array $data validated; assoc array
-	 * @param Zbase\Widgets\Widget $widget
+	 * Create a new Eloquent model instance.
+	 *
+	 * @param  array  $attributes
+	 * @return void
 	 */
-	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
+	public function __construct(array $attributes = [])
 	{
-		if(strtolower($method) == 'post')
-		{
-			if($action == 'index')
-			{
-
-			}
-		}
+		parent::__construct($attributes);
+		$this->__initEntity();
 	}
-
 	// <editor-fold defaultstate="collapsed" desc="COLUMNS">
+
 	/**
 	 * Return table minimum columns requirement
 	 * @return array
@@ -88,6 +89,5 @@ class Nested extends BaseEntity implements WidgetEntityInterface
 		];
 		return $columns;
 	}
-
 	// </editor-fold>
 }

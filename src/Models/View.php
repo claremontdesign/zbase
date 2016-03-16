@@ -403,13 +403,23 @@ class View
 		$str = '';
 		if(!empty($this->placeholders[$placeholder]))
 		{
-			$items = zbase_collection($this->placeholders[$placeholder])->sortBy(function($view){
-						if($view instanceof Interfaces\PositionInterface)
-						{
-							return $view->position();
-						}
-						return 0;
-			})->all();
+
+			$collection = $this->placeholders[$placeholder];
+			$i = 0;
+			foreach ($collection as $coll)
+			{
+				$position = $coll->getPosition();
+				if(empty($position))
+				{
+					$coll->setPosition(count($collection) - $i);
+				}
+				$i++;
+			}
+
+
+			$items = zbase_collection($collection)->sortByDesc(function ($itm) {
+						return $itm->getPosition();
+				})->all();
 			foreach ($items as $obj)
 			{
 				$str .= $obj;

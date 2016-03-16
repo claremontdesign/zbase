@@ -40,7 +40,7 @@ return [
 				'cdn' => '//code.jquery.com/jquery-1.11.0.min.js',
 				'src' => zbase_path_asset('jquery/jquery-1.11.0.min.js'),
 				'enable' => true,
-				'position' => 0,
+				'position' => 999,
 				'dependents' => [
 					[
 						'id' => 'migrate',
@@ -48,12 +48,14 @@ return [
 						'cdn' => '//code.jquery.com/jquery-migrate-1.2.1.min.js',
 						'src' => zbase_path_asset('jquery/jquery-migrate-1.2.1.min.js'),
 						'enable' => true,
+						'position' => 998,
 					],
 					[
 						'id' => 'jqueryMobile',
 						'type' => \Zbase\Models\View::JAVASCRIPT,
 						'cdn' => '//code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js',
 						'enable' => false,
+						'position' => 997,
 					],
 					[
 						'id' => 'ui',
@@ -61,6 +63,7 @@ return [
 						'cdn' => '//code.jquery.com/ui/1.11.4/jquery-ui.min.js',
 						'src' => zbase_path_asset('jquery/jquery-ui-1.11.4.min.js'),
 						'enable' => true,
+						'position' => 997,
 					]
 				]
 			],
@@ -69,6 +72,7 @@ return [
 			'bootstrap' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
 				'cdn' => '//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js',
+				'position' => 996,
 				'src' => zbase_path_asset('bootstrap/js/bootstrap.min.js'),
 				'enable' => true,
 				'dependents' => [
@@ -76,7 +80,7 @@ return [
 						'id' => 'meta-charset',
 						'type' => \Zbase\Models\View::HEADMETA,
 						'enable' => true,
-						'position' => 9999,
+						'position' => 999,
 						'html' => [
 							'attributes' => [
 								'charset' => 'utf-8'
@@ -87,7 +91,7 @@ return [
 						'id' => 'meta-viewport',
 						'type' => \Zbase\Models\View::HEADMETA,
 						'name' => 'viewport',
-						'position' => 9998,
+						'position' => 998,
 						'content' => 'width=device-width, initial-scale=1',
 						'enable' => true
 					],
@@ -95,7 +99,7 @@ return [
 						'id' => 'meta-compatibility',
 						'type' => \Zbase\Models\View::HEADMETA,
 						'enable' => true,
-						'position' => 9997,
+						'position' => 997,
 						'content' => 'IE=edge',
 						'html' => [
 							'attributes' => [
@@ -104,17 +108,19 @@ return [
 						]
 					],
 					[
-						'id' => 'theme',
-						'type' => \Zbase\Models\View::STYLESHEET,
-						'cdn' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css',
-						'href' => zbase_path_asset('bootstrap/css/bootstrap-theme.min.css'),
-						'enable' => true,
-					],
-					[
 						'id' => 'base',
 						'type' => \Zbase\Models\View::STYLESHEET,
 						'cdn' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css',
 						'href' => zbase_path_asset('bootstrap/css/bootstrap.min.css'),
+						'position' => 999,
+						'enable' => true,
+					],
+					[
+						'id' => 'theme',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'cdn' => 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css',
+						'position' => 998,
+						'href' => zbase_path_asset('bootstrap/css/bootstrap-theme.min.css'),
 						'enable' => true,
 					],
 					[
@@ -139,9 +145,24 @@ return [
 							'conditions' => 'if lt IE 9'
 						],
 					]
-				]
+				],
 			// </editor-fold>
 			],
+			// <editor-fold defaultstate="collapsed" desc="Widget:Tree">
+			'bootstrap-treeview' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('bootstrap/plugins/treeview/js/bootstrap-treeview.js'),
+				'enable' => true,
+				'dependents' => [
+					[
+						'id' => 'bootstrap-treeview',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('bootstrap/plugins/treeview/css/bootstrap-treeview.css'),
+						'enable' => true,
+					],
+				]
+			]
+		// </editor-fold>
 		],
 		'autoload' => [
 			'plugins' => ['meta-viewport', 'meta-charset', 'meta-http-equiv', 'meta-author', 'jquery', 'bootstrap', 'zbase']

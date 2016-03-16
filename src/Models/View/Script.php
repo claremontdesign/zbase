@@ -54,6 +54,11 @@ class Script implements Interfaces\IdInterface, Interfaces\HtmlInterface, Interf
 	{
 		$this->setPlaceholder('body_scripts');
 		$this->setAttributes($attributes);
+		$onLoad = $this->getOnLoad();
+		if(!empty($onLoad))
+		{
+			$this->setPlaceholder('body_scripts_onload');
+		}
 	}
 
 	/**
@@ -67,7 +72,7 @@ class Script implements Interfaces\IdInterface, Interfaces\HtmlInterface, Interf
 		$script = $this->getScript();
 		if(!empty($id) && !empty($script))
 		{
-			return EOF . '<script type="text/javascript" id="' . $this->getHtmlId() . '">' . EOF . $script . EOF . '</script>' . EOF;
+			return EOF . $script . EOF;
 		}
 		return '';
 	}

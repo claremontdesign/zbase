@@ -68,7 +68,6 @@ trait Node
 			{
 				$this->nodeAttributes($data);
 				$this->save();
-				$this->_updateAlphaId();
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
@@ -184,7 +183,7 @@ trait Node
 	{
 		if(!empty($this->node_id) && empty($this->alpha_id) && !empty($this->alphable))
 		{
-			$this->alpha_id = alphaID($this->node_id, false, false, $this->entityName);
+			$this->alpha_id = zbase_generate_hash($this->node_id, $this->entityName);
 			$this->save();
 		}
 	}
@@ -287,11 +286,10 @@ trait Node
 
 	}
 
-	// <editor-fold defaultstate="collapsed" desc="COLUMNS">
 	/**
 	 * Return fake values
 	 */
-	public static function fakeValues()
+	public static function fakeValue()
 	{
 		$faker = \Faker\Factory::create();
 		return [
@@ -302,6 +300,7 @@ trait Node
 		];
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="COLUMNS">
 	/**
 	 * Return table minimum columns requirement
 	 * @return array

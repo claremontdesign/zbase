@@ -18,10 +18,4 @@ namespace Zbase\Interfaces;
 interface EntityInterface
 {
 
-	/**
-	 * FixData
-	 * @param array $data
-	 * @param type $mode
-	 */
-	public function fixDataArray(array $data, $mode = null);
 }

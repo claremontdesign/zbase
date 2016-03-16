@@ -103,6 +103,15 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
+	 * Proxy
+	 * @return Zbase\Widget\EntityInterface
+	 */
+	protected function _entity()
+	{
+		return $this->entity();
+	}
+
+	/**
 	 * Return the entity
 	 * @return Zbase\Widget\EntityInterface
 	 */

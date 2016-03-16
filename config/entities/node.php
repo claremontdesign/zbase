@@ -17,6 +17,17 @@ return [
 		'node' => [
 			'enable' => true,
 			'model' => Zbase\Entity\__FRAMEWORK__\Node\Node::class,
+			'data' => [
+				'events' => [
+					'post' => function(){
+						for ($x = 0; $x <= 15; $x++)
+						{
+							$entity = new \Zbase\Entity\Laravel\Node\Node(\Zbase\Entity\Laravel\Node\Node::fakeValue());
+							$entity->save();
+						}
+					}
+				],
+			],
 			'relations' => [
 				'categories' => [
 					'entity' => 'node_category',
@@ -46,7 +57,14 @@ return [
 		],
 		'node_category' => [
 			'enable' => true,
-			'model' => Zbase\Entity\__FRAMEWORK__\Node\Nested::class,
+			'model' => Zbase\Entity\__FRAMEWORK__\Node\Category::class,
+			'data' => [
+				'events' => [
+					'post' => function(){
+						\Zbase\Entity\Laravel\Node\Category::fakeValues();
+					}
+				],
+			],
 			'relations' => [
 				'nodes' => [
 					'entity' => 'nodes',
@@ -66,18 +84,18 @@ return [
 				'primaryKey' => 'category_id',
 				'description' => 'Node Categories',
 				'timestamp' => true,
-				'softDelete' => true,
 				'alphaId' => true,
 				'optionable' => true,
 				'nodeable' => true,
 				'nesteable' => true,
+				'softDelete' => true,
 				'sluggable' => true,
 				'columns' => []
 			]
 		],
 		'nodes_category_pivot' => [
 			'enable' => true,
-			'model' => Zbase\Entity\__FRAMEWORK__\Node\Nested::class,
+			'model' => Zbase\Entity\__FRAMEWORK__\Node\Category::class,
 			'table' => [
 				'name' => 'nodes_category_pivot',
 				'description' => 'Nodes-Categories Pivot Table',
