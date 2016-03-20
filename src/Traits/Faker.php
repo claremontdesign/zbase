@@ -74,6 +74,10 @@ trait Faker
 						return $faker->email();
 					case 'alphaid':
 						return alphaID(time());
+					case 'companyname':
+						return $faker->company();
+					case 'telephone':
+						return $faker->phoneNumber();
 					case 'password':
 						return bcrypt('password');
 					case 'avatarurl':

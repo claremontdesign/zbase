@@ -19,7 +19,7 @@ namespace Zbase\Widgets\Type;
  */
 use Zbase\Widgets;
 
-class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widgets\ControllerInterface
+class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widgets\ControllerInterface, FormInterface
 {
 
 	/**
@@ -45,6 +45,12 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	 * @var \Zbase\Entity\EntityInterface[]
 	 */
 	protected $_rows = null;
+
+	/**
+	 * Selected Rows
+	 * @var \Zbase\Entity\EntityInterface[]
+	 */
+	protected $_selectedRows = null;
 
 	/**
 	 * Create Action Button
@@ -139,6 +145,39 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	}
 
 	/**
+	 * Set the Selected Rows
+	 * @param \Zbase\Entity\EntityInterface[] $selectedRows
+	 * @return \Zbase\Widgets\Type\TreeView
+	 */
+	public function setSelectedRows($selectedRows)
+	{
+		$this->_selectedRows = $selectedRows;
+		return $this;
+	}
+
+	/**
+	 * Return the Selected Rows
+	 * @return \Zbase\Entity\EntityInterface[]
+	 */
+	public function selectedRows()
+	{
+		if(is_null($this->_selectedRows))
+		{
+			$this->_selectedRows = [];
+			if($this->form() instanceof \Zbase\Widgets\Type\FormInterface)
+			{
+				$selectedRow = $this->form()->entity();
+				if($selectedRow instanceof \Zbase\Entity\Laravel\Node\Nested)
+				{
+					$p = $selectedRow->parent()->first();
+					$this->_selectedRows[$p->category_id] = $p;
+				}
+			}
+		}
+		return $this->_selectedRows;
+	}
+
+	/**
 	 * Return the Rows
 	 */
 	public function getRows()
@@ -174,6 +213,21 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 		$attr['class'][] = 'zbase-widget-wrapper';
 		$attr['id'] = 'zbase-widget-wrapper-' . $this->id();
 		return $attr;
+	}
+
+	/**
+	 * Set/Get the parent Form
+	 * @param \Zbase\Widgets\Type\FormInterface $form
+	 * @return \Zbase\Ui\Form\Element
+	 */
+	public function form(\Zbase\Widgets\Type\FormInterface $form = null)
+	{
+		if(!is_null($form))
+		{
+			$this->_form = $form;
+			return $this;
+		}
+		return $this->_form;
 	}
 
 }

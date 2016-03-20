@@ -26,7 +26,47 @@ return [
 		'frontend' => 'nodes-category/{task?}',
 	],
 	'controller' => [
-		'action' => []
+		'back' => [
+			'action' => [
+				'index' => [
+					'page' => [
+						'title' => 'Nodes Category',
+						'headTitle' => 'Nodes Category',
+						'subTitle' => 'Manage nodes category',
+						'breadcrumbs' => [
+							['label' => 'Nodes Category', 'link' => '#'],
+						]
+					]
+				],
+				'create' => [
+					'page' => [
+						'title' => 'Create',
+						'headTitle' => 'Create Category',
+						'subTitle' => 'Create a category',
+						'breadcrumbs' => [
+							['label' => 'Nodes Category', 'route' => ['name' => 'admin.nodes-category']],
+							['label' => 'Create', 'link' => '#'],
+						]
+					]
+				],
+				'update' => [
+					'page' => [
+						'title' => 'Update',
+						'headTitle' => 'Update Category',
+						'subTitle' => 'Update a category',
+						'breadcrumbs' => [
+							['label' => 'Nodes Category', 'route' => ['name' => 'admin.nodes-category','params' => ['action' => 'index']]],
+							['label' => 'Update', 'link' => '#'],
+						]
+					]
+				],
+				'delete' => [],
+				'restore' => [],
+				'ddelete' => [],
+				'view' => [],
+				'move' => [],
+			]
+		],
 	],
 	'widgets' => [
 		'controller' => [
@@ -34,7 +74,7 @@ return [
 				'nodes-category' => null
 			],
 			'create' => [
-				'node-category' => null
+				'node-category' => null,
 			],
 			'update' => [
 				'node-category' => null

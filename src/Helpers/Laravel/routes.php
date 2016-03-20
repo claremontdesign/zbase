@@ -86,7 +86,7 @@ function zbase_routes_init($routes = null)
 						{
 							$frontRoute = [
 								'controller' => [
-									'name' => 'modulePage',
+									'name' => 'pageModule',
 									'method' => 'index',
 									'enable' => true,
 									'params' => [
@@ -173,6 +173,7 @@ function zbase_route_response($name, $route)
 	{
 		return zbase_response(view(zbase_view_file('maintenance')));
 	}
+	zbase()->setCurrentRouteName($name);
 	$guest = true;
 	$authed = false;
 	$guestOnly = false;
@@ -253,7 +254,6 @@ function zbase_route_response($name, $route)
 				$controllerClass = zbase_controller_create_name(zbase_config_get('controller.class.' . $controllerName . '.name', Zbase\Http\Controllers\__FRAMEWORK__\PageController::class));
 				$controllerObject = zbase_object_factory($controllerClass, !empty($route['controller']['params']) ? $route['controller']['params'] : []);
 				zbase()->setController($controllerObject->setName($controllerName)->setActionName($controllerMethod)->setRouteParameters($params));
-				zbase()->setCurrentRouteName($name);
 				zbase_view_page_details($route);
 				return zbase_response($controllerObject->$controllerMethod());
 			}

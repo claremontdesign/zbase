@@ -1,6 +1,7 @@
 <?php
 $rows = $ui->getRows();
 $actionCreateButton = $ui->getActionCreateButton()->setAttribute('size', 'default');
+zbase_view_placeholder_add('topActionBar', $ui->id() . 'createAction', '<li><a href="' . $actionCreateButton->href() . '">' . $actionCreateButton->getLabel() . '</a></li>');
 ?>
 <div role="toolbar" class="btn-toolbar pull-left">
 	<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.pagination'), ['paginator' => $rows]); ?>

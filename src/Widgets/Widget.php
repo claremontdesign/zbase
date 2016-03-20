@@ -54,7 +54,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	 * display|update|delete|restore|ddelete|create
 	 * @var string
 	 */
-	protected $_task = null;
+	protected $_action = null;
 
 	/**
 	 * The Entity task add|update|delete|restore|ddelete|row|rows
@@ -112,6 +112,22 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
+	 * Preparation
+	 */
+	protected function _pre()
+	{
+		parent::_pre();
+	}
+
+	/**
+	 * Post Prep
+	 */
+	protected function _post()
+	{
+		parent::_post();
+	}
+
+	/**
 	 * Return the entity
 	 * @return Zbase\Widget\EntityInterface
 	 */
@@ -153,4 +169,5 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 		}
 		return $this->_entity;
 	}
+
 }

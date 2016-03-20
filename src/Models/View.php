@@ -36,10 +36,22 @@ class View
 	protected $prepared = false;
 
 	/**
-	 * The pageTitle (H1)
+	 * The HEAD Title
 	 * @var string|array
 	 */
 	protected $pageTitle = null;
+
+	/**
+	 * The Title (H1)
+	 * @var string
+	 */
+	protected $title = null;
+
+	/**
+	 * SubTitle
+	 * @var string
+	 */
+	protected $subTitle = null;
 
 	/**
 	 * Set the page metas like description, keyword, title
@@ -123,6 +135,41 @@ class View
 	{
 		$this->pageTitle = $pageTitle;
 		return $this;
+	}
+
+	/**
+	 * SEt the Title and Subtitle
+	 * @param type $title
+	 * @param type $subTitle
+	 * @return \Zbase\Models\View
+	 */
+	public function setTitle($title, $subTitle = null)
+	{
+		$this->title = $title;
+		$this->subTitle = $subTitle;
+		return $this;
+	}
+
+	/**
+	 * Return the Title
+	 * @return string
+	 */
+	public function title()
+	{
+		if(empty($this->title))
+		{
+			return $this->pageTitle;
+		}
+		return $this->title;
+	}
+
+	/**
+	 * Return the SubTitle
+	 * @return string
+	 */
+	public function subTitle()
+	{
+		return $this->subTitle;
 	}
 
 	/**
@@ -316,6 +363,44 @@ class View
 	{
 		if(empty($this->prepared))
 		{
+
+			$jsVars = [];
+			$mobileDetector = zbase()->mobile()->detector();
+			$isMobile = $mobileDetector->isMobile();
+			if($isMobile)
+			{
+				$jsVars[] = 'isMobile=' . ($isMobile ? 'true;' : 'false;');
+				$jsVars[] = 'isMobileTablet=' . ($mobileDetector->isTablet() ? 'true' : 'false');
+				$jsVars[] = 'isMobileIOS=' . ($mobileDetector->isIos() ? 'true' : 'false');
+				$jsVars[] = 'isMobileAndroid=' . ($mobileDetector->isAndroidOs() ? 'true' : 'false');
+			}
+			$jsVars[] = 'screenWidth=window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName(\'body\')[0].clientWidth';
+			$jsVars[] = 'screenHeight=window.innerHeight|| document.documentElement.clientHeight|| document.getElementsByTagName(\'body\')[0].clientHeight';
+			$jQueryResize = 'window.onresize = function(){'
+					. 'if (typeof (window.innerWidth) == \'number\') {
+							screenWidth = window.innerWidth;
+							screenHeight = window.innerHeight;
+						} else {
+							if (document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)) {
+							screenWidth = document.documentElement.clientWidth;
+							screenHeight = document.documentElement.clientHeight;
+							} else {
+								if (document.body && (document.body.clientWidth || document.body.clientHeight))
+								{
+									screenWidth = document.body.clientWidth;
+									screenHeight = document.body.clientHeight;
+								}
+							}
+						}
+				};';
+			$jsVarsLoad = [
+				'id' => 'mobileDetect',
+				'type' => \Zbase\Models\View::SCRIPT,
+				'enable' => true,
+				'script' => '<script type="text/javascript">var ' . implode(',', $jsVars) . ';' . $jQueryResize . '</script>',
+				'placeholder' => 'head_scripts',
+			];
+			$this->add(self::SCRIPT, $jsVarsLoad);
 			$controller = zbase_request_controller();
 			if(!empty($controller))
 			{
@@ -404,23 +489,23 @@ class View
 		if(!empty($this->placeholders[$placeholder]))
 		{
 
-			$collection = $this->placeholders[$placeholder];
-			$i = 0;
-			foreach ($collection as $coll)
-			{
-				$position = $coll->getPosition();
-				if(empty($position))
-				{
-					$coll->setPosition(count($collection) - $i);
-				}
-				$i++;
-			}
-
-
-			$items = zbase_collection($collection)->sortByDesc(function ($itm) {
-						return $itm->getPosition();
-				})->all();
-			foreach ($items as $obj)
+//			$collection = $this->placeholders[$placeholder];
+//			$i = 0;
+//			foreach ($collection as $coll)
+//			{
+//				$position = $coll->getPosition();
+//				if(empty($position))
+//				{
+//					$coll->setPosition(count($collection) - $i);
+//				}
+//				$i++;
+//			}
+//
+//
+//			$items = zbase_collection($collection)->sortByDesc(function ($itm) {
+//						return $itm->getPosition();
+//				})->all();
+			foreach ($this->placeholders[$placeholder] as $obj)
 			{
 				$str .= $obj;
 			}
@@ -541,6 +626,12 @@ class View
 
 	/**
 	 * Set Bredcrumb
+	 *  Label => $link Assoc Array
+	 * [
+	 * 	[label => link],
+	 * 	[label => link]
+	 * ]
+	 *
 	 * 	Based navigation setup
 	 * 	[
 	 * 		main.home

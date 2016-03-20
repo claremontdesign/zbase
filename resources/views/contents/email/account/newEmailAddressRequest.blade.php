@@ -10,3 +10,9 @@
  * /account/email/update-request?e=email&c=$code
  * zbase_url_from_route('account', ['action' => 'email','task' => 'update-request','e' => $newEmailAddress,'c' => $code])
  */
+?>
+<?php echo zbase_view_render(zbase_view_file_contents('email.header')); ?>
+
+
+
+<?php echo zbase_view_render(zbase_view_file_contents('email.footer')); ?>

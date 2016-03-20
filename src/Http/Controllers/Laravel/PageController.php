@@ -37,6 +37,55 @@ class PageController extends Controller
 		return $this->view(zbase_view_file('maintenance'));
 	}
 
+	public function contact()
+	{
+		$this->_contactUs();
+		return $this->view(zbase_view_file('page.contact'));
+	}
+
+	protected function _contactUs()
+	{
+		$success = false;
+		if($this->isPost())
+		{
+			$validatorMessages = [
+				'email.required' => _zt('Email Address is required.'),
+				'email.email' => _zt('Invalid email address.'),
+				'message.required' => _zt('Message is required.'),
+				'name.required' => _zt('Name is required.'),
+			];
+			$rules = [
+				'email' => 'required|email',
+				'message' => 'required',
+				'name' => 'required',
+			];
+			$valid = $this->validateInputs(zbase_request_inputs(), $rules, $validatorMessages);
+			if(!empty($valid))
+			{
+				$success = zbase_messenger_email('contactus', zbase_request_input('email'), _zt(zbase_site_name() . ' - Contact Us Form - ' . zbase_request_input('name')), zbase_view_file_contents('email.contactus'), zbase_request_inputs());
+				if(!empty($success))
+				{
+					zbase_alert('success', _zt('Message sent!'));
+					return redirect(zbase_url_previous());
+				}
+				else
+				{
+					zbase_alert('error', _zt('There was a problem sending your message. Kindly try again!'));
+				}
+			}
+		}
+	}
+
+	/**
+	 * Render a View File
+	 * @param string $view The View File
+	 * @return view
+	 */
+	public function renderViewFile($view)
+	{
+		return $this->view($view);
+	}
+
 	/**
 	 * Used only for testing
 	 * @return view
@@ -46,13 +95,13 @@ class PageController extends Controller
 		if($this->isPost())
 		{
 			$validatorMessages = [
-				'email.required' => 'Email Address is required.',
-				'email.email' => 'Invalid email address.'
+				'email.required' => _zt('Email Address is required.'),
+				'email.email' => _zt('Invalid email address.'),
 			];
 			$valid = $this->validateInputs(zbase()->request()->inputs(), ['email' => 'required|email'], $validatorMessages);
 			if(!empty($valid))
 			{
-				$this->message('success', 'Successfull!!!');
+				$this->message('success', _zt('Successfull!'));
 			}
 		}
 		return $this->view('form');

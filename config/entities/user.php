@@ -164,7 +164,7 @@ return [
 									'enable' => true
 								],
 								'hidden' => true,
-								'fillable' => false,
+								'fillable' => true,
 								'type' => 'string',
 								'valueMap' => [
 									'ban_no_auth' => 'Banned cannot Login',

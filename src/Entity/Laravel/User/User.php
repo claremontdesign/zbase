@@ -30,6 +30,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 
 	use Authenticatable,
 	 Authorizable,
+	 \Illuminate\Database\Eloquent\SoftDeletes,
 	 CanResetPassword;
 
 	const STATUS_OK = 'ok';
@@ -68,6 +69,26 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	public function email()
 	{
 		return $this->email;
+	}
+
+	public function displayName()
+	{
+		return $this->profile()->first_name . ' ' . $this->profile()->last_name;
+	}
+
+	/**
+	 * Return a messages based on the Action made
+	 * @param boolean $flag
+	 * @param string $action create|update|delete|restore|ddelete
+	 * @return array
+	 */
+	public function getActionMessages($action)
+	{
+		if(!empty($this->_actionMessages[$action]))
+		{
+			return $this->_actionMessages[$action];
+		}
+		return [];
 	}
 
 	/**
@@ -197,8 +218,14 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public static function create(array $attributes = [])
 	{
-		\DB::beginTransaction();
-		$model = parent::create($attributes);
+		zbase_db_transaction_start();
+		if(!empty($attributes['profile']))
+		{
+			$attributesProfile = $attributes['profile'];
+			unset($attributes['profile']);
+		}
+		$model = zbase_entity('user');
+		$model->fill($attributes);
 		$model->toggleRelationshipMode();
 		if(!empty($attributes['password']))
 		{
@@ -209,30 +236,128 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$model->status = $attributes['status'];
 		}
 		$role = self::roles()->getRelated()->repository()->by('role_name', !empty($attributes['role']) ? $attributes['role'] : zbase_config_get('auth.role.default', 'user'))->first();
+		$model->save();
 		if(!empty($role))
 		{
 			$model->roles()->save($role);
 			$model->alpha_id = alphaID($model->user_id, false, strlen($model->getKeyName()), $model->getTable());
 			$model->save();
+			if(!empty($attributesProfile))
+			{
+				\Eloquent::unguard();
+				$profileAttributes = [
+					'first_name' => !empty($attributesProfile['first_name']) ? $attributesProfile['first_name'] : null,
+					'last_name' => !empty($attributesProfile['last_name']) ? $attributesProfile['last_name'] : null,
+					'middle_name' => !empty($attributesProfile['middle_name']) ? $attributesProfile['middle_name'] : null,
+					'dob' => !empty($attributesProfile['dob']) ? $attributesProfile['dob'] : null,
+					'gender' => !empty($attributesProfile['gender']) ? $attributesProfile['gender'] : null,
+					'avatar' => !empty($attributesProfile['avatar']) ? $attributesProfile['avatar'] : null,
+				];
+				$model->profile()->create(array_replace_recursive($attributesProfile, $profileAttributes));
+			}
+			$model->toggleRelationshipMode();
+			if($model->sendWelcomeMessage($attributes))
+			{
+				zbase_db_transaction_commit();
+				return $model;
+			}
 		}
 		else
 		{
-			\Db::rollback();
-			throw new \Zbase\Exceptions\RuntimeException('User Role given not found.');
+			zbase_db_transaction_rollback();
+			throw new \Zbase\Exceptions\RuntimeException(_zt('User Role given not found.'));
 		}
-		$profileAttributes = [
-			'user_id' => $model->user_id,
-			'first_name' => !empty($attributes['first_name']) ? $attributes['first_name'] : null,
-			'last_name' => !empty($attributes['last_name']) ? $attributes['last_name'] : null,
-			'middle_name' => !empty($attributes['middle_name']) ? $attributes['middle_name'] : null,
-			'dob' => !empty($attributes['dob']) ? $attributes['dob'] : null,
-			'gender' => !empty($attributes['gender']) ? $attributes['gender'] : null,
-			'avatar' => !empty($attributes['avatar']) ? $attributes['avatar'] : null,
-		];
-		$model->profile()->create($profileAttributes);
-		$model->toggleRelationshipMode();
-		\DB::commit();
-		return $model;
+		return false;
+	}
+
+	/**
+	 * Generate Password for this user
+	 * @return string
+	 */
+	public function generatePassword()
+	{
+		return zbase_generate_password();
+	}
+
+	/**
+	 * SEnd the welcome message
+	 * @param array $attributes The Original Attributes
+	 */
+	public function sendWelcomeMessage($attributes)
+	{
+		zbase_db_transaction_start();
+		try
+		{
+			$code = null;
+			if($this->passwordAutoGenerate())
+			{
+				zbase_alert('info', _zt('We sent an email to %email% with your login information.', ['%email%' => $this->email()]));
+			}
+			else
+			{
+				if($this->emailVerificationEnabled())
+				{
+					$code = zbase_generate_code();
+					$this->setDataOption('email_verification_code', $code);
+					zbase_alert('info', _zt('We sent an email to %email% with a link to complete your registration.', ['%email%' => $this->email()]));
+					$this->save();
+				}
+			}
+			zbase_messenger_email($this->email(), 'account-noreply', _zt('Welcome!'), zbase_view_file_contents('email.account.new'), ['entity' => $this, 'code' => $code, 'attributes' => $attributes]);
+			zbase_db_transaction_commit();
+			return true;
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_db_transaction_rollback();
+			return false;
+		}
+	}
+
+	/**
+	 * default new user status
+	 * @return string
+	 */
+	public function defaultNewUserStatus()
+	{
+		return zbase_config_get('auth.register.defaultStatus', 'ok');
+	}
+
+	/**
+	 * The Default new user Role
+	 * @return string
+	 */
+	public function defaultNewUserRole()
+	{
+		return zbase_config_get('auth.role.default', 'user');
+	}
+
+	/**
+	 * If email verification is enabled
+	 * @return boolean
+	 */
+	public function emailVerificationEnabled()
+	{
+		return zbase_config_get('auth.emailverify.enable', true);
+	}
+
+	/**
+	 * Check if system has to generate the password
+	 * for the user.
+	 * When signing up, we don't require password from the user
+	 * @return boolean
+	 */
+	public function passwordAutoGenerate()
+	{
+		return !zbase_config_get('auth.register.password.required', false);
+	}
+
+	/**
+	 * If username is enabled
+	 * @return boolean
+	 */
+	public function usernameEnabled()
+	{
+		return zbase_config_get('auth.username.enable', true);
 	}
 
 	// </editor-fold>

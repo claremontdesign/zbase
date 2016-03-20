@@ -23,4 +23,35 @@ class PageModuleController extends Controller implements Interfaces\AttributeInt
 
 	use Traits\Attribute,
 	 Traits\Module;
+
+	public function index()
+	{
+		if(!$this->getModule()->hasAccess())
+		{
+			return $this->unathorized(_zt('You don\'t have enough access to the resource.'));
+		}
+		/**
+		 * Check for widgets
+		 */
+		$widgets = $this->getModule()->widgetsByControllerAction($this->getRouteParameter('action', 'index'));
+		foreach ($widgets as $widget)
+		{
+			if($widget instanceof \Zbase\Widgets\ControllerInterface)
+			{
+				$v = $widget->validateWidget();
+				if($v instanceof \Illuminate\Contracts\Validation\Validator)
+				{
+					return redirect()->to($this->getRedirectUrl())
+									->withInput(zbase_request_inputs())
+									->withErrors($v->errors()->getMessages());
+				}
+				$ret = $widget->controller($this->getRouteParameter('action', 'index'));
+				if($ret instanceof \Illuminate\Http\RedirectResponse)
+				{
+					return $ret;
+				}
+			}
+		}
+		return $this->view(zbase_view_file('module.index'), array('module' => $this->getModule(), 'widgets' => $widgets));
+	}
 }

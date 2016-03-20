@@ -1,0 +1,28 @@
+{
+	"name": "dennesabing/packagename",
+	"description": "The PackagenameZbase NoFramework.",
+	"keywords": ["framework", "laravel","zbase","dennesabing","packagename"],
+	"repositories": [ { "type": "composer", "url": "http://claremontdesign.com/repo/" } ],
+	"license": "MIT",
+	"type": "project",
+	"require": {
+		"php": ">=5.5.9",
+		"dennesabing/zbase":"dev-master"
+	},
+	"autoload": {
+		"psr-4": {
+			"Packagename\\": "src/"
+		},
+		"files": [
+			"src/Helpers/helpers.php"
+		]
+	},
+	"autoload-dev": {
+		"classmap": [
+			"tests/TestCase.php"
+		],
+		"psr-4": {
+			"Packagename\\": "src/"
+		}
+	}
+}

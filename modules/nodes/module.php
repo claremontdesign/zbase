@@ -26,7 +26,42 @@ return [
 		'frontend' => 'nodes/{task?}',
 	],
 	'controller' => [
-		'action' => []
+		'back' => [
+			'action' => [
+				'index' => [
+					'page' => [
+						'title' => 'Nodes',
+						'headTitle' => 'Nodes',
+						'subTitle' => 'Manage nodes',
+						'breadcrumbs' => [
+							['label' => 'Nodes', 'link' => '#'],
+						],
+					],
+				],
+				'create' => [
+					'page' => [
+						'title' => 'Create Node',
+						'headTitle' => 'Create Node',
+						'subTitle' => '',
+						'breadcrumbs' => [
+							['label' => 'Nodes', 'route' => ['name' => 'admin.nodes']],
+							['label' => 'Nodes', 'link' => '#'],
+						],
+					],
+				],
+				'update' => [
+					'page' => [
+						'title' => 'Update Node',
+						'headTitle' => 'Update Node',
+						'subTitle' => '',
+						'breadcrumbs' => [
+							['label' => 'Nodes', 'route' => ['name' => 'admin.nodes']],
+							['label' => 'Nodes', 'link' => '#'],
+						],
+					],
+				],
+			]
+		],
 	],
 	'widgets' => [
 		'controller' => [

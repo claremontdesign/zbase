@@ -192,19 +192,20 @@ function zbase_view_file_contents($name)
  * 		view.templates.$tag.front.theme = Tag a package to use
  *
  * @param string $tag
+ * @param string $tpl The template file to use
  * @return string
  */
-function zbase_view_template_layout($tag = null)
+function zbase_view_template_layout($tag = null, $tpl = 'layout')
 {
 	$section = zbase_section();
 	$package = zbase_view_template_package($tag);
 	$theme = zbase_view_template_theme($tag);
-	$viewFile = $package . '::templates.' . $section . '.' . $theme . '.layout';
+	$viewFile = $package . '::templates.' . $section . '.' . $theme . '.' . $tpl;
 	if(\View::exists($viewFile))
 	{
 		return $viewFile;
 	}
-	return zbase_tag() . '::templates.' . $section . '.default.layout';
+	return zbase_tag() . '::templates.' . $section . '.default.' . $tpl;
 }
 
 // </editor-fold>

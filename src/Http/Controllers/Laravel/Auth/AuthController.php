@@ -24,6 +24,7 @@ use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 use Illuminate\Http\Request;
 use Zbase\Traits\Auth as ZbaseAuth;
+use Zbase\Traits\User as ZbaseUser;
 
 class AuthController extends Controller
 {
@@ -40,6 +41,7 @@ class AuthController extends Controller
 
 use AuthenticatesAndRegistersUsers,
 	ThrottlesLogins,
+	ZbaseUser,
 	ZbaseAuth;
 
 	protected $username = 'email';
@@ -95,7 +97,7 @@ use AuthenticatesAndRegistersUsers,
 			);
 		}
 
-		\Auth::login($this->create($request->all()));
+		\Auth::login($this->userCreate($request->all()));
 
 		return redirect($this->redirectPath());
 	}
@@ -108,36 +110,19 @@ use AuthenticatesAndRegistersUsers,
 	 */
 	protected function registerValidator(array $data)
 	{
-		return Validator::make($data, [
-					'name' => 'required|max:255',
-					'email' => 'required|email|max:255|unique:' . zbase_config_get('entity.user.table.name'),
-					'username' => 'required|min:3|max:32|unique:' . zbase_config_get('entity.user.table.name'),
-					'password' => 'required|confirmed|min:6',
-		]);
-	}
-
-	/**
-	 * Create a new user instance after a valid registration.
-	 *
-	 * @param  array  $data
-	 * @return User
-	 */
-	protected function create(array $data)
-	{
-		$user = [
-			'status' => $this->defaultNewUserStatus(),
-			'username' => !empty($data['username']) ? $data['username'] : null,
-			'name' => $data['name'],
-			'email' => $data['email'],
-			'email_verified' => $this->emailVerificationEnabled() ? 0 : 1,
-			'email_verified_at' => null,
-			'password' => zbase_bcrypt($data['password']),
-			'password_updated_at' => null,
-			'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
-			'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
-			'deleted_at' => null,
+		$rules = [
+			'name' => 'required|max:255',
+			'email' => 'required|email|max:255|unique:' . zbase_config_get('entity.user.table.name'),
 		];
-		return zbase_entity('user')->create($user);
+		if(zbase_entity('user')->usernameEnabled())
+		{
+			$rules['username'] = 'required|min:3|max:32|unique:' . zbase_config_get('entity.user.table.name');
+		}
+		if(!zbase_entity('user')->passwordAutoGenerate())
+		{
+			$rules['password'] = 'required|confirmed|min:6';
+		}
+		return Validator::make($data, $rules);
 	}
 
 	/**

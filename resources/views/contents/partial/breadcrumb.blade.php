@@ -9,7 +9,8 @@
 			<?php $config = zbase_config_get('nav.front.main.' . $breadcrumb, []); ?>
 			<?php if(!empty($config)): ?>
 				<?php
-				$url = zbase_url_from_config($config['url']);
+				$route = !empty($config['url']) ? $config['url'] : (!empty($config['link']) ? $config['link'] : null);
+				$url = zbase_url_from_config($route);
 				$label = zbase_value_get($config, 'label', null);
 				$title = zbase_value_get($config, 'title', null);
 				?>

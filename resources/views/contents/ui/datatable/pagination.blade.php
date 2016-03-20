@@ -11,7 +11,7 @@ if($paginator instanceof \Illuminate\Pagination\LengthAwarePaginator)
 	$presenter = new \Illuminate\Pagination\BootstrapThreePresenter($paginator);
 	echo str_replace('class="pagination', 'class="pagination pagination-sm', $presenter->render());
 	echo '<ul class="pagination pagination-perpage pagination-sm">';
-	echo '<li><a class="btn disabled" href="#">Rows per page</a></li>';
+	echo '<li><a class="btn disabled" href="#">Rows</a></li>';
 	foreach ($perPages as $perPage)
 	{
 		if($paginator->total() > $perPage)
@@ -25,7 +25,7 @@ if($paginator instanceof \Illuminate\Pagination\LengthAwarePaginator)
 	if($paginator->total() > $paginator->perPage())
 	{
 		echo '<li><a data-perpage="all" href="' . zbase_url_from_current(['pp' => $paginator->total()], false) . '" ' . ($paginator->perPage() > $perPage ? 'class="active"' : '') . ' title="View all rows">'
-		. 'View all ' . $paginator->total() . ' rows'
+		. 'View all'
 		. '</a></li>';
 	}
 	echo '</ul>';

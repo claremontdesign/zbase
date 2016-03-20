@@ -1,9 +1,10 @@
 <?php
-
 /**
  * Convert Row to JSON
  * @param EntityInterface $row
  */
+$form = $ui->form();
+
 function treeview_row($row)
 {
 	$newRow = [];
@@ -34,13 +35,31 @@ if(!empty($rows))
 		$newRows[] = treeview_row($row);
 	}
 }
-
-$script = '$(\'#' . $uiId . 'TreeView\').treeview({data: ' . json_encode($newRows) . '});';
+$treeViewOptions = [
+	'data: ' . json_encode($newRows)
+];
+if($form instanceof \Zbase\Widgets\Type\FormInterface)
+{
+	$treeViewOptions[] = 'multiSelect: false';
+	$treeViewOptions[] = 'showCheckbox: false';
+	$treeViewOptions[] = 'onNodeUnselected: function(event, node) {var nodeId = \'parentCategory\'+node.id;$(\'#\' + nodeId).remove();}';
+	$treeViewOptions[] = 'onNodeSelected: function(event, node) {var nodeId = \'parentCategory\'+node.id;$(\'#' . $uiId . 'TreeView\').parent().append(\'<input type="hidden" value="\'+node.id+\'" id="\'+nodeId+\'" name="parent[]">\');}';
+}
+$script = '$(\'#' . $uiId . 'TreeView\').treeview({' . implode(',', $treeViewOptions) . '});';
 zbase_view_script_add($uiId . 'TreeView', $script, true);
 ?>
-<div <?php echo $wrapperAttributes ?>>
-	<?php if(!empty($actionCreateButton)): ?>
-		<?php echo $actionCreateButton ?>
-	<?php endif; ?>
-	<div id="<?php echo $uiId ?>TreeView"></div>
-</div>
+<?php if($form instanceof \Zbase\Widgets\Type\FormInterface): ?>
+	<div class="form-group">
+		<label>Parent Category</label>
+		<div <?php echo $wrapperAttributes ?>>
+			<div id="<?php echo $uiId ?>TreeView"></div>
+		</div>
+	</div>
+<?php else: ?>
+	<div <?php echo $wrapperAttributes ?>>
+		<?php if(!empty($actionCreateButton)): ?>
+			<?php echo $actionCreateButton ?>
+		<?php endif; ?>
+		<div id="<?php echo $uiId ?>TreeView"></div>
+	</div>
+<?php endif; ?>

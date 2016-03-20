@@ -392,12 +392,15 @@ function zbase_view_ui_tag_attributes($selector, $defaultAttributes = null)
 // <editor-fold defaultstate="collapsed" desc="Others">
 /**
  * Set the page title
- * @param string|array $pageTitle
+ * @param string|array $pageTitle The HEAD Title
+ * @param string|array $title The main title, default to $pageTitle
+ * @param string|array $subTitle The main subtitle
  * 	If array is given, the first index is the pageTitle and the second is the pageSubTitle
  */
-function zbase_view_pagetitle_set($pageTitle)
+function zbase_view_pagetitle_set($pageTitle, $title = null, $subTitle = null)
 {
 	zbase()->view()->setPageTitle($pageTitle);
+	zbase()->view()->setTitle($title, $subTitle);
 }
 
 /**
@@ -451,3 +454,12 @@ function zbase_alerts_render($type = null)
 }
 
 // </editor-fold>
+
+/**
+ * Return the Site Name
+ * @return string
+ */
+function zbase_site_name()
+{
+	return zbase_config_get('page.site.name', 'Zbase');
+}

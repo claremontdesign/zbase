@@ -101,6 +101,11 @@ return [
 				'method' => 'home',
 				'enable' => true
 			],
+			'page' => [
+				'title' => null,
+				'headTitle' => 'Home',
+				'subTitle' => null
+			],
 			'url' => '/home',
 			'middleware' => [
 				'auth' => true
@@ -112,6 +117,14 @@ return [
 				'name' => 'auth',
 				'method' => 'login',
 				'enable' => true
+			],
+			'page' => [
+				'title' => 'Login',
+				'headTitle' => 'Login',
+				'subTitle' => null,
+				'breadcrumbs' => [
+					['label' => 'Login', 'link' => '#'],
+				],
 			],
 			'form' => [
 				'enable' => true
@@ -140,6 +153,14 @@ return [
 				'method' => 'register',
 				'enable' => true
 			],
+			'page' => [
+				'title' => 'Register',
+				'headTitle' => 'Register',
+				'subTitle' => null,
+				'breadcrumbs' => [
+					['label' => 'Register', 'link' => '#'],
+				],
+			],
 			'form' => [
 				'enable' => true
 			],
@@ -158,6 +179,14 @@ return [
 			'form' => [
 				'enable' => true
 			],
+			'page' => [
+				'title' => 'Reset Password',
+				'headTitle' => 'Reset Password',
+				'subTitle' => null,
+				'breadcrumbs' => [
+					['label' => 'Reset Password', 'link' => '#'],
+				],
+			],
 			'url' => '/password',
 			'middleware' => [
 				'guestOnly' => true,
@@ -169,6 +198,14 @@ return [
 				'name' => 'password',
 				'method' => 'reset',
 				'enable' => true
+			],
+			'page' => [
+				'title' => 'Reset Password',
+				'headTitle' => 'Reset Password',
+				'subTitle' => null,
+				'breadcrumbs' => [
+					['label' => 'Reset Password', 'link' => '#'],
+				],
 			],
 			'form' => [
 				'enable' => true
@@ -185,6 +222,26 @@ return [
 			},
 			'url' => '/phpinfo',
 			'enable' => true
+		],
+		'contact' => [
+			'controller' => [
+				'name' => 'page',
+				'method' => 'contact',
+				'enable' => true
+			],
+			'form' => [
+				'enable' => true
+			],
+			'url' => '/contacts',
+			'enable' => true,
+			'page' => [
+				'title' => 'Contact Us',
+				'headTitle' => 'Contact Us',
+				'subTitle' => null,
+				'breadcrumbs' => [
+					['label' => 'Contact Us', 'link' => '#'],
+				],
+			],
 		],
 	],
 ];

@@ -21,5 +21,13 @@ return [
 			'email' => 'no-reply@zbase.com',
 			'name' => 'No-Reply at Zbase.com',
 		],
+		'account-noreply' => [
+			'email' => 'no-reply@zbase.com',
+			'name' => 'No-Reply at Zbase.com',
+		],
+		'contactus' => [
+			'email' => 'info@zbase.com',
+			'Name' => 'Contact Us',
+		]
 	],
 ];

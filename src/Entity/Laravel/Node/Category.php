@@ -63,37 +63,49 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	 */
 	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
 	{
+		if(($action == 'update' && strtolower($method) == 'post') || ($action == 'create' && strtolower($method) == 'post'))
+		{
+			$this->nodeAttributes($data);
+		}
 		zbase_db_transaction_start();
 		try
 		{
 			$parent = !empty($data['parent']) ? $data['parent'] : null;
+			$parentNodes = [];
 			if(!empty($parent))
 			{
-				if($parent instanceof Interfaces\EntityInterface)
+				if(is_array($parent))
 				{
-					$parentNode = $parent;
-				}
-				else
-				{
-					$parentNode = $this->repository()->byId((int) $parent);
-				}
-				/**
-				 * A value for parent was given but we cannot find the root.
-				 */
-				if(!$parentNode instanceof Interfaces\EntityInterface)
-				{
-					$this->_actionMessages[$action]['error'][] = _zt('There was a problem performing the request for "%title%".', ['%title%' => $this->title, '%id%' => $this->id()]);
-					return false;
+					foreach ($parent as $p)
+					{
+						if($parent instanceof Interfaces\EntityInterface)
+						{
+							$parentCategoryNode = $p;
+						}
+						else
+						{
+							$parentCategoryNode = $this->repository()->byId($p);
+						}
+						if($parentCategoryNode instanceof Interfaces\EntityInterface)
+						{
+							$parentNodes[] = $parentCategoryNode;
+						}
+						else
+						{
+							$this->_actionMessages[$action]['error'][] = _zt('There was a problem performing your request.');
+							return false;
+						}
+					}
 				}
 			}
 			if($action == 'create' && strtolower($method) == 'post')
 			{
-				if(empty($parentNode))
+				if(empty($parentNodes))
 				{
-					$parentNode = self::root();
+					$parentNodes[] = self::root();
 				}
-				$this->nodeAttributes($data);
-				$this->makeChildOf($parentNode);
+				$this->save();
+				$this->_setParentNodes($parentNodes);
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
@@ -102,8 +114,8 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			}
 			if($action == 'update' && strtolower($method) == 'post')
 			{
-				$this->nodeAttributes($data);
 				$this->save();
+				$this->_setParentNodes($parentNodes);
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
@@ -210,6 +222,21 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		}
 	}
 
+	/**
+	 * SEt the Parents
+	 * @param Nested[] $parentNodes
+	 */
+	protected function _setParentNodes($parentNodes)
+	{
+		if(is_array($parentNodes))
+		{
+			foreach ($parentNodes as $p)
+			{
+				$this->makeChildOf($p);
+			}
+		}
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="FakeValues">
 	/**
 	 * Generate FAke Values
@@ -239,11 +266,20 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 				]
 			]
 		];
-
 		parent::buildTree($categories);
 	}
 
-	
+	/**
+	 * Return fake values
+	 */
+	public static function fakeValue()
+	{
+		$faker = \Faker\Factory::create();
+		return [
+			'title' => ucfirst($faker->words(3, true)),
+			'status' => rand(0, 2),
+		];
+	}
 
 	// </editor-fold>
 }

@@ -70,6 +70,12 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	protected $request = null;
 
 	/**
+	 *
+	 * @var \Zbase\Models\Mobile
+	 */
+	protected $mobile = null;
+
+	/**
 	 * Current Controller
 	 * @var \Zbase\Interfaces\ControllerInterface
 	 */
@@ -91,6 +97,19 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	 * @var array
 	 */
 	protected $entityModels = [];
+
+	/**
+	 * Return the MobileUtility
+	 * @retur \Zbase\Models\Mobile
+	 */
+	public function mobile()
+	{
+		if(!$this->mobile instanceof \Zbase\Models\Mobile)
+		{
+			$this->mobile = new \Zbase\Models\Mobile;
+		}
+		return $this->mobile;
+	}
 
 	/**
 	 * Return ViewModel

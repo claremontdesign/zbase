@@ -48,6 +48,8 @@ class CreateTable extends Migration
 				{
 					Schema::create($tableName, function(Blueprint $table) use($columns, $entity)
 						{
+						$tableTye = zbase_data_get($entity, 'table.type', 'InnoDB');
+						$table->engine = $tableTye;
 						$primaryKey = zbase_data_get($entity, 'table.primaryKey', null);
 						if(!is_null($primaryKey))
 						{

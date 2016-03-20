@@ -12,7 +12,11 @@
 $url = zbase_url_from_route('account', ['action' => 'password','task' => 'update-request','e' => $entity->email(),'c' => $code]);
 ?>
 
+<?php echo zbase_view_render(zbase_view_file_contents('email.header')); ?>
+
 We received a request to update your password.
 If this is not you, disregard this email, else click on the link below.
 
 <a href="<?php echo $url?>">Update your password</a>
+
+<?php echo zbase_view_render(zbase_view_file_contents('email.footer')); ?>

@@ -228,6 +228,27 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 		return null;
 	}
 
+	/**
+	 * Set Page Property
+	 * @param string $action The Controller Action
+	 * @param array $param some assoc array that can be replace to the string
+	 * @return void
+	 */
+	public function pageProperties($action)
+	{
+		$section = zbase_section();
+		$title = $this->_v('controller.'.$section.'.action.' . $action . '.page.title', null);
+		$headTitle = $this->_v('controller.'.$section.'.action.' . $action . '.page.headTitle', $title);
+		$subTitle = $this->_v('controller.'.$section.'.action.' . $action . '.page.subTitle', null);
+		$breadcrumbs = $this->_v('controller.'.$section.'.action.' . $action . '.page.breadcrumbs', []);
+		zbase_view_pagetitle_set($headTitle, $title, $subTitle);
+		if(!empty($breadcrumbs))
+		{
+			zbase_view_breadcrumb($breadcrumbs);
+		}
+		return $this;
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="CONFIGURATION">
 	/**
 	 * Set The Module Configuration

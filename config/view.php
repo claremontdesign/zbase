@@ -10,6 +10,9 @@
  * @file view.php
  * @project Zbase
  * @package config
+ *
+ * view.templates.front.package = packagename
+ * view.templates.front.theme = packagename|themename
  */
 return [
 	'view' => [
@@ -161,11 +164,118 @@ return [
 						'enable' => true,
 					],
 				]
+			],
+			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="Metronic::Admin">
+			'metronic-admin' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('metronic/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js'),
+				'enable' => true,
+				'dependents' => [
+					[
+						'id' => 'metronic-admin-appinit',
+						'type' => \Zbase\Models\View::SCRIPT,
+						'enable' => true,
+						'script' => 'App.init();',
+						'onLoad' => true,
+					],
+					[
+						'id' => 'metronic-admin-slimscroll',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-slimscroll/jquery.slimscroll.min.js'),
+						'enable' => true,
+						'position' => 499,
+					],
+					[
+						'id' => 'metronic-admin-blockui',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery.blockui.min.js'),
+						'enable' => true,
+						'position' => 498,
+					],
+					[
+						'id' => 'metronic-admin-cookie',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery.cokie.min.js'),
+						'enable' => true,
+						'position' => 497,
+					],
+					[
+						'id' => 'metronic-admin-uniform',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/uniform/jquery.uniform.min.js'),
+						'enable' => true,
+						'position' => 496,
+					],
+					[
+						'id' => 'metronic-admin-app',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/scripts/core/app.js'),
+						'enable' => true,
+						'position' => 495,
+					],
+					[
+						'id' => 'metronic-admin-font',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => 'http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all',
+						'enable' => true,
+						'position' => 499,
+					],
+					[
+						'id' => 'metronic-admin-font-awesome',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/font-awesome/css/font-awesome.min.css'),
+						'enable' => true,
+						'position' => 498,
+					],
+					[
+						'id' => 'metronic-admin-metronic',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/css/style-metronic.css'),
+						'enable' => true,
+						'position' => 497,
+					],
+					[
+						'id' => 'metronic-admin-style',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/css/style.css'),
+						'enable' => true,
+						'position' => 496,
+					],
+					[
+						'id' => 'metronic-admin-responsive',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/css/style-responsive.css'),
+						'enable' => true,
+						'position' => 495,
+					],
+					[
+						'id' => 'metronic-admin-plugins',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/css/plugins.css'),
+						'enable' => true,
+						'position' => 494,
+					],
+					[
+						'id' => 'metronic-admin-theme',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/css/themes/default.css'),
+						'enable' => true,
+						'position' => 493,
+					],
+					[
+						'id' => 'metronic-admin-custom',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/css/custom.css'),
+						'enable' => true,
+						'position' => 492,
+					],
+				]
 			]
 		// </editor-fold>
 		],
 		'autoload' => [
-			'plugins' => ['meta-viewport', 'meta-charset', 'meta-http-equiv', 'meta-author', 'jquery', 'bootstrap', 'zbase']
+			'plugins' => ['meta-viewport', 'meta-charset', 'meta-http-equiv', 'meta-author']
 		]
 	// </editor-fold>
 	],

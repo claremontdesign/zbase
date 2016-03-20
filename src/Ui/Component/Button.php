@@ -71,6 +71,15 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	 */
 	public function getColor()
 	{
+		$theme = zbase_config_get('theme.ui.component.button.color.' . $this->tag . '.' . $this->color, null);
+		if(!empty($theme))
+		{
+			return $theme;
+		}
+		if($this->tag == 'a')
+		{
+			return $this->color;
+		}
 		if($this->color == 'green')
 		{
 			return 'btn-success';
@@ -123,7 +132,10 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	{
 		$attr = $this->_v('html.attributes.wrapper', []);
 		$attr['class'][] = 'zbase-ui-button';
-		$attr['class'][] = 'btn';
+		if($this->tag == 'a')
+		{
+			$attr['class'][] = 'btn';
+		}
 		$attr['class'][] = $this->getColor();
 		$size = $this->getSize();
 		if(!is_null($size))
@@ -143,6 +155,7 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 		{
 			$attr['class'][] = 'active';
 		}
+
 		$title = !empty($this->title) ? $this->title : $this->getLabel();
 		$attr['title'] = $title;
 		$route = $this->route;
@@ -154,6 +167,20 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 			}
 		}
 		return $attr;
+	}
+
+	/**
+	 * Return the HREF attribute
+	 * @return string
+	 */
+	public function href()
+	{
+		$route = $this->route;
+		if(!empty($route))
+		{
+			return zbase_url_from_route($route, $this->routeParams);
+		}
+		return null;
 	}
 
 }

@@ -81,11 +81,22 @@ function zbase_url_create($path, array $parameters = null, $secure = false)
  */
 function zbase_url_from_config($config)
 {
-	if(!empty($config['route']) && !empty($config['route']['name']))
+	if(is_string($config))
 	{
-		$name = $config['route']['name'];
-		$params = !empty($config['route']['params']) ? $config['route']['params'] : [];
-		return zbase_url_from_route($name, $params);
+		return $config;
+	}
+	if(is_array($config))
+	{
+		if(!empty($config['route']) && !empty($config['route']['name']))
+		{
+			$name = $config['route']['name'];
+			$params = !empty($config['route']['params']) ? $config['route']['params'] : [];
+			return zbase_url_from_route($name, $params);
+		}
+		if(!empty($config['link']) && is_string($config['link']))
+		{
+			return $config['link'];
+		}
 	}
 }
 

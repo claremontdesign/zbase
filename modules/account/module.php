@@ -14,7 +14,7 @@
  * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
  *
  * zbase()->loadModuleFrom(PATH_TO_MODULES);
- *		- widgets will be added automatically if a "widget" folder is found (zbase()->loadWidgetsFrom(PATH_TO_WIDGETS))
+ * 		- widgets will be added automatically if a "widget" folder is found (zbase()->loadWidgetsFrom(PATH_TO_WIDGETS))
  *
  */
 return [
@@ -29,7 +29,34 @@ return [
 		'frontend' => 'account/{action?}/{task?}',
 	],
 	'controller' => [
-		'action' => []
+		'back' => [
+			'action' => [
+				'index' => [
+					'page' => [
+						'title' => 'Account Information',
+						'headTitle' => 'Account',
+						'subTitle' => 'Manage account and login information',
+						'breadcrumbs' => [
+							['label' => 'Account', 'link' => '#'],
+						],
+					],
+				],
+			]
+		],
+		'front' => [
+			'action' => [
+				'index' => [
+					'page' => [
+						'title' => 'Account Information',
+						'headTitle' => 'Account',
+						'subTitle' => 'Manage account and login information',
+						'breadcrumbs' => [
+							['label' => 'Account', 'link' => '#'],
+						],
+					],
+				],
+			]
+		],
 	],
 	'widgets' => [
 		'controller' => [

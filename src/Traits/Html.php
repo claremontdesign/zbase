@@ -154,7 +154,14 @@ trait Html
 		$htmlConditions = $this->getHtmlConditions();
 		if(!empty($htmlConditions))
 		{
-			return '<!--[' . $htmlConditions . ']>' . $content . '<![endif]-->';
+			if(is_array($htmlConditions))
+			{
+				return '<!-- ' . __METHOD__ . ' - Conditions Not Implemented. Change condition to string-only value -->' . $content;
+			}
+			else
+			{
+				return '<!--[' . $htmlConditions . ']>' . $content . '<![endif]-->';
+			}
 		}
 		return $content;
 	}

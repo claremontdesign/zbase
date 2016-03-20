@@ -21,7 +21,7 @@ return [
 		'alert' => [
 			'html' => [
 				'attributes' => [
-					'class' => 'test-alert laersdfsdf',
+					'class' => 'test-alert',
 				]
 			],
 		]

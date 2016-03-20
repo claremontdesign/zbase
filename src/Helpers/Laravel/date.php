@@ -1,5 +1,5 @@
 <?php
-
+date_default_timezone_set(zbase_date_default_timezone());
 /**
  * Dx
  *
@@ -21,7 +21,7 @@ define('DATE_FORMAT_DB', 'Y-m-d H:i:s');
  */
 function zbase_date_default_timezone()
 {
-	return 'Asia/Manila';
+	return env('ZBASE_TIMEZONE','UTC');
 }
 
 /**

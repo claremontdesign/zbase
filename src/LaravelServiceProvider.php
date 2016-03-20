@@ -86,6 +86,9 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		$this->app['config']['auth.passwords.users.table'] = zbase_config_get('entity.user_tokens.table.name');
 		require __DIR__ . '/Http/Controllers/Laravel/routes.php';
 
+//		\View::composer('*', function($view){
+//		});
+
 		/**
 		 * Validator to check for account password
 		 * @TODO should be placed somewhere else other than here, and just call

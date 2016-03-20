@@ -126,6 +126,7 @@ return [
 						'description' => 'User',
 						'alphaId' => true,
 						'rememberToken' => true,
+						'optionable' => true,
 						'columns' => [
 							'user_id' => [
 								'filterable' => [

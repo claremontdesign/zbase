@@ -83,6 +83,9 @@ return [
 					'username' => [
 						'type' => 'text',
 						'id' => 'username',
+						'enable' => function(){
+							return zbase_config_get('auth.username.enable', true);
+						},
 						'label' => 'Username',
 						'entity' => [
 							'property' => 'username'

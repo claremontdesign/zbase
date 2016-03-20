@@ -114,6 +114,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function controller($action)
 	{
+		$this->_action = $action;
 		if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
 		{
 			if($this->entity()->hasSoftDelete())
@@ -175,7 +176,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 					if(method_exists($this->entity(), 'fakeValues'))
 					{
 						$entity = $this->_entity;
-						$this->setValues($entity::fakeValues());
+						$this->setValues($entity::fakeValue());
 					}
 				}
 			}
@@ -260,6 +261,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	protected function _pre()
 	{
+		parent::_pre();
 		$this->entity();
 		$this->_tabs();
 		$this->_elements();
@@ -291,9 +293,8 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		{
 			$e->entity($this->_entity);
 		}
-		if($e instanceof \Zbase\Widgets\WidgetInterface)
+		if($e instanceof \Zbase\Widgets\Type\FormInterface)
 		{
-			$e->form($this)->prepare();
 			if(!empty($tabName))
 			{
 				$widgetElements = $e->elements();
@@ -311,8 +312,12 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 					}
 				}
 			}
-			$this->_validationRules = array_replace_recursive($this->_validationRules, $e->getValidationRules());
-			$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
+			$eRules = $e->getValidationRules();
+			if(is_array($eRules))
+			{
+				$this->_validationRules = array_replace_recursive($this->_validationRules, $e->getValidationRules());
+				$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
+			}
 		}
 		$currentTab = zbase_request_input('tab', false);
 		if($e->hasValidations())

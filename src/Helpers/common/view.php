@@ -109,9 +109,9 @@ function zbase_view_head_metas_render()
  * zbase_view_head_link_add('id','theme.css', 'stylesheet', []);
  * <link rel="stylesheet" type="text/css" href="theme.css">
  *
- * @param string $id
- * @param string $href
- * @param array $rel
+ * @param string $id HeadLink ID - some unique id
+ * @param string $href Href attribute of Link
+ * @param array $rel The rel attribute
  * @param array $cond
  * @param array $attributes
  * @return Zbase\Models\View\HeadMeta
@@ -200,7 +200,7 @@ function zbase_view_head_links_render()
  *
  * @param string $id
  * @param string $href
- * @param array $cond
+ * @param string $cond The HTML Condition: ['lte IE 8']
  * @param array $attributes
  * @return Zbase\Models\View\Stylesheet
  */
@@ -210,7 +210,7 @@ function zbase_view_stylesheet_add($id, $href, $cond = null, $attributes = [])
 				'id' => $id,
 				'href' => $href,
 				'html' => [
-					'condition' => $cond,
+					'conditions' => $cond,
 					'attributes' => $attributes
 				]
 	]);
@@ -616,11 +616,37 @@ function zbase_view_placeholder_render($placeholder)
  * 		view.autoload.plugins = [$id, $id2, $id3...]
  *
  *
- * @param string $id
+ * @param string|array $id
  * @return Zbase\Interfaces\HtmlInterface
  */
 function zbase_view_plugin_load($id)
 {
+	if(is_array($id))
+	{
+		if(!empty($id['type']) && !empty($id['enable']))
+		{
+			zbase()->view()->add($id['type'], $id);
+			if(!empty($id['dependents']))
+			{
+				foreach ($id['dependents'] as $d)
+				{
+					if(is_array($d))
+					{
+						if($d['type'] !== \Zbase\Models\View::HEADMETA)
+						{
+							$d['id'] = $id . '-' . $d['id'];
+						}
+						zbase_view_plugin_load($d);
+					}
+					else
+					{
+						zbase_view_plugin_load($d);
+					}
+				}
+			}
+		}
+		return;
+	}
 	$plugin = zbase_config_get('view.plugins.' . $id, null);
 	if(!is_null($plugin))
 	{
@@ -637,11 +663,11 @@ function zbase_view_plugin_load($id)
 				{
 					if(is_array($d))
 					{
-						if(!empty($d['type']) && !empty($d['enable']))
+						if($d['type'] !== \Zbase\Models\View::HEADMETA)
 						{
 							$d['id'] = $id . '-' . $d['id'];
-							zbase()->view()->add($d['type'], $d);
 						}
+						zbase_view_plugin_load($d);
 					}
 					else
 					{
@@ -793,6 +819,29 @@ function zbase_view_page_details($config)
 		$pageIndex = $config['pageIndex'];
 		$meta = zbase_config_get('page.front.' . $pageIndex . '.meta', zbase_config_get('page.' . $pageIndex . '.meta', false));
 	}
+	if(!empty($config['page']))
+	{
+		$title = null;
+		$headTitle = null;
+		$subTitle = null;
+		if(!empty($config['page']['title']))
+		{
+			$title = $config['page']['title'];
+		}
+		if(!empty($config['page']['headTitle']))
+		{
+			$headTitle = $config['page']['headTitle'];
+		}
+		if(!empty($config['page']['subTitle']))
+		{
+			$subTitle = $config['page']['subTitle'];
+		}
+		zbase_view_pagetitle_set($headTitle, $title, $subTitle);
+		if(!empty($config['page']['breadcrumbs']))
+		{
+			zbase_view_breadcrumb($config['page']['breadcrumbs']);
+		}
+	}
 	if(!empty($meta))
 	{
 		zbase_view_extract_meta($meta);
@@ -822,12 +871,56 @@ function zbase_view_extract_meta($meta)
 }
 
 /**
+ * The Facebook Head Meta tags
+ * 	https://davidwalsh.name/facebook-meta-tags
+ * 	Minimum Facebook Head Metas
+ * 		title: The title to accompany the URL; In most cases, this should be the article or page title.
+ * 		type: Provides Facebook the type of website that you would like your website to be categorized by; blog|article
+ * 		locale
+ * 		site_name: Provides Facebook the name that you would like your website to be recognized by:
+ * 		url: The URL should be the canonical address for the given page:
+ * 		description
+ * 		image
+ * 		app_id = Facebook APP Id
+ *
+ * @param array $metas AssocArray of Facebook Metas
+ * @return void
+ */
+function zbase_view_facebook_meta($metas)
+{
+	foreach ($metas as $key => $val)
+	{
+		if($key == 'app_id')
+		{
+			zbase_view_head_meta_add('fb:app_id' . $key, $val);
+			continue;
+		}
+		zbase_view_head_meta_add('og:' . $key, $val);
+	}
+}
+
+/**
  * Set the Page Title
  * @param string $pageTitle
  */
 function zbase_view_pageTitle($pageTitle)
 {
 	zbase()->view()->setPageTitle($pageTitle);
+}
+
+/**
+ * SEt the Canonical Url
+ * @param string $canonicalUrl The Canonical URL
+ * @param string $shortUrl The Short version of the URL
+ * @return void
+ */
+function zbase_view_canonicalUrl($canonicalUrl, $shortUrl = null)
+{
+	zbase_view_head_link_add('canonical', $canonicalUrl, 'canonical');
+	if(!empty($shortUrl))
+	{
+		zbase_view_head_link_add('shortlink', $shortUrl, 'shortlink');
+	}
 }
 
 /**
@@ -887,4 +980,22 @@ function zbase_view_error($code, $msg = null)
 function zbase_view_cdn()
 {
 	return env('ZBASE_CDN', zbase_config_get('view.cdn.enable', false));
+}
+
+/**
+ * The text to appear in the Footer
+ * @return string
+ */
+function zbase_text_footer()
+{
+	return zbase_config_get('site.footer.text', 'Zbase Admin by ClaremontDesign.com');
+}
+
+/**
+ * Compile HTML Strings
+ * @param string $html
+ */
+function zbase_view_compile($html)
+{
+	return zbase_remove_whitespaces($html);
 }

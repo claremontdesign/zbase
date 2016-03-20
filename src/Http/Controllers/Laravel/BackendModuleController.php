@@ -33,7 +33,8 @@ class BackendModuleController extends Controller implements Interfaces\Attribute
 		/**
 		 * Check for widgets
 		 */
-		$widgets = $this->getModule()->widgetsByControllerAction($this->getRouteParameter('action', 'index'));
+		$action = $this->getRouteParameter('action', 'index');
+		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($action);
 		foreach ($widgets as $widget)
 		{
 			if($widget instanceof \Zbase\Widgets\ControllerInterface)

@@ -17,6 +17,9 @@
  */
 return [
 	'page' => [
+		'site' => [
+			'name' => 'Zbase'
+		],
 		'front' => []
 	],
 ];

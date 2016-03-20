@@ -29,7 +29,7 @@ return [
 		 * widget->controller(actionName)
 		 */
 		'entity' => [
-			'name' => 'node',
+			'name' => 'node_category',
 			'repo' => [
 				'byId' => [
 					'route' => 'id'
@@ -44,32 +44,20 @@ return [
 				'group' => 'nodeTab',
 				'enable' => true,
 				'elements' => [
+					'parent-category' => [
+						'widget' => 'nodes-category',
+					],
 					'title' => [
 						'type' => 'text',
 						'id' => 'title',
-						'label' => 'Title',
+						'label' => 'Name',
 						'entity' => [
 							'property' => 'title'
 						],
 						'validations' => [
 							'required' => [
 								'enable' => true,
-								'message' => 'Title is required.'
-							],
-						],
-					],
-					'excerpt' => [
-						'type' => 'textarea',
-						'id' => 'excerpt',
-						'label' => 'Excerpt',
-						'entity' => [
-							'property' => 'excerpt'
-						],
-						'html' => [
-							'attributes' => [
-								'input' => [
-									'rows' => 6
-								]
+								'message' => 'Name is required.'
 							],
 						],
 					],
@@ -80,30 +68,6 @@ return [
 						'multiOptions' => 'publishStatus',
 						'entity' => [
 							'property' => 'status'
-						],
-					],
-				],
-			],
-			'content' => [
-				'type' => 'tab',
-				'label' => 'Content',
-				'id' => 'content',
-				'group' => 'nodeTab',
-				'enable' => true,
-				'elements' => [
-					'excerpt' => [
-						'type' => 'textarea',
-						'id' => 'content',
-						'label' => 'Content',
-						'entity' => [
-							'property' => 'content'
-						],
-						'html' => [
-							'attributes' => [
-								'input' => [
-									'rows' => 15
-								]
-							],
 						],
 					],
 				],

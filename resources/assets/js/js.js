@@ -66,6 +66,8 @@ function zbase_event_checkbox(selector, event, cb)
 {
 	$(selector).on(event, cb);
 }
+
+
 // ZBASE COMMONS END
 
 
