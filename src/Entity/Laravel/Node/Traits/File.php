@@ -15,10 +15,8 @@ namespace Zbase\Entity\Laravel\Node\Traits;
  * @project Zbase
  * @package Zbase/Entity/Traits
  */
-trait Node
+trait File
 {
-
-	use \Illuminate\Database\Eloquent\SoftDeletes;
 
 	/**
 	 * The Action Messages
@@ -194,25 +192,9 @@ trait Node
 	 */
 	public function nodeAttributes($data)
 	{
-		if(isset($data['status']))
-		{
-			$this->status = $data['status'];
-		}
-		if(isset($data['content']))
-		{
-			$this->content = $data['content'];
-		}
-		if(isset($data['excerpt']))
-		{
-			$this->excerpt = $data['excerpt'];
-		}
 		if(!empty($data['title']))
 		{
 			$this->title = $data['title'];
-		}
-		if(!empty($data['slug']))
-		{
-			$this->slug = $data['slug'];
 		}
 	}
 
@@ -227,51 +209,6 @@ trait Node
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="SLUG">
-	/**
-	 *
-	 * @param string $value
-	 */
-	public function setSlugAttribute($value)
-	{
-		if(!empty($this->sluggable))
-		{
-			$slug = $this->createSlug($value);
-			$rowsBySlug = $this->fetchBySlug($slug)->count();
-			if(!empty($rowsBySlug))
-			{
-				$i = 1;
-				while ($this->fetchBySlug($slug)->count() > 0)
-				{
-					$slug = $slug . '-' . $i++;
-				}
-			}
-			$this->attributes['slug'] = $slug;
-		}
-		else
-		{
-			$this->attributes['slug'] = null;
-		}
-	}
-
-	/**
-	 * Fetch a Row By Slug
-	 * @param string $slug
-	 * @return Collection[]
-	 */
-	public function fetchBySlug($slug)
-	{
-		return $this->repository()->by('slug', $slug);
-	}
-
-	/**
-	 * Create a Slug
-	 * @param string $value
-	 * @return string
-	 */
-	public function createSlug($value)
-	{
-		return zbase_string_slug($value);
-	}
 
 	// </editor-fold>
 
@@ -294,8 +231,6 @@ trait Node
 		$faker = \Faker\Factory::create();
 		return [
 			'title' => ucfirst($faker->words(rand(3, 10), true)),
-			'content' => $faker->text(1000, true),
-			'excerpt' => $faker->text(200),
 			'status' => rand(0, 2),
 		];
 	}
@@ -308,22 +243,22 @@ trait Node
 	public static function columns()
 	{
 		$columns = [];
-		$columns['user_id'] = [
+		$columns['node_id'] = [
 			'filterable' => [
-				'name' => 'userid',
+				'name' => 'nodeid',
 				'enable' => true
 			],
 			'sortable' => [
-				'name' => 'userid',
+				'name' => 'nodeid',
 				'enable' => true
 			],
 			'hidden' => false,
-			'length' => 16,
-			'fillable' => true,
-			'nullable' => true,
+			'length' => 255,
+			'fillable' => false,
+			'nullable' => false,
 			'type' => 'integer',
 			'index' => true,
-			'comment' => 'Author UserId'
+			'comment' => 'Node Id'
 		];
 		$columns['title'] = [
 			'filterable' => [
@@ -341,17 +276,6 @@ trait Node
 			'type' => 'string',
 			'index' => false,
 			'comment' => 'Title'
-		];
-		$columns['content'] = [
-			'filterable' => [
-				'name' => 'content',
-				'enable' => true
-			],
-			'hidden' => false,
-			'fillable' => true,
-			'nullable' => true,
-			'type' => 'text',
-			'comment' => 'Content'
 		];
 		$columns['excerpt'] = [
 			'filterable' => [
@@ -380,6 +304,58 @@ trait Node
 			'type' => 'boolean',
 			'index' => true,
 			'comment' => 'Status'
+		];
+		$columns['filename'] = [
+			'hidden' => false,
+			'length' => 255,
+			'fillable' => true,
+			'nullable' => true,
+			'type' => 'string',
+			'index' => true,
+			'comment' => 'Filename'
+		];
+		$columns['filetype'] = [
+			'hidden' => false,
+			'length' => 32,
+			'fillable' => true,
+			'nullable' => true,
+			'type' => 'string',
+			'index' => true,
+			'comment' => 'File type'
+		];
+		$columns['mimetype'] = [
+			'filterable' => [
+				'name' => 'mimetype',
+				'enable' => true
+			],
+			'sortable' => [
+				'name' => 'mimetype',
+				'enable' => true
+			],
+			'hidden' => false,
+			'length' => 32,
+			'fillable' => true,
+			'nullable' => true,
+			'type' => 'string',
+			'index' => true,
+			'comment' => 'Mime Type'
+		];
+		$columns['size'] = [
+			'filterable' => [
+				'name' => 'size',
+				'enable' => true
+			],
+			'sortable' => [
+				'name' => 'size',
+				'enable' => true
+			],
+			'hidden' => false,
+			'length' => 255,
+			'fillable' => true,
+			'nullable' => true,
+			'type' => 'integer',
+			'index' => true,
+			'comment' => 'File size in byte'
 		];
 		return $columns;
 	}

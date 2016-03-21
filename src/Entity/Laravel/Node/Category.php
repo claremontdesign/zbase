@@ -70,7 +70,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		zbase_db_transaction_start();
 		try
 		{
-			$parent = !empty($data['parent']) ? $data['parent'] : null;
+			$parent = !empty($data['category']) ? $data['category'] : null;
 			$parentNodes = [];
 			if(!empty($parent))
 			{

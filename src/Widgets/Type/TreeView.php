@@ -139,7 +139,16 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	{
 		if(is_null($this->_rows))
 		{
-			$this->_rows = $this->_entity->getRoot()->getDescendants()->toHierarchy();
+			$root = $this->_entity->getRoot();
+			if(!empty($root))
+			{
+				$this->_rows = $root->getDescendants()->toHierarchy();
+				$this->selectedRows();
+			}
+			else
+			{
+				zbase_alert('warning', 'No Root or No Categories found.');
+			}
 		}
 		return $this->_rows;
 	}
@@ -166,7 +175,17 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 			$this->_selectedRows = [];
 			if($this->form() instanceof \Zbase\Widgets\Type\FormInterface)
 			{
-				$selectedRow = $this->form()->entity();
+				$entity = $this->form()->entity();
+				if($entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+				{
+					// Get Parent CAtegory
+					$selectedRow = $this->form()->entity();
+				}
+				if($entity instanceof \Zbase\Entity\Laravel\Node\Node)
+				{
+					//Get Categories of the node
+					$selectedRow = $this->form()->entity()->categories()->get();
+				}
 				if($selectedRow instanceof \Zbase\Entity\Laravel\Node\Nested)
 				{
 					$p = $selectedRow->parent()->first();

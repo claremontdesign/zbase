@@ -2,7 +2,14 @@
 /**
  * Convert Row to JSON
  * @param EntityInterface $row
+ * http://jonmiles.github.io/bootstrap-treeview/#grandchild1
+ * https://github.com/jonmiles/bootstrap-treeview
  */
+$rows = $ui->getRows();
+if(empty($rows))
+{
+	return;
+}
 $form = $ui->form();
 
 function treeview_row($row)
@@ -25,8 +32,11 @@ zbase_view_plugin_load('bootstrap-treeview');
 $uiId = $ui->id();
 $attributes = $ui->wrapperAttributes();
 $wrapperAttributes = $ui->renderHtmlAttributes($attributes);
-$rows = $ui->getRows();
-$actionCreateButton = $ui->getActionCreateButton()->setAttribute('size', 'default');
+$actionCreateButton = $ui->getActionCreateButton();
+if(!empty($actionCreateButton))
+{
+	$actionCreateButton->setAttribute('size', 'default');
+}
 if(!empty($rows))
 {
 	$newRows = [];
@@ -40,17 +50,25 @@ $treeViewOptions = [
 ];
 if($form instanceof \Zbase\Widgets\Type\FormInterface)
 {
-	$treeViewOptions[] = 'multiSelect: false';
 	$treeViewOptions[] = 'showCheckbox: false';
-	$treeViewOptions[] = 'onNodeUnselected: function(event, node) {var nodeId = \'parentCategory\'+node.id;$(\'#\' + nodeId).remove();}';
-	$treeViewOptions[] = 'onNodeSelected: function(event, node) {var nodeId = \'parentCategory\'+node.id;$(\'#' . $uiId . 'TreeView\').parent().append(\'<input type="hidden" value="\'+node.id+\'" id="\'+nodeId+\'" name="parent[]">\');}';
+	$treeViewOptions[] = 'onNodeUnselected: function(event, node) {var nodeId = \''.$uiId.'Category\'+node.id;jQuery(\'#\' + nodeId).remove();}';
+	$treeViewOptions[] = 'onNodeSelected: function(event, node) {var nodeId = \''.$uiId.'Category\'+node.id;jQuery(\'#' . $uiId . 'TreeView\').parent().append(\'<input type="hidden" value="\'+node.id+\'" id="\'+nodeId+\'" name="category[]">\');}';
 }
-$script = '$(\'#' . $uiId . 'TreeView\').treeview({' . implode(',', $treeViewOptions) . '});';
+$treeOptions = $ui->getAttribute('treeOptions');
+$label = $ui->getAttribute('label');
+if(!empty($treeOptions))
+{
+	foreach ($treeOptions as $oK => $oV)
+	{
+		$treeViewOptions[] = $oK . ': ' . (!empty($oV) ? 'true' : 'false');
+	}
+}
+$script = 'jQuery(\'#' . $uiId . 'TreeView\').treeview({' . implode(',', $treeViewOptions) . '});';
 zbase_view_script_add($uiId . 'TreeView', $script, true);
 ?>
 <?php if($form instanceof \Zbase\Widgets\Type\FormInterface): ?>
 	<div class="form-group">
-		<label>Parent Category</label>
+		<label><?php echo $label ?></label>
 		<div <?php echo $wrapperAttributes ?>>
 			<div id="<?php echo $uiId ?>TreeView"></div>
 		</div>

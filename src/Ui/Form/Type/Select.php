@@ -78,7 +78,7 @@ class Select extends \Zbase\Ui\Form\Type\Multi
 				}
 				if(is_bool($emptyOption))
 				{
-					$options[] = '<option value=""></option>';
+					$options[] = '<option value="">Select...</option>';
 				}
 			}
 			foreach ($multiOptions as $k => $v)

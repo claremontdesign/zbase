@@ -55,6 +55,10 @@ class Multi extends \Zbase\Ui\Form\Element
 			{
 				return $this->getYesNoOptions();
 			}
+			if(strtolower($this->_multiOptions) == 'us_states')
+			{
+				return $this->getCountryStates('us');
+			}
 		}
 		return $this->_multiOptions;
 	}
@@ -107,6 +111,20 @@ class Multi extends \Zbase\Ui\Form\Element
 			0 => 'No',
 		];
 		return $options;
+	}
+
+	/**
+	 * Return the Country States
+	 * @param string $country ISO2 CountryName
+	 * @return array [ISO2 => StateName]
+	 */
+	public function getCountryStates($country)
+	{
+		$file = zbase_path_library('Geo/' . strtoupper($country) . '/states.php');
+		if(zbase_file_exists($file))
+		{
+			return require $file;
+		}
 	}
 
 	/**

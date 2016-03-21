@@ -391,6 +391,7 @@ trait Entity
 		{
 			$this->relationshipMode = 'result';
 		}
+		return $this;
 	}
 
 	// </editor-fold>

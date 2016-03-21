@@ -90,6 +90,15 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	// <editor-fold defaultstate="collapsed" desc="CONTROLLERInterface">
 
 	/**
+	 * Check if form is creating
+	 * @return boolean
+	 */
+	public function isCreating()
+	{
+		return $this->_action == 'create' || $this->_action == 'post';
+	}
+
+	/**
 	 * set that form has error
 	 */
 	public function setHasError()
@@ -114,6 +123,10 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function controller($action)
 	{
+		if($action == 'post')
+		{
+			$action = 'create';
+		}
 		$this->_action = $action;
 		if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
 		{
@@ -173,7 +186,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			{
 				if(zbase_is_dev())
 				{
-					if(method_exists($this->entity(), 'fakeValues'))
+					if(method_exists($this->entity(), 'fakeValue'))
 					{
 						$entity = $this->_entity;
 						$this->setValues($entity::fakeValue());

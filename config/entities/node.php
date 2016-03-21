@@ -29,6 +29,17 @@ return [
 				],
 			],
 			'relations' => [
+				'user' => [
+					'entity' => 'user',
+					'type' => 'belongsto',
+					'class' => [
+						'method' => 'user'
+					],
+					'keys' => [
+						'local' => 'user_id',
+						'foreign' => 'user_id'
+					],
+				],
 				'categories' => [
 					'entity' => 'node_category',
 					'type' => 'manytomany',
@@ -38,6 +49,17 @@ return [
 					'pivot' => 'nodes_category_pivot',
 					'keys' => [
 						'local' => 'category_id',
+						'foreign' => 'node_id'
+					],
+				],
+				'files' => [
+					'entity' => 'nodes_files',
+					'type' => 'onetomany',
+					'class' => [
+						'method' => 'files'
+					],
+					'keys' => [
+						'local' => 'node_id',
 						'foreign' => 'node_id'
 					],
 				],
@@ -102,6 +124,35 @@ return [
 				'pivotable' => ['entity' => 'node', 'nested' => 'node_category'],
 				'orderable' => true,
 				'columns' => []
+			]
+		],
+		'nodes_files' => [
+			'enable' => true,
+			'model' => Zbase\Entity\__FRAMEWORK__\Node\File::class,
+			'relations' => [
+				'node' => [
+					'entity' => 'nodes',
+					'type' => 'belongsto',
+					'class' => [
+						'method' => 'node'
+					],
+					'keys' => [
+						'local' => 'node_id',
+						'foreign' => 'node_id'
+					],
+				],
+			],
+			'table' => [
+				'name' => 'nodes_files',
+				'description' => 'Nodes Files Table',
+				'primaryKey' => 'file_id',
+				'timestamp' => true,
+				'alphaId' => true,
+				'optionable' => true,
+				'columns' => function(){
+					$className = zbase_class_name('Zbase\Entity\__FRAMEWORK__\Node\File');
+					return $className::columns();
+				}
 			]
 		],
 	],

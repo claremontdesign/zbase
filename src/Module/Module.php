@@ -196,7 +196,16 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	 */
 	public function widgetsByControllerAction($action)
 	{
-		$widgets = $this->_v('widgets.controller.' . $action, []);
+		$section = zbase_section();
+		$hasSection = $this->_v('widgets.' . $section, false);
+		if(!empty($hasSection))
+		{
+			$widgets = $this->_v('widgets.' . $section . '.controller.' . $action, []);
+		}
+		else
+		{
+			$widgets = $this->_v('widgets.controller.' . $action, []);
+		}
 		if(is_array($widgets))
 		{
 			foreach ($widgets as $name => $path)
@@ -237,10 +246,10 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	public function pageProperties($action)
 	{
 		$section = zbase_section();
-		$title = $this->_v('controller.'.$section.'.action.' . $action . '.page.title', null);
-		$headTitle = $this->_v('controller.'.$section.'.action.' . $action . '.page.headTitle', $title);
-		$subTitle = $this->_v('controller.'.$section.'.action.' . $action . '.page.subTitle', null);
-		$breadcrumbs = $this->_v('controller.'.$section.'.action.' . $action . '.page.breadcrumbs', []);
+		$title = $this->_v('controller.' . $section . '.action.' . $action . '.page.title', null);
+		$headTitle = $this->_v('controller.' . $section . '.action.' . $action . '.page.headTitle', $title);
+		$subTitle = $this->_v('controller.' . $section . '.action.' . $action . '.page.subTitle', null);
+		$breadcrumbs = $this->_v('controller.' . $section . '.action.' . $action . '.page.breadcrumbs', []);
 		zbase_view_pagetitle_set($headTitle, $title, $subTitle);
 		if(!empty($breadcrumbs))
 		{

@@ -26,31 +26,47 @@ class DatabaseSeeder extends Seeder
 		{
 			foreach ($entities as $entityName => $entity)
 			{
-				$preEvent = zbase_data_get($entity, 'data.events.pre', false);
-				if(!empty($preEvent))
+				$enable = zbase_data_get($entity, 'enable', false);
+				if(!empty($enable))
 				{
-					if($preEvent instanceof \Closure)
+					$preEvent = zbase_data_get($entity, 'data.events.pre', false);
+					if(!empty($preEvent))
 					{
-						$preEvent();
+						if($preEvent instanceof \Closure)
+						{
+							$preEvent();
+						}
 					}
 				}
 			}
 			foreach ($entities as $entityName => $entity)
 			{
-				$this->_defaults($entityName, $entity);
-			}
-			foreach ($entities as $entityName => $entity)
-			{
-				$this->_factory($entityName, $entity);
-			}
-			foreach ($entities as $entityName => $entity)
-			{
-				$postEvent = zbase_data_get($entity, 'data.events.post', false);
-				if(!empty($postEvent))
+				$enable = zbase_data_get($entity, 'enable', false);
+				if(!empty($enable))
 				{
-					if($postEvent instanceof \Closure)
+					$this->_defaults($entityName, $entity);
+				}
+			}
+			foreach ($entities as $entityName => $entity)
+			{
+				$enable = zbase_data_get($entity, 'enable', false);
+				if(!empty($enable))
+				{
+					$this->_factory($entityName, $entity);
+				}
+			}
+			foreach ($entities as $entityName => $entity)
+			{
+				$enable = zbase_data_get($entity, 'enable', false);
+				if(!empty($enable))
+				{
+					$postEvent = zbase_data_get($entity, 'data.events.post', false);
+					if(!empty($postEvent))
 					{
-						$postEvent();
+						if($postEvent instanceof \Closure)
+						{
+							$postEvent();
+						}
 					}
 				}
 			}

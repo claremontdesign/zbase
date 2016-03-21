@@ -34,6 +34,7 @@ class CreateTable extends Migration
 	 */
 	public function up()
 	{
+		$this->down();
 		$dbTblPrefix = zbase_db_prefix();
 		$entities = zbase_config_get('entity', []);
 		if(!empty($entities))
@@ -48,6 +49,15 @@ class CreateTable extends Migration
 				{
 					Schema::create($tableName, function(Blueprint $table) use($columns, $entity)
 						{
+						if(is_string($columns) && is_a($columns, true))
+						{
+							$className = zbase_class_name($columns);
+							$columns = $className::columns();
+						}
+						if($columns instanceof \Closure)
+						{
+							$columns = $columns();
+						}
 						$tableTye = zbase_data_get($entity, 'table.type', 'InnoDB');
 						$table->engine = $tableTye;
 						$primaryKey = zbase_data_get($entity, 'table.primaryKey', null);
@@ -114,11 +124,12 @@ class CreateTable extends Migration
 									continue;
 								}
 								$type = zbase_data_get($column, 'type', 'string');
+								$defaultLength = 16;
 								if($type == 'string')
 								{
 									$defaultLength = 255;
 								}
-								elseif($type == 'integer')
+								elseif($type == 'integer' || $type == 'decimal' || $type == 'double')
 								{
 									$defaultLength = 16;
 								}

@@ -10,8 +10,8 @@ date_default_timezone_set(zbase_date_default_timezone());
  * @version 0.0.0.1
  * @since Feb 14, 2016 12:22:24 PM
  * @file date.php
- * @project Expression project.name is undefined on line 13, column 15 in Templates/Scripting/EmptyPHP.php.
- * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
+ *
+ * http://carbon.nesbot.com/docs/
  */
 define('DATE_FORMAT_DB', 'Y-m-d H:i:s');
 

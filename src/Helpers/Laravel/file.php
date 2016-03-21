@@ -15,6 +15,24 @@
  */
 
 /**
+ * Return the Path to zbase package
+ * @return string
+ */
+function zbase_path()
+{
+	return __DIR__ . '/../../../';
+}
+
+/**
+ * Path to zbase library
+ * @return string
+ */
+function zbase_path_library($path)
+{
+	return zbase_path() . 'library/' . $path;
+}
+
+/**
  * Return the Asset base path
  * @return string
  */
