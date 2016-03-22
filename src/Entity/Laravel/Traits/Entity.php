@@ -365,6 +365,9 @@ trait Entity
 							break;
 						case 'morphtomany':
 							break;
+						case 'belongsto':
+							return new BelongsTo($model->newQuery(), $this, $model->getTable() . '.' . $fKey, $lKey, $name);
+							break;
 						default;
 					}
 					if(!empty($relObj))
@@ -412,4 +415,14 @@ trait Entity
 	{
 		return $this->softDelete;
 	}
+
+	/**
+	 * REturn the Entity Name
+	 * @return string
+	 */
+	public function entityName()
+	{
+		return $this->entityName;
+	}
+
 }

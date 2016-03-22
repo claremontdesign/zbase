@@ -250,3 +250,30 @@ function zbase_file_upload_image($index, $folder, $newFilename, $encodingFormat 
 	$im->encode($encodingFormat, 100)->save($newFile);
 	return $newFile;
 }
+
+/**
+ * Return the file mime type
+ * @param string $file The File to question
+ * @return string
+ */
+function zbase_file_mime_type($file)
+{
+	if(zbase_file_exists($file))
+	{
+		return \Image::make($file)->mime();
+	}
+	return null;
+}
+/**
+ * eturns the size of the image file in bytes or false if image instance is not created from a file.
+ * @param string $file The File to question
+ * @return boolean|integer
+ */
+function zbase_file_size($file)
+{
+	if(zbase_file_exists($file))
+	{
+		return \Image::make($file)->filesize();
+	}
+	return null;
+}

@@ -65,11 +65,11 @@ class File extends BaseEntity implements WidgetEntityInterface
 	public static function tableRelations($relations = [])
 	{
 		$relations = [
-			self::$nodeNamePrefix => [
-				'entity' => self::$nodeNamePrefix,
+			static::$nodeNamePrefix => [
+				'entity' => static::$nodeNamePrefix,
 				'type' => 'belongsto',
 				'class' => [
-					'method' => self::$nodeNamePrefix
+					'method' => static::$nodeNamePrefix
 				],
 				'keys' => [
 					'local' => 'node_id',
@@ -88,7 +88,7 @@ class File extends BaseEntity implements WidgetEntityInterface
 	public static function entityConfiguration($entity = [])
 	{
 		$entity['table'] = [
-			'name' => self::$nodeNamePrefix . '_files',
+			'name' => static::$nodeNamePrefix . '_files',
 			'description' => 'Files Table',
 			'primaryKey' => 'file_id',
 			'timestamp' => true,

@@ -18,9 +18,13 @@ namespace Zbase\Widgets\Type;
  *
  */
 use Zbase\Widgets;
+use Zbase\Interfaces;
+use Zbase\Traits;
 
-class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widgets\ControllerInterface, FormInterface
+class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widgets\ControllerInterface, FormInterface, Interfaces\ValidationInterface
 {
+
+	use Traits\Validations;
 
 	/**
 	 * Widget Type
@@ -175,22 +179,31 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 			$this->_selectedRows = [];
 			if($this->form() instanceof \Zbase\Widgets\Type\FormInterface)
 			{
-				$entity = $this->form()->entity();
-				if($entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+				if($this->form()->wasPosted())
 				{
-					// Get Parent CAtegory
-					$selectedRow = $this->form()->entity();
+
 				}
-				if($entity instanceof \Zbase\Entity\Laravel\Node\Node)
+				else
 				{
-					//Get Categories of the node
-					$selectedRow = $this->form()->entity()->categories()->get();
+					
 				}
-				if($selectedRow instanceof \Zbase\Entity\Laravel\Node\Nested)
-				{
-					$p = $selectedRow->parent()->first();
-					$this->_selectedRows[$p->category_id] = $p;
-				}
+//				$entity = $this->form()->entity();
+//				if($entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+//				{
+//					// Get Parent Category
+//					$selectedRow = $this->form()->entity();
+//				}
+//				if($entity instanceof \Zbase\Entity\Laravel\Node\Node)
+//				{
+//					//Get Categories of the node
+//					dd($entity->categories());
+//					$selectedRow = $entity->categories()->get();
+//				}
+//				if($selectedRow instanceof \Zbase\Entity\Laravel\Node\Nested)
+//				{
+//					$p = $selectedRow->parent()->first();
+//					$this->_selectedRows[$p->category_id] = $p;
+//				}
 			}
 		}
 		return $this->_selectedRows;

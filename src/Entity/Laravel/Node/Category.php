@@ -285,7 +285,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		{
 			return [];
 		}
-		self::fakeValues();
+		static::fakeValues();
 		return [];
 	}
 
@@ -312,15 +312,45 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		if(!empty($entity['pivot']))
 		{
 			$entity['table'] = [
-				'name' => self::$nodeNamePrefix . '_category_pivot',
-				'description' => 'Nodes-Categories Pivot Table',
-				'pivotable' => ['entity' => self::$nodeNamePrefix, 'nested' => self::$nodeNamePrefix . '_category'],
+				'name' => static::$nodeNamePrefix . '_category_pivot',
+				'description' => ucfirst(static::$nodeNamePrefix) . '-Categories Pivot Table',
+				'pivotable' => ['entity' => static::$nodeNamePrefix, 'nested' => static::$nodeNamePrefix . '_category'],
 				'orderable' => true,
+				'columns' => [
+					'node_id' => [
+						'length' => 16,
+						'hidden' => false,
+						'fillable' => true,
+						'type' => 'integer',
+						'unsigned' => true,
+						'foreign' => [
+							'table' => static::$nodeNamePrefix,
+							'column' => 'node_id',
+							'onDelete' => 'cascade'
+						],
+						'comment' => 'Node ID'
+					],
+					'category_id' => [
+						'length' => 16,
+						'hidden' => false,
+						'fillable' => true,
+						'type' => 'integer',
+						'index' => true,
+						'unique' => false,
+						'unsigned' => true,
+						'foreign' => [
+							'table' => static::$nodeNamePrefix . '_category',
+							'column' => 'category_id',
+							'onDelete' => 'cascade'
+						],
+						'comment' => 'Category ID'
+					]
+				],
 			];
 			return $entity;
 		}
 		$entity['table'] = [
-			'name' => self::$nodeNamePrefix . '_category',
+			'name' => static::$nodeNamePrefix . '_category',
 			'primaryKey' => 'category_id',
 			'timestamp' => true,
 			'softDelete' => true,
@@ -341,13 +371,13 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	public static function tableRelations($relations = [])
 	{
 		$relations = [
-			self::$nodeNamePrefix => [
-				'entity' => self::$nodeNamePrefix,
+			static::$nodeNamePrefix => [
+				'entity' => static::$nodeNamePrefix,
 				'type' => 'manytomany',
 				'class' => [
-					'method' => self::$nodeNamePrefix
+					'method' => static::$nodeNamePrefix
 				],
-				'pivot' => self::$nodeNamePrefix . '_category_pivot',
+				'pivot' => static::$nodeNamePrefix . '_category_pivot',
 				'keys' => [
 					'local' => 'node_id',
 					'foreign' => 'category_id'
@@ -355,6 +385,17 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			],
 		];
 		return $relations;
+	}
+
+	/**
+	 * Return table minimum columns requirement
+	 * @param array $columns Some columns
+	 * @param array $entity Entity Configuration
+	 * @return array
+	 */
+	public static function tableColumns($columns = [], $entity = [])
+	{
+		return $columns;
 	}
 
 }

@@ -237,9 +237,11 @@ trait File
 
 	/**
 	 * Return table minimum columns requirement
+	 * @param array $columns Some columns
+	 * @param array $entity Entity Configuration
 	 * @return array
 	 */
-	public static function tableColumns($columns = [])
+	public static function tableColumns($columns = [], $entity = [])
 	{
 		$columns['node_id'] = [
 			'filterable' => [
@@ -303,10 +305,27 @@ trait File
 			'index' => true,
 			'comment' => 'Status'
 		];
+		$columns['is_primary'] = [
+			'filterable' => [
+				'name' => 'primary',
+				'enable' => true
+			],
+			'sortable' => [
+				'name' => 'primary',
+				'enable' => true
+			],
+			'hidden' => false,
+			'fillable' => false,
+			'nullable' => true,
+			'unsigned' => true,
+			'type' => 'boolean',
+			'index' => true,
+			'comment' => 'Is Primary'
+		];
 		$columns['filename'] = [
 			'hidden' => false,
 			'length' => 255,
-			'fillable' => true,
+			'fillable' => false,
 			'nullable' => true,
 			'type' => 'string',
 			'index' => true,
@@ -315,7 +334,7 @@ trait File
 		$columns['filetype'] = [
 			'hidden' => false,
 			'length' => 32,
-			'fillable' => true,
+			'fillable' => false,
 			'nullable' => true,
 			'type' => 'string',
 			'index' => true,
@@ -332,7 +351,7 @@ trait File
 			],
 			'hidden' => false,
 			'length' => 32,
-			'fillable' => true,
+			'fillable' => false,
 			'nullable' => true,
 			'type' => 'string',
 			'index' => true,
@@ -349,7 +368,7 @@ trait File
 			],
 			'hidden' => false,
 			'length' => 255,
-			'fillable' => true,
+			'fillable' => false,
 			'nullable' => true,
 			'type' => 'integer',
 			'index' => true,

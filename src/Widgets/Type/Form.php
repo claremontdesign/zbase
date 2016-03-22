@@ -166,21 +166,8 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			}
 			if(!empty($ret))
 			{
-				if($action == 'create')
-				{
-					$action = 'update';
-				}
-				$params = ['action' => $action, 'id' => $this->entity()->id()];
-				if($action == 'delete')
-				{
-					$params = [];
-				}
-				$url = $this->getModule()->url(zbase_section(), $params);
-				if($action == 'restore' || $action == 'ddelete')
-				{
-					$url = zbase_url_previous();
-				}
-				return zbase_redirect()->to($url);
+				zbase_session_flash($this->entity()->entityName() . 'new', $this->entity()->id());
+				return $this->_postEvent($action);
 			}
 			if($action == 'create')
 			{
@@ -199,6 +186,41 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			return zbase_abort(404);
 		}
 		return false;
+	}
+
+	/**
+	 * Event after Action
+	 * @param string $action
+	 * @param string $url The Default URL to redirect
+	 */
+	protected function _postEvent($action)
+	{
+		$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post', null);
+		if(is_null($e))
+		{
+			if($action == 'create')
+			{
+				$action = 'update';
+			}
+			$params = ['action' => $action, 'id' => $this->entity()->id()];
+			if($action == 'delete')
+			{
+				$params = [];
+			}
+			$url = $this->getModule()->url(zbase_section(), $params);
+			if($action == 'restore' || $action == 'ddelete')
+			{
+				$url = zbase_url_previous();
+			}
+			return zbase_redirect()->to($url);
+		}
+		if(!empty($e))
+		{
+			if(!empty($e['route']))
+			{
+				$url = zbase_url_from_config($e);
+			}
+		}
 	}
 
 	/**
@@ -322,32 +344,37 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 								$widgetElement->setTab($tabName);
 							}
 						}
+						if($widgetElement instanceof \Zbase\Interfaces\ValidationInterface)
+						{
+							if($widgetElement->hasValidations())
+							{
+								$this->_validationRules = array_replace_recursive($this->_validationRules, $widgetElement->getValidationRules());
+								$this->_validationMessages = array_replace_recursive($this->_validationMessages, $widgetElement->getValidationMessages());
+							}
+						}
 					}
 				}
 			}
-			$eRules = $e->getValidationRules();
-			if(is_array($eRules))
-			{
-				$this->_validationRules = array_replace_recursive($this->_validationRules, $e->getValidationRules());
-				$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
-			}
 		}
 		$currentTab = zbase_request_input('tab', false);
-		if($e->hasValidations())
+		if($e instanceof \Zbase\Interfaces\ValidationInterface)
 		{
-			$formTag = $this->_v('form_tab', true);
-			if(zbase_request_method() == 'post' && empty($formTag) && !empty($currentTab))
+			if($e->hasValidations())
 			{
-				if($tabName == $currentTab)
+				$formTag = $this->_v('form_tab', true);
+				if(zbase_request_method() == 'post' && empty($formTag) && !empty($currentTab))
+				{
+					if($tabName == $currentTab)
+					{
+						$this->_validationRules[$e->name()] = $e->getValidationRules();
+						$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
+					}
+				}
+				else
 				{
 					$this->_validationRules[$e->name()] = $e->getValidationRules();
 					$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
 				}
-			}
-			else
-			{
-				$this->_validationRules[$e->name()] = $e->getValidationRules();
-				$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
 			}
 		}
 		return $e;
@@ -567,7 +594,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function startTag()
 	{
-		return '<form action="" method="POST">';
+		return '<form action="" method="POST" enctype="multipart/form-data">';
 	}
 
 	/**

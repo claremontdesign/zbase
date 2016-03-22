@@ -140,11 +140,12 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 	}
 
 	/**
-	 * Table Columns
-	 * @param array $configData Configuration default data
+	 * Return table minimum columns requirement
+	 * @param array $columns Some columns
+	 * @param array $entity Entity Configuration
 	 * @return array
 	 */
-	public static function tableColumns($configData = [])
+	public static function tableColumns($columns = [], $entity = [])
 	{
 		$columns = [
 			'parent_id' => [

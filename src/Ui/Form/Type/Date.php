@@ -28,10 +28,15 @@ class Date extends \Zbase\Ui\Form\Element
 	public function getValue()
 	{
 		$value = parent::getValue();
+		if(is_string($value))
+		{
+			$value = zbase_date_from_format($this->getDateFormat(), $value);
+		}
 		if($value instanceof \DateTime)
 		{
-			return $value->format($this->getDateFormat());
+			$this->_value = $value->format($this->getDateFormat());
 		}
+		return $this->_value;
 	}
 
 	/**

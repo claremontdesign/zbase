@@ -141,8 +141,7 @@ return [
 		Intervention\Image\ImageServiceProvider::class,
 		Zbase\LaravelServiceProvider::class,
 		Baum\Providers\BaumServiceProvider::class,
-
-//		ConstructNow\LaravelServiceProvider::class,
+		ConstructNow\LaravelServiceProvider::class
 	],
 	/*
 	  |--------------------------------------------------------------------------

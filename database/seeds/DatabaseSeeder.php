@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
 	 */
 	public function run()
 	{
+		echo " - Seeding\n";
 		LaravelModel::unguard();
 		$entities = zbase_config_get('entity', []);
 
@@ -33,6 +34,7 @@ class DatabaseSeeder extends Seeder
 					$modelName = zbase_class_name($model);
 					if(method_exists($modelName, 'seedingEventPre'))
 					{
+						echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - PreSeeding Event\n";
 						$modelName::seedingEventPre($entity);
 					}
 				}
@@ -62,6 +64,7 @@ class DatabaseSeeder extends Seeder
 					$modelName = zbase_class_name($model);
 					if(method_exists($modelName, 'seedingEventPost'))
 					{
+						echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - PostSeeding Event\n";
 						$modelName::seedingEventPost($entity);
 					}
 				}
@@ -92,6 +95,7 @@ class DatabaseSeeder extends Seeder
 		{
 			return;
 		}
+		echo " -- " . $entityName . " - Data Defaults\n";
 		$factory = zbase_data_get($entityConfig, 'data.factory.enable', false);
 		if(empty($factory))
 		{
@@ -137,8 +141,9 @@ class DatabaseSeeder extends Seeder
 		}
 		$this->processedEntities[] = $entityName;
 		$factory = zbase_data_get($entityConfig, 'data.factory.enable', false);
-		if($factory)
+		if(!empty($factory))
 		{
+			echo " -- " . $entityName . " - Data Factory\n";
 			$factoryDependent = zbase_data_get($entityConfig, 'data.factory.dependent', false);
 			if(!empty($factoryDependent))
 			{

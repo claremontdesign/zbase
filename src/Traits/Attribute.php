@@ -53,6 +53,7 @@ trait Attribute
 				$this->__set($name, $value);
 			}
 		}
+		return $this;
 	}
 
 	/**

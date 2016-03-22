@@ -50,11 +50,12 @@ class UserProfile extends BaseEntity
 	}
 
 	/**
-	 * Table Columns
-	 * @param array $columns Configuration default data
+	 * Return table minimum columns requirement
+	 * @param array $columns Some columns
+	 * @param array $entity Entity Configuration
 	 * @return array
 	 */
-	public static function tableColumns($columns = [])
+	public static function tableColumns($columns = [], $entity = [])
 	{
 		$columns = [
 			'user_id' => [

@@ -66,3 +66,15 @@ function zbase_date_before($first, $second)
 	}
 	return false;
 }
+
+/**
+ * Create a Date from Format
+ * @param type $format
+ * @param type $time
+ * @param type $tz
+ * @return type
+ */
+function zbase_date_from_format($format, $time, $tz = null)
+{
+	return \Carbon\Carbon::createFromFormat($format, $time, $tz);
+}

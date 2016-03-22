@@ -339,9 +339,12 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 				{
 					$w = new \Zbase\Widgets\Type\TreeView($name, $config);
 				}
-				if($w->enabled())
+				if($w instanceof \Zbase\Widgets\WidgetInterface)
 				{
-					return $this->widgets[$name] = $w;
+					if($w->enabled())
+					{
+						return $this->widgets[$name] = $w;
+					}
 				}
 			}
 		}

@@ -77,9 +77,10 @@ function zbase_url_create($path, array $parameters = null, $secure = false)
  * url.route.name.params
  *
  * @param array $config
+ * @param array $params Some parameters
  * @return string
  */
-function zbase_url_from_config($config)
+function zbase_url_from_config($config, $params = [])
 {
 	if(is_string($config))
 	{

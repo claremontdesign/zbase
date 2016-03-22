@@ -6,6 +6,7 @@
  * https://github.com/jonmiles/bootstrap-treeview
  */
 $rows = $ui->getRows();
+$htmls = [];
 if(empty($rows))
 {
 	return;
@@ -17,6 +18,10 @@ function treeview_row($row)
 	$newRow = [];
 	$newRow['text'] = $row['title'];
 	$newRow['id'] = $row['category_id'];
+	if(!empty($row['selected']))
+	{
+		$newRow['state']['selected'] = true;
+	}
 	$children = !empty($row['children']) ? $row['children'] : false;
 	if(!empty($children))
 	{
@@ -40,8 +45,14 @@ if(!empty($actionCreateButton))
 if(!empty($rows))
 {
 	$newRows = [];
+	$selectedNodes = zbase_form_old('category');
 	foreach ($rows->toArray() as $row)
 	{
+		if(!empty($selectedNodes) && in_array($row['category_id'], $selectedNodes))
+		{
+			$row['selected'] = true;
+			$htmls[] = '<input type="hidden" value="' . $row['category_id'] . '" id="' . $uiId . 'Category' . $row['category_id'] . '" name="category[]">';
+		}
 		$newRows[] = treeview_row($row);
 	}
 }
@@ -51,8 +62,8 @@ $treeViewOptions = [
 if($form instanceof \Zbase\Widgets\Type\FormInterface)
 {
 	$treeViewOptions[] = 'showCheckbox: false';
-	$treeViewOptions[] = 'onNodeUnselected: function(event, node) {var nodeId = \''.$uiId.'Category\'+node.id;jQuery(\'#\' + nodeId).remove();}';
-	$treeViewOptions[] = 'onNodeSelected: function(event, node) {var nodeId = \''.$uiId.'Category\'+node.id;jQuery(\'#' . $uiId . 'TreeView\').parent().append(\'<input type="hidden" value="\'+node.id+\'" id="\'+nodeId+\'" name="category[]">\');}';
+	$treeViewOptions[] = 'onNodeUnselected: function(event, node) {var nodeId = \'' . $uiId . 'Category\'+node.id;jQuery(\'#\' + nodeId).remove();}';
+	$treeViewOptions[] = 'onNodeSelected: function(event, node) {var nodeId = \'' . $uiId . 'Category\'+node.id;jQuery(\'#' . $uiId . 'TreeView\').parent().append(\'<input type="hidden" value="\'+node.id+\'" id="\'+nodeId+\'" name="category[]">\');}';
 }
 $treeOptions = $ui->getAttribute('treeOptions');
 $label = $ui->getAttribute('label');
@@ -71,6 +82,7 @@ zbase_view_script_add($uiId . 'TreeView', $script, true);
 		<label><?php echo $label ?></label>
 		<div <?php echo $wrapperAttributes ?>>
 			<div id="<?php echo $uiId ?>TreeView"></div>
+			<?php echo implode('', $htmls); ?>
 		</div>
 	</div>
 <?php else: ?>
@@ -79,5 +91,6 @@ zbase_view_script_add($uiId . 'TreeView', $script, true);
 			<?php echo $actionCreateButton ?>
 		<?php endif; ?>
 		<div id="<?php echo $uiId ?>TreeView"></div>
+		<?php echo implode('', $htmls); ?>
 	</div>
 <?php endif; ?>

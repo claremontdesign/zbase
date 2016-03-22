@@ -771,13 +771,14 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$moderatorRole = \DB::table('user_roles')->where('role_name', 'moderator')->first();
 		\DB::table('users_roles')->where('user_id', $moderator->user_id)->update(['role_id' => $moderatorRole->role_id]);
 	}
-
+	
 	/**
-	 * Columns
-	 * @param array $columns Configuration default data
+	 * Return table minimum columns requirement
+	 * @param array $columns Some columns
+	 * @param array $entity Entity Configuration
 	 * @return array
 	 */
-	public static function tableColumns($columns = [])
+	public static function tableColumns($columns = [], $entity = [])
 	{
 		$columns = [
 			'user_id' => [
