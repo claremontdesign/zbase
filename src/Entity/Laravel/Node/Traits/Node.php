@@ -287,25 +287,10 @@ trait Node
 	}
 
 	/**
-	 * Return fake values
-	 */
-	public static function fakeValue()
-	{
-		$faker = \Faker\Factory::create();
-		return [
-			'title' => ucfirst($faker->words(rand(3, 10), true)),
-			'content' => $faker->text(1000, true),
-			'excerpt' => $faker->text(200),
-			'status' => rand(0, 2),
-		];
-	}
-
-	// <editor-fold defaultstate="collapsed" desc="COLUMNS">
-	/**
 	 * Return table minimum columns requirement
 	 * @return array
 	 */
-	public static function columns()
+	public static function nodeDefaultColumns()
 	{
 		$columns = [];
 		$columns['user_id'] = [
@@ -384,5 +369,4 @@ trait Node
 		return $columns;
 	}
 
-	// </editor-fold>
 }

@@ -18,7 +18,6 @@ namespace Zbase\Entity\Laravel\Node;
 use Zbase\Entity\Laravel\Traits as LaravelTraits;
 use Zbase\Traits;
 
-
 class Nested extends \Baum\Node
 {
 
@@ -40,13 +39,12 @@ class Nested extends \Baum\Node
 		parent::__construct($attributes);
 		$this->__initEntity();
 	}
-	// <editor-fold defaultstate="collapsed" desc="COLUMNS">
 
 	/**
 	 * Return table minimum columns requirement
 	 * @return array
 	 */
-	public static function columns()
+	public static function nestedNodeDefaultColumns()
 	{
 		$columns = [];
 		$columns['parent_id'] = [
@@ -89,5 +87,4 @@ class Nested extends \Baum\Node
 		];
 		return $columns;
 	}
-	// </editor-fold>
 }

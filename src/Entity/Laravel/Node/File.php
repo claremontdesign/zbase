@@ -27,7 +27,13 @@ class File extends BaseEntity implements WidgetEntityInterface
 	 * The Entity Name
 	 * @var string
 	 */
-	protected $entityName = 'node';
+	protected $entityName = 'node_files';
+
+	/**
+	 * The Node Name Prefix
+	 * @var string
+	 */
+	public static $nodeNamePrefix = 'node';
 
 	protected static function boot()
 	{
@@ -49,5 +55,46 @@ class File extends BaseEntity implements WidgetEntityInterface
 	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
 	{
 		return $this->nodeWidgetController($method, $action, $data, $widget);
+	}
+
+	/**
+	 * Table Relations
+	 * @param array $relations Configuration default data
+	 * @return array
+	 */
+	public static function tableRelations($relations = [])
+	{
+		$relations = [
+			self::$nodeNamePrefix => [
+				'entity' => self::$nodeNamePrefix,
+				'type' => 'belongsto',
+				'class' => [
+					'method' => self::$nodeNamePrefix
+				],
+				'keys' => [
+					'local' => 'node_id',
+					'foreign' => 'node_id'
+				],
+			],
+		];
+		return $relations;
+	}
+
+	/**
+	 * Table Entity Configuration
+	 * @param array $entity Configuration default data
+	 * @return array
+	 */
+	public static function entityConfiguration($entity = [])
+	{
+		$entity['table'] = [
+			'name' => self::$nodeNamePrefix . '_files',
+			'description' => 'Files Table',
+			'primaryKey' => 'file_id',
+			'timestamp' => true,
+			'alphaId' => true,
+			'optionable' => true
+		];
+		return $entity;
 	}
 }

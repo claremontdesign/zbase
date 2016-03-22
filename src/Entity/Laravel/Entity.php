@@ -93,4 +93,14 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 		return $data;
 	}
 
+	/**
+	 * Table Entity Configuration
+	 * @param array $entity Configuration default data
+	 * @return array
+	 */
+	public static function entityConfiguration($entity = [])
+	{
+		return $entity;
+	}
+
 }

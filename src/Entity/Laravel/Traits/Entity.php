@@ -92,7 +92,11 @@ trait Entity
 	public function __initEntity()
 	{
 		$this->entityAttributes = $this->entityAttributes();
-		$this->table = zbase_data_get($this->entityAttributes, 'table.name', $this->table);
+		if(method_exists($this, 'entityConfiguration'))
+		{
+			$this->entityAttributes = $this->entityConfiguration($this->entityAttributes);
+		}
+		$this->table = zbase_data_get($this->entityAttributes, 'table.name', $this->entityName);
 		$this->primaryKey = zbase_data_get($this->entityAttributes, 'table.primaryKey', false);
 		$this->timestamps = zbase_data_get($this->entityAttributes, 'table.timestamp', false);
 		$this->sluggable = zbase_data_get($this->entityAttributes, 'table.sluggable', false);
@@ -107,7 +111,11 @@ trait Entity
 			$this->incrementing = false;
 		}
 		$this->dbColumns = zbase_data_get($this->entityAttributes, 'table.columns', $this->dbColumns);
-		$this->relationship = zbase_data_get($this->entityAttributes, 'relations', $this->relationship);
+		//$this->relationship = zbase_data_get($this->entityAttributes, 'relations', $this->relationship);
+		if(method_exists($this, 'tableRelations'))
+		{
+			$this->relationship = $this->tableRelations($this->relationship);
+		}
 		$optionable = zbase_data_get($this->entityAttributes, 'table.optionable', false);
 		if(!empty($optionable))
 		{

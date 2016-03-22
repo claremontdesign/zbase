@@ -29,13 +29,11 @@ class DatabaseSeeder extends Seeder
 				$enable = zbase_data_get($entity, 'enable', false);
 				if(!empty($enable))
 				{
-					$preEvent = zbase_data_get($entity, 'data.events.pre', false);
-					if(!empty($preEvent))
+					$model = zbase_data_get($entity, 'model', null);
+					$modelName = zbase_class_name($model);
+					if(method_exists($modelName, 'seedingEventPre'))
 					{
-						if($preEvent instanceof \Closure)
-						{
-							$preEvent();
-						}
+						$modelName::seedingEventPre($entity);
 					}
 				}
 			}
@@ -60,13 +58,11 @@ class DatabaseSeeder extends Seeder
 				$enable = zbase_data_get($entity, 'enable', false);
 				if(!empty($enable))
 				{
-					$postEvent = zbase_data_get($entity, 'data.events.post', false);
-					if(!empty($postEvent))
+					$model = zbase_data_get($entity, 'model', null);
+					$modelName = zbase_class_name($model);
+					if(method_exists($modelName, 'seedingEventPost'))
 					{
-						if($postEvent instanceof \Closure)
-						{
-							$postEvent();
-						}
+						$modelName::seedingEventPost($entity);
 					}
 				}
 			}
@@ -85,7 +81,17 @@ class DatabaseSeeder extends Seeder
 		{
 			return;
 		}
+		$model = zbase_data_get($entityConfig, 'model', null);
+		$modelName = zbase_class_name($model);
 		$defaults = zbase_data_get($entityConfig, 'data.defaults', []);
+		if(method_exists($modelName, 'tableDefaultData'))
+		{
+			$defaults = $modelName::tableDefaultData($defaults);
+		}
+		if(empty($defaults))
+		{
+			return;
+		}
 		$factory = zbase_data_get($entityConfig, 'data.factory.enable', false);
 		if(empty($factory))
 		{
@@ -104,6 +110,10 @@ class DatabaseSeeder extends Seeder
 					{
 						$default[$primaryKey] = $insertedId;
 						$relations = zbase_data_get($entityConfig, 'relations', []);
+						if(method_exists($modelName, 'tableRelations'))
+						{
+							$relations = $modelName::tableRelations($relations);
+						}
 						if(!empty($relations))
 						{
 							$this->_relations($relations, $default);
@@ -152,13 +162,23 @@ class DatabaseSeeder extends Seeder
 	protected function _rows($entityName, $entityConfig, $foreignData = [], $related = false)
 	{
 		$f = [];
+		$model = zbase_data_get($entityConfig, 'model', null);
 		$tableName = zbase_data_get($entityConfig, 'table.name', null);
 		$primaryKey = zbase_data_get($entityConfig, 'table.primaryKey', null);
+		$modelName = zbase_class_name($model);
 		$columns = zbase_data_get($entityConfig, 'table.columns', []);
+		if(method_exists($modelName, 'tableColumns'))
+		{
+			$columns = $modelName::tableColumns($columns);
+		}
 		$timestamp = zbase_data_get($entityConfig, 'table.timestamp', []);
 		$softDelete = zbase_data_get($entityConfig, 'table.softDelete', []);
 		$alphaId = zbase_data_get($entityConfig, 'table.alphaId', false);
 		$relations = zbase_data_get($entityConfig, 'relations', []);
+		if(method_exists($modelName, 'tableRelations'))
+		{
+			$relations = $modelName::tableRelations($relations);
+		}
 		$now = \Carbon\Carbon::now();
 		foreach ($columns as $columnName => $column)
 		{
@@ -269,5 +289,4 @@ class DatabaseSeeder extends Seeder
 			}
 		}
 	}
-
 }

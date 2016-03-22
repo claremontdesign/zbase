@@ -42,38 +42,67 @@ class CreateTable extends Migration
 			foreach ($entities as $entity)
 			{
 				$enable = zbase_data_get($entity, 'enable', false);
+				if(empty($enable))
+				{
+					continue;
+				}
+				/**
+				 * acceptable value is false|string|classname
+				 * if null, will pass the entity
+				 */
+				$model = zbase_data_get($entity, 'model', null);
+				if(is_null($model))
+				{
+					continue;
+				}
+				$modelName = zbase_class_name($model);
+				if(method_exists($modelName, 'entityConfiguration'))
+				{
+					$entity = $modelName::entityConfiguration($entity);
+				}
 				$tableName = zbase_data_get($entity, 'table.name', null);
+				if(empty($tableName))
+				{
+					continue;
+				}
 				$columns = zbase_data_get($entity, 'table.columns', []);
-				// published_status 1=published|2=not published|3=draft
+				$nodeable = zbase_data_get($entity, 'table.nodeable', false);
+				if(!empty($nodeable))
+				{
+					$columns = array_merge_recursive($columns, \Zbase\Entity\Laravel\Node\Node::nodeDefaultColumns());
+				}
+				$nesteable = zbase_data_get($entity, 'table.nesteable', false);
+				if(!empty($nesteable))
+				{
+					$columns = array_merge_recursive($columns, \Zbase\Entity\Laravel\Node\Nested::nestedNodeDefaultColumns());
+				}
+				if(method_exists($modelName, 'tableColumns'))
+				{
+					$columns = $modelName::tableColumns($columns);
+				}
+				if(empty($columns))
+				{
+					continue;
+				}
 				if(!empty($enable) && !empty($tableName))
 				{
 					Schema::create($tableName, function(Blueprint $table) use($columns, $entity)
 						{
-						if(is_string($columns) && is_a($columns, true))
-						{
-							$className = zbase_class_name($columns);
-							$columns = $className::columns();
-						}
-						if($columns instanceof \Closure)
-						{
-							$columns = $columns();
-						}
+//						if(is_string($columns) && is_a($columns, true))
+//						{
+//							$className = zbase_class_name($columns);
+//							$columns = $className::columns();
+//						}
+//						if($columns instanceof \Closure)
+//						{
+//							$columns = $columns();
+//						}
 						$tableTye = zbase_data_get($entity, 'table.type', 'InnoDB');
 						$table->engine = $tableTye;
 						$primaryKey = zbase_data_get($entity, 'table.primaryKey', null);
 						if(!is_null($primaryKey))
 						{
 							$table->increments($primaryKey);
-						}
-						$nodeable = zbase_data_get($entity, 'table.nodeable', false);
-						if(!empty($nodeable))
-						{
-							$columns = array_merge_recursive($columns, \Zbase\Entity\Laravel\Node\Node::columns());
-						}
-						$nesteable = zbase_data_get($entity, 'table.nesteable', false);
-						if(!empty($nesteable))
-						{
-							$columns = array_merge_recursive($columns, \Zbase\Entity\Laravel\Node\Nested::columns());
 						}
 						$pivotable = zbase_data_get($entity, 'table.pivotable', false);
 						if(!empty($pivotable))
@@ -319,6 +348,16 @@ class CreateTable extends Migration
 			foreach ($entities as $entity)
 			{
 				$enable = zbase_data_get($entity, 'enable', false);
+				$model = zbase_data_get($entity, 'model', null);
+				if(is_null($model))
+				{
+					continue;
+				}
+				$modelName = zbase_class_name($model);
+				if(method_exists($modelName, 'entityConfiguration'))
+				{
+					$entity = $modelName::entityConfiguration($entity);
+				}
 				$tableName = zbase_data_get($entity, 'table.name', null);
 				if(!empty($enable) && !empty($tableName))
 				{

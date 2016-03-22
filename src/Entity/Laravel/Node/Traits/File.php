@@ -235,14 +235,12 @@ trait File
 		];
 	}
 
-	// <editor-fold defaultstate="collapsed" desc="COLUMNS">
 	/**
 	 * Return table minimum columns requirement
 	 * @return array
 	 */
-	public static function columns()
+	public static function tableColumns($columns = [])
 	{
-		$columns = [];
 		$columns['node_id'] = [
 			'filterable' => [
 				'name' => 'nodeid',
@@ -360,5 +358,4 @@ trait File
 		return $columns;
 	}
 
-	// </editor-fold>
 }

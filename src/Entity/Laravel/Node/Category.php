@@ -27,6 +27,12 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	 */
 	protected $entityName = 'node_category';
 
+	/**
+	 * The Node Name Prefix
+	 * @var string
+	 */
+	public static $nodeNamePrefix = 'node';
+
 	protected static function boot()
 	{
 		parent::boot();
@@ -270,6 +276,20 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	}
 
 	/**
+	 * POST-Seeding event
+	 * @param array $entity Entity Configuration
+	 */
+	public static function seedingEventPost($entity = [])
+	{
+		if(!empty($entity['pivot']))
+		{
+			return [];
+		}
+		self::fakeValues();
+		return [];
+	}
+
+	/**
 	 * Return fake values
 	 */
 	public static function fakeValue()
@@ -282,4 +302,59 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	}
 
 	// </editor-fold>
+	/**
+	 * Table Entity Configuration
+	 * @param array $entity Configuration default data
+	 * @return array
+	 */
+	public static function entityConfiguration($entity = [])
+	{
+		if(!empty($entity['pivot']))
+		{
+			$entity['table'] = [
+				'name' => self::$nodeNamePrefix . '_category_pivot',
+				'description' => 'Nodes-Categories Pivot Table',
+				'pivotable' => ['entity' => self::$nodeNamePrefix, 'nested' => self::$nodeNamePrefix . '_category'],
+				'orderable' => true,
+			];
+			return $entity;
+		}
+		$entity['table'] = [
+			'name' => self::$nodeNamePrefix . '_category',
+			'primaryKey' => 'category_id',
+			'timestamp' => true,
+			'softDelete' => true,
+			'alphaId' => true,
+			'nodeable' => true,
+			'nesteable' => true,
+			'optionable' => true,
+			'sluggable' => true
+		];
+		return $entity;
+	}
+
+	/**
+	 * Table Relations
+	 * @param array $relations Configuration default data
+	 * @return array
+	 */
+	public static function tableRelations($relations = [])
+	{
+		$relations = [
+			self::$nodeNamePrefix => [
+				'entity' => self::$nodeNamePrefix,
+				'type' => 'manytomany',
+				'class' => [
+					'method' => self::$nodeNamePrefix
+				],
+				'pivot' => self::$nodeNamePrefix . '_category_pivot',
+				'keys' => [
+					'local' => 'node_id',
+					'foreign' => 'category_id'
+				],
+			],
+		];
+		return $relations;
+	}
+
 }

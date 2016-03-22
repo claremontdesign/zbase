@@ -51,7 +51,7 @@ function zbase_framework()
  */
 function zbase_class_name($className)
 {
-	return str_replace('__FRAMEWORK__', zbase_framework(), $className);
+	return str_replace(array('__FRAMEWORK__','::class'), array(zbase_framework(),''), $className);
 }
 
 /**
