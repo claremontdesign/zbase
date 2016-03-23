@@ -10,7 +10,7 @@ namespace Zbase\Utility\Hash;
  * hashids may be freely distributed under the MIT license.
  */
 
-class Hash implements HashGenerator
+class Hash
 {
 
 	const VERSION = '1.0.6';
