@@ -14,6 +14,7 @@ namespace Zbase\Commands\Laravel;
  * @package Zbase/Traits
  */
 use Illuminate\Console\Command;
+use Zbase\Interfaces;
 
 class Migrate extends Command
 {
@@ -50,6 +51,19 @@ class Migrate extends Command
 	public function handle()
 	{
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
+		$packages = zbase()->packages();
+		if(!empty($packages))
+		{
+			foreach ($packages as $packageName)
+			{
+				$zbase = zbase_package($packageName);
+				if($zbase instanceof Interfaces\MigrateCommandInterface)
+				{
+					echo "\n -- migrate.pre - " . $packageName;
+					$zbase->migrateCommand($phpCommand, ['migrate.pre' => true]);
+				}
+			}
+		}
 		\File::cleanDirectory(database_path() . '/migrations');
 		\File::cleanDirectory(database_path() . '/seeds');
 		\File::cleanDirectory(database_path() . '/factories');
@@ -72,15 +86,15 @@ class Migrate extends Command
 				}
 			}
 		}
-		$packages = zbase()->packages();
 		if(!empty($packages))
 		{
 			foreach ($packages as $packageName)
 			{
 				$zbase = zbase_package($packageName);
-				if($zbase instanceof Interfaces\InstallCommandInterface)
+				if($zbase instanceof Interfaces\MigrateCommandInterface)
 				{
-					$zbase->migrateCommand($phpCommand);
+					echo "\n -- migrate.post - " . $packageName;
+					$zbase->migrateCommand($phpCommand, ['migrate.post' => true]);
 				}
 			}
 		}

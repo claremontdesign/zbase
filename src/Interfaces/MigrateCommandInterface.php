@@ -21,6 +21,7 @@ interface MigrateCommandInterface
 	/**
 	 * The migration command
 	 * @param string $phpCommand The PHP Command
+	 * @param array $options Some Options
 	 */
-	public function migrateCommand($phpCommand);
+	public function migrateCommand($phpCommand, $options = []);
 }

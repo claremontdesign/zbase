@@ -99,6 +99,11 @@ trait Entity
 		$this->table = zbase_data_get($this->entityAttributes, 'table.name', $this->entityName);
 		$this->primaryKey = zbase_data_get($this->entityAttributes, 'table.primaryKey', false);
 		$this->timestamps = zbase_data_get($this->entityAttributes, 'table.timestamp', false);
+		if(!empty($this->timestamps))
+		{
+			$this->dates[] = 'created_at';
+			$this->dates[] = 'updated_at';
+		}
 		$this->sluggable = zbase_data_get($this->entityAttributes, 'table.sluggable', false);
 		$this->alphable = zbase_data_get($this->entityAttributes, 'table.alphaId', false);
 		$this->softDelete = zbase_data_get($this->entityAttributes, 'table.softDelete', false);
@@ -111,6 +116,10 @@ trait Entity
 			$this->incrementing = false;
 		}
 		$this->dbColumns = zbase_data_get($this->entityAttributes, 'table.columns', $this->dbColumns);
+		if(method_exists($this, 'tableColumns'))
+		{
+			$this->dbColumns = static::tableColumns($this->dbColumns);
+		}
 		//$this->relationship = zbase_data_get($this->entityAttributes, 'relations', $this->relationship);
 		if(method_exists($this, 'tableRelations'))
 		{

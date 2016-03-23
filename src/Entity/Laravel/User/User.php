@@ -756,7 +756,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	/**
 	 * POST-Seeding event
 	 */
-	public static function seedingEventPost()
+	public static function seedingEventPost($entity)
 	{
 		$sudo = \DB::table('users')->where(['username' => 'sudo'])->first();
 		$sudoRole = \DB::table('user_roles')->where('role_name', 'sudo')->first();
@@ -771,7 +771,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$moderatorRole = \DB::table('user_roles')->where('role_name', 'moderator')->first();
 		\DB::table('users_roles')->where('user_id', $moderator->user_id)->update(['role_id' => $moderatorRole->role_id]);
 	}
-	
+
 	/**
 	 * Return table minimum columns requirement
 	 * @param array $columns Some columns
@@ -924,14 +924,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'type' => 'timestamp',
 				'nullable' => true,
 				'comment' => 'Date password updated'
-			],
-			'options' => [
-				'hidden' => false,
-				'fillable' => true,
-				'type' => 'json',
-				'nullable' => true,
-				'comment' => 'Some data'
-			],
+			]
 		];
 		return $columns;
 	}

@@ -13,6 +13,7 @@
  * @project Zbase
  * @package Zbase\Helpers
  */
+
 /**
  * Check if file exists
  * @param string $filename Path to file
@@ -53,6 +54,16 @@ function zbase_file_copy($src, $dst, $overwrite = false)
 }
 
 /**
+ * Copy a folder
+ * @param string $src Source folder
+ * @param string $dest Destination folder
+ */
+function zbase_file_copy_folder($src, $dest)
+{
+	\File::copyDirectory($src, $dest);
+}
+
+/**
  * Copy Folder Recursively
  * @param string $source
  * @param string $dest
@@ -86,4 +97,20 @@ function zbase_copy_recursively($source, $dest)
 	{
 		copy($source, $dest);
 	}
+}
+
+/**
+ * Download and save file from a URL
+ * @param string $url The URL
+ * @param string $savePath The Path to save the resource
+ * @return boolean|string False if not save, else the path
+ */
+function zbase_file_download_from_url($url, $savePath)
+{
+	\Image::make($url)->save($savePath);
+	if(zbase_file_exists($savePath))
+	{
+		return $savePath;
+	}
+	return null;
 }

@@ -11,7 +11,10 @@ if($paginator instanceof \Illuminate\Pagination\LengthAwarePaginator)
 	$presenter = new \Illuminate\Pagination\BootstrapThreePresenter($paginator);
 	echo str_replace('class="pagination', 'class="pagination pagination-sm', $presenter->render());
 	echo '<ul class="pagination pagination-perpage pagination-sm">';
-	echo '<li><a class="btn disabled" href="#">Rows</a></li>';
+	if($paginator->lastPage() > 1)
+	{
+		echo '<li><a class="btn disabled" href="#">Rows</a></li>';
+	}
 	foreach ($perPages as $perPage)
 	{
 		if($paginator->total() > $perPage)

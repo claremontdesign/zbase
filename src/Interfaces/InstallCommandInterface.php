@@ -21,6 +21,7 @@ interface InstallCommandInterface
 	/**
 	 * The install command
 	 * @param string $phpCommand The PHP Command
+	 * @param array $options Some Options
 	 */
-	public function installCommand($phpCommand);
+	public function installCommand($phpCommand, $options = []);
 }

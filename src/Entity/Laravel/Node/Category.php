@@ -243,7 +243,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		}
 	}
 
-	// <editor-fold defaultstate="collapsed" desc="FakeValues">
+	// <editor-fold defaultstate="collapsed" desc="Seeding/TableConfiguration">
 	/**
 	 * Generate FAke Values
 	 */
@@ -281,12 +281,15 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	 */
 	public static function seedingEventPost($entity = [])
 	{
-		if(!empty($entity['pivot']))
-		{
-			return [];
-		}
-		static::fakeValues();
-		return [];
+
+	}
+
+	/**
+	 * Seeder
+	 */
+	public static function seeder()
+	{
+
 	}
 
 	/**
@@ -301,7 +304,6 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		];
 	}
 
-	// </editor-fold>
 	/**
 	 * Table Entity Configuration
 	 * @param array $entity Configuration default data
@@ -398,4 +400,5 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		return $columns;
 	}
 
+	// </editor-fold>
 }

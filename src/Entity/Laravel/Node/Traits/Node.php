@@ -35,6 +35,12 @@ trait Node
 		return $this->node_id;
 	}
 
+
+	public function alphaId()
+	{
+		return $this->alpha_id;
+	}
+
 	/**
 	 * Return a messages based on the Action made
 	 * @param boolean $flag

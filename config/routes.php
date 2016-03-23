@@ -243,5 +243,14 @@ return [
 				],
 			],
 		],
+		'nodeImage' => [
+			'controller' => [
+				'name' => 'node',
+				'method' => 'image',
+				'enable' => true
+			],
+			'url' => '/img/{node?}/{id?}/{w?}/{h?}/{q?}',
+			'enable' => true
+		],
 	],
 ];

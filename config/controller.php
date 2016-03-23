@@ -30,6 +30,10 @@ return [
 				'name' => Zbase\Http\Controllers\__FRAMEWORK__\PageModuleController::class,
 				'enable' => true
 			],
+			'node' => [
+				'name' => Zbase\Http\Controllers\__FRAMEWORK__\NodeController::class,
+				'enable' => true
+			],
 			'auth' => [
 				'name' => Zbase\Http\Controllers\__FRAMEWORK__\Auth\AuthController::class,
 				'enable' => true

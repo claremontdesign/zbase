@@ -18,7 +18,7 @@ use Zbase\Models;
 use Zbase\Interfaces;
 use Zbase\Exceptions;
 
-class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInterface, Interfaces\AssetsCommandInterface
+class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInterface, Interfaces\AssetsCommandInterface, Interfaces\ClearCommandInterface
 {
 
 	const ALERT_INFO = 'info';
@@ -161,13 +161,18 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	 * Return the Entity Model of a given entityName
 	 *
 	 * @param string $entityName Entity name
+	 * @param array $entityConfig EntityConfiguration
+	 * @param boolean|string $newInstance will create new instance.
 	 * @return Zbase\Entity\Entity
 	 */
-	public function entity($entityName, $entityConfig = [])
+	public function entity($entityName, $entityConfig = [], $newInstance = false)
 	{
-		if(!empty($this->entityModels[$entityName]))
+		if(empty($newInstance))
 		{
-			return $this->entityModels[$entityName];
+			if(!empty($this->entityModels[$entityName]))
+			{
+				return $this->entityModels[$entityName];
+			}
 		}
 		if(empty($entityConfig))
 		{
@@ -178,6 +183,10 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			$modelName = zbase_class_name(!empty($entityConfig['model']) ? $entityConfig['model'] : null);
 			if(!empty($modelName))
 			{
+				if(!empty($newInstance))
+				{
+					return new $modelName();
+				}
 				return $this->entityModels[$entityName] = new $modelName();
 			}
 			throw new Exceptions\ConfigNotFoundException('Entity "model" configuration for "' . $entityName . '" not found in ' . __CLASS__);
@@ -339,7 +348,11 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 				{
 					$w = new \Zbase\Widgets\Type\TreeView($name, $config);
 				}
-				if($w instanceof \Zbase\Widgets\WidgetInterface)
+				if(strtolower($type) == 'view')
+				{
+					$w = new \Zbase\Widgets\Type\View($name, $config);
+				}
+				if(!empty($w) && $w instanceof \Zbase\Widgets\WidgetInterface)
 				{
 					if($w->enabled())
 					{
@@ -480,20 +493,18 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	 * zbase installation
 	 * @param string $phpCommand
 	 */
-	public function installCommand($phpCommand)
+	public function installCommand($phpCommand, $options = [])
 	{
-		$this->__install($phpCommand);
+		echo "Copying zbase files to Laravel app\n";
+		zbase_file_copy_folder(__DIR__ . '/../dummy/install/', zbase_app_path('../'));
 	}
 
-	public function assetsCommand($phpCommand)
+	public function assetsCommand($phpCommand, $options = [])
 	{
-		$this->__install($phpCommand);
+
 	}
 
-	/**
-	 * Install this package
-	 */
-	protected function __install($phpCommand)
+	public function clearCommand($phpCommand, $options = [])
 	{
 
 	}

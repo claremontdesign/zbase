@@ -32,3 +32,13 @@ function zbase_auth_has()
 {
 	return \Auth::check();
 }
+
+/**
+ * Return a User By Id
+ * @param integer $userId
+ * @return null|false|Zbase\Entity\Laravel\User\User
+ */
+function zbase_user_byid($userId)
+{
+	return zbase_entity('user')->repository()->byId($userId);
+}

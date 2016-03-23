@@ -14,6 +14,7 @@ namespace Zbase\Commands\Laravel;
  * @package Zbase/Traits
  */
 use Illuminate\Console\Command;
+use Zbase\Interfaces;
 
 class Clear extends Command
 {
@@ -50,6 +51,19 @@ class Clear extends Command
 	public function handle()
 	{
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
+		$packages = zbase()->packages();
+		if(!empty($packages))
+		{
+			foreach ($packages as $packageName)
+			{
+				$zbase = zbase_package($packageName);
+				if($zbase instanceof Interfaces\ClearCommandInterface)
+				{
+					echo "\n -- clear.pre - " . $packageName;
+					$zbase->clearCommand($phpCommand, ['clear.pre' => true]);
+				}
+			}
+		}
 		echo shell_exec($phpCommand . ' artisan clear-compiled');
 		echo shell_exec($phpCommand . ' artisan cache:clear');
 		echo shell_exec($phpCommand . ' artisan view:clear');
@@ -70,7 +84,6 @@ class Clear extends Command
 				}
 			}
 		}
-		$packages = zbase()->packages();
 		if(!empty($packages))
 		{
 			foreach ($packages as $packageName)
@@ -78,7 +91,8 @@ class Clear extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\ClearCommandInterface)
 				{
-					$zbase->clearCommand($phpCommand);
+					echo "\n -- clear.post - " . $packageName;
+					$zbase->clearCommand($phpCommand, ['clear.post' => true]);
 				}
 			}
 		}

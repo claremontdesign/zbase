@@ -214,9 +214,9 @@ function zbase_file_name_from_file($file, $fileName, $isUpload = false)
 	if($isUpload)
 	{
 		$file = explode('.', $file);
-		if(!empty($file[1]))
+		if(!empty($file[count($file) - 1]))
 		{
-			return $fileName . '.' . $file[1];
+			return $fileName . '.' . $file[count($file) - 1];
 		}
 	}
 	if(file_exists($file))

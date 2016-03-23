@@ -87,6 +87,17 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	protected $_formTag = true;
 
+	/**
+	 * Set the Mode
+	 * @param type $mode
+	 * @return \Zbase\Widgets\Type\Form
+	 */
+	public function setMode($mode)
+	{
+		$this->_mode = $mode;
+		return $this;
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="CONTROLLERInterface">
 
 	/**
@@ -166,10 +177,16 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			}
 			if(!empty($ret))
 			{
-				zbase_session_flash($this->entity()->entityName() . 'new', $this->entity()->id());
-				return $this->_postEvent($action);
+				if(zbase_request_method() == 'post')
+				{
+					if($this->isCreating())
+					{
+						zbase_session_flash($this->entity()->entityName() . 'new', $this->entity()->id());
+					}
+					return $this->_postEvent($action);
+				}
 			}
-			if($action == 'create')
+			if($this->isCreating())
 			{
 				if(zbase_is_dev())
 				{
@@ -195,6 +212,10 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	protected function _postEvent($action)
 	{
+		if($this->isPublic() && $this->isNode())
+		{
+			return zbase_redirect()->to($this->entity()->alphaUrl());
+		}
 		$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post', null);
 		if(is_null($e))
 		{
@@ -221,6 +242,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				$url = zbase_url_from_config($e);
 			}
 		}
+		return zbase_redirect()->to($url);
 	}
 
 	/**
@@ -324,7 +346,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				$e->setTab($tabName);
 			}
 		}
-		if($this->_entity instanceof \Zbase\Widgets\EntityInterface)
+		if($e instanceof \Zbase\Widgets\EntityInterface)
 		{
 			$e->entity($this->_entity);
 		}

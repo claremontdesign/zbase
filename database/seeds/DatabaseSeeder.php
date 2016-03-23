@@ -60,6 +60,19 @@ class DatabaseSeeder extends Seeder
 				$enable = zbase_data_get($entity, 'enable', false);
 				if(!empty($enable))
 				{
+					$modelName = zbase_data_get($entity, 'seeder.model', null);
+					if(!empty($modelName))
+					{
+						echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - Model Seeder\n";
+						$this->call($modelName);
+					}
+				}
+			}
+			foreach ($entities as $entityName => $entity)
+			{
+				$enable = zbase_data_get($entity, 'enable', false);
+				if(!empty($enable))
+				{
 					$model = zbase_data_get($entity, 'model', null);
 					$modelName = zbase_class_name($model);
 					if(method_exists($modelName, 'seedingEventPost'))
@@ -294,4 +307,5 @@ class DatabaseSeeder extends Seeder
 			}
 		}
 	}
+
 }

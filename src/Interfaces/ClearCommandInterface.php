@@ -21,6 +21,7 @@ interface ClearCommandInterface
 	/**
 	 *  Clear commands
 	 * @param string $phpCommand The PHP Command
+	 * @param array $options Some Options
 	 */
-	public function clearCommand($phpCommand);
+	public function clearCommand($phpCommand, $options = []);
 }

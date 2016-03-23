@@ -170,16 +170,26 @@ abstract class Ui
 	 */
 	public function prepare()
 	{
-		if(empty($this->_prepared))
+		try
 		{
-			$this->_prepared = true;
-			if($this->enabled())
+			if(empty($this->_prepared))
 			{
-				$this->_pre();
-				$this->_post();
+				$this->_prepared = true;
+				if($this->enabled())
+				{
+					$this->_pre();
+					$this->_post();
+				}
 			}
+			return $this;
+		} catch (\Exception $e)
+		{
+			if(zbase_is_dev())
+			{
+				dd($e);
+			}
+			zbase_abort(500);
 		}
-		return $this;
 	}
 
 	// </editor-fold>

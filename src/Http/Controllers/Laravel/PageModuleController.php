@@ -55,4 +55,10 @@ class PageModuleController extends Controller implements Interfaces\AttributeInt
 		}
 		return $this->view(zbase_view_file('module.index'), array('module' => $this->getModule(), 'widgets' => $widgets));
 	}
+
+
+	public function image()
+	{
+
+	}
 }

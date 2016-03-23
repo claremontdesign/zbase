@@ -51,7 +51,7 @@ function zbase_framework()
  */
 function zbase_class_name($className)
 {
-	return str_replace(array('__FRAMEWORK__','::class'), array(zbase_framework(),''), $className);
+	return str_replace(array('__FRAMEWORK__', '::class'), array(zbase_framework(), ''), $className);
 }
 
 /**
@@ -280,14 +280,16 @@ function zbase_db_prefix()
 /**
  * Return the Entity Model of a given entityName
  *
- * @param string $entityName
- * @param array $entityConfig
+ * @param string $entityName Entity name
+ * @param array $entityConfig EntityConfiguration
+ * @param boolean|string $newInstance will create new instance and append the value of newInstance as the new name
+ * @return Zbase\Entity\Entity
  *
  * @return Zbase\Entity\Entity
  */
-function zbase_entity($entityName)
+function zbase_entity($entityName, $entityConfig = [], $newInstance = false)
 {
-	return zbase()->entity($entityName);
+	return zbase()->entity($entityName, $entityConfig, $newInstance);
 }
 
 /**

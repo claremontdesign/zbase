@@ -35,12 +35,36 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	 */
 	public static $nodeNamePrefix = 'node';
 
+	/**
+	 * Route name
+	 * @var type
+	 */
+	protected $routeName = 'node';
+
 	protected static function boot()
 	{
 		parent::boot();
 		static::saved(function($node) {
 			$node->_updateAlphaId();
 		});
+	}
+
+	/**
+	 * Node Alpha URL
+	 * @return string
+	 */
+	public function alphaUrl()
+	{
+		return zbase_url_from_route($this->routeName, ['action' => 'view', 'id' => $this->alphaId()]);
+	}
+
+	public function title()
+	{
+		if(!empty($this->title))
+		{
+			return $this->title;
+		}
+		return;
 	}
 
 	/**
@@ -81,23 +105,190 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		}
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="Messages">
+	/**
+	 * Add a Message
+	 * @param string $message
+	 * @param int|User $sender
+	 * @param int|User $recipient
+	 * @param array $options
+	 * @return Message
+	 */
+	public function addMessage($message, $subject, $sender, $recipient, $options)
+	{
+		try
+		{
+			$messageObject = zbase_entity(static::$nodeNamePrefix . '_messages');
+			$messageObject->title = $subject;
+			$messageObject->content = $message;
+			$messageObject->read_status = 0;
+			if(!$sender instanceof \Zbase\Entity\Laravel\User\User)
+			{
+				$sender = zbase_user_byid($sender);
+			}
+			if($sender instanceof \Zbase\Entity\Laravel\User\User)
+			{
+				$messageObject->sender_id = $sender->id();
+			}
+			if(!$recipient instanceof \Zbase\Entity\Laravel\User\User)
+			{
+				$recipient = zbase_user_byid($recipient);
+			}
+			if($recipient instanceof \Zbase\Entity\Laravel\User\User)
+			{
+				$messageObject->recipient_id = $recipient->id();
+			}
+			$messageObject->save();
+			$messageObject->alpha_id = zbase_generate_hash($messageObject->message_id, static::$nodeNamePrefix . '_messages');
+			$this->messages()->save($messageObject);
+			return $messageObject;
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			if(zbase_is_dev())
+			{
+				dd($e);
+			}
+			zbase_abort(500);
+		}
+	}
+
+	// </editor-fold>
+
 	/**
 	 * Upload a file for this node
-	 * @param string $index The Upload file name/index
+	 * @param string $index The Upload file name/index or the URL to file to download and save
+	 * @return void
 	 */
 	public function uploadNodeFile($index = 'file')
 	{
-		$folder = zbase_storage_path() . '/' . zbase_tag() . '/' . static::$nodeNamePrefix . '/' . $this->id() . '/';
-		$filename = zbase_file_name_from_file($_FILES[$index]['name'], time(), true);
-		$uploadedFile = zbase_file_upload_image($index, $folder, $filename, 'png');
-		if(zbase_file_exists($uploadedFile))
+		try
 		{
-			$nodeFiles = $this->files()->get();
-			$nodeFileObject = zbase_entity(static::$nodeNamePrefix . '_files');
-			$nodeFileObject->is_primary = empty($nodeFiles) ? true : false;
-			$nodeFileObject->mimetype = zbase_file_mime_type($uploadedFile);
-			$nodeFileObject->size = zbase_file_size($uploadedFile);
-			$this->files()->save($nodeFileObject);
+			$folder = zbase_storage_path() . '/' . zbase_tag() . '/' . static::$nodeNamePrefix . '/' . $this->id() . '/';
+			zbase_directory_check($folder, true);
+			$nodeFileObject = zbase_entity(static::$nodeNamePrefix . '_files', [], true);
+			if(preg_match('/http\:/', $index))
+			{
+				// File given is a URL
+				$filename = zbase_file_name_from_file(basename($index), time(), true);
+				$uploadedFile = zbase_file_download_from_url($index, $folder . $filename);
+			}
+			if(!empty($_FILES[$index]['name']))
+			{
+				$filename = zbase_file_name_from_file($_FILES[$index]['name'], time(), true);
+				$uploadedFile = zbase_file_upload_image($index, $folder, $filename, 'png');
+			}
+			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
+			{
+				$nodeFiles = $this->files()->get();
+				$nodeFileObject->is_primary = empty($nodeFiles) ? 1 : 0;
+				$nodeFileObject->status = 2;
+				$nodeFileObject->mimetype = zbase_file_mime_type($uploadedFile);
+				$nodeFileObject->size = zbase_file_size($uploadedFile);
+				$nodeFileObject->filename = basename($uploadedFile);
+				$nodeFileObject->save();
+				$nodeFileObject->alpha_id = zbase_generate_hash($nodeFileObject->file_id, static::$nodeNamePrefix . '_files');
+				$this->files()->save($nodeFileObject);
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			if(zbase_is_dev())
+			{
+				dd($e);
+			}
+			zbase_abort(500);
+		}
+	}
+
+	/**
+	 * Save a new model and return the instance.
+	 *
+	 * @param  array  $attributes
+	 * @return static
+	 */
+	public static function create(array $attributes = [])
+	{
+		$model = zbase_entity(static::$nodeNamePrefix);
+		$model->createNode($attributes);
+		$model->save();
+		return $model;
+	}
+
+	/**
+	 * Create Node from Array
+	 * @param array $data
+	 * @return \Zbase\Entity\Laravel\Node\Node
+	 */
+	public function createNode($data)
+	{
+		if(!empty($data['user']))
+		{
+			if($data['user'] instanceof \Zbase\Entity\Laravel\User\User)
+			{
+				$user = $data['user'];
+			}
+			if(is_int((int) $data['user']))
+			{
+				$user = zbase_user_byid($data['user']);
+			}
+			if($user instanceof \Zbase\Entity\Laravel\User\User)
+			{
+				$user->equipments()->save($this);
+			}
+			unset($data['user']);
+		}
+		else
+		{
+			if(zbase_auth_has())
+			{
+				zbase_auth_user()->equipments()->save($this);
+			}
+		}
+		$this->nodeAttributes($data);
+		$this->status = 2;
+		$this->save();
+		$this->setNodeCategories($data);
+		if(!empty($data['file_url']))
+		{
+			$this->uploadNodeFile($data['file_url']);
+		}
+		elseif(!empty($data['files_url']))
+		{
+			foreach ($data['files_url'] as $fUrl)
+			{
+				$this->uploadNodeFile($fUrl);
+			}
+		}
+		else
+		{
+			$this->uploadNodeFile();
+		}
+		return $this;
+	}
+
+	/**
+	 * Update this object
+	 * @param type $data
+	 * @return \Zbase\Entity\Laravel\Node\Node
+	 */
+	public function updateNode($data)
+	{
+		$this->nodeAttributes($data);
+		$this->save();
+		$this->setNodeCategories($data);
+		if(!empty($data['file_url']))
+		{
+			$this->uploadNodeFile($data['file_url']);
+		}
+		else if(!empty($data['files_url']))
+		{
+			foreach ($data['files_url'] as $fUrl)
+			{
+				$this->uploadNodeFile($fUrl);
+			}
+		}
+		else
+		{
+			$this->uploadNodeFile();
 		}
 	}
 
@@ -117,11 +308,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		{
 			if($action == 'create' && strtolower($method) == 'post')
 			{
-				$this->nodeAttributes($data);
-				$this->save();
-				$this->setNodeCategories($data);
-				$this->uploadNodeFile();
-				zbase_auth_user()->equipments()->save($this);
+				$this->createNode($data);
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
@@ -130,10 +317,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			}
 			if($action == 'update' && strtolower($method) == 'post')
 			{
-				$this->nodeAttributes($data);
-				$this->save();
-				$this->setNodeCategories($data);
-				$this->uploadNodeFile();
+				$this->updateNode($data);
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
@@ -231,6 +415,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		return false;
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="SEEDING / Table Configuration">
 	/**
 	 * Return fake values
 	 */
@@ -248,12 +433,22 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	/**
 	 * POST-Seeding event
 	 */
-	public static function seedingEventPost()
+	public static function seedingEventPost($entity = [])
+	{
+
+	}
+
+	/**
+	 * Seed
+	 */
+	public static function seeder()
 	{
 		for ($x = 0; $x <= 15; $x++)
 		{
-			$entity = static::create(static::fakeValue());
-			$entity->save();
+			$data = static::fakeValue();
+			echo "\n ----- " . static::$nodeNamePrefix . ' - ' . $data['title'] . ' - ' . $x;
+			$model = zbase_entity(static::$nodeNamePrefix, [], $x);
+			$model->createNode($data)->save();
 		}
 	}
 
@@ -299,6 +494,17 @@ class Node extends BaseEntity implements WidgetEntityInterface
 					'foreign' => 'node_id'
 				],
 			],
+			static::$nodeNamePrefix . '_messages' => [
+				'entity' => static::$nodeNamePrefix . '_messages',
+				'type' => 'onetomany',
+				'class' => [
+					'method' => 'messages'
+				],
+				'keys' => [
+					'local' => 'node_id',
+					'foreign' => 'node_id'
+				],
+			],
 		];
 		return $relations;
 	}
@@ -323,4 +529,5 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		return $entity;
 	}
 
+	// </editor-fold>
 }

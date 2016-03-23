@@ -72,6 +72,30 @@ class Repository implements Interfaces\EntityRepositoryInterface
 				}, [$this->getModel()->getTable()]
 		);
 	}
+	/**
+	 * Find by Alpha id
+	 * @param string $id
+	 * @param array $columns
+	 * @return Interfaces\EntityInterface
+	 * @throws InvalidArgumentException
+	 */
+	public function byAlphaId($id, $columns = ['*'])
+	{
+		if(is_null($id) || empty($id))
+		{
+			throw new InvalidArgumentException('Invalid id');
+		}
+		$withTrashed = $this->withTrashed;
+		return zbase_cache(
+				zbase_cache_key($this, __FUNCTION__, func_get_args()), function() use ($id, $columns, $withTrashed){
+			if(!empty($withTrashed))
+			{
+				return $this->by('alpha_id', $id, $columns)->first();
+			}
+			return $this->by('alpha_id', $id, $columns)->first();
+				}, [$this->getModel()->getTable()]
+		);
+	}
 
 	/**
 	 * Find rows by attributes

@@ -114,13 +114,23 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		if(empty($this->_rowsPrepared))
 		{
 			$repo = $this->_entity->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
-			if($this->_entity->hasSoftDelete())
+			if($this->isPublic())
 			{
-				$this->_rows = $repo->withTrashed()->all(['*'], null, null, null, true);
+				$filters = [
+					'status' => 2,
+				];
+				$this->_rows = $repo->all(['*'], $filters, null, null, true);
 			}
 			else
 			{
-				$this->_rows = $repo->all(['*'], null, null, null, true);
+				if($this->_entity->hasSoftDelete())
+				{
+					$this->_rows = $repo->withTrashed()->all(['*'], null, null, null, true);
+				}
+				else
+				{
+					$this->_rows = $repo->all(['*'], null, null, null, true);
+				}
 			}
 			$this->_rowsPrepared = true;
 		}

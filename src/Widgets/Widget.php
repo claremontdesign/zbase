@@ -128,6 +128,37 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
+	 * SEt the View Confioguration
+	 * @param type $view
+	 */
+	public function setView($view)
+	{
+		if(!empty($view['file']))
+		{
+			$this->_viewFile = $view['file'];
+		}
+		return $this;
+	}
+
+	/**
+	 * Check if we are filtering for publico
+	 * @return boolean
+	 */
+	public function isPublic()
+	{
+		return $this->_v('entity.filter.public', false);
+	}
+
+	/**
+	 * Node Typoe Entity
+	 * @return type
+	 */
+	public function isNode()
+	{
+		return $this->_v('entity.node', false);
+	}
+
+	/**
 	 * Return the entity
 	 * @return Zbase\Widget\EntityInterface
 	 */
@@ -139,6 +170,11 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 			if(!is_null($entityName))
 			{
 				$repoById = $this->_v('entity.repo.byId', null);
+				if(is_null($repoById))
+				{
+					$byAlpha = true;
+					$repoById = $this->_v('entity.repo.byAlphaId', null);
+				}
 				if(is_array($repoById))
 				{
 					if(!empty($repoById['route']))
@@ -154,7 +190,15 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 						$entity = zbase_entity($entityName);
 						if($entity->hasSoftDelete())
 						{
+							if(!empty($byAlpha))
+							{
+								return $this->_entity = $entity->repository()->withTrashed()->byAlphaId($id);
+							}
 							return $this->_entity = $entity->repository()->withTrashed()->byId($id);
+						}
+						if(!empty($byAlpha))
+						{
+							return $this->_entity = $entity->repository()->byAlphaId($id);
 						}
 						return $this->_entity = $entity->repository()->byId($id);
 					}

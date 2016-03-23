@@ -51,6 +51,19 @@ class Assets extends Command
 	public function handle()
 	{
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
+		$packages = zbase()->packages();
+		if(!empty($packages))
+		{
+			foreach ($packages as $packageName)
+			{
+				$zbase = zbase_package($packageName);
+				if($zbase instanceof Interfaces\AssetsCommandInterface)
+				{
+					echo "\n -- assets.pre - " . $packageName;
+					$zbase->assetsCommand($phpCommand, ['assets.pre' => true]);
+				}
+			}
+		}
 		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=public --force');
 		$commands = [];
 		if(!empty($commands))
@@ -67,7 +80,6 @@ class Assets extends Command
 				}
 			}
 		}
-		$packages = zbase()->packages();
 		if(!empty($packages))
 		{
 			foreach ($packages as $packageName)
@@ -75,7 +87,8 @@ class Assets extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\AssetsCommandInterface)
 				{
-					$zbase->assetsCommand($phpCommand);
+					echo "\n -- assets.post - " . $packageName;
+					$zbase->assetsCommand($phpCommand, ['assets.post' => true]);
 				}
 			}
 		}

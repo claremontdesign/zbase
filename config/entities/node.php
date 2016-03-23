@@ -31,5 +31,9 @@ return [
 			'enable' => true,
 			'model' => Zbase\Entity\__FRAMEWORK__\Node\File::class
 		],
+		'node_messages' => [
+			'enable' => true,
+			'model' => Zbase\Entity\__FRAMEWORK__\Node\Message::class
+		],
 	],
 ];

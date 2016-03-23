@@ -35,12 +35,142 @@ class File extends BaseEntity implements WidgetEntityInterface
 	 */
 	public static $nodeNamePrefix = 'node';
 
-	protected static function boot()
+	/**
+	 * The Route Name to use
+	 * @var string
+	 */
+	protected $routeName = 'node';
+	protected $thWidth = 150;
+	protected $thHeight = 150;
+	protected $thQuality = 80;
+
+	/**
+	 * Return only Status Public files
+	 * @param type $query
+	 * @return query
+	 */
+	public function scopeStatusPublic($query)
 	{
-		parent::boot();
-		static::saved(function($node) {
-			$node->_updateAlphaId();
+		return $query->where('status', '=', 2);
+	}
+
+	/**
+	 * Return primary Files
+	 * @param type $query
+	 * @return query
+	 */
+	public function scopeIsPrimary($query)
+	{
+		return $query->where('is_primary', '=', 1);
+	}
+
+	/**
+	 * Alpha URL
+	 * @param array $options
+	 */
+	public function alphaUrl($options = [])
+	{
+		$fullImage = false;
+		$params = ['node' => static::$nodeNamePrefix];
+		$params['id'] = $this->alphaId();
+		if(empty($options) || !empty($options['full']))
+		{
+			$fullImage = true;
+		}
+		$params['w'] = !empty($options['w']) ? $options['w'] : 150;
+		$params['h'] = !empty($options['h']) ? $options['h'] : 0;
+		$params['q'] = !empty($options['q']) ? $options['q'] : 80;
+		if(!empty($options['thumbnail']))
+		{
+			$params['w'] = !empty($options['w']) ? $options['w'] : $this->thWidth;
+			$params['h'] = !empty($options['h']) ? $options['h'] : $this->thHeight;
+			$params['q'] = !empty($options['q']) ? $options['q'] : $this->thQuality;
+		}
+		return zbase_url_from_route('nodeImage', $params);
+	}
+
+	public function alphaId()
+	{
+		return $this->alpha_id;
+	}
+
+	public function id()
+	{
+		return $this->file_id;
+	}
+
+	public function title()
+	{
+		return $this->title;
+	}
+
+	public function caption()
+	{
+		return $this->excerpt;
+	}
+
+	public function isPrimary()
+	{
+		return (boolean) $this->is_primary;
+	}
+
+	/**
+	 * Return the Folder Path
+	 * @return string
+	 */
+	public function folder()
+	{
+		$path = zbase_storage_path() . '/' . zbase_tag() . '/' . static::$nodeNamePrefix . '/';
+		if(!empty($this->node_id))
+		{
+			$path .= $this->node_id . '/';
+		}
+		return $path;
+	}
+
+	/**
+	 * Serve the File
+	 * @param integer $width
+	 * @param integer $height
+	 * @param integer $quality Image Quality
+	 * @param boolean $download If to download
+	 * @return boolean
+	 */
+	public function serveImage($width, $height = null, $quality = null, $download = false)
+	{
+		$folder = $this->folder();
+		$filename = $this->filename;
+		$path = $folder . $filename;
+		if(file_exists($path))
+		{
+			$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
+						if(empty($width))
+						{
+							$size = getimagesize($path);
+							$width = $size[0];
+							$height = $size[1];
+						}
+						if(!empty($width) && empty($height))
+						{
+							return $image->make($path)->resize($width, null, function($constraint)
+						{
+										$constraint->upsize();
+										$constraint->aspectRatio();
+						});
+						}
+						if(empty($width) && !empty($height))
+						{
+							return $image->make($path)->resize(null, $height, function($constraint)
+						{
+										$constraint->upsize();
+										$constraint->aspectRatio();
+						});
+						}
+						return $image->make($path)->resize($width, $height);
 		});
+			return \Response::make($cachedImage, 200, array('Content-Type' => $this->mimetype));
+		}
+		return false;
 	}
 
 	/**
@@ -97,4 +227,5 @@ class File extends BaseEntity implements WidgetEntityInterface
 		];
 		return $entity;
 	}
+
 }

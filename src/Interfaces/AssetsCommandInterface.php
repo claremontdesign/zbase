@@ -21,6 +21,7 @@ interface AssetsCommandInterface
 	/**
 	 * Assets commands
 	 * @param string $phpCommand The PHP Command
+	 * @param array $options Some Options
 	 */
-	public function assetsCommand($phpCommand);
+	public function assetsCommand($phpCommand, $options = []);
 }

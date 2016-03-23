@@ -14,6 +14,7 @@ namespace Zbase\Commands\Laravel;
  * @package Zbase/Traits
  */
 use Illuminate\Console\Command;
+use Zbase\Interfaces;
 
 class Install extends Command
 {
@@ -49,6 +50,20 @@ class Install extends Command
 	 */
 	public function handle()
 	{
+		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
+		$packages = zbase()->packages();
+		if(!empty($packages))
+		{
+			foreach ($packages as $packageName)
+			{
+				$zbase = zbase_package($packageName);
+				if($zbase instanceof Interfaces\InstallCommandInterface)
+				{
+					echo "\n -- install.pre - " . $packageName;
+					$zbase->installCommand($phpCommand, ['install.pre' => true]);
+				}
+			}
+		}
 		$commands = [];
 		if(!empty($commands))
 		{
@@ -60,9 +75,7 @@ class Install extends Command
 				}
 			}
 		}
-		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
 		zbase_package('zbase')->installCommand($phpCommand);
-		$packages = zbase()->packages();
 		if(!empty($packages))
 		{
 			foreach ($packages as $packageName)
@@ -70,7 +83,8 @@ class Install extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\InstallCommandInterface)
 				{
-					$zbase->installCommand($phpCommand);
+					echo "\n -- install.post - " . $packageName;
+					$zbase->installCommand($phpCommand, ['install.post' => true]);
 				}
 			}
 		}
