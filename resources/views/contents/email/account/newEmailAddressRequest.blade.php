@@ -13,6 +13,16 @@
 ?>
 <?php echo zbase_view_render(zbase_view_file_contents('email.header')); ?>
 
-
+<h1>Email Update Request</h1>
+<p>You requested to update your email address.
+<br />
+Current Email Address: <?php echo $entity->email()?>
+<br />
+New Email Address: <?php echo $newEmailAddress?>
+Code: <strong><?php echo $code?></strong>
+<br />
+<br />
+<a href="<?php echo zbase_url_from_route('account', ['action' => 'email','task' => 'update-request','e' => $newEmailAddress,'c' => $code])?>">Click here</a> to Complete the Email address update
+</p>
 
 <?php echo zbase_view_render(zbase_view_file_contents('email.footer')); ?>

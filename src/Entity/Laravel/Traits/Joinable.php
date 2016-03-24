@@ -14,6 +14,14 @@ namespace Zbase\Entity\Laravel\Traits;
  * @file Joinable.php
  * @project Zbase
  * @package Zbase/Entity
+ *
+ * type:
+ *	left = The LEFT JOIN keyword returns all rows from the left table (table1),
+ *			with the matching rows in the right table (table2).
+ *			The result is NULL in the right side when there is no match.
+ *	right = Return all rows from the right table,
+ *			and the matched rows from the left table
+ *	join = Returns all rows when there is at least one match in BOTH tables
  */
 
 //	protected function _joins()

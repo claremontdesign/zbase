@@ -61,6 +61,19 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	 * @var string
 	 */
 	protected $_entityTask = null;
+	protected $_entity = null;
+
+	/**
+	 * Flag to check if URL has a request
+	 * @var type
+	 */
+	protected $_urlHasRequest = false;
+
+	/**
+	 * The Entity Object
+	 * @var EntityInterface
+	 */
+	protected $_entityObject = null;
 
 	/**
 	 * The Module
@@ -155,7 +168,34 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	 */
 	public function isNode()
 	{
-		return $this->_v('entity.node', false);
+		return $this->_v('entity.node.enable', false);
+	}
+
+	/**
+	 * Check if we are on the Category > nodes
+	 * @return boolean
+	 */
+	public function isNodeCategory()
+	{
+		return $this->_v('entity.node.category', false);
+	}
+
+	/**
+	 * The Node Prefix
+	 * @return string
+	 */
+	public function nodePrefix()
+	{
+		return $this->_v('entity.node.prefix', null);
+	}
+
+	/**
+	 * Return if URL has a request and if its fulfilled
+	 * @return boolean
+	 */
+	public function checkUrlRequest()
+	{
+		return $this->_urlHasRequest && $this->_entity instanceof \Zbase\Interfaces\EntityInterface;
 	}
 
 	/**
@@ -169,14 +209,27 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 			$entityName = $this->_v('entity.name', null);
 			if(!is_null($entityName))
 			{
+				$this->_entityObject = $entity = zbase_entity($entityName, [], true);
 				$repoById = $this->_v('entity.repo.byId', null);
 				if(is_null($repoById))
 				{
-					$byAlpha = true;
 					$repoById = $this->_v('entity.repo.byAlphaId', null);
+					if(!empty($repoById))
+					{
+						$byAlpha = true;
+					}
+					else
+					{
+						$repoById = $this->_v('entity.repo.bySlug', null);
+						if(!empty($repoById))
+						{
+							$bySlug = true;
+						}
+					}
 				}
 				if(is_array($repoById))
 				{
+					$this->_urlHasRequest = true;
 					if(!empty($repoById['route']))
 					{
 						$id = zbase_route_input($repoById['route']);
@@ -187,12 +240,15 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 					}
 					if(!empty($id))
 					{
-						$entity = zbase_entity($entityName);
-						if($entity->hasSoftDelete())
+						if($entity->hasSoftDelete() && !$this->isPublic())
 						{
 							if(!empty($byAlpha))
 							{
 								return $this->_entity = $entity->repository()->withTrashed()->byAlphaId($id);
+							}
+							if(!empty($bySlug))
+							{
+								return $this->_entity = $entity->repository()->withTrashed()->bySlug($id);
 							}
 							return $this->_entity = $entity->repository()->withTrashed()->byId($id);
 						}
@@ -200,18 +256,31 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 						{
 							return $this->_entity = $entity->repository()->byAlphaId($id);
 						}
+						if(!empty($bySlug))
+						{
+							return $this->_entity = $entity->repository()->bySlug($id);
+						}
 						return $this->_entity = $entity->repository()->byId($id);
 					}
 				}
 				$repoMethod = $this->_v('entity.method', null);
 				if(!is_null($repoMethod))
 				{
-					return $this->_entity = zbase_entity($entityName)->$repoMethod();
+					return $this->_entity = $this->_entityObject->$repoMethod();
 				}
-				return $this->_entity = zbase_entity($entityName);
+				return $this->_entity = $this->_entityObject;
 			}
 		}
 		return $this->_entity;
+	}
+
+	/**
+	 * REturn the Entity Object
+	 * @return EntityInterface
+	 */
+	public function entityObject()
+	{
+		return $this->_entityObject;
 	}
 
 }

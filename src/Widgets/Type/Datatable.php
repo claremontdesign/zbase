@@ -94,15 +94,35 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	protected $_htmlWrapperAttributes = ['class' => ['table-responsive']];
 
 	/**
-	 * Prepare
+	 * Return the data filters
+	 * @return array
 	 */
-	protected function _pre()
+	public function getRequestFilters()
 	{
-		parent::_pre();
-		$this->entity();
-		$this->_rows();
-		$this->_actions();
-		$this->_columns();
+		$filters = zbase_request_query_input('filter');
+		if($this->isPublic())
+		{
+			$filters['public'] = true;
+		}
+		if(!empty($filters))
+		{
+			return $filters;
+		}
+		return false;
+	}
+
+	/**
+	 * Return the Data Sorting
+	 * @return array
+	 */
+	public function getRequestSorting()
+	{
+		$sorting = zbase_request_query_input('sort');
+		if(!empty($sorting))
+		{
+			return $sorting;
+		}
+		return false;
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="Rows">
@@ -113,26 +133,80 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	{
 		if(empty($this->_rowsPrepared))
 		{
-			$repo = $this->_entity->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
-			if($this->isPublic())
+			try
 			{
-				$filters = [
-					'status' => 2,
-				];
-				$this->_rows = $repo->all(['*'], $filters, null, null, true);
-			}
-			else
-			{
-				if($this->_entity->hasSoftDelete())
+				if(!empty($this->_entity))
 				{
-					$this->_rows = $repo->withTrashed()->all(['*'], null, null, null, true);
+					$repo = $this->_entity->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
+					$filters = [];
+					$sorting = [];
+					$joins = [];
+					if($this->isNode())
+					{
+						$urlFilters = $this->getRequestFilters();
+						$entityObject = $this->entityObject();
+						if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+						{
+							/**
+							 * We are getting the nodes on each category
+							 *  switch to node entityObject
+							 */
+							$entityObject = zbase_entity($entityObject::$nodeNamePrefix, [], true);
+							$repo = $entityObject->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
+							$categories = $this->_entity->getDescendantsAndSelf();
+							if(!empty($categories))
+							{
+								foreach ($categories as $category)
+								{
+									$urlFilters['category'][] = $category;
+								}
+							}
+						}
+						if(!empty($urlFilters))
+						{
+							if(method_exists($entityObject, 'queryJoins'))
+							{
+								$joins = $entityObject->queryJoins($urlFilters, $this->getRequestSorting());
+							}
+							if(method_exists($entityObject, 'querySorting'))
+							{
+								$sorting = $entityObject->querySorting($this->getRequestSorting(), $urlFilters);
+							}
+							if(method_exists($entityObject, 'queryFilters'))
+							{
+								$filters = $entityObject->queryFilters($urlFilters, $this->getRequestSorting());
+							}
+							// dd($joins, $sorting, $filters);
+						}
+					}
+					if($this->isPublic())
+					{
+						$this->_rows = $repo->all(['*'], $filters, $sorting, $joins, true);
+					}
+					else
+					{
+						if($this->_entity->hasSoftDelete())
+						{
+							$this->_rows = $repo->withTrashed()->all(['*'], $filters, $sorting, $joins, true);
+						}
+						else
+						{
+							$this->_rows = $repo->all(['*'], $filters, $sorting, $joins, true);
+						}
+					}
+				}
+				$this->_rowsPrepared = true;
+			} catch (\Zbase\Exceptions\RuntimeException $e)
+			{
+				if(zbase_in_dev($e))
+				{
+					dd($e);
 				}
 				else
 				{
-					$this->_rows = $repo->all(['*'], null, null, null, true);
+					zbase_abort(500);
 				}
 			}
-			$this->_rowsPrepared = true;
 		}
 	}
 
@@ -373,7 +447,13 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 */
 	public function controller($action)
 	{
-
+		if(!$this->checkUrlRequest())
+		{
+			return zbase_abort(404);
+		}
+		$this->_rows();
+		$this->_actions();
+		$this->_columns();
 	}
 
 	/**
@@ -381,7 +461,12 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 */
 	public function validateWidget()
 	{
+		$this->_pre();
+	}
 
+	protected function _pre()
+	{
+		$this->entity();
 	}
 
 	/**

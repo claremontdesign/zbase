@@ -28,7 +28,14 @@ class PageModuleController extends Controller implements Interfaces\AttributeInt
 	{
 		if(!$this->getModule()->hasAccess())
 		{
-			return $this->unathorized(_zt('You don\'t have enough access to the resource.'));
+			if(zbase_auth_has())
+			{
+				return $this->unathorized(_zt('You don\'t have enough access to the resource.'));
+			}
+			else
+			{
+				return redirect()->to(zbase_url_from_route('login'));
+			}
 		}
 		/**
 		 * Check for widgets
@@ -56,9 +63,9 @@ class PageModuleController extends Controller implements Interfaces\AttributeInt
 		return $this->view(zbase_view_file('module.index'), array('module' => $this->getModule(), 'widgets' => $widgets));
 	}
 
-
 	public function image()
 	{
 
 	}
+
 }

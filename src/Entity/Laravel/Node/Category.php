@@ -60,6 +60,49 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	}
 
 	/**
+	 * Search a CAtegory by string|integer
+	 * @param int|string $category The category id or category name
+	 * @param boolean $isPublic if to return a Public category
+	 * @return Zbase\Entity\Laravel\Node\Category|null
+	 */
+	public static function searchCategory($category, $isPublic = true)
+	{
+		if(!$category instanceof Interfaces\EntityInterface)
+		{
+			$filter = [];
+			if($isPublic)
+			{
+				$filter['status'] = 2;
+			}
+			if(is_numeric($category))
+			{
+				$filter['category_id'] = (int) $category;
+			}
+			else
+			{
+				/**
+				 * It's a string, or name of the category
+				 */
+				$filter['title'] = trim($category);
+			}
+			$categoryNode = zbase_entity(static::$nodeNamePrefix . '_category', [], true)
+					->repository()
+					->all('*', $filter)
+					->first();
+		}
+		else
+		{
+			$categoryNode = $category;
+		}
+		if($categoryNode instanceof Interfaces\EntityInterface)
+		{
+			return $categoryNode;
+		}
+		return null;
+	}
+
+	// <editor-fold defaultstate="collapsed" desc="NodeWidgetControll">
+	/**
 	 * Widget entity interface.
 	 * 	Data should be validated first before passing it here
 	 * @param string $method post|get
@@ -215,6 +258,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		return false;
 	}
 
+	// </editor-fold>
 	/**
 	 * Generate and Update Row Alpha ID
 	 * @return void

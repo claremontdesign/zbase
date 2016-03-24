@@ -17,6 +17,7 @@ namespace Zbase\Entity\Laravel\Node;
  */
 use Zbase\Entity\Laravel\Entity as BaseEntity;
 use Zbase\Widgets\EntityInterface as WidgetEntityInterface;
+use Zbase\Interfaces;
 
 class Node extends BaseEntity implements WidgetEntityInterface
 {
@@ -81,30 +82,6 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		return $this->nodeWidgetController($method, $action, $data, $widget);
 	}
 
-	/**
-	 * Set the Node Categories
-	 * @param array $data array of data with index:category that is array of Category IDs
-	 * @return void
-	 */
-	public function setNodeCategories($data)
-	{
-		if(!empty($data['category']))
-		{
-			if(is_array($data['category']))
-			{
-				$this->categories()->detach();
-				foreach ($data['category'] as $categoryId)
-				{
-					$category = zbase_entity(static::$nodeNamePrefix . '_category')->repository()->byId($categoryId);
-					if($category instanceof Nested)
-					{
-						$this->categories()->attach($category);
-					}
-				}
-			}
-		}
-	}
-
 	// <editor-fold defaultstate="collapsed" desc="Messages">
 	/**
 	 * Add a Message
@@ -153,6 +130,30 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	}
 
 	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Node Creation">
+	/**
+	 * Set the Node Categories
+	 * @param array $data array of data with index:category that is array of Category IDs
+	 * @return void
+	 */
+	public function setNodeCategories($data)
+	{
+		if(!empty($data['category']))
+		{
+			if(is_array($data['category']))
+			{
+				$this->categories()->detach();
+				foreach ($data['category'] as $categoryId)
+				{
+					$category = zbase_entity(static::$nodeNamePrefix . '_category')->repository()->byId($categoryId);
+					if($category instanceof Nested)
+					{
+						$this->categories()->attach($category);
+					}
+				}
+			}
+		}
+	}
 
 	/**
 	 * Upload a file for this node
@@ -265,6 +266,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		return $this;
 	}
 
+	// </editor-fold>
 	/**
 	 * Update this object
 	 * @param type $data
@@ -292,6 +294,218 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		}
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="DataTable Widget Query Interface/Methods">
+	/**
+	 * Join Query
+	 * @param array $filters Array of Filters
+	 * @param array $sorting Array of Sorting
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function queryJoins($filters, $sorting = [], $options = [])
+	{
+		$joins = [];
+		$category = !empty($filters['category']) ? true : false;
+		/**
+		 * There are categories in the filter,
+		 * 	Join Node and Node-Category-Pivot table
+		 * @see Zbase\Entity\Laravel\Traits\Joinable
+		 */
+		if(!empty($category))
+		{
+			$joins[] = [
+				'type' => 'join',
+				'model' => static::$nodeNamePrefix . '_category_pivot as pivot',
+				'foreign_key' => static::$nodeNamePrefix . '.node_id',
+				'local_key' => 'pivot.node_id',
+			];
+		}
+		return $joins;
+	}
+
+	/**
+	 * Filter Query
+	 * @param array $filters Array of Filters
+	 * @param array $sorting Array of Sorting
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function queryFilters($filters, $sorting = [], $options = [])
+	{
+		$queryFilters = [];
+		if(!empty($filters))
+		{
+			$isPublic = !empty($filters['public']) ? true : false;
+			if(!empty($isPublic))
+			{
+				$queryFilters['status'] = [
+					'eq' => [
+						'field' => static::$nodeNamePrefix . '.status',
+						'values' => 2
+					]
+				];
+			}
+			if(!empty($filters['category']))
+			{
+				$categoryObject = zbase_entity(static::$nodeNamePrefix . '_category', [], true);
+				/**
+				 * We have category as a filter,
+				 * 	Then search for the selected category
+				 * @var strings[]|integers[]|EntityInterface[]
+				 */
+				$filterCategories = $filters['category'];
+				/**
+				 * We need category Ids To be able to do a cross-table-pivot search
+				 * Examine the given filter if its an array of strings or integers or just a string or an integer
+				 */
+				$filterCategoryIds = [];
+				if(is_array($filterCategories))
+				{
+					foreach ($filterCategories as $filterCategory)
+					{
+						$filterCategory = $categoryObject::searchCategory($filterCategory, $isPublic);
+						if($filterCategory instanceof Interfaces\EntityInterface)
+						{
+							$filterCategoryIds[] = $filterCategory->id();
+							continue;
+						}
+					}
+				}
+				else
+				{
+					$filterCategory = $categoryObject::searchCategory($filterCategories, $isPublic);
+					if($filterCategory instanceof Interfaces\EntityInterface)
+					{
+						$filterCategoryIds[] = $filterCategory->id();
+					}
+				}
+				if(!empty($filterCategoryIds))
+				{
+					$queryFilters['pivot.category_id'] = [
+						'in' => [
+							'field' => 'pivot.category_id',
+							'values' => $filterCategoryIds
+						]
+					];
+				}
+				unset($filters['category']);
+			}
+			if(!empty($this->filterableColumns))
+			{
+				$processedFilters = [];
+				foreach ($filters as $filterName => $filterValue)
+				{
+					if(in_array($filterName, $processedFilters))
+					{
+						continue;
+					}
+					if(array_key_exists($filterName, $this->filterableColumns))
+					{
+						$column = $this->filterableColumns[$filterName]['column'];
+						$filterType = $this->filterableColumns[$filterName]['filterType'];
+						$options = $this->filterableColumns[$filterName]['options'];
+						$columnType = $this->filterableColumns[$filterName]['type'];
+						if($filterType == 'between')
+						{
+							$startValue = $filterValue;
+							$endValue = null;
+							if(preg_match('/\:/', $filterType))
+							{
+								$filterTypeEx = explode(':', $filterType);
+								if(!empty($filterTypeEx[1]))
+								{
+									$endFilterName = $filterTypeEx[1];
+									$processedFilters[] = $endFilterName;
+									if(!empty($filters[$endFilterName]))
+									{
+										$endValue = $filters[$endFilterName];
+									}
+								}
+							}
+							if($columnType == 'timestamp')
+							{
+								$timestampFormat = zbase_data_get($options, 'timestamp.format', 'Y-m-d');
+								$startValue = zbase_date_from_format($timestampFormat, $startValue);
+								if($startValue instanceof \DateTime)
+								{
+									$startValue->hour = 0;
+									$startValue->minute = 0;
+									$startValue->second = 0;
+								}
+								if(empty($endValue))
+								{
+									$endValue = clone $startValue;
+									$endValue->hour = 23;
+									$endValue->minute = 59;
+									$endValue->second = 59;
+								}
+								else
+								{
+									$endValue = zbase_date_from_format($timestampFormat, $endValue);
+								}
+								/**
+								 * Argument is the other end of the between
+								 */
+								$queryFilters[$filterName] = [
+									$filterType => [
+										'field' => static::$nodeNamePrefix . '.' . $column,
+										'from' => $startValue->format(DATE_FORMAT_DB),
+										'to' => $endValue->format(DATE_FORMAT_DB)
+									]
+								];
+							}
+						}
+						else
+						{
+							$queryFilters[$filterName] = [
+								$filterType => [
+									'field' => static::$nodeNamePrefix . '.' . $column,
+									'value' => $filterValue
+								]
+							];
+						}
+
+						$processedFilters[] = $filterName;
+					}
+				}
+			}
+		}
+		return $queryFilters;
+	}
+
+	/**
+	 * Sorting Query
+	 * @param array $sorting Array of Sorting
+	 * @param array $filters Array of Filters
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function querySorting($sorting, $filters = [], $options = [])
+	{
+		$sort = [];
+		if(!empty($sorting))
+		{
+			if(!empty($this->sortableColumns))
+			{
+				foreach ($sorting as $sortName => $direction)
+				{
+					if(array_key_exists($this->sortableColumns[$sortName]) && in_array(strtolower($direction), ['desc', 'asc']))
+					{
+						$column = $this->sortableColumns[$sortName]['column'];
+						$sort[] = ['node.' . $column => strtoupper($direction)];
+					}
+				}
+			}
+		}
+		if(empty($sort))
+		{
+			$sort[] = ['node.created_at' => 'DESC'];
+		}
+		return $sort;
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="NodeWidgetController">
 	/**
 	 * Widget entity interface.
 	 * 	Data should be validated first before passing it here
@@ -415,6 +629,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		return false;
 	}
 
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="SEEDING / Table Configuration">
 	/**
 	 * Return fake values
@@ -441,9 +656,9 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	/**
 	 * Seed
 	 */
-	public static function seeder()
+	public static function seeder($max = 15)
 	{
-		for ($x = 0; $x <= 15; $x++)
+		for ($x = 0; $x <= $max; $x++)
 		{
 			$data = static::fakeValue();
 			echo "\n ----- " . static::$nodeNamePrefix . ' - ' . $data['title'] . ' - ' . $x;

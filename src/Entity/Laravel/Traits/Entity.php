@@ -43,6 +43,18 @@ trait Entity
 	protected $dbColumns = [];
 
 	/**
+	 * Filterable Columns
+	 * @var array [filterName => [type => columnType, column => columnName, filterType => eq|like|in|between]]
+	 */
+	protected $filterableColumns = [];
+
+	/**
+	 * Sortable columns
+	 * @var array [sortName => [type => columnType, column => columnName]]
+	 */
+	protected $sortableColumns = [];
+
+	/**
 	 * Array of Relationships
 	 * @var array
 	 */
@@ -136,6 +148,21 @@ trait Entity
 			foreach ($this->dbColumns as $columnName => $column)
 			{
 				$type = $column['type'];
+				$filterable = zbase_data_get($column, 'filterable.enable', false);
+				if(!empty($filterable))
+				{
+					$filterOption = [
+						'type' => $type,
+						'column' => $columnName,
+						'options' => zbase_data_get($column, 'filterable.options', []),
+						'filterType' => zbase_data_get($column, 'filterable.type', 'eq')];
+					$this->filterableColumns[zbase_data_get($column, 'filterable.name', $columnName)] = $filterOption;
+				}
+				$sortable = zbase_data_get($column, 'sortable.enable', false);
+				if(!empty($sortable))
+				{
+					$this->sortableColumns[zbase_data_get($column, 'sortable.name', $columnName)] = ['type' => $type, 'column' => $columnName];
+				}
 				if(!empty($column['fillable']))
 				{
 					$this->fillable[] = $columnName;

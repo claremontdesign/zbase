@@ -3,19 +3,21 @@
 namespace Zbase\Exceptions;
 
 /**
- * Zbase-Exceptions-Exception
+ * Zbase-Exceptions-PropertyNotFoundException
  *
- * Exception
+ * PropertyNotFoundException
  *
  * @link http://zbase.dennesabing.com
  * @author Dennes B Abing <dennes.b.abing@gmail.com>
  * @license proprietary
  * @copyright Copyright (c) 2016 ClaremontDesign/MadLabs-Dx
- * @file Exception.php
+ * @file HttpException.php
  * @project Zbase
- * @package Zbase/Exceptions/Exception
+ * @package Zbase/Exceptions
  */
-class Exception extends \Exception
+use Zbase\Exceptions\Exception;
+
+class HttpException extends Exception
 {
 
 }

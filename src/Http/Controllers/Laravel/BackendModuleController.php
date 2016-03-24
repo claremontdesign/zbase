@@ -28,7 +28,14 @@ class BackendModuleController extends Controller implements Interfaces\Attribute
 	{
 		if(!$this->getModule()->hasAccess())
 		{
-			return $this->unathorized(_zt('You don\'t have enough access to the resource.'));
+			if(zbase_auth_has())
+			{
+				return $this->unathorized(_zt('You don\'t have enough access to the resource.'));
+			}
+			else
+			{
+				return redirect()->to(zbase_url_from_route('admin.login'));
+			}
 		}
 		/**
 		 * Check for widgets

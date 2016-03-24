@@ -201,6 +201,22 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 		if(!empty($hasSection))
 		{
 			$widgets = $this->_v('widgets.' . $section . '.controller.' . $action, []);
+			/**
+			 * If widgets are for this action,
+			 * then let;s look at if there is a "default" action to do.
+			 *
+			 * On the front/public pages, we have links like: node/action/nodeId
+			 *  but if there are no widgets on the given action,
+			 *  probably, the given action is the slug-name of an entity
+			 *  like:
+			 * 		node/node-slug-id
+			 * 		nodes/category-slug-id
+			 *  so if the module has a "default" index, then we will load that default widget
+			 */
+			if(empty($widgets))
+			{
+				$widgets = $this->_v('widgets.' . $section . '.controller.default', []);
+			}
 		}
 		else
 		{
