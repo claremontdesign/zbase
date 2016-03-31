@@ -57,6 +57,12 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	protected $_selectedRows = null;
 
 	/**
+	 * Hierarchy
+	 * @var array
+	 */
+	protected $_tree = null;
+
+	/**
 	 * Create Action Button
 	 * @var \Zbase\Ui\Component
 	 */
@@ -146,8 +152,7 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 			$root = $this->_entity->getRoot();
 			if(!empty($root))
 			{
-				$this->_rows = $root->getDescendants()->toHierarchy();
-				$this->selectedRows();
+				$this->_rows = $root->getImmediateDescendants();
 			}
 			else
 			{
@@ -158,14 +163,67 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	}
 
 	/**
-	 * Set the Selected Rows
-	 * @param \Zbase\Entity\EntityInterface[] $selectedRows
-	 * @return \Zbase\Widgets\Type\TreeView
+	 * Return the TREE
+	 * @param type $options
 	 */
-	public function setSelectedRows($selectedRows)
+	public function getTree($options = [])
 	{
-		$this->_selectedRows = $selectedRows;
-		return $this;
+		$rows = $this->getRows();
+		if(!empty($rows))
+		{
+			foreach ($rows as $row)
+			{
+				$this->_tree[] = $this->_treeRow($row);
+			}
+		}
+		return $this->_tree;
+	}
+
+	/**
+	 * Tree Row
+	 * http://jonmiles.github.io/bootstrap-treeview/#grandchild1
+	 * https://github.com/jonmiles/bootstrap-treeview
+	 *
+	 * @param type $row
+	 * @return array
+	 */
+	protected function _treeRow($row)
+	{
+		$newRow = [];
+		$newRow['text'] = $row->title();
+		$newRow['id'] = $row->id();
+		$selected = $this->selectedRows();
+		if($selected instanceof \Illuminate\Database\Eloquent\Collection)
+		{
+			foreach ($selected as $sel)
+			{
+				if($sel->id() == $row->id())
+				{
+					$newRow['state']['selected'] = true;
+					$newRow['state']['expanded'] = true;
+				}
+			}
+		}
+		else
+		{
+			foreach ($selected as $sel)
+			{
+				if($sel == $row->id())
+				{
+					$newRow['state']['selected'] = true;
+					$newRow['state']['expanded'] = true;
+				}
+			}
+		}
+		$children = $row->getImmediateDescendants();
+		if(!empty($children))
+		{
+			foreach ($children as $child)
+			{
+				$newRow['nodes'][] = $this->_treeRow($child);
+			}
+		}
+		return $newRow;
 	}
 
 	/**
@@ -181,29 +239,17 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 			{
 				if($this->form()->wasPosted())
 				{
-
+					$this->_selectedRows = zbase_form_old('category');
 				}
 				else
 				{
-					
+					$entity = $this->form()->entity();
+					if($entity instanceof \Zbase\Entity\Laravel\Node\Node)
+					{
+						$this->_viewParams['node'] = $entity;
+						$this->_selectedRows = $entity->categories()->get();
+					}
 				}
-//				$entity = $this->form()->entity();
-//				if($entity instanceof \Zbase\Entity\Laravel\Node\Nested)
-//				{
-//					// Get Parent Category
-//					$selectedRow = $this->form()->entity();
-//				}
-//				if($entity instanceof \Zbase\Entity\Laravel\Node\Node)
-//				{
-//					//Get Categories of the node
-//					dd($entity->categories());
-//					$selectedRow = $entity->categories()->get();
-//				}
-//				if($selectedRow instanceof \Zbase\Entity\Laravel\Node\Nested)
-//				{
-//					$p = $selectedRow->parent()->first();
-//					$this->_selectedRows[$p->category_id] = $p;
-//				}
 			}
 		}
 		return $this->_selectedRows;

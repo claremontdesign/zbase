@@ -80,7 +80,10 @@ function zbase_string_from_array($array, $glue = '_')
 		}
 		else
 		{
-			$newArgs[] = $k . $glue . $v;
+			if(!is_object($k) && is_object($v) && is_object($glue))
+			{
+				$newArgs[] = $k . $glue . $v;
+			}
 		}
 	}
 	return implode($glue, $newArgs);

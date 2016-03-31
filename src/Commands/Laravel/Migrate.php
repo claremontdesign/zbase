@@ -50,6 +50,7 @@ class Migrate extends Command
 	 */
 	public function handle()
 	{
+		ob_implicit_flush(1);
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
 		$packages = zbase()->packages();
 		if(!empty($packages))
@@ -67,7 +68,6 @@ class Migrate extends Command
 		\File::cleanDirectory(database_path() . '/migrations');
 		\File::cleanDirectory(database_path() . '/seeds');
 		\File::cleanDirectory(database_path() . '/factories');
-		// echo shell_exec('php artisan cdbase:clear');
 		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=migrations --force');
 		echo shell_exec($phpCommand . ' artisan optimize');
 		echo shell_exec($phpCommand . ' artisan migrate:refresh --seed --force');

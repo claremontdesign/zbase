@@ -138,7 +138,7 @@ function zbase_route_init($name, $route)
 	{
 		return null;
 	}
-	$middleware = 'web';
+	$middleware = ['web'];
 	$httpVerb = !empty($route['httpVerb']) ? $route['httpVerb'] : ['get'];
 	if(!empty($route['form']['enable']))
 	{
@@ -159,6 +159,18 @@ function zbase_route_init($name, $route)
 					}]);
 		}
 	}
+//	$defaultController = zbase_config_get('controller.class.default', null);
+//	if(!is_null($defaultController))
+//	{
+//		$defaultRoute = [
+//			'controller' => 'default',
+//			'url' => zbase_url_path(),
+//			'enable' => true
+//		];
+//		\Route::get(zbase_url_path(), ['as' => 'default', 'middleware' => 'guest', function() use ($defaultRoute, $name){
+//				return zbase_route_response($name, $defaultRoute);
+//					}]);
+//	}
 }
 
 /**

@@ -31,9 +31,9 @@ function zbase_url_from_route($name, $params = [])
  * @param boolean $addReplace If replace, will add and replace params, else, will create new based on params
  * @return string
  */
-function zbase_url_from_current($params = [], $addReplace = true)
+function zbase_url_from_current($params = [], $replace = true, $add = false)
 {
-	if(!empty($addReplace))
+	if(!empty($replace) && !empty($add))
 	{
 		$queryStrings = array_replace_recursive(zbase_request_query_inputs(), $params);
 	}
@@ -41,10 +41,30 @@ function zbase_url_from_current($params = [], $addReplace = true)
 	{
 		$queryStrings = $params;
 	}
+	if(!empty($replace))
+	{
+		$qs = zbase_request_query_inputs();
+		foreach($params as $pK => $pV)
+		{
+			if(array_key_exists($pK, $qs))
+			{
+				unset($qs[$pK]);
+			}
+		}
+		$queryStrings = array_replace_recursive($qs, $params);
+	}
 	$urlQ = [];
 	foreach ($queryStrings as $k => $v)
 	{
-		$urlQ[] = $k . '=' . $v;
+		if(is_array($v))
+		{
+			foreach($v as $vK => $vV)
+			{
+				$urlQ[] = $k . '['.$vK.']=' . $vV;
+			}
+		} else {
+			$urlQ[] = $k . '=' . $v;
+		}
 	}
 	return zbase_url() . '?' . implode('&', $urlQ);
 }

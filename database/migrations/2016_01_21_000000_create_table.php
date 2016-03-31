@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Zbase
  *
@@ -34,7 +33,9 @@ class CreateTable extends Migration
 	 */
 	public function up()
 	{
+		$migrateCommand = app('command.migrate');
 		$this->down();
+		//$migrator->note();
 		echo " - Migrating\n";
 		$dbTblPrefix = zbase_db_prefix();
 		$entities = zbase_config_get('entity', []);
@@ -42,6 +43,7 @@ class CreateTable extends Migration
 		{
 			foreach ($entities as $entity)
 			{
+				ob_start();
 				$enable = zbase_data_get($entity, 'enable', false);
 				if(empty($enable))
 				{
@@ -127,7 +129,7 @@ class CreateTable extends Migration
 				{
 					continue;
 				}
-				Schema::create($tableName, function(Blueprint $table) use($columns, $entity, $modelName, $tableName)
+				Schema::create($tableName, function(Blueprint $table) use($columns, $entity, $modelName, $tableName, $migrateCommand)
 				{
 					$tableTye = zbase_data_get($entity, 'table.type', 'InnoDB');
 					$table->engine = $tableTye;
@@ -270,7 +272,7 @@ class CreateTable extends Migration
 					$optionable = zbase_data_get($entity, 'table.optionable', false);
 					if(!empty($optionable))
 					{
-						$table->text('option')->nullable();
+						$table->text('options')->nullable();
 					}
 					$sluggable = zbase_data_get($entity, 'table.sluggable', false);
 					if(!empty($sluggable))
@@ -307,7 +309,8 @@ class CreateTable extends Migration
 						$table->integer($polymorphicPrefix . '_id')->nullable();
 						$table->string($polymorphicPrefix . '_type', 64)->nullable();
 					}
-					echo " -- Migrated " . (!empty($modelName) ? $modelName . ' - ' : '') . $tableName . "\n";
+					// echo " -- Migrated " . (!empty($modelName) ? $modelName . ' - ' : '') . $tableName . "\n";
+					$migrateCommand->info(" -- Migrated " . (!empty($modelName) ? $modelName . ' - ' : '') . $tableName);
 					});
 				$description = zbase_data_get($entity, 'table.description', null);
 				if(!is_null($description))
@@ -316,6 +319,7 @@ class CreateTable extends Migration
 					\DB::statement("ALTER TABLE `{$tableName}` COMMENT='{$description}'");
 					// DB::select(DB::raw("ALTER TABLE `{$tableName}` COMMENT='{$description}'"));
 				}
+				ob_flush();
 			}
 		}
 	}
@@ -327,18 +331,21 @@ class CreateTable extends Migration
 	 */
 	public function down()
 	{
+		$migrateCommand = app('command.migrate');
 		if(!zbase_is_dev())
 		{
 			echo 'You are in PRODUCTION Mode. Cannot drop tables.';
 			return false;
 		}
-		echo " - Dropping\n";
+		//echo " - Dropping\n";
+		//$migrateCommand->info('- Dropping');
 		$entities = zbase_config_get('entity', []);
 		if(!empty($entities))
 		{
 			\DB::statement('SET FOREIGN_KEY_CHECKS = 0');
 			foreach ($entities as $entity)
 			{
+				ob_start();
 				$enable = zbase_data_get($entity, 'enable', false);
 				$model = zbase_data_get($entity, 'model', null);
 				if(is_null($model))
@@ -356,9 +363,11 @@ class CreateTable extends Migration
 					if(Schema::hasTable($tableName))
 					{
 						Schema::drop($tableName);
-						echo " -- Dropped " . $tableName . "\n";
+						// echo " -- Dropped " . $tableName . "\n";
+						//$migrateCommand->info(' -- Dropped ' . $tableName);
 					}
 				}
+				ob_flush();
 			}
 			\DB::statement('SET FOREIGN_KEY_CHECKS = 1');
 		}

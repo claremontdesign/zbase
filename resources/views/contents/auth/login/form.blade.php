@@ -32,10 +32,12 @@
 			<button type="submit" class="btn btn-primary">
 				<i class="fa fa-btn fa-sign-in"></i>Login
 			</button>
-
 			<a class="btn btn-link" href="{{ zbase_url_create('password') }}">Forgot Your Password?</a>
 		</div>
 	</div>
+	<?php if(!zbase_request_is('login')):?>
+	<input type="hidden" value="<?php echo zbase_url_path()?>" name="redirect" />
+	<?php endif;?>
 </form>
 
 

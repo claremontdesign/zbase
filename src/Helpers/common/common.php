@@ -265,16 +265,7 @@ function zbase_object_factory($className, $config = [])
  */
 function zbase_abort($code, $message = null, $headers = [])
 {
-	if($code == 404)
-	{
-		throw new \Zbase\Exceptions\NotFoundHttpException($message);
-	}
-	if($code == 401)
-	{
-		throw new \Zbase\Exceptions\UnauthorizedException($message);
-	}
-	throw new \Zbase\Exceptions\HttpException($code, $message, null, $headers);
-	// return abort($code, $message);
+	 return abort($code, $message);
 }
 
 /**

@@ -190,17 +190,25 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	}
 
 	/**
-	 * Return Widgets by Controller Action
-	 * @param string $action The Controller Action
-	 * @return \Zbase\Widgets\WidgetInterface[]
+	 * Return widgets by Index and IndexName
+	 * @param string $index
+	 * @param string $indexName
 	 */
-	public function widgetsByControllerAction($action)
+	public function getWidgets($index, $indexName)
 	{
 		$section = zbase_section();
 		$hasSection = $this->_v('widgets.' . $section, false);
 		if(!empty($hasSection))
 		{
-			$widgets = $this->_v('widgets.' . $section . '.controller.' . $action, []);
+			$byAction = $this->_v('widgets.' . $section . '.controller.' . $index, []);
+			if(!empty($byAction))
+			{
+				$widgets = $this->_v('widgets.' . $section . '.controller.' . $index . '.' . $indexName, []);
+			}
+			else
+			{
+				$widgets = $this->_v('widgets.' . $section . '.controller.' . $indexName, []);
+			}
 			/**
 			 * If widgets are for this action,
 			 * then let;s look at if there is a "default" action to do.
@@ -215,12 +223,12 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 			 */
 			if(empty($widgets))
 			{
-				$widgets = $this->_v('widgets.' . $section . '.controller.default', []);
+				$widgets = $this->_v('widgets.' . $section . '.controller.' . $index . '.default', $this->_v('widgets.' . $section . '.controller.default', []));
 			}
 		}
 		else
 		{
-			$widgets = $this->_v('widgets.controller.' . $action, []);
+			$widgets = $this->_v('widgets.controller.' . $indexName, []);
 		}
 		if(is_array($widgets))
 		{
@@ -251,6 +259,16 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 			return $widgets;
 		}
 		return null;
+	}
+
+	/**
+	 * Return Widgets by Controller Action
+	 * @param string $action The Controller Action
+	 * @return \Zbase\Widgets\WidgetInterface[]
+	 */
+	public function widgetsByControllerAction($action)
+	{
+		return $this->getWidgets('action', $action);
 	}
 
 	/**

@@ -335,7 +335,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		$model->select($columns);
 		if(!empty($this->getDebug()))
 		{
-			dd($model->getQuery()->toSql(), $model->getQuery()->getBindings());
+			var_dump($model->getQuery()->toSql(), $model->getQuery()->getBindings());
 		}
 		return $model;
 	}
@@ -365,6 +365,10 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	 */
 	public function getDebug()
 	{
+		if(zbase_request_query_input('__debug', false))
+		{
+			return true;
+		}
 		return $this->debug;
 	}
 

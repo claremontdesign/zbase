@@ -14,7 +14,6 @@
  * @package Zbase/Laravel/Helpers
  *
  */
-
 /**
  * Return the Current Authed User
  * @return \

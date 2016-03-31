@@ -161,7 +161,7 @@ trait Entity
 				$sortable = zbase_data_get($column, 'sortable.enable', false);
 				if(!empty($sortable))
 				{
-					$this->sortableColumns[zbase_data_get($column, 'sortable.name', $columnName)] = ['type' => $type, 'column' => $columnName];
+					$this->sortableColumns[zbase_data_get($column, 'sortable.name', $columnName)] = ['type' => $type, 'column' => $columnName, 'options' => zbase_data_get($column, 'sortable.options', [])];
 				}
 				if(!empty($column['fillable']))
 				{
@@ -403,7 +403,6 @@ trait Entity
 							break;
 						case 'belongsto':
 							return new BelongsTo($model->newQuery(), $this, $model->getTable() . '.' . $fKey, $lKey, $name);
-							break;
 						default;
 					}
 					if(!empty($relObj))
@@ -459,6 +458,24 @@ trait Entity
 	public function entityName()
 	{
 		return $this->entityName;
+	}
+
+	/**
+	 * Return the Sortable Columns
+	 * @return array
+	 */
+	public function getSortableColumns()
+	{
+		return $this->sortableColumns;
+	}
+
+	/**
+	 * Return the Filterable Columns
+	 * @return array
+	 */
+	public function getFilterableColumns()
+	{
+		return $this->filterableColumns;
 	}
 
 }

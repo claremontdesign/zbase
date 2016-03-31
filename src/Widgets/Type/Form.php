@@ -134,11 +134,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function controller($action)
 	{
-		if($action == 'post')
-		{
-			$action = 'create';
-		}
-		$this->_action = $action;
+		$this->setAction($action);
 		if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
 		{
 			if($this->entity()->hasSoftDelete())
@@ -212,18 +208,25 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	protected function _postEvent($action)
 	{
-		if($this->isPublic() && $this->isNode())
+		if($this->isPublic() && $this->isNode() && $this->isCreating())
 		{
 			return zbase_redirect()->to($this->entity()->alphaUrl());
 		}
 		$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post', null);
 		if(is_null($e))
 		{
-			if($action == 'create')
+			if(zbase_is_back())
 			{
-				$action = 'update';
+				if($this->isCreating())
+				{
+					$action = 'update';
+				}
+				$params = ['action' => $action, 'id' => $this->entity()->id()];
 			}
-			$params = ['action' => $action, 'id' => $this->entity()->id()];
+			else
+			{
+				$params = ['action' => $action, 'id' => $this->entity()->alphaId()];
+			}
 			if($action == 'delete')
 			{
 				$params = [];
@@ -233,7 +236,6 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			{
 				$url = zbase_url_previous();
 			}
-			return zbase_redirect()->to($url);
 		}
 		if(!empty($e))
 		{
@@ -338,6 +340,10 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		if($e instanceof FormInterface)
 		{
 			$e->form($this);
+			if(empty($this->_entityIsDefault))
+			{
+				$e->entity($this->_entity);
+			}
 		}
 		if($e instanceof \Zbase\Ui\Form\ElementInterface)
 		{
@@ -583,7 +589,27 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function renderSubmitButton()
 	{
-		return '<button type="submit" class="btn btn-default">' . $this->submitButtonLabel() . '</button>';
+		if(empty($this->_entityIsDefault) && $this->_entity->trashed())
+		{
+			if($this->_action == 'restore')
+			{
+				return '<button onclick="window.history.back();" type="button" class="btn">Cancel</button>&nbsp;<button type="submit" class="btn btn-info">Restore</button>';
+			}
+			if($this->_action == 'ddelete')
+			{
+				return '<button onclick="window.history.back();" type="button" class="btn">Not Now</button>&nbsp;<button type="submit" class="btn btn-danger">Delete Forever</button>';
+			}
+			return '';
+		}
+		$attributes = $this->_v('submit.button.' . $this->_action . '.html.attributes', $this->_v('submit.button.html.attributes', []));
+		$attributes['class'][] = 'btn btn-default';
+		$cancel = $this->_v('submit.button.' . $this->_action . '.cancel', $this->_v('submit.button.cancel', false));
+		$cancelButton = null;
+		if(!empty($cancel))
+		{
+			$cancelButton = '<button onclick="window.history.back();" type="button" class="btn">Cancel</button>';
+		}
+		return $cancelButton . '&nbsp;<button type="submit" ' . $this->renderHtmlAttributes($attributes) . '>' . $this->submitButtonLabel() . '</button>';
 	}
 
 	/**
@@ -592,7 +618,22 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function submitButtonLabel()
 	{
-		return $this->_v('submit.button.label', 'Submit');
+		return $this->_v('submit.button.' . $this->_action . '.label', $this->_v('submit.button.label', 'Submit'));
+	}
+
+	/**
+	 * Return the Wrapper Attributes
+	 * @return array
+	 */
+	public function wrapperAttributes()
+	{
+		$attr = parent::wrapperAttributes();
+		if(($this->_action == 'delete' && strtolower(zbase_request_method()) != 'post') || ($this->isNode() && empty($this->_entityIsDefault) && $this->_entity->trashed()))
+		{
+			$attr['class'][] = 'action-delete';
+			$attr['style'][] = 'border:2px solid red; padding:20px;';
+		}
+		return $attr;
 	}
 
 	/**

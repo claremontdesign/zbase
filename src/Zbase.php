@@ -91,12 +91,23 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	 * @var Models\Ui
 	 */
 	protected $ui = null;
+	protected $auth = null;
 
 	/**
 	 * Collection of Entity Models
 	 * @var array
 	 */
 	protected $entityModels = [];
+
+	public function setAuth($auth)
+	{
+		$this->auth = $auth;
+	}
+
+	public function getAuth()
+	{
+		return $this->auth;
+	}
 
 	/**
 	 * Return the MobileUtility
@@ -294,9 +305,11 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 					$widget = require $file;
 					if(empty($widget['id']))
 					{
-						$widget['id'] = str_replace('.php', '', basename($file));
+						$name = str_replace('.php', '', basename($file));
+						$widget['id'] = $name;
 					}
-					$this->widget($widget);
+					$this->widgets[$name] = $widget;
+					// $this->widget($widget);
 				}
 			}
 		}
@@ -322,7 +335,7 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 		}
 		if(!empty($name))
 		{
-			if(!empty($this->widgets[$name]))
+			if(!empty($this->widgets[$name]) && $this->widgets[$name] instanceof \Zbase\Widgets\WidgetInterface)
 			{
 				if(!empty($clone))
 				{
@@ -332,10 +345,16 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			}
 			if(empty($config))
 			{
-				$config = zbase_config_get('widgets.' . $name, false);
+				if(is_array($this->widgets[$name]))
+				{
+					$config = $this->widgets[$name];
+				}
 			}
 			if(!empty($config))
 			{
+				$name = !empty($config['id']) ? $config['id'] : null;
+				$type = !empty($config['type']) ? $config['type'] : [];
+				$config = !empty($config['config']) ? $config['config'] : [];
 				if(strtolower($type) == 'form')
 				{
 					$w = new \Zbase\Widgets\Type\Form($name, $config);

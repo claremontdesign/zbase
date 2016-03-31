@@ -54,6 +54,45 @@ class File extends BaseEntity implements WidgetEntityInterface
 		return $query->where('status', '=', 2);
 	}
 
+
+	protected static function boot()
+	{
+		parent::boot();
+		static::saved(function($node) {
+			$node->_updateAlphaId();
+		});
+	}
+
+
+	/**
+	 * Generate and Update Row Alpha ID
+	 * @return void
+	 */
+	protected function _updateAlphaId()
+	{
+		if(!empty($this->file_id) && empty($this->alpha_id) && !empty($this->alphable))
+		{
+			$alphaId = zbase_generate_hash([$this->file_id, time()], $this->entityName);
+			$i = 1;
+			while ($this->fetchByAlphaId($alphaId) > 0)
+			{
+				$alphaId = zbase_generate_hash([time(), $i++, $this->file_id], $this->entityName);
+			}
+			$this->alpha_id = $alphaId;
+			$this->save();
+		}
+	}
+
+	/**
+	 * Fetch a Row By AlphaId
+	 * @param string $alphaId
+	 * @return Collection[]
+	 */
+	public function fetchByAlphaId($alphaId)
+	{
+		return $this->repository()->byAlphaId($alphaId);
+	}
+
 	/**
 	 * Return primary Files
 	 * @param type $query

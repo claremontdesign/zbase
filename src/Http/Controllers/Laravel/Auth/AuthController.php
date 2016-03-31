@@ -181,6 +181,11 @@ use AuthenticatesAndRegistersUsers,
 			}
 			else
 			{
+				$redirect = zbase_request_input('redirect', null);
+				if(!empty($redirect))
+				{
+					$this->redirectTo = $redirect;
+				}
 				return $this->handleUserWasAuthenticated($request, $throttles);
 			}
 		}

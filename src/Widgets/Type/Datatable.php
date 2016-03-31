@@ -106,6 +106,10 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		}
 		if(!empty($filters))
 		{
+			foreach ($filters as $fK => $fV)
+			{
+				$filters[$fK] = trim($fV, chr(0xC2) . chr(0xA0));
+			}
 			return $filters;
 		}
 		return false;
@@ -125,7 +129,81 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		return false;
 	}
 
+	/**
+	 * Return node sortable Columns
+	 * @return array|null
+	 */
+	public function getSortableColumns()
+	{
+		/**
+		 * Check if we are browsing categories and displaying its nodes
+		 */
+		if($this->isNode() && $this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+		{
+			$entity = $this->_entity;
+			return zbase_entity($entity::$nodeNamePrefix)->getSortableColumns();
+		}
+		/**
+		 * Check if we are browsing categories and displaying its nodes
+		 */
+		if($this->isNode() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Node)
+		{
+			return $this->_entity->getSortableColumns();
+		}
+		return null;
+	}
+
+	/**
+	 * return the number of rows per page
+	 * @return array
+	 */
+	public function getRowsPerPages()
+	{
+		/**
+		 * Check if we are browsing categories and displaying its nodes
+		 */
+		if($this->isNode() && $this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+		{
+			$entity = $this->_entity;
+			return zbase_entity($entity::$nodeNamePrefix)->getRowsPerPages();
+		}
+		/**
+		 * Check if we are browsing categories and displaying its nodes
+		 */
+		if($this->isNode() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Node)
+		{
+			return $this->_entity->getRowsPerPages();
+		}
+		return null;
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="Rows">
+
+	/**
+	 * Return the Categories
+	 * Some nodes has categories,
+	 * 	so let's return their subCategories
+	 *
+	 * @return null|\Zbase\Entity\Laravel\Node\Nested[]
+	 */
+	public function categoryDescendants()
+	{
+		if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+		{
+			return $this->_entity->getDescendants();
+		}
+		if($this->isNodeCategory())
+		{
+			$entity = $this->_entity;
+			if(!$entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+			{
+				$entity = zbase_entity($entity::$nodeNamePrefix . '_category');
+				return $entity->getRoot()->getDescendants()->toHierarchy();
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Prepare and fetch all rows
 	 */
@@ -162,6 +240,10 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 								}
 							}
 						}
+						if($this->isCurrentUser())
+						{
+							$urlFilters['currentUser'] = true;
+						}
 						if(!empty($urlFilters))
 						{
 							if(method_exists($entityObject, 'queryJoins'))
@@ -179,19 +261,20 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 							// dd($joins, $sorting, $filters);
 						}
 					}
+					$debug = zbase_request_query_input($this->id() . '__debug', false);
 					if($this->isPublic())
 					{
-						$this->_rows = $repo->all(['*'], $filters, $sorting, $joins, true);
+						$this->_rows = $repo->setDebug($debug)->all(['*'], $filters, $sorting, $joins, true);
 					}
 					else
 					{
 						if($this->_entity->hasSoftDelete())
 						{
-							$this->_rows = $repo->withTrashed()->all(['*'], $filters, $sorting, $joins, true);
+							$this->_rows = $repo->setDebug($debug)->withTrashed()->all(['*'], $filters, $sorting, $joins, true);
 						}
 						else
 						{
-							$this->_rows = $repo->all(['*'], $filters, $sorting, $joins, true);
+							$this->_rows = $repo->setDebug($debug)->all(['*'], $filters, $sorting, $joins, true);
 						}
 					}
 				}

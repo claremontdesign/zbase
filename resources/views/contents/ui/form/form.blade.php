@@ -1,5 +1,6 @@
 <?php
 $label = $ui->getLabel();
+$hasAccess = $ui->hasAccess();
 $attributes = $ui->wrapperAttributes();
 $wrapperAttributes = $ui->renderHtmlAttributes($attributes);
 $elements = $ui->elements();
@@ -25,6 +26,7 @@ $formTag = $ui->hasFormTag();
 		<?php endif; ?>
 
 		<?php if(!empty($submitButton) && !empty($formTag)): ?>
+			<hr />
 			<?php echo $ui->renderSubmitButton();?>
 		<?php endif; ?>
 

@@ -24,7 +24,9 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 			zbase_file_copy(__DIR__ . '/../tests/config/database.php', zbase_base_path() . '/config/testing/database.php');
 		}
 		$this->app->singleton(zbase_tag(), function(){
-			return new Zbase;
+			$zbase = new Zbase;
+			$zbase->setAuth(app('auth'));
+			return $zbase;
 		});
 		zbase()->loadModuleFrom(__DIR__ . '/../modules');
 	}
@@ -131,6 +133,7 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		\Validator::replacer('passwordStrengthCheck', function($message, $attribute, $rule, $parameters) {
 			return _zt('New password is too weak.');
 		});
+		// dd(\Zbase\Utility\Service\Flickr::findByTags(['heavy equipment','dozers','loader']));
 	}
 
 }

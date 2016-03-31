@@ -64,6 +64,12 @@ abstract class Ui
 	protected $_contents = null;
 
 	/**
+	 * Variable to pass to the View
+	 * @var string
+	 */
+	protected $_viewParams = [];
+
+	/**
 	 * Constructor
 	 * @param string $id
 	 * @param array $configuration
@@ -103,16 +109,50 @@ abstract class Ui
 	{
 		if(is_null($this->_enable))
 		{
-			if($this->hasAccess())
+			$this->_enable = $this->_v('enable', true);
+		}
+		return $this->_enable;
+	}
+
+	/**
+	 * Process access
+	 * 	Redirect if needed to
+	 *  Else will display a message to the user when rendering the UI
+	 */
+	protected function _access()
+	{
+		if(!$this->hasAccess())
+		{
+			/**
+			 * If User has Auth
+			 */
+			if(zbase_auth_has())
 			{
-				$this->_enable = $this->_v('enable', true);
+				$redirectToRoute = $this->_v('access.noaccess.route', null);
+				$message = $this->_v('access.noaccess.message', null);
 			}
 			else
 			{
-				$this->_enable = false;
+				$redirectToRoute = $this->_v('access.noauth.route', null);
+				$message = $this->_v('access.noauth.message', null);
 			}
+			if(!empty($message))
+			{
+				$this->_viewParams['message'] = $message;
+			}
+			if(!empty($redirectToRoute))
+			{
+				$this->setViewFile('ui.auth');
+				return;
+				// return redirect()->to(zbase_url_from_route($redirectToRoute));
+			}
+			if(!empty($message))
+			{
+				$this->setViewFile('ui.message.access');
+				return;
+			}
+			$this->setViewFile(null);
 		}
-		return $this->_enable;
 	}
 
 	/**
@@ -128,9 +168,47 @@ abstract class Ui
 	{
 		if(is_null($this->_hasAccess))
 		{
-			$this->_hasAccess = zbase_auth_check_access($this->_v('access', zbase_auth_minimum()));
+			$this->_hasAccess = zbase_auth_check_access($this->getAccess());
 		}
 		return $this->_hasAccess;
+	}
+
+	/**
+	 * @var string
+	 * access = renter
+	 *
+	 * @var array
+	 * access.role
+	 * access.enable
+	 * access.noauth when a user has no auth
+	 * access.noauth.route redirect
+	 * access.noauth.message display a message
+	 * access.noaaccess when a user has an auth and no access
+	 * access.noaaccess.route redireect
+	 * access.noaaccess.message display a message
+	 *
+	 * @return string
+	 */
+	public function getAccess()
+	{
+		$access = $this->_v('access', null);
+		if(is_array($access))
+		{
+			$enable = $this->_v('access.enable', false);
+			if(!empty($enable))
+			{
+				return $this->_v('access.role', zbase_auth_minimum());
+			}
+			return 'guest';
+		}
+		else
+		{
+			if(is_null($access))
+			{
+				return zbase_auth_minimum();
+			}
+		}
+		return $access;
 	}
 
 	// </editor-fold>
@@ -177,6 +255,7 @@ abstract class Ui
 				$this->_prepared = true;
 				if($this->enabled())
 				{
+					$this->_access();
 					$this->_pre();
 					$this->_post();
 				}
@@ -305,6 +384,106 @@ abstract class Ui
 		return '';
 	}
 
+	/**
+	 * The Content to be rendered before the UI Wrapper
+	 * html.content.pre
+	 * html.content.pre.view
+	 * @return HTML
+	 */
+	public function htmlPreContent()
+	{
+		$enable = $this->_v('html.content.pre.enable', false);
+		if(!empty($enable))
+		{
+			$viewFile = $this->_v('html.content.pre.view', false);
+			if(!empty($viewFile))
+			{
+				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this]);
+			}
+			$html = $this->_v('html.content.pre.html', false);
+			if(!empty($html))
+			{
+				return $html;
+			}
+		}
+		return '';
+	}
+
+	/**
+	 * The Content to be rendered after the UI Wrapper
+	 * html.content.post
+	 * html.content.post.view
+	 * @return HTML
+	 */
+	public function htmlPostContent()
+	{
+		$enable = $this->_v('html.content.post.enable', false);
+		if(!empty($enable))
+		{
+			$viewFile = $this->_v('html.content.post.view', false);
+			if(!empty($viewFile))
+			{
+				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this])->__toString();
+			}
+			$html = $this->_v('html.content.post.html', false);
+			if(!empty($html))
+			{
+				return $html;
+			}
+		}
+		return '';
+	}
+
+	/**
+	 * The Content to be appended inside the UI Wrapper
+	 * html.content.append
+	 * html.content.append.view
+	 * @return HTML
+	 */
+	public function htmlAppendContent()
+	{
+		$enable = $this->_v('html.content.append.enable', false);
+		if(!empty($enable))
+		{
+			$viewFile = $this->_v('html.content.append.view', false);
+			if(!empty($viewFile))
+			{
+				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this])->__toString();
+			}
+			$html = $this->_v('html.content.append.html', false);
+			if(!empty($html))
+			{
+				return $html;
+			}
+		}
+		return '';
+	}
+
+	/**
+	 * The Content to be appended inside the UI Wrapper
+	 * html.content.prepend
+	 * html.content.preped.view
+	 * @return HTML
+	 */
+	public function htmlPrependContent()
+	{
+		$enable = $this->_v('html.content.prepend.enable', false);
+		if(!empty($enable))
+		{
+			$viewFile = $this->_v('html.content.prepend.view', false);
+			if(!empty($viewFile))
+			{
+				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this])->__toString();
+			}
+			$html = $this->_v('html.content.prepend.html', false);
+			if(!empty($html))
+			{
+				return $html;
+			}
+		}
+		return '';
+	}
+
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Rendering">
 
@@ -334,24 +513,40 @@ abstract class Ui
 	}
 
 	/**
+	 * Return the View Parameters
+	 * @return array
+	 */
+	public function getViewParams()
+	{
+		return $this->_viewParams;
+	}
+
+	/**
 	 * HTML the ui
 	 * @return string
 	 */
 	public function __toString()
 	{
 		$this->prepare();
-
-		if(!empty($this->_viewString))
-		{
-			return strtr($this->_viewString, array(
-				'{wrapperAttributes}' => $this->wrapperAttributes(),
-				'{content}' => $this->renderContents()
-			));
-		}
+//		$this->_viewParams['htmlPre'] = $this->htmlPreContent();
+//		$this->_viewParams['htmlPost'] = $this->htmlPostContent();
+//		$this->_viewParams['htmlPrepend'] = $this->htmlPrependContent();
+//		$this->_viewParams['htmlAppend'] = $this->htmlAppenContent();
+//		if(!empty($this->_viewString))
+//		{
+//			return strtr($this->_viewString, array(
+//				'{wrapperAttributes}' => $this->wrapperAttributes(),
+//				'{content}' => $this->renderContents()
+//			));
+//		}
 
 		if(!is_null($this->_viewFile))
 		{
-			return zbase_view_render(zbase_view_file_contents($this->_viewFile), ['ui' => $this])->__toString();
+			$this->_viewParams['ui'] = $this;
+			$str = $this->htmlPreContent();
+			$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams())->__toString();
+			$str .= $this->htmlPostContent();
+			return $str;
 		}
 		return '';
 	}

@@ -31,6 +31,18 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	protected $entityName = 'node';
 
 	/**
+	 * The set a node browsing category
+	 * @var Category
+	 */
+	protected $browseCategory = null;
+
+	/**
+	 * Maximum Category
+	 * @var integer
+	 */
+	protected $maxCategory = 1;
+
+	/**
 	 * The Node Name Prefix
 	 * @var string
 	 */
@@ -56,6 +68,10 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	 */
 	public function alphaUrl()
 	{
+		if($this->getBrowseCategory() instanceof Category)
+		{
+			return zbase_url_from_route($this->routeName, ['action' => $this->getBrowseCategory()->slug(), 'id' => $this->alphaId()]);
+		}
 		return zbase_url_from_route($this->routeName, ['action' => 'view', 'id' => $this->alphaId()]);
 	}
 
@@ -66,6 +82,48 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			return $this->title;
 		}
 		return;
+	}
+
+	/**
+	 * Node Canonical URL
+	 * @return string
+	 */
+	public function canonicalUrl()
+	{
+		return '';
+	}
+
+	/**
+	 * Set the Browsing category
+	 * @param \Zbase\Entity\Laravel\Node\Category $categoryBrowse
+	 * @return \Zbase\Entity\Laravel\Node\Node
+	 */
+	public function setBrowseCategory($categoryBrowse)
+	{
+		$this->browseCategory = $categoryBrowse;
+		return $this;
+	}
+
+	/**
+	 * Return the Browsing Category
+	 * @return \Zbase\Entity\Laravel\Node\Category
+	 */
+	public function getBrowseCategory()
+	{
+		if($this->maxCategory == 1)
+		{
+			return $this->categories()->first();
+		}
+		return $this->browseCategory;
+	}
+
+	/**
+	 * Check if current user is the post owner
+	 * @return boolean
+	 */
+	public function isOwner()
+	{
+		return zbase_auth_has() && zbase_auth_user()->id() == $this->user_id;
 	}
 
 	/**
@@ -95,11 +153,15 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	{
 		try
 		{
-			$messageObject = zbase_entity(static::$nodeNamePrefix . '_messages');
-			$messageObject->title = $subject;
+			$messageObject = zbase_entity('messages');
+			$messageObject->subject = $subject;
 			$messageObject->content = $message;
 			$messageObject->read_status = 0;
-			if(!$sender instanceof \Zbase\Entity\Laravel\User\User)
+			$messageObject->trash_status = 0;
+			$messageObject->reply_status = 0;
+			$messageObject->node_id = $this->id();
+			$messageObject->node_prefix = static::$nodeNamePrefix;
+			if(!$sender instanceof \Zbase\Entity\Laravel\User\User && is_numeric($sender))
 			{
 				$sender = zbase_user_byid($sender);
 			}
@@ -107,17 +169,16 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			{
 				$messageObject->sender_id = $sender->id();
 			}
-			if(!$recipient instanceof \Zbase\Entity\Laravel\User\User)
+			if(!$recipient instanceof \Zbase\Entity\Laravel\User\User && is_numeric($recipient))
 			{
 				$recipient = zbase_user_byid($recipient);
 			}
 			if($recipient instanceof \Zbase\Entity\Laravel\User\User)
 			{
-				$messageObject->recipient_id = $recipient->id();
+				$messageObject->user_id = $recipient->id();
 			}
+			$messageObject->status = 0;
 			$messageObject->save();
-			$messageObject->alpha_id = zbase_generate_hash($messageObject->message_id, static::$nodeNamePrefix . '_messages');
-			$this->messages()->save($messageObject);
 			return $messageObject;
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
@@ -167,11 +228,17 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			$folder = zbase_storage_path() . '/' . zbase_tag() . '/' . static::$nodeNamePrefix . '/' . $this->id() . '/';
 			zbase_directory_check($folder, true);
 			$nodeFileObject = zbase_entity(static::$nodeNamePrefix . '_files', [], true);
-			if(preg_match('/http\:/', $index))
+			if(preg_match('/http\:/', $index) || preg_match('/https\:/', $index))
 			{
 				// File given is a URL
 				$filename = zbase_file_name_from_file(basename($index), time(), true);
 				$uploadedFile = zbase_file_download_from_url($index, $folder . $filename);
+			}
+			if(zbase_file_exists($index))
+			{
+				// File given is a URL
+				$uploadedFile = $index;
+				$filename = basename($index);
 			}
 			if(!empty($_FILES[$index]['name']))
 			{
@@ -187,7 +254,6 @@ class Node extends BaseEntity implements WidgetEntityInterface
 				$nodeFileObject->size = zbase_file_size($uploadedFile);
 				$nodeFileObject->filename = basename($uploadedFile);
 				$nodeFileObject->save();
-				$nodeFileObject->alpha_id = zbase_generate_hash($nodeFileObject->file_id, static::$nodeNamePrefix . '_files');
 				$this->files()->save($nodeFileObject);
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -341,7 +407,17 @@ class Node extends BaseEntity implements WidgetEntityInterface
 				$queryFilters['status'] = [
 					'eq' => [
 						'field' => static::$nodeNamePrefix . '.status',
-						'values' => 2
+						'value' => 2
+					]
+				];
+			}
+			$currentUser = !empty($filters['currentUser']) ? true : false;
+			if(!empty($currentUser))
+			{
+				$queryFilters['user'] = [
+					'eq' => [
+						'field' => static::$nodeNamePrefix . '.user_id',
+						'value' => zbase_auth_user()->id()
 					]
 				];
 			}
@@ -363,8 +439,11 @@ class Node extends BaseEntity implements WidgetEntityInterface
 				{
 					foreach ($filterCategories as $filterCategory)
 					{
-						$filterCategory = $categoryObject::searchCategory($filterCategory, $isPublic);
-						if($filterCategory instanceof Interfaces\EntityInterface)
+						if(!$filterCategory instanceof Interfaces\EntityInterface)
+						{
+							$filterCategory = $categoryObject::searchCategory(trim($filterCategory), $isPublic);
+						}
+						if($filterCategory instanceof Interfaces\EntityInterface && !$filterCategory->isRoot())
 						{
 							$filterCategoryIds[] = $filterCategory->id();
 							continue;
@@ -373,8 +452,8 @@ class Node extends BaseEntity implements WidgetEntityInterface
 				}
 				else
 				{
-					$filterCategory = $categoryObject::searchCategory($filterCategories, $isPublic);
-					if($filterCategory instanceof Interfaces\EntityInterface)
+					$filterCategory = $categoryObject::searchCategory(trim($filterCategories), $isPublic);
+					if($filterCategory instanceof Interfaces\EntityInterface && !$filterCategory->isRoot())
 					{
 						$filterCategoryIds[] = $filterCategory->id();
 					}
@@ -395,6 +474,10 @@ class Node extends BaseEntity implements WidgetEntityInterface
 				$processedFilters = [];
 				foreach ($filters as $filterName => $filterValue)
 				{
+					if(empty($filterValue))
+					{
+						continue;
+					}
 					if(in_array($filterName, $processedFilters))
 					{
 						continue;
@@ -489,7 +572,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			{
 				foreach ($sorting as $sortName => $direction)
 				{
-					if(array_key_exists($this->sortableColumns[$sortName]) && in_array(strtolower($direction), ['desc', 'asc']))
+					if(array_key_exists($sortName, $this->sortableColumns) && in_array(strtolower($direction), ['desc', 'asc']))
 					{
 						$column = $this->sortableColumns[$sortName]['column'];
 						$sort[] = ['node.' . $column => strtoupper($direction)];
@@ -502,6 +585,15 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			$sort[] = ['node.created_at' => 'DESC'];
 		}
 		return $sort;
+	}
+
+	/**
+	 * return the number of rows per page
+	 * @return array
+	 */
+	public function getRowsPerPages()
+	{
+		return [10, 20, 30, 50, 100, 250, 500];
 	}
 
 	// </editor-fold>
@@ -552,8 +644,8 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		{
 			if($this->hasSoftDelete() && $this->trashed())
 			{
-				$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->id()]) . '" title="Restore" class="undodelete">Restore</a>';
-				$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->id()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
+				$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->alphaId()]) . '" title="Restore" class="undodelete">Restore</a>';
+				$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->alphaId()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
 				$this->_actionMessages[$action]['warning'][] = _zt('Row "%title%" was trashed! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
 				return false;
 			}
@@ -562,64 +654,67 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		{
 			if($this->hasSoftDelete() && $this->trashed())
 			{
-				$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->id()]) . '" title="Restore" class="undodelete">Restore</a>';
-				$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->id()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
+				$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->alphaId()]) . '" title="Restore" class="undodelete">Restore</a>';
+				$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->alphaId()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
 				$this->_actionMessages[$action]['warning'][] = _zt('Row "%title%" was trashed! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
 				return false;
 			}
 		}
 		try
 		{
-			if($action == 'delete')
+			if(strtolower($method) == 'post')
 			{
-				if($this->hasSoftDelete())
+				if($action == 'delete')
 				{
-					$this->deleted_at = zbase_date_now();
-					$this->save();
-				}
-				else
-				{
-					$this->delete();
-				}
-				$this->log($action);
-				zbase_db_transaction_commit();
-				zbase_cache_flush([$this->getTable()]);
-				$undoText = '';
-				if(!empty($this->hasSoftDelete()))
-				{
-					$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->id()]) . '" title="Undo Delete" class="undodelete">Undo</a>.';
-					$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->id()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
-				}
-				$this->_actionMessages[$action]['success'][] = _zt('Deleted "%title%"! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
-				return true;
-			}
-			if($action == 'restore')
-			{
-				if($this->trashed())
-				{
-					$this->restore();
+					if($this->hasSoftDelete())
+					{
+						$this->deleted_at = zbase_date_now();
+						$this->save();
+					}
+					else
+					{
+						$this->delete();
+					}
 					$this->log($action);
 					zbase_db_transaction_commit();
 					zbase_cache_flush([$this->getTable()]);
-					$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was restored!', ['%title%' => $this->title, '%id%' => $this->id()]);
+					$undoText = '';
+					if(!empty($this->hasSoftDelete()))
+					{
+						$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->alphaId()]) . '" title="Undo Delete" class="undodelete">Undo</a>.';
+						$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->alphaId()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
+					}
+					$this->_actionMessages[$action]['success'][] = _zt('Deleted "%title%"! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
 					return true;
 				}
-				$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
-				return false;
-			}
-			if($action == 'ddelete')
-			{
-				if($this->trashed())
+				if($action == 'restore')
 				{
-					$this->forceDelete();
-					$this->log($action);
-					zbase_db_transaction_commit();
-					zbase_cache_flush([$this->getTable()]);
-					$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was removed from database!', ['%title%' => $this->title, '%id%' => $this->id()]);
-					return true;
+					if($this->trashed())
+					{
+						$this->restore();
+						$this->log($action);
+						zbase_db_transaction_commit();
+						zbase_cache_flush([$this->getTable()]);
+						$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was restored!', ['%title%' => $this->title, '%id%' => $this->id()]);
+						return true;
+					}
+					$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
+					return false;
 				}
-				$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
-				return false;
+				if($action == 'ddelete')
+				{
+					if($this->trashed())
+					{
+						$this->forceDelete();
+						$this->log($action);
+						zbase_db_transaction_commit();
+						zbase_cache_flush([$this->getTable()]);
+						$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was removed from database!', ['%title%' => $this->title, '%id%' => $this->id()]);
+						return true;
+					}
+					$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
+					return false;
+				}
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
@@ -658,12 +753,18 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	 */
 	public static function seeder($max = 15)
 	{
-		for ($x = 0; $x <= $max; $x++)
+		if(property_exists(__CLASS__, 'maxSeed'))
 		{
-			$data = static::fakeValue();
-			echo "\n ----- " . static::$nodeNamePrefix . ' - ' . $data['title'] . ' - ' . $x;
-			$model = zbase_entity(static::$nodeNamePrefix, [], $x);
-			$model->createNode($data)->save();
+			$max = static::$maxSeed;
+		}
+		if(!empty($max))
+		{
+			for ($x = 0; $x <= $max; $x++)
+			{
+				$data = static::fakeValue();
+				$model = zbase_entity(static::$nodeNamePrefix, [], $x);
+				$model->createNode($data)->save();
+			}
 		}
 	}
 

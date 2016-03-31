@@ -35,7 +35,6 @@ trait Node
 		return $this->node_id;
 	}
 
-
 	public function alphaId()
 	{
 		return $this->alpha_id;
@@ -64,7 +63,17 @@ trait Node
 	{
 		if(!empty($this->node_id) && empty($this->alpha_id) && !empty($this->alphable))
 		{
-			$this->alpha_id = zbase_generate_hash($this->node_id, $this->entityName);
+			$alphaId = zbase_generate_hash([$this->node_id, time()], $this->entityName);
+			$rowByAlphaId = $this->repository()->byAlphaId($alphaId);
+			if(!empty($rowByAlphaId))
+			{
+				$i = 1;
+				while (!empty($this->repository()->byAlphaId($alphaId)))
+				{
+					$alphaId = zbase_generate_hash([$this->node_id, time(), $i++], $this->entityName);
+				}
+			}
+			$this->alpha_id = $alphaId;
 			$this->save();
 		}
 	}
@@ -117,11 +126,11 @@ trait Node
 		if(!empty($this->sluggable))
 		{
 			$slug = $this->createSlug($value);
-			$rowsBySlug = $this->fetchBySlug($slug)->count();
+			$rowsBySlug = $this->repository()->bySlug($slug);
 			if(!empty($rowsBySlug))
 			{
 				$i = 1;
-				while ($this->fetchBySlug($slug)->count() > 0)
+				while (!empty($this->repository()->bySlug($slug)))
 				{
 					$slug = $slug . '-' . $i++;
 				}
@@ -132,16 +141,6 @@ trait Node
 		{
 			$this->attributes['slug'] = null;
 		}
-	}
-
-	/**
-	 * Fetch a Row By Slug
-	 * @param string $slug
-	 * @return Collection[]
-	 */
-	public function fetchBySlug($slug)
-	{
-		return $this->repository()->by('slug', $slug);
 	}
 
 	/**

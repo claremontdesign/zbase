@@ -169,5 +169,9 @@ return [
 				]
 			]
 		],
+		'messages' => [
+			'enable' => true,
+			'model' => Zbase\Entity\__FRAMEWORK__\Message\Message::class
+		],
 	],
 ];

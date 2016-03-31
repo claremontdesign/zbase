@@ -28,6 +28,12 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	protected $entityName = 'node_category';
 
 	/**
+	 * Is Node Selected
+	 * @var boolean
+	 */
+	protected $selected = false;
+
+	/**
 	 * The Node Name Prefix
 	 * @var string
 	 */
@@ -41,6 +47,11 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		});
 	}
 
+	public function title()
+	{
+		return $this->title;
+	}
+
 	/**
 	 * Return the ID
 	 * @return integer
@@ -51,12 +62,42 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	}
 
 	/**
+	 * Return Slug
+	 * @return string
+	 */
+	public function slug()
+	{
+		return $this->slug;
+	}
+
+	/**
 	 * Return the Root Node
 	 * @return
 	 */
 	public function getRoot()
 	{
 		return self::root();
+	}
+
+	/**
+	 *
+	 * @param boolean $flag
+	 * @return \Zbase\Entity\Laravel\Node\Category
+	 */
+	public function setSelected($flag)
+	{
+		$this->attributes['selected'] = $flag;
+		//$this->selected = $flag;
+		return $this;
+	}
+
+	/**
+	 *
+	 * @return boolean
+	 */
+	public function isSelected()
+	{
+		return $this->attributes['selected'];
 	}
 
 	/**
@@ -267,7 +308,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	{
 		if(!empty($this->category_id) && empty($this->alpha_id) && !empty($this->alphable))
 		{
-			$this->alpha_id = zbase_generate_hash($this->category_id, $this->entityName);
+			$this->alpha_id = zbase_generate_hash([$this->category_id, time()], $this->entityName);
 			$this->save();
 		}
 	}

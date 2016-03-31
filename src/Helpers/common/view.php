@@ -841,6 +841,15 @@ function zbase_view_page_details($config)
 		{
 			zbase_view_breadcrumb($config['page']['breadcrumbs']);
 		}
+		$shortUrl = '';
+		if(!empty($config['page']['shortUrl']))
+		{
+			$shortUrl = $config['page']['shortUrl'];
+		}
+		if(!empty($config['page']['canonical']))
+		{
+			zbase_view_canonicalUrl($config['page']['canonical'], $shortUrl);
+		}
 	}
 	if(!empty($meta))
 	{

@@ -57,11 +57,24 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	protected $_action = null;
 
 	/**
+	 * The Task
+	 * @var string
+	 */
+	protected $_task = null;
+
+	/**
 	 * The Entity task add|update|delete|restore|ddelete|row|rows
 	 * @var string
 	 */
 	protected $_entityTask = null;
 	protected $_entity = null;
+
+	/**
+	 * ChildEntity when browsing a parent or parent category
+	 * @see isNodeCategoryBrowsing
+	 * @var
+	 */
+	protected $_childEntity = null;
 
 	/**
 	 * Flag to check if URL has a request
@@ -74,6 +87,12 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	 * @var EntityInterface
 	 */
 	protected $_entityObject = null;
+
+	/**
+	 * Flag that Entity given was default
+	 * @var boolean
+	 */
+	protected $_entityIsDefault = false;
 
 	/**
 	 * The Module
@@ -113,6 +132,51 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	public function getModule()
 	{
 		return $this->_module;
+	}
+
+	/**
+	 * SEt the Action
+	 * @param string $action
+	 * @return \Zbase\Widgets\Widget
+	 */
+	public function setAction($action)
+	{
+		$this->_action = $action;
+		return $this;
+	}
+
+	/**
+	 * Return the Action
+	 * @return string
+	 */
+	public function getAction()
+	{
+		return $this->_action;
+	}
+
+	/**
+	 * SEt the Task
+	 * @param string $task
+	 * @return \Zbase\Widgets\Widget
+	 */
+	public function setTask($task)
+	{
+		$this->_task = $task;
+		return $this;
+	}
+
+	/**
+	 * Return the TAsk
+	 * @return string
+	 */
+	public function getTask()
+	{
+		$routeTask = zbase_route_input('task', null);
+		if(!empty($routeTask) && empty($this->_task))
+		{
+			$this->setTask($routeTask);
+		}
+		return $this->_task;
 	}
 
 	/**
@@ -163,6 +227,15 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
+	 * Check if we are filtering for the current user
+	 * @return boolean
+	 */
+	public function isCurrentUser()
+	{
+		return $this->_v('entity.filter.currentUser', false);
+	}
+
+	/**
 	 * Node Typoe Entity
 	 * @return type
 	 */
@@ -181,6 +254,26 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
+	 * Check if we are on the Category and browsing items
+	 *  When browsing items, we opened an item from that category,
+	 *  we keep the Category URL and prepend the Item AlphaID: /nodes/category-slug/node-alpha-id
+	 * @return boolean
+	 */
+	public function isNodeCategoryBrowsing()
+	{
+		return $this->_v('entity.node.category.browse', false) && $this->_v('entity.repo.item', false);
+	}
+
+	/**
+	 * Return the Child Entity
+	 * @return Node
+	 */
+	public function getChildEntity()
+	{
+		return $this->_childEntity;
+	}
+
+	/**
 	 * The Node Prefix
 	 * @return string
 	 */
@@ -195,7 +288,11 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	 */
 	public function checkUrlRequest()
 	{
-		return $this->_urlHasRequest && $this->_entity instanceof \Zbase\Interfaces\EntityInterface;
+		if(!empty($this->_urlHasRequest))
+		{
+			return $this->_entity instanceof \Zbase\Interfaces\EntityInterface;
+		}
+		return true;
 	}
 
 	/**
@@ -229,10 +326,21 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 				}
 				if(is_array($repoById))
 				{
-					$this->_urlHasRequest = true;
 					if(!empty($repoById['route']))
 					{
 						$id = zbase_route_input($repoById['route']);
+					}
+					if($this->isNodeCategoryBrowsing())
+					{
+						$childAlphaId = zbase_route_input('id');
+						if(!empty($childAlphaId))
+						{
+							$this->_childEntity = zbase_entity($this->nodePrefix(), [], true)->repository()->byAlphaId($childAlphaId);
+							if(!$this->_childEntity instanceof \Zbase\Entity\Laravel\Node\Node)
+							{
+								return zbase_abort(404);
+							}
+						}
 					}
 					if(!empty($repoById['request']) && zbase_is_post() == 'post')
 					{
@@ -240,27 +348,58 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 					}
 					if(!empty($id))
 					{
-						if($entity->hasSoftDelete() && !$this->isPublic())
+						$filters = [];
+						$this->_urlHasRequest = true;
+						if($this->isNode())
 						{
+							if($this->isCurrentUser())
+							{
+								$filters['user'] = ['eq' => ['field' => 'user_id', 'value' => zbase_auth_user()->id()]];
+							}
+							if($this->isPublic())
+							{
+								$filters['status'] = ['eq' => ['field' => 'status', 'value' => 2]];
+							}
 							if(!empty($byAlpha))
 							{
-								return $this->_entity = $entity->repository()->withTrashed()->byAlphaId($id);
+								$filters['alpha'] = ['eq' => ['field' => 'alpha_id', 'value' => $id]];
+								// return $this->_entity = $entity->repository()->byAlphaId($id);
 							}
 							if(!empty($bySlug))
 							{
-								return $this->_entity = $entity->repository()->withTrashed()->bySlug($id);
+								$filters['slug'] = ['eq' => ['field' => 'slug', 'value' => $id]];
+								// return $this->_entity = $entity->repository()->bySlug($id);
 							}
-							return $this->_entity = $entity->repository()->withTrashed()->byId($id);
+							if($entity->hasSoftDelete() && $this->isCurrentUser())
+							{
+								return $this->_entity = $entity->repository()->withTrashed()->all(['*'], $filters)->first();
+							}
+							else
+							{
+								return $this->_entity = $entity->repository()->all(['*'], $filters)->first();
+							}
 						}
-						if(!empty($byAlpha))
-						{
-							return $this->_entity = $entity->repository()->byAlphaId($id);
-						}
-						if(!empty($bySlug))
-						{
-							return $this->_entity = $entity->repository()->bySlug($id);
-						}
-						return $this->_entity = $entity->repository()->byId($id);
+//						if($entity->hasSoftDelete() && !$this->isPublic())
+//						{
+//							if(!empty($byAlpha))
+//							{
+//								return $this->_entity = $entity->repository()->withTrashed()->byAlphaId($id);
+//							}
+//							if(!empty($bySlug))
+//							{
+//								return $this->_entity = $entity->repository()->withTrashed()->bySlug($id);
+//							}
+//							return $this->_entity = $entity->repository()->withTrashed()->byId($id);
+//						}
+//						if(!empty($byAlpha))
+//						{
+//							return $this->_entity = $entity->repository()->byAlphaId($id);
+//						}
+//						if(!empty($bySlug))
+//						{
+//							return $this->_entity = $entity->repository()->bySlug($id);
+//						}
+//						return $this->_entity = $entity->repository()->byId($id);
 					}
 				}
 				$repoMethod = $this->_v('entity.method', null);
@@ -268,6 +407,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 				{
 					return $this->_entity = $this->_entityObject->$repoMethod();
 				}
+				$this->_entityIsDefault = true;
 				return $this->_entity = $this->_entityObject;
 			}
 		}

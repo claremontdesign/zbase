@@ -174,19 +174,6 @@ trait File
 	}
 
 	/**
-	 * Generate and Update Row Alpha ID
-	 * @return void
-	 */
-	protected function _updateAlphaId()
-	{
-		if(!empty($this->node_id) && empty($this->alpha_id) && !empty($this->alphable))
-		{
-			$this->alpha_id = zbase_generate_hash($this->node_id, $this->entityName);
-			$this->save();
-		}
-	}
-
-	/**
 	 * Set the Node Attributes
 	 * @param array $data
 	 */
@@ -209,7 +196,6 @@ trait File
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="SLUG">
-
 	// </editor-fold>
 
 	/**

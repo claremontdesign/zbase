@@ -6,33 +6,14 @@
  * https://github.com/jonmiles/bootstrap-treeview
  */
 $rows = $ui->getRows();
+$treeRows = $ui->getTree();
 $htmls = [];
 if(empty($rows))
 {
 	return;
 }
 $form = $ui->form();
-
-function treeview_row($row)
-{
-	$newRow = [];
-	$newRow['text'] = $row['title'];
-	$newRow['id'] = $row['category_id'];
-	if(!empty($row['selected']))
-	{
-		$newRow['state']['selected'] = true;
-	}
-	$children = !empty($row['children']) ? $row['children'] : false;
-	if(!empty($children))
-	{
-		foreach ($children as $child)
-		{
-			$newRow['nodes'][] = treeview_row($child);
-		}
-	}
-	return $newRow;
-}
-
+$selectedRows = $ui->selectedRows();
 zbase_view_plugin_load('bootstrap-treeview');
 $uiId = $ui->id();
 $attributes = $ui->wrapperAttributes();
@@ -42,22 +23,22 @@ if(!empty($actionCreateButton))
 {
 	$actionCreateButton->setAttribute('size', 'default');
 }
-if(!empty($rows))
+if(!empty($selectedRows))
 {
-	$newRows = [];
-	$selectedNodes = zbase_form_old('category');
-	foreach ($rows->toArray() as $row)
+	foreach ($selectedRows as $sel)
 	{
-		if(!empty($selectedNodes) && in_array($row['category_id'], $selectedNodes))
+		if(is_object($sel))
 		{
-			$row['selected'] = true;
-			$htmls[] = '<input type="hidden" value="' . $row['category_id'] . '" id="' . $uiId . 'Category' . $row['category_id'] . '" name="category[]">';
+			$htmls[] = '<input type="hidden" value="' . $sel->id() . '" id="' . $uiId . 'Category' . $sel->id() . '" name="category[]">';
 		}
-		$newRows[] = treeview_row($row);
+		else
+		{
+			$htmls[] = '<input type="hidden" value="' . $sel . '" id="' . $uiId . 'Category' . $sel . '" name="category[]">';
+		}
 	}
 }
 $treeViewOptions = [
-	'data: ' . json_encode($newRows)
+	'data: ' . json_encode($treeRows)
 ];
 if($form instanceof \Zbase\Widgets\Type\FormInterface)
 {
