@@ -122,6 +122,10 @@ function zbase_in_back()
  */
 function zbase_is_maintenance()
 {
+	if(file_exists(zbase_path() . 'var/maintenance'))
+	{
+		return true;
+	}
 	return env('ZBASE_MAINTENANCE', false);
 }
 
@@ -265,7 +269,7 @@ function zbase_object_factory($className, $config = [])
  */
 function zbase_abort($code, $message = null, $headers = [])
 {
-	 return abort($code, $message);
+	return abort($code, $message);
 }
 
 /**
