@@ -142,6 +142,26 @@ class Node extends BaseEntity implements WidgetEntityInterface
 
 	// <editor-fold defaultstate="collapsed" desc="Messages">
 	/**
+	 * Set Multiple messages
+	 * @param array $data
+	 */
+	public function setMessages($data)
+	{
+		if(!empty($data['messages']))
+		{
+			foreach ($data['messages'] as $msg)
+			{
+				$message = !empty($msg['message']) ? $msg['message'] : null;
+				$subject = !empty($msg['subject']) ? $msg['subject'] : null;
+				$sender = !empty($msg['sender']) ? $msg['sender'] : null;
+				$recipient = !empty($msg['recipient']) ? $msg['recipient'] : null;
+				$options = !empty($msg['options']) ? $msg['options'] : null;
+				$this->addMessage($message, $subject, $sender, $recipient, $options);
+			}
+		}
+	}
+
+	/**
 	 * Add a Message
 	 * @param string $message
 	 * @param int|User $sender
@@ -153,33 +173,9 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	{
 		try
 		{
-			$messageObject = zbase_entity('messages');
-			$messageObject->subject = $subject;
-			$messageObject->content = $message;
-			$messageObject->read_status = 0;
-			$messageObject->trash_status = 0;
-			$messageObject->reply_status = 0;
-			$messageObject->node_id = $this->id();
-			$messageObject->node_prefix = static::$nodeNamePrefix;
-			if(!$sender instanceof \Zbase\Entity\Laravel\User\User && is_numeric($sender))
-			{
-				$sender = zbase_user_byid($sender);
-			}
-			if($sender instanceof \Zbase\Entity\Laravel\User\User)
-			{
-				$messageObject->sender_id = $sender->id();
-			}
-			if(!$recipient instanceof \Zbase\Entity\Laravel\User\User && is_numeric($recipient))
-			{
-				$recipient = zbase_user_byid($recipient);
-			}
-			if($recipient instanceof \Zbase\Entity\Laravel\User\User)
-			{
-				$messageObject->user_id = $recipient->id();
-			}
-			$messageObject->status = 0;
-			$messageObject->save();
-			return $messageObject;
+			$options['node_id'] = $this->id();
+			$options['node_prefix'] = static::$nodeNamePrefix;
+			return zbase_entity('messages', [], true)->newMessage($message, $subject, $sender, $recipient, $options);
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
 			if(zbase_is_dev())
@@ -228,15 +224,31 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			$folder = zbase_storage_path() . '/' . zbase_tag() . '/' . static::$nodeNamePrefix . '/' . $this->id() . '/';
 			zbase_directory_check($folder, true);
 			$nodeFileObject = zbase_entity(static::$nodeNamePrefix . '_files', [], true);
+			$nodeFiles = $this->files()->get();
 			if(preg_match('/http\:/', $index) || preg_match('/https\:/', $index))
 			{
 				// File given is a URL
-				$filename = zbase_file_name_from_file(basename($index), time(), true);
-				$uploadedFile = zbase_file_download_from_url($index, $folder . $filename);
+				if($nodeFileObject->isUrlToFile())
+				{
+					$filename = zbase_file_name_from_file(basename($index), time(), true);
+					$uploadedFile = zbase_file_download_from_url($index, $folder . $filename);
+				}
+				else
+				{
+					$nodeFiles = $this->files()->get();
+					$nodeFileObject->is_primary = empty($nodeFiles) ? 1 : 0;
+					$nodeFileObject->status = 2;
+					$nodeFileObject->mimetype = null;
+					$nodeFileObject->size = null;
+					$nodeFileObject->filename = null;
+					$nodeFileObject->url = $index;
+					$nodeFileObject->save();
+					$this->files()->save($nodeFileObject);
+					return $nodeFileObject;
+				}
 			}
 			if(zbase_file_exists($index))
 			{
-				// File given is a URL
 				$uploadedFile = $index;
 				$filename = basename($index);
 			}
@@ -247,7 +259,6 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			}
 			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
 			{
-				$nodeFiles = $this->files()->get();
 				$nodeFileObject->is_primary = empty($nodeFiles) ? 1 : 0;
 				$nodeFileObject->status = 2;
 				$nodeFileObject->mimetype = zbase_file_mime_type($uploadedFile);
@@ -255,6 +266,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 				$nodeFileObject->filename = basename($uploadedFile);
 				$nodeFileObject->save();
 				$this->files()->save($nodeFileObject);
+				return $nodeFileObject;
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
@@ -314,6 +326,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		$this->status = 2;
 		$this->save();
 		$this->setNodeCategories($data);
+		$this->setMessages($data);
 		if(!empty($data['file_url']))
 		{
 			$this->uploadNodeFile($data['file_url']);

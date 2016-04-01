@@ -70,6 +70,11 @@ class HeadMeta implements Interfaces\IdInterface, Interfaces\HtmlInterface, Inte
 	 */
 	public function getContent()
 	{
+		if($this->content instanceof \Closure)
+		{
+			$cont = $this->content;
+			return $cont();
+		}
 		return $this->content;
 	}
 

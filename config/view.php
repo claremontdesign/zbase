@@ -26,18 +26,18 @@ return [
 				'name' => 'author',
 				'content' => 'Dennes B Abing'
 			],
-//			'_token' => [
-//				'type' => \Zbase\Models\View::HEADMETA,
-//				'enable' => true,
-//				'name' => '_token',
-//				'content' => zbase_csrf_token(),
-//			],
-			// <editor-fold defaultstate="collapsed" desc="Jquery">
+			'_token' => [
+				'type' => \Zbase\Models\View::HEADMETA,
+				'enable' => true,
+				'name' => '_token',
+				'content' => function(){return zbase_csrf_token();},
+			],
 			'zbase' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
 				'src' => zbase_path_asset('js/js.js'),
 				'enable' => true
 			],
+			// <editor-fold defaultstate="collapsed" desc="Jquery">
 			'jquery' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
 				'cdn' => '//code.jquery.com/jquery-1.11.0.min.js',
@@ -275,7 +275,7 @@ return [
 		// </editor-fold>
 		],
 		'autoload' => [
-			'plugins' => ['meta-viewport', 'meta-charset', 'meta-http-equiv', 'meta-author']
+			'plugins' => ['meta-viewport', 'meta-charset', 'meta-http-equiv', 'meta-author', 'zbase', '_token']
 		]
 	// </editor-fold>
 	],

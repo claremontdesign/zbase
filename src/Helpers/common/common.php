@@ -122,11 +122,21 @@ function zbase_in_back()
  */
 function zbase_is_maintenance()
 {
-	if(file_exists(zbase_path() . 'var/maintenance'))
+	if(file_exists(zbase_maintenance_file()))
 	{
 		return true;
 	}
 	return env('ZBASE_MAINTENANCE', false);
+}
+
+/**
+ * The file to check if exists.
+ * if exists, we'll raise the maintenance to true
+ * @return string
+ */
+function zbase_maintenance_file()
+{
+	return zbase_storage_path() . 'maintenance';
 }
 
 /**
@@ -263,7 +273,7 @@ function zbase_object_factory($className, $config = [])
  * Application abort
  * 404 - Not found
  * 401 - Unathorized
- * 505 - Error
+ * 503 - Error
  * @param integer $code abort code
  * @param string $message Abort message
  */

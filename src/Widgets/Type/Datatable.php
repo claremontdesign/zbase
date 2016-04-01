@@ -223,6 +223,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 					{
 						$urlFilters = $this->getRequestFilters();
 						$entityObject = $this->entityObject();
+						$selects = ['*'];
 						if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
 						{
 							/**
@@ -246,35 +247,39 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 						}
 						if(!empty($urlFilters))
 						{
-							if(method_exists($entityObject, 'queryJoins'))
-							{
-								$joins = $entityObject->queryJoins($urlFilters, $this->getRequestSorting());
-							}
-							if(method_exists($entityObject, 'querySorting'))
-							{
-								$sorting = $entityObject->querySorting($this->getRequestSorting(), $urlFilters);
-							}
 							if(method_exists($entityObject, 'queryFilters'))
 							{
 								$filters = $entityObject->queryFilters($urlFilters, $this->getRequestSorting());
 							}
-							// dd($joins, $sorting, $filters);
 						}
+						if(method_exists($entityObject, 'querySelects'))
+						{
+							$selects = $entityObject->querySelects($urlFilters);
+						}
+						if(method_exists($entityObject, 'queryJoins'))
+						{
+							$joins = $entityObject->queryJoins($urlFilters, $this->getRequestSorting());
+						}
+						if(method_exists($entityObject, 'querySorting'))
+						{
+							$sorting = $entityObject->querySorting($this->getRequestSorting(), $urlFilters);
+						}
+						// dd($joins, $sorting, $filters);
 					}
 					$debug = zbase_request_query_input($this->id() . '__debug', false);
 					if($this->isPublic())
 					{
-						$this->_rows = $repo->setDebug($debug)->all(['*'], $filters, $sorting, $joins, true);
+						$this->_rows = $repo->setDebug($debug)->all($selects, $filters, $sorting, $joins, true);
 					}
 					else
 					{
 						if($this->_entity->hasSoftDelete())
 						{
-							$this->_rows = $repo->setDebug($debug)->withTrashed()->all(['*'], $filters, $sorting, $joins, true);
+							$this->_rows = $repo->setDebug($debug)->withTrashed()->all($selects, $filters, $sorting, $joins, true);
 						}
 						else
 						{
-							$this->_rows = $repo->setDebug($debug)->all(['*'], $filters, $sorting, $joins, true);
+							$this->_rows = $repo->setDebug($debug)->all($selects, $filters, $sorting, $joins, true);
 						}
 					}
 				}

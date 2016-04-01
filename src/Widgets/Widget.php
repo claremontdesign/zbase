@@ -67,6 +67,11 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	 * @var string
 	 */
 	protected $_entityTask = null;
+
+	/**
+	 * The Entity
+	 * @var EntityInterface
+	 */
 	protected $_entity = null;
 
 	/**
@@ -265,15 +270,6 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
-	 * Return the Child Entity
-	 * @return Node
-	 */
-	public function getChildEntity()
-	{
-		return $this->_childEntity;
-	}
-
-	/**
 	 * The Node Prefix
 	 * @return string
 	 */
@@ -293,6 +289,24 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 			return $this->_entity instanceof \Zbase\Interfaces\EntityInterface;
 		}
 		return true;
+	}
+
+	/**
+	 * Return the Child Entity
+	 * @return Node
+	 */
+	public function getChildEntity()
+	{
+		return $this->_childEntity;
+	}
+
+	/**
+	 * Check if Entity is Needed
+	 * @return string
+	 */
+	public function isEntityNeeded()
+	{
+		return $this->_v('entity.name', false);
 	}
 
 	/**
@@ -363,12 +377,10 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 							if(!empty($byAlpha))
 							{
 								$filters['alpha'] = ['eq' => ['field' => 'alpha_id', 'value' => $id]];
-								// return $this->_entity = $entity->repository()->byAlphaId($id);
 							}
 							if(!empty($bySlug))
 							{
 								$filters['slug'] = ['eq' => ['field' => 'slug', 'value' => $id]];
-								// return $this->_entity = $entity->repository()->bySlug($id);
 							}
 							if($entity->hasSoftDelete() && $this->isCurrentUser())
 							{
@@ -376,30 +388,9 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 							}
 							else
 							{
-								return $this->_entity = $entity->repository()->all(['*'], $filters)->first();
+								return $this->_entity = $entity->repository()->setDebug(false)->all(['*'], $filters)->first();
 							}
 						}
-//						if($entity->hasSoftDelete() && !$this->isPublic())
-//						{
-//							if(!empty($byAlpha))
-//							{
-//								return $this->_entity = $entity->repository()->withTrashed()->byAlphaId($id);
-//							}
-//							if(!empty($bySlug))
-//							{
-//								return $this->_entity = $entity->repository()->withTrashed()->bySlug($id);
-//							}
-//							return $this->_entity = $entity->repository()->withTrashed()->byId($id);
-//						}
-//						if(!empty($byAlpha))
-//						{
-//							return $this->_entity = $entity->repository()->byAlphaId($id);
-//						}
-//						if(!empty($bySlug))
-//						{
-//							return $this->_entity = $entity->repository()->bySlug($id);
-//						}
-//						return $this->_entity = $entity->repository()->byId($id);
 					}
 				}
 				$repoMethod = $this->_v('entity.method', null);

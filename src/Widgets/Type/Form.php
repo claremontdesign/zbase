@@ -589,7 +589,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function renderSubmitButton()
 	{
-		if(empty($this->_entityIsDefault) && $this->_entity->trashed())
+		if(empty($this->_entityIsDefault) && $this->_entity->hasSoftDelete() && $this->_entity->trashed())
 		{
 			if($this->_action == 'restore')
 			{
@@ -628,7 +628,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	public function wrapperAttributes()
 	{
 		$attr = parent::wrapperAttributes();
-		if(($this->_action == 'delete' && strtolower(zbase_request_method()) != 'post') || ($this->isNode() && empty($this->_entityIsDefault) && $this->_entity->trashed()))
+		if(($this->_action == 'delete' && strtolower(zbase_request_method()) != 'post') || ($this->isNode() && $this->_entity->hasSoftDelete() && empty($this->_entityIsDefault) && $this->_entity->trashed()))
 		{
 			$attr['class'][] = 'action-delete';
 			$attr['style'][] = 'border:2px solid red; padding:20px;';

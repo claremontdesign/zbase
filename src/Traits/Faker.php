@@ -43,6 +43,15 @@ trait Faker
 	}
 
 	/**
+	 * Return the Faker
+	 * @return type
+	 */
+	public static function getFaker()
+	{
+		return \Faker\Factory::create();
+	}
+
+	/**
 	 *
 	 * @param type $type
 	 * @param type $subType
@@ -73,7 +82,7 @@ trait Faker
 					case 'email':
 						return $faker->email();
 					case 'alphaid':
-						return alphaID(time());
+						return zbase_generate_hash([rand(1, 1000), time(), rand(1, 1000)], $faker->email());
 					case 'companyname':
 						return $faker->company();
 					case 'telephone':

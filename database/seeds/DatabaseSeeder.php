@@ -227,7 +227,7 @@ class DatabaseSeeder extends Seeder
 		$insertedId = \DB::table($tableName)->insertGetId($f);
 		if(!empty($alphaId))
 		{
-			\DB::table($tableName)->where($primaryKey, $insertedId)->update(['alpha_id' => alphaId($insertedId, false, true, $tableName)]);
+			\DB::table($tableName)->where($primaryKey, $insertedId)->update(['alpha_id' => zbase_generate_hash([rand(1, 1000), time(), rand(1, 1000)], $entityName)]);
 		}
 		if(!empty($primaryKey))
 		{

@@ -479,6 +479,7 @@ function zbase_view_javascripts_render()
  */
 function zbase_view_script_add($id, $script, $onLoad = true, $cond = null, $attributes = [])
 {
+	$script = str_replace(array('<script type="text/javascript">', '</script>'), '', $script);
 	return zbase()->view()->add(\Zbase\Models\View::SCRIPT, [
 				'id' => $id,
 				'script' => $script,

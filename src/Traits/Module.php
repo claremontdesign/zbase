@@ -62,7 +62,16 @@ trait Module
 		 * Check for widgets
 		 */
 		$action = $this->getRouteParameter('action', 'index');
+		$isAjax = zbase_request_is_ajax();
+		if($isAjax)
+		{
+			$action = 'json-' . $action;
+		}
 		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($action);
+		if(empty($widgets))
+		{
+			return zbase_abort(404);
+		}
 		foreach ($widgets as $widget)
 		{
 			if($widget instanceof \Zbase\Widgets\ControllerInterface)

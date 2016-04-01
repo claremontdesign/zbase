@@ -317,6 +317,15 @@ trait File
 			'index' => true,
 			'comment' => 'Filename'
 		];
+		$columns['url'] = [
+			'hidden' => false,
+			'length' => 255,
+			'fillable' => false,
+			'nullable' => true,
+			'type' => 'string',
+			'index' => true,
+			'comment' => 'URL'
+		];
 		$columns['filetype'] = [
 			'hidden' => false,
 			'length' => 32,

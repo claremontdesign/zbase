@@ -66,7 +66,18 @@ function zbase_event_checkbox(selector, event, cb)
 {
 	$(selector).on(event, cb);
 }
+function dd(v){console.log(v);}
+/**
+ * Post
+ * @param string url
+ * @param object data
+ * @param object opt
+ * @returns void
+ */
+function zbase_ajax_post(url, data, opt)
+{
 
+}
 
 // ZBASE COMMONS END
 

@@ -40,6 +40,12 @@ abstract class Ui
 	protected $_prepared = false;
 
 	/**
+	 * Has been rendered
+	 * @var boolean
+	 */
+	protected $_rendered = false;
+
+	/**
 	 * is Enabled?
 	 * @var boolean
 	 */
@@ -239,7 +245,14 @@ abstract class Ui
 	 */
 	protected function _post()
 	{
-
+		/**
+		 * SEnd the UI to a placeholder
+		 */
+		$placeholder = $this->_v('view.placeholder', null);
+		if(!empty($placeholder))
+		{
+			zbase_view_placeholder_add($placeholder, $this->id(), $this->render());
+		}
 	}
 
 	/**
@@ -528,27 +541,26 @@ abstract class Ui
 	public function __toString()
 	{
 		$this->prepare();
-//		$this->_viewParams['htmlPre'] = $this->htmlPreContent();
-//		$this->_viewParams['htmlPost'] = $this->htmlPostContent();
-//		$this->_viewParams['htmlPrepend'] = $this->htmlPrependContent();
-//		$this->_viewParams['htmlAppend'] = $this->htmlAppenContent();
-//		if(!empty($this->_viewString))
-//		{
-//			return strtr($this->_viewString, array(
-//				'{wrapperAttributes}' => $this->wrapperAttributes(),
-//				'{content}' => $this->renderContents()
-//			));
-//		}
-
-		if(!is_null($this->_viewFile))
+		try
 		{
-			$this->_viewParams['ui'] = $this;
-			$str = $this->htmlPreContent();
-			$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams())->__toString();
-			$str .= $this->htmlPostContent();
-			return $str;
+			if(!is_null($this->_viewFile) && empty($this->_rendered))
+			{
+				$this->_viewParams['ui'] = $this;
+				$str = $this->htmlPreContent();
+				$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams())->__toString();
+				$str .= $this->htmlPostContent();
+				$this->_rendered = true;
+				return $str;
+			}
+			return '';
+		} catch (\Exception $e)
+		{
+			if(zbase_is_dev())
+			{
+				dd($e);
+			}
+			zbase_abort(500);
 		}
-		return '';
 	}
 
 	public function render()

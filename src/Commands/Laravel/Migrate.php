@@ -50,8 +50,7 @@ class Migrate extends Command
 	 */
 	public function handle()
 	{
-		ob_implicit_flush(1);
-		file_put_contents(zbase_path() . 'var/maintenance', 1);
+		file_put_contents(zbase_maintenance_file(), 1);
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
 		$packages = zbase()->packages();
 		if(!empty($packages))
@@ -99,9 +98,9 @@ class Migrate extends Command
 				}
 			}
 		}
-		if(file_exists(zbase_path() . 'var/maintenance'))
+		if(file_exists(zbase_maintenance_file()))
 		{
-			unlink(zbase_path() . 'var/maintenance');
+			unlink(zbase_maintenance_file());
 		}
 	}
 

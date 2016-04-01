@@ -113,7 +113,7 @@ class View extends Widgets\Widget implements Widgets\WidgetInterface, Widgets\Co
 			$action = 'create';
 		}
 		$this->_action = $action;
-		if(empty($this->_entity()))
+		if(empty($this->_entity()) && $this->isEntityNeeded())
 		{
 			return zbase_abort(404);
 		}

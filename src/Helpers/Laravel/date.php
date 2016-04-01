@@ -1,4 +1,5 @@
 <?php
+
 date_default_timezone_set(zbase_date_default_timezone());
 /**
  * Dx
@@ -21,7 +22,7 @@ define('DATE_FORMAT_DB', 'Y-m-d H:i:s');
  */
 function zbase_date_default_timezone()
 {
-	return env('ZBASE_TIMEZONE','UTC');
+	return env('ZBASE_TIMEZONE', 'UTC');
 }
 
 /**
@@ -77,4 +78,24 @@ function zbase_date_before($first, $second)
 function zbase_date_from_format($format, $time, $tz = null)
 {
 	return \Carbon\Carbon::createFromFormat($format, $time, $tz);
+}
+
+/**
+ * Format Date from dB
+ * @param string $time
+ * @return \Datetime
+ */
+function zbase_date_from_db($time)
+{
+	return zbase_date_from_format(DATE_FORMAT_DB, $time);
+}
+
+/**
+ * Human Readable DAte
+ * Difference for Humans
+ * @return string
+ */
+function zbase_date_human($time, $format = DATE_FORMAT_DB)
+{
+	return zbase_date_from_format($format, $time)->diffForHumans();
 }

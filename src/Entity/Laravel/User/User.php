@@ -240,7 +240,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		if(!empty($role))
 		{
 			$model->roles()->save($role);
-			$model->alpha_id = alphaID($model->user_id, false, strlen($model->getKeyName()), $model->getTable());
+			$model->alpha_id = zbase_generate_hash([$model->user_id, rand(1, 1000), time()], $this->entityName);
 			$model->save();
 			if(!empty($attributesProfile))
 			{
@@ -708,6 +708,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+				'alpha_id' => zbase_generate_hash([rand(1, 1000), time(), rand(1, 1000)], 'sudo'),
 				'deleted_at' => null
 			],
 			[
@@ -721,6 +722,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+				'alpha_id' => zbase_generate_hash([rand(1, 1000), time(), rand(1, 1000)], 'admin'),
 				'deleted_at' => null
 			],
 			[
@@ -734,6 +736,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+				'alpha_id' => zbase_generate_hash([rand(1, 1000), time(), rand(1, 1000)], 'user'),
 				'deleted_at' => null
 			],
 			[
@@ -747,6 +750,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+				'alpha_id' => zbase_generate_hash([rand(1, 1000), time(), rand(1, 1000)], 'moderator'),
 				'deleted_at' => null
 			]
 		];

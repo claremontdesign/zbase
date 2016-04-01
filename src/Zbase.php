@@ -87,6 +87,12 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	protected $view = null;
 
 	/**
+	 * Json
+	 * @var Json
+	 */
+	protected $json = [];
+
+	/**
 	 *
 	 * @var Models\Ui
 	 */
@@ -120,6 +126,21 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			$this->mobile = new \Zbase\Models\Mobile;
 		}
 		return $this->mobile;
+	}
+
+	/**
+	 * Return the JSON View Model
+	 * @return type
+	 */
+	public function json()
+	{
+		if(!$this->json instanceof Models\Json)
+		{
+			$className = zbase_model_name('view', null, '\Zbase\Models\Json');
+			$this->json = new $className;
+			$this->json->start();
+		}
+		return $this->json;
 	}
 
 	/**

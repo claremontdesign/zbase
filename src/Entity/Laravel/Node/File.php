@@ -30,6 +30,12 @@ class File extends BaseEntity implements WidgetEntityInterface
 	protected $entityName = 'node_files';
 
 	/**
+	 * If URL was given, what to do?
+	 * @var boolean
+	 */
+	protected $urlToFile = false;
+
+	/**
 	 * The Node Name Prefix
 	 * @var string
 	 */
@@ -54,7 +60,6 @@ class File extends BaseEntity implements WidgetEntityInterface
 		return $query->where('status', '=', 2);
 	}
 
-
 	protected static function boot()
 	{
 		parent::boot();
@@ -62,7 +67,6 @@ class File extends BaseEntity implements WidgetEntityInterface
 			$node->_updateAlphaId();
 		});
 	}
-
 
 	/**
 	 * Generate and Update Row Alpha ID
@@ -154,6 +158,25 @@ class File extends BaseEntity implements WidgetEntityInterface
 	}
 
 	/**
+	 * Check if img is a URL String
+	 * @return string
+	 */
+	public function isUrl()
+	{
+		return !empty($this->url);
+	}
+
+	/**
+	 * What to do when we receive a URL,
+	 * save to file?
+	 * @return boolean
+	 */
+	public function isUrlToFile()
+	{
+		return $this->urlToFile;
+	}
+
+	/**
 	 * Return the Folder Path
 	 * @return string
 	 */
@@ -177,11 +200,9 @@ class File extends BaseEntity implements WidgetEntityInterface
 	 */
 	public function serveImage($width, $height = null, $quality = null, $download = false)
 	{
-		$folder = $this->folder();
-		$filename = $this->filename;
-		$path = $folder . $filename;
-		if(file_exists($path))
+		if($this->isUrl())
 		{
+			$path = $this->url;
 			$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
 						if(empty($width))
 						{
@@ -206,8 +227,43 @@ class File extends BaseEntity implements WidgetEntityInterface
 						});
 						}
 						return $image->make($path)->resize($width, $height);
-		});
-			return \Response::make($cachedImage, 200, array('Content-Type' => $this->mimetype));
+				});
+			return \Response::make($cachedImage, 200, array('Content-Type' => 'image/png'));
+		}
+		else
+		{
+			$folder = $this->folder();
+			$filename = $this->filename;
+			$path = $folder . $filename;
+			if(file_exists($path))
+			{
+				$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
+							if(empty($width))
+							{
+								$size = getimagesize($path);
+								$width = $size[0];
+								$height = $size[1];
+							}
+							if(!empty($width) && empty($height))
+							{
+								return $image->make($path)->resize($width, null, function($constraint)
+						{
+											$constraint->upsize();
+											$constraint->aspectRatio();
+						});
+							}
+							if(empty($width) && !empty($height))
+							{
+								return $image->make($path)->resize(null, $height, function($constraint)
+						{
+											$constraint->upsize();
+											$constraint->aspectRatio();
+						});
+							}
+							return $image->make($path)->resize($width, $height);
+				});
+				return \Response::make($cachedImage, 200, array('Content-Type' => $this->mimetype));
+			}
 		}
 		return false;
 	}
@@ -224,6 +280,40 @@ class File extends BaseEntity implements WidgetEntityInterface
 	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
 	{
 		return $this->nodeWidgetController($method, $action, $data, $widget);
+	}
+
+	/**
+	 * Return fake images
+	 * @param integer $max
+	 * @return array
+	 */
+	public static function fakeImages($max = 1, $options = [])
+	{
+		$files = [];
+		if(!empty($options['tags']))
+		{
+			$tags = $options['tags'];
+			$images = \Zbase\Utility\Service\Flickr::findByTags($tags[rand(0, (count($tags) - 1))], $max);
+			if(!empty($images))
+			{
+				foreach ($images as $img)
+				{
+					if(!empty($img['url']))
+					{
+						$files[] = $img['url'];
+					}
+				}
+			}
+		}
+		else
+		{
+			for ($x = 0; $x <= $max; $x++)
+			{
+				// $files[] = 'http://api.adorable.io/avatars/285/' . $x . '.png';
+				$files[] = 'https://placeimg.com/640/480/tech.png';
+			}
+		}
+		return $files;
 	}
 
 	/**

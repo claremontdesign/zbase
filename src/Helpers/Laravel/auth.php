@@ -14,6 +14,7 @@
  * @package Zbase/Laravel/Helpers
  *
  */
+
 /**
  * Return the Current Authed User
  * @return \
@@ -40,4 +41,15 @@ function zbase_auth_has()
 function zbase_user_byid($userId)
 {
 	return zbase_entity('user')->repository()->byId($userId);
+}
+
+/**
+ * Search user by ATtribute
+ * @param string $attr
+ * @param string $value
+ * @return \Zbase\Entity\Laravel\User|null
+ */
+function zbase_user_by($attr, $value)
+{
+	return zbase_entity('user')->repository()->by($attr, $value)->first();
 }

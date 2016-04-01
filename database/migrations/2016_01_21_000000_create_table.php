@@ -1,4 +1,5 @@
 <?php
+ini_set('memory_limit', '1024M');
 /**
  * Zbase
  *
@@ -36,14 +37,13 @@ class CreateTable extends Migration
 		$migrateCommand = app('command.migrate');
 		$this->down();
 		//$migrator->note();
-		echo " - Migrating\n";
+		$migrateCommand->info(" - Migrating");
 		$dbTblPrefix = zbase_db_prefix();
 		$entities = zbase_config_get('entity', []);
 		if(!empty($entities))
 		{
 			foreach ($entities as $entity)
 			{
-				ob_start();
 				$enable = zbase_data_get($entity, 'enable', false);
 				if(empty($enable))
 				{
@@ -319,7 +319,6 @@ class CreateTable extends Migration
 					\DB::statement("ALTER TABLE `{$tableName}` COMMENT='{$description}'");
 					// DB::select(DB::raw("ALTER TABLE `{$tableName}` COMMENT='{$description}'"));
 				}
-				ob_flush();
 			}
 		}
 	}
@@ -331,10 +330,10 @@ class CreateTable extends Migration
 	 */
 	public function down()
 	{
-		$migrateCommand = app('command.migrate');
+		// $migrateCommand = app('command.migrate');
 		if(!zbase_is_dev())
 		{
-			echo 'You are in PRODUCTION Mode. Cannot drop tables.';
+			// $migrateCommand->info('You are in PRODUCTION Mode. Cannot drop tables.');
 			return false;
 		}
 		//echo " - Dropping\n";
@@ -345,7 +344,6 @@ class CreateTable extends Migration
 			\DB::statement('SET FOREIGN_KEY_CHECKS = 0');
 			foreach ($entities as $entity)
 			{
-				ob_start();
 				$enable = zbase_data_get($entity, 'enable', false);
 				$model = zbase_data_get($entity, 'model', null);
 				if(is_null($model))
@@ -367,7 +365,6 @@ class CreateTable extends Migration
 						//$migrateCommand->info(' -- Dropped ' . $tableName);
 					}
 				}
-				ob_flush();
 			}
 			\DB::statement('SET FOREIGN_KEY_CHECKS = 1');
 		}
