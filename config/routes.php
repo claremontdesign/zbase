@@ -232,7 +232,7 @@ return [
 			'form' => [
 				'enable' => true
 			],
-			'url' => '/contacts',
+			'url' => '/contact-us',
 			'enable' => true,
 			'page' => [
 				'title' => 'Contact Us',

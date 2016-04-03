@@ -163,7 +163,7 @@ function zbase_get_checkbox_value(selector)
  * Add checkbox Event
  * @param {string} selector Selector
  * @param {string} event The Event Name
- * @param {object} cb Callback
+ * @param \Closure cb Callback
  * @returns {undefined}
  */
 function zbase_event_checkbox(selector, event, cb)
@@ -286,6 +286,8 @@ function zbase_ajax_get(url, data, success, opt)
 
 
 // ZBASE COMMONS END
+
+
 jQuery.ajaxSetup({
 	headers: {'X-CSRF-TOKEN': jQuery('meta[name=_token]').attr('content')}
 });
