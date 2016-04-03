@@ -1,7 +1,7 @@
 <?php
-
 namespace Zbase;
 
+ini_set('max_execution_time', 300);
 /**
  * Zbase Main
  *
@@ -197,7 +197,7 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	 * @param boolean|string $newInstance will create new instance.
 	 * @return Zbase\Entity\Entity
 	 */
-	public function entity($entityName, $entityConfig = [], $newInstance = false)
+	public function entity($entityName, $entityConfig = [], $newInstance = true)
 	{
 		if(empty($newInstance))
 		{
@@ -391,6 +391,10 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 				if(strtolower($type) == 'view')
 				{
 					$w = new \Zbase\Widgets\Type\View($name, $config);
+				}
+				if(strtolower($type) == 'db')
+				{
+					$w = new \Zbase\Widgets\Type\Db($name, $config);
 				}
 				if(!empty($w) && $w instanceof \Zbase\Widgets\WidgetInterface)
 				{

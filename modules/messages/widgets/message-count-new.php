@@ -15,7 +15,7 @@
  *
  */
 return [
-	'type' => 'datatable',
+	'type' => 'db',
 	'enable' => true,
 	'config' => [
 		'access' => [
@@ -24,6 +24,9 @@ return [
 			'noauth' => [
 				'route' => 'login',
 			]
+		],
+		'repo' => [
+			'method' => 'count'
 		],
 		'entity' => [
 			'node' => [
@@ -43,12 +46,13 @@ return [
 							'value' => 0
 						],
 					],
+					'readStatus' => [
+						'eq' => [
+							'field' => 'messages.read_status',
+							'value' => 0
+						],
+					],
 				]]
 		],
-		'view' => [
-			'file' => 'modules.messages.list'
-		],
-		'actions' => [],
-		'columns' => [],
 	],
 ];

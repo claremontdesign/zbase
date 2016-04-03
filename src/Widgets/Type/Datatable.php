@@ -71,6 +71,11 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 * @var \Zbase\Entity\EntityInterface
 	 */
 	protected $_rows = [];
+	protected $_repo = null;
+	protected $_repoSelects = ['*'];
+	protected $_repoJoins = [];
+	protected $_repoFilters = [];
+	protected $_repoSorts = [];
 
 	/**
 	 * Has Actions Flag?
@@ -100,10 +105,6 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	public function getRequestFilters()
 	{
 		$filters = zbase_request_query_input('filter');
-		if($this->isPublic())
-		{
-			$filters['public'] = true;
-		}
 		if(!empty($filters))
 		{
 			foreach ($filters as $fK => $fV)
@@ -205,6 +206,95 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	}
 
 	/**
+	 * Prepare Repository
+	 */
+	protected function _repo()
+	{
+		if(!empty($this->_entity))
+		{
+			$repo = $this->_entity->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
+			$filters = [];
+			$sorting = [];
+			$joins = [];
+			if($this->isNode())
+			{
+				$urlFilters = $this->getRequestFilters();
+				$entityObject = $this->entityObject();
+				$selects = ['*'];
+				if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+				{
+					/**
+					 * We are getting the nodes on each category
+					 *  switch to node entityObject
+					 */
+					$entityObject = zbase_entity($entityObject::$nodeNamePrefix, [], true);
+					$repo = $entityObject->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
+					$categories = $this->_entity->getDescendantsAndSelf();
+					if(!empty($categories))
+					{
+						foreach ($categories as $category)
+						{
+							$urlFilters['category'][] = $category;
+						}
+					}
+				}
+				if($this->isPublic())
+				{
+					$urlFilters['public'] = true;
+				}
+				if($this->isCurrentUser())
+				{
+					$urlFilters['currentUser'] = true;
+				}
+				if(!empty($urlFilters))
+				{
+					if(method_exists($entityObject, 'queryFilters'))
+					{
+						$filters = $entityObject->queryFilters($urlFilters, $this->getRequestSorting());
+					}
+					else
+					{
+						if(empty($urlFilters['public']))
+						{
+							$filters['status'] = 2;
+						}
+						if(empty($urlFilters['currentUser']))
+						{
+							$filters['user_id'] = zbase_auth_user()->id();
+						}
+					}
+				}
+				if(method_exists($entityObject, 'querySelects'))
+				{
+					$selects = $entityObject->querySelects($urlFilters);
+				}
+				if(method_exists($entityObject, 'queryJoins'))
+				{
+					$joins = $entityObject->queryJoins($urlFilters, $this->getRequestSorting());
+				}
+				if(method_exists($entityObject, 'querySorting'))
+				{
+					$sorting = $entityObject->querySorting($this->getRequestSorting(), $urlFilters);
+				}
+				/**
+				 * Merge filters from widget configuration
+				 * entity.filter.query
+				 */
+				$filters = array_merge($filters, $this->_v('entity.filter.query', []));
+				// dd($joins, $sorting, $filters);
+			}
+			$this->_repoSelects = $selects;
+			$this->_repoJoins = $joins;
+			$this->_repoSorts = $sorting;
+			$this->_repoFilters = $filters;
+			$debug = zbase_request_query_input($this->id() . '__debug', false);
+			$repo->setDebug($debug);
+			$this->_repo = $repo;
+		}
+		return $this->_repo;
+	}
+
+	/**
 	 * Prepare and fetch all rows
 	 */
 	protected function _rows()
@@ -215,72 +305,14 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 			{
 				if(!empty($this->_entity))
 				{
-					$repo = $this->_entity->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
-					$filters = [];
-					$sorting = [];
-					$joins = [];
-					if($this->isNode())
+					$repo = $this->_repo();
+					if($this->_entity->hasSoftDelete())
 					{
-						$urlFilters = $this->getRequestFilters();
-						$entityObject = $this->entityObject();
-						$selects = ['*'];
-						if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
-						{
-							/**
-							 * We are getting the nodes on each category
-							 *  switch to node entityObject
-							 */
-							$entityObject = zbase_entity($entityObject::$nodeNamePrefix, [], true);
-							$repo = $entityObject->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
-							$categories = $this->_entity->getDescendantsAndSelf();
-							if(!empty($categories))
-							{
-								foreach ($categories as $category)
-								{
-									$urlFilters['category'][] = $category;
-								}
-							}
-						}
-						if($this->isCurrentUser())
-						{
-							$urlFilters['currentUser'] = true;
-						}
-						if(!empty($urlFilters))
-						{
-							if(method_exists($entityObject, 'queryFilters'))
-							{
-								$filters = $entityObject->queryFilters($urlFilters, $this->getRequestSorting());
-							}
-						}
-						if(method_exists($entityObject, 'querySelects'))
-						{
-							$selects = $entityObject->querySelects($urlFilters);
-						}
-						if(method_exists($entityObject, 'queryJoins'))
-						{
-							$joins = $entityObject->queryJoins($urlFilters, $this->getRequestSorting());
-						}
-						if(method_exists($entityObject, 'querySorting'))
-						{
-							$sorting = $entityObject->querySorting($this->getRequestSorting(), $urlFilters);
-						}
-						// dd($joins, $sorting, $filters);
-					}
-					$debug = zbase_request_query_input($this->id() . '__debug', false);
-					if($this->isPublic())
-					{
-						$this->_rows = $repo->setDebug($debug)->all($selects, $filters, $sorting, $joins, true);
+						$this->_rows = $repo->withTrashed()->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, true);
 					}
 					else
 					{
-						if($this->_entity->hasSoftDelete())
-						{
-							$this->_rows = $repo->setDebug($debug)->withTrashed()->all($selects, $filters, $sorting, $joins, true);
-						}
-						else
-						{
-							$this->_rows = $repo->setDebug($debug)->all($selects, $filters, $sorting, $joins, true);
-						}
+						$this->_rows = $repo->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, true);
 					}
 				}
 				$this->_rowsPrepared = true;

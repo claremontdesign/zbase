@@ -193,6 +193,13 @@ class Message extends BaseEntity implements WidgetEntityInterface
 					return true;
 				}
 			}
+			if($action == 'trash')
+			{
+				$this->trash_status = 1;
+				$this->save();
+				$this->_actionMessages[$action]['success'][] = _zt('Message trashed.', ['%title%' => $this->subject()]);
+				return true;
+			}
 			$this->_actionMessages[$action]['error'][] = _zt('Message reference not found. Kindly check.', ['%title%' => $this->title, '%id%' => $this->id()]);
 			return false;
 		}
@@ -215,6 +222,19 @@ class Message extends BaseEntity implements WidgetEntityInterface
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="DataTable Widget Query Interface/Methods">
+	/**
+	 * Sorting Query
+	 * @param array $sorting Array of Sorting
+	 * @param array $filters Array of Filters
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function querySorting($sorting, $filters = [], $options = [])
+	{
+		$sort = ['messages.message_id' => 'DESC'];
+		return $sort;
+	}
+
 	/**
 	 * Join Query
 	 * @param array $filters Array of Filters
@@ -263,6 +283,42 @@ class Message extends BaseEntity implements WidgetEntityInterface
 		$selects[] = 'sender_profile.last_name as sender_last_name';
 		$selects[] = 'sender_profile.avatar as sender_avatar';
 		return $selects;
+	}
+
+	/**
+	 * Filter Query
+	 * @param array $filters Array of Filters
+	 * @param array $sorting Array of Sorting
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function queryFilters($filters, $sorting = [], $options = [])
+	{
+		$queryFilters = [];
+		if(!empty($filters))
+		{
+			$isPublic = !empty($filters['public']) ? true : false;
+			if(!empty($isPublic))
+			{
+				$queryFilters['status'] = [
+					'eq' => [
+						'field' => 'messages.status',
+						'value' => 2
+					]
+				];
+			}
+			$currentUser = !empty($filters['currentUser']) ? true : false;
+			if(!empty($currentUser))
+			{
+				$queryFilters['user'] = [
+					'eq' => [
+						'field' => 'messages.user_id',
+						'value' => zbase_auth_user()->id()
+					]
+				];
+			}
+		}
+		return $queryFilters;
 	}
 
 	// </editor-fold>
@@ -336,7 +392,7 @@ class Message extends BaseEntity implements WidgetEntityInterface
 		{
 			$alphaId = zbase_generate_hash([$this->message_id, time()], $this->entityName);
 			$i = 1;
-			while ($this->fetchByAlphaId($alphaId) > 0)
+			while (!empty($this->fetchByAlphaId($alphaId)))
 			{
 				$alphaId = zbase_generate_hash([time(), $i++, $this->message_id], $this->entityName);
 			}

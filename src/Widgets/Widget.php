@@ -362,7 +362,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 					}
 					if(!empty($id))
 					{
-						$filters = [];
+						$filters = $this->_v('entity.filter.query', []);
 						$this->_urlHasRequest = true;
 						if($this->isNode())
 						{

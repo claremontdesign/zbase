@@ -66,6 +66,7 @@ trait Module
 		if($isAjax)
 		{
 			$action = 'json-' . $action;
+			$htmls = [];
 		}
 		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($action);
 		if(empty($widgets))
@@ -79,18 +80,43 @@ trait Module
 				$v = $widget->validateWidget();
 				if($v instanceof \Illuminate\Contracts\Validation\Validator)
 				{
-					return redirect()->to($this->getRedirectUrl())
-									->withInput(zbase_request_inputs())
-									->withErrors($v->errors()->getMessages());
+					if($isAjax)
+					{
+						zbase()->json()->addVariable('errors', $v->errors()->getMessages());
+					}
+					else
+					{
+						return redirect()->to($this->getRedirectUrl())
+										->withInput(zbase_request_inputs())
+										->withErrors($v->errors()->getMessages());
+					}
 				}
 				$ret = $widget->controller($this->getRouteParameter('action', 'index'));
 				if($ret instanceof \Illuminate\Http\RedirectResponse)
 				{
-					return $ret;
+					if($isAjax)
+					{
+						zbase()->json()->addVariable('redirect', $ret->getTargetUrl());
+					}
+					else
+					{
+						return $ret;
+					}
+				}
+				if($isAjax)
+				{
+					$htmls[$widget->id()] = $widget->render();
 				}
 			}
 		}
-		return $this->view(zbase_view_file('module.index'), array('module' => $this->getModule(), 'widgets' => $widgets));
+		if(!empty($isAjax))
+		{
+			zbase()->json()->addVariable('html', $htmls);
+		}
+		else
+		{
+			return $this->view(zbase_view_file('module.index'), array('module' => $this->getModule(), 'widgets' => $widgets));
+		}
 	}
 
 }

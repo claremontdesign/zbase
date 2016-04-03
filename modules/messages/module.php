@@ -67,6 +67,9 @@ return [
 					'json-trash' => [
 						'message-trash' => null,
 					],
+					'json-count-new' => [
+						'message-count-new' => null,
+					],
 				],
 			]
 		]

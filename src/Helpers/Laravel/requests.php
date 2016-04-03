@@ -261,6 +261,15 @@ function zbase_request_is_ajax()
 }
 
 /**
+ * Is Post?
+ * @return boolean
+ */
+function zbase_request_is_post()
+{
+	return strtolower(zbase_request_method()) == 'post';
+}
+
+/**
  * Retrieve a server variable from the request
  * @param string $key Key to retrieve
  *

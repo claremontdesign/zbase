@@ -45,6 +45,16 @@ class Json
 		return $this;
 	}
 
+	public function setVariable($key, $val)
+	{
+		$this->addVariable($key, $val);
+	}
+
+	public function getVariables()
+	{
+		return $this->vars;
+	}
+
 	public function serve()
 	{
 		header('Content-Type: application/json');

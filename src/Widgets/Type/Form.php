@@ -241,6 +241,11 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		{
 			if(!empty($e['route']))
 			{
+				$params = zbase_route_inputs();
+				if(!empty($e['route']['params']))
+				{
+					$params = array_merge($params, $e['route']['params']);
+				}
 				$url = zbase_url_from_config($e);
 			}
 		}

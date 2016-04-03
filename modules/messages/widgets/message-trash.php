@@ -15,7 +15,7 @@
  *
  */
 return [
-	'type' => 'view',
+	'type' => 'form',
 	'enable' => true,
 	'config' => [
 		'access' => [
@@ -24,6 +24,17 @@ return [
 			'noauth' => [
 				'route' => 'login',
 			]
+		],
+		'event' => [
+			'front' => [
+				'trash' => [
+					'post' => [
+						'route' => [
+							'name' => 'messages'
+						]
+					],
+				],
+			],
 		],
 		'entity' => [
 			'node' => [

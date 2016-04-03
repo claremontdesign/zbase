@@ -35,7 +35,16 @@ return [
 			'zbase' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
 				'src' => zbase_path_asset('js/js.js'),
-				'enable' => true
+				'enable' => true,
+				'dependents' => [
+					[
+						'id' => 'zbase-app-init',
+						'type' => \Zbase\Models\View::SCRIPT,
+						'enable' => true,
+						'script' => 'Zbase.init();',
+						'onLoad' => true,
+					],
+				]
 			],
 			// <editor-fold defaultstate="collapsed" desc="Jquery">
 			'jquery' => [

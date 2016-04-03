@@ -588,7 +588,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 					if(array_key_exists($sortName, $this->sortableColumns) && in_array(strtolower($direction), ['desc', 'asc']))
 					{
 						$column = $this->sortableColumns[$sortName]['column'];
-						$sort[] = ['node.' . $column => strtoupper($direction)];
+						$sort['node.' . $column] = strtoupper($direction);
 					}
 				}
 			}

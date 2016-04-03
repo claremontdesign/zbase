@@ -41,6 +41,22 @@ trait Node
 	}
 
 	/**
+	 * Return a messages based on the Action made
+	 * @param boolean $flag
+	 * @param string $action create|update|delete|restore|ddelete
+	 * @return array
+	 */
+	public function getActionMessages($action)
+	{
+		if(!empty($this->_actionMessages[$action]))
+		{
+			return $this->_actionMessages[$action];
+		}
+		return [];
+	}
+
+
+	/**
 	 * Generate and Update Row Alpha ID
 	 * @return void
 	 */

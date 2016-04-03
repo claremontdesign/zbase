@@ -211,6 +211,24 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	}
 
 	/**
+	 * REturn the number of rows
+	 * @param array $filters
+	 * @param array $joins
+	 * @param array $unions
+	 * @param array $group
+	 * @param array $options
+	 */
+	public function count($filters = null, $joins = null, $unions = null, $group = null, $options = null)
+	{
+		$builder = $this->_query(['COUNT(1)'], $filters, null, $joins, $unions, $group, $options);
+		return zbase_cache(
+				zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder){
+			return $builder->count();
+				}, [$this->getModel()->getTable()]
+		);
+	}
+
+	/**
 	 * Create a new item
 	 *
 	 * @param array $data

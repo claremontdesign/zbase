@@ -21,6 +21,11 @@
  */
 function zbase_response($response)
 {
+	if(zbase_request_is_ajax())
+	{
+		zbase()->json()->setVariable('_token', zbase_csrf_token());
+		return response()->json(zbase()->json()->getVariables());
+	}
 	return $response;
 }
 

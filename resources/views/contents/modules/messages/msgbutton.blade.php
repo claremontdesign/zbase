@@ -13,6 +13,11 @@
  * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
  */
 ?>
+<!--<div class="alert alert-danger">Are you sure you want to delete?</div>-->
 <div class="btn-group" role="group" aria-label="Message buttons">
-	<button type="button" class="btn btn-danger btn-sm" onclick="Messages.trashMessage('<?php echo $msg->alphaId()?>');">Delete</button>
+	<button type="button" class="btn btn-danger btn-sm zbase-btn-action-confirm"
+			data-config="{url: '<?php echo zbase_url_from_route('messages', array('action' => 'trash', 'id' => $msg->alphaId())) ?>',
+			mode: 'yesno',
+			message: 'Are you sure you want to delete this message?',
+			}">Delete</button>
 </div>
