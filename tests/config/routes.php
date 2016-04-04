@@ -27,7 +27,7 @@
  */
 return [
 	'routes' => [
-'adminkey' => [
+		'adminkey' => [
 			'enable' => false,
 			'key' => 'admin'
 		],

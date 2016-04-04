@@ -23,10 +23,10 @@
  * $anne = Cache::tags(['people', 'authors'])->get('Anne');
  * Cache::tags('authors')->flush();
  *
-	zbase_cache(zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()),
-  				function() {return 'value';},
- 				[$this->getModel()->getTable()]
-				);
+  zbase_cache(zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()),
+  function() {return 'value';},
+  [$this->getModel()->getTable()]
+  );
  */
 
 /**
@@ -35,7 +35,7 @@
  */
 function zbase_cache_enable()
 {
-	return env('CACHE_ENABLE', false);
+	return env('CACHE_ENABLE', null);
 }
 
 /**

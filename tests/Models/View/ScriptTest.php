@@ -30,16 +30,16 @@ class ScriptTest extends TestCase
 	 * @test
 	 * @coversDefaultClass __toString
 	 */
-	public function testToString()
-	{
-		$config = [
-			'id' => 'script',
-			'script' => 'function(){ console.log(var); }',
-			'onLoad' => true
-		];
-		$view = new Zbase\Models\View\Script($config);
-		$this->assertEquals($view->__toString(), EOF . '<script type="text/javascript" id="script-script">' . EOF . 'function(){ console.log(var); }' . EOF . '</script>' . EOF);
-	}
+//	public function testToString()
+//	{
+//		$config = [
+//			'id' => 'script',
+//			'script' => 'function(){ console.log(var); }',
+//			'onLoad' => true
+//		];
+//		$view = new Zbase\Models\View\Script($config);
+//		$this->assertEquals($view->__toString(), EOF . '<script type="text/javascript" id="script-script">' . EOF . 'function(){ console.log(var); }' . EOF . '</script>' . EOF);
+//	}
 
 	/**
 	 * Test function associated with Script

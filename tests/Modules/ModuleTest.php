@@ -12,10 +12,10 @@ class ModuleTest extends TestCase
 	 */
 	function testModuleRoute()
 	{
-		zbase()->addModule('testModule', __DIR__ . '/../config');
+		zbase()->loadModuleFrom(__DIR__ . '/../config/modules');
 		zbase_routes_init();
-		$this->assertTrue(zbase()->module('testModule') instanceof \Zbase\Module\ModuleInterface);
-		$this->assertSame('http://localhost/admin/testModule', zbase_url_from_route('admin.testModule'));
+		$this->assertTrue(zbase()->module('nodes') instanceof \Zbase\Module\ModuleInterface);
+		$this->assertSame(\Config::get('app.url') . '/admin/nodes', zbase_url_from_route('admin.nodes'));
 	}
 
 }

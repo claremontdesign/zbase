@@ -342,7 +342,7 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	 * @param boolean $clone Will clone if widget was already created
 	 * @return \Zbase\Widgets\WidgetInterface[] | null
 	 */
-	public function widget($widget, $clone = null)
+	public function widget($widget, $config = [], $clone = null)
 	{
 		if(is_array($widget))
 		{
@@ -353,6 +353,10 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 		else
 		{
 			$name = $widget;
+		}
+		if($name == 'post-category')
+		{
+//			dd($config);
 		}
 		if(!empty($name))
 		{

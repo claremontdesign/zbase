@@ -195,6 +195,7 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 		$selected = $this->selectedRows();
 		if($selected instanceof \Illuminate\Database\Eloquent\Collection)
 		{
+			$newRow['state']['expanded'] = false;
 			foreach ($selected as $sel)
 			{
 				if($sel->id() == $row->id())

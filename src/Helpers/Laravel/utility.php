@@ -14,6 +14,8 @@
  * @package Zbase/Laravel/Helpers
  */
 
+use Illuminate\Support\Facades\Hash;
+
 /**
  * Return the Zbase Object
  * @return Zbase
@@ -69,5 +71,5 @@ function zbase_bcrypt($string)
  */
 function zbase_bcrypt_check($plainText, $hashed)
 {
-	return \Hash::check($plainText, $hashed);
+	return Hash::check($plainText, $hashed);
 }

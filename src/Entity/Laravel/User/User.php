@@ -493,7 +493,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->setDataOption('password_new', zbase_bcrypt($newPassword));
 			$this->save();
 			zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your password.', ['%email%' => $this->email()]));
-			zbase_messenger_email($this->email(), 'account-noreply', _zt('New Password update request'), zbase_view_file_contents('contents.email.account.newPasswordRequest'), ['entity' => $this, 'code' => $code]);
+			zbase_messenger_email($this->email(), 'account-noreply', _zt('New Password update request'), zbase_view_file_contents('email.account.newPasswordRequest'), ['entity' => $this, 'code' => $code]);
 			zbase_db_transaction_commit();
 			return true;
 		} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -542,7 +542,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->username = $newUsername;
 			$this->save();
 			zbase_alert('success', _zt('Username updated!'));
-			zbase_messenger_email($this->email(), 'account-noreply', _zt('Username was changed'), zbase_view_file_contents('contents.email.account.updateUsername'), ['entity' => $this, 'old' => $oldUsername, 'new' => $newUsername]);
+			zbase_messenger_email($this->email(), 'account-noreply', _zt('Username was changed'), zbase_view_file_contents('email.account.updateUsername'), ['entity' => $this, 'old' => $oldUsername, 'new' => $newUsername]);
 		}
 	}
 
@@ -572,7 +572,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				$this->setDataOption('email_new_request_date', zbase_date_now());
 				$this->save();
 				zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.', ['%email%' => $this->email()]));
-				zbase_messenger_email($this->email(), 'account-noreply', _zt('New Email address update request'), zbase_view_file_contents('contents.email.account.newEmailAddressRequest'), ['entity' => $this, 'newEmailAddress' => $newEmailAddress, 'code' => $code]);
+				zbase_messenger_email($this->email(), 'account-noreply', _zt('New Email address update request'), zbase_view_file_contents('email.account.newEmailAddressRequest'), ['entity' => $this, 'newEmailAddress' => $newEmailAddress, 'code' => $code]);
 				zbase_db_transaction_commit();
 			} catch (\Zbase\Exceptions\RuntimeException $e)
 			{
@@ -633,7 +633,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					$code = zbase_generate_code();
 					$this->setDataOption('email_verification_code', $code);
 					zbase_alert('info', _zt('We sent an email to %email% to verify your new email address.', ['%email%' => $newEmail]));
-					zbase_messenger_email($this->email(), 'account-noreply', _zt('Email address verification code'), zbase_view_file_contents('contents.email.account.newEmailAddressVerification'), ['entity' => $this, 'code' => $code]);
+					zbase_messenger_email($this->email(), 'account-noreply', _zt('Email address verification code'), zbase_view_file_contents('email.account.newEmailAddressVerification'), ['entity' => $this, 'code' => $code, 'newEmailAddress' => $newEmail]);
 				}
 				/**
 				 * Remove options on updating email address

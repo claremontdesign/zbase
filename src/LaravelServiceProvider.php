@@ -133,6 +133,7 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		\Validator::replacer('passwordStrengthCheck', function($message, $attribute, $rule, $parameters) {
 			return _zt('New password is too weak.');
 		});
+		// dd(zbase_config_get('email.account-noreply.email'));
 		// dd(\Zbase\Utility\Service\Flickr::findByTags(['heavy equipment','dozers','loader']));
 	}
 

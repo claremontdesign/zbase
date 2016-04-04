@@ -22,7 +22,7 @@ $rows = $ui->getRows();
             </ul>
         </div>
         <div class="col-sm-9 col-md-10">
-			<?php if(!empty($rows)): ?>
+			<?php if(!empty($rows->count())): ?>
 				<style type="text/css">
 					.msgs-group{}
 					.msgs-group .list-group-item{
@@ -54,12 +54,14 @@ $rows = $ui->getRows();
 						</a>
 					<?php endforeach; ?>
 				</div>
+			<?php else: ?>
+				<div class="alert alert-warning">You don't have any messages.</div>
 			<?php endif; ?>
         </div>
     </div>
 	<hr />
 
-	<?php if(!empty($rows)): ?>
+	<?php if(!empty($rows->count())): ?>
 		<div class="pull-right">
 			<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.pagination'), ['paginator' => $rows, 'ui' => $ui]); ?>
 		</div>

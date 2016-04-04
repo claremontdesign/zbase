@@ -25,6 +25,14 @@ if(!function_exists('env'))
 	function env($varname, $default = null)
 	{
 		$val = getenv($varname);
+		if($val == 'false')
+		{
+			return false;
+		}
+		if($val == 'true')
+		{
+			return true;
+		}
 		if($val === false)
 		{
 			return $default;
@@ -304,6 +312,7 @@ function zbase_db_prefix()
 function zbase_entity($entityName, $entityConfig = [], $newInstance = false)
 {
 	return zbase()->entity($entityName, $entityConfig, $newInstance);
+	// return zbase()->entity($entityName, $newInstance);
 }
 
 /**

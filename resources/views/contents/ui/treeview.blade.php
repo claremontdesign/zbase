@@ -15,6 +15,7 @@ if(empty($rows))
 $form = $ui->form();
 $selectedRows = $ui->selectedRows();
 zbase_view_plugin_load('bootstrap-treeview');
+zbase_view_plugin_load('bootstrap');
 $uiId = $ui->id();
 $attributes = $ui->wrapperAttributes();
 $wrapperAttributes = $ui->renderHtmlAttributes($attributes);

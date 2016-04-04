@@ -178,12 +178,19 @@ class Message extends BaseEntity implements WidgetEntityInterface
 					$message = $data['content'];
 					$subject = 'RE: ' . $oMessage->subject();
 					$sender = zbase_auth_user()->id();
-					$recipient = $oMessage->user_id;
+					$recipient = $oMessage->sender_id;
 					if(!empty($oMessage->node_id) && !empty($oMessage->node_prefix))
 					{
 						$options['node_id'] = $oMessage->node_id;
 						$options['node_prefix'] = $oMessage->node_prefix;
-						$options['parent_id'] = $oMessage->id();
+						if(!empty($oMessage->parent_id))
+						{
+							$options['parent_id'] = $oMessage->parent_id;
+						}
+						else
+						{
+							$options['parent_id'] = $oMessage->id();
+						}
 					}
 					$messageObject = zbase_entity($this->entityName, [], true);
 					$newMessage = $messageObject->newMessage($message, $subject, $sender, $recipient, $options);

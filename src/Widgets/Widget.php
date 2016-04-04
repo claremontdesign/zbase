@@ -320,7 +320,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 			$entityName = $this->_v('entity.name', null);
 			if(!is_null($entityName))
 			{
-				$this->_entityObject = $entity = zbase_entity($entityName, [], true);
+				$this->_entityObject = $entity = zbase()->entity($entityName, [], true);
 				$repoById = $this->_v('entity.repo.byId', null);
 				if(is_null($repoById))
 				{
@@ -349,7 +349,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 						$childAlphaId = zbase_route_input('id');
 						if(!empty($childAlphaId))
 						{
-							$this->_childEntity = zbase_entity($this->nodePrefix(), [], true)->repository()->byAlphaId($childAlphaId);
+							$this->_childEntity = zbase()->entity($this->nodePrefix(), [], true)->repository()->byAlphaId($childAlphaId);
 							if(!$this->_childEntity instanceof \Zbase\Entity\Laravel\Node\Node)
 							{
 								return zbase_abort(404);
@@ -388,6 +388,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 							}
 							else
 							{
+//								dd($filters, $entity->repository()->setDebug(false)->all(['*'], $filters));
 								return $this->_entity = $entity->repository()->setDebug(false)->all(['*'], $filters)->first();
 							}
 						}

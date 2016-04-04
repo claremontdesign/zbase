@@ -314,11 +314,11 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		{
 			if(!empty($configuration['validations']))
 			{
-				return zbase()->widget($configuration['widget'], true)->setAttribute('validations', $configuration['validations']);
+				return zbase()->widget($configuration['widget'], [], true)->setAttribute('validations', $configuration['validations']);
 			}
 			else
 			{
-				return zbase()->widget($configuration['widget'], true);
+				return zbase()->widget($configuration['widget'], [], true);
 			}
 		}
 		if(!empty($configuration['ui']))

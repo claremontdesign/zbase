@@ -248,7 +248,7 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 				}
 				if(is_null($path))
 				{
-					$widget = zbase()->widget($name);
+					$widget = zbase()->widget($name, [], true);
 				}
 				if($widget instanceof \Zbase\Widgets\WidgetInterface)
 				{
