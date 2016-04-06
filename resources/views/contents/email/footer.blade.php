@@ -15,7 +15,9 @@
  */
 
 ?>
-===================
+<br />
+<br />
+<hr />
 IP Address: <?php echo zbase_ip()?><br />
 Date: <?php echo zbase_date_now()->format('Y-m-d h:i:s A')?>
 <br />

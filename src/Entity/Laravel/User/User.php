@@ -240,7 +240,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		if(!empty($role))
 		{
 			$model->roles()->save($role);
-			$model->alpha_id = zbase_generate_hash([$model->user_id, rand(1, 1000), time()], $this->entityName);
+			$model->alpha_id = zbase_generate_hash([$model->user_id, rand(1, 1000), time()], $model->getTable());
 			$model->save();
 			if(!empty($attributesProfile))
 			{

@@ -16,4 +16,5 @@
 
 ?>
 <?php echo zbase_site_name();?>
-===================
+<hr />
+<br />
