@@ -56,6 +56,31 @@ class Db extends Datatable implements Widgets\WidgetInterface, Widgets\Controlle
 	 */
 	public function controller($action)
 	{
+		$this->setAction($action);
+		$repoMethod = $this->_v('repo.method', 'count');
+		if($repoMethod == 'update')
+		{
+			$ret = $this->entity()->widgetController(zbase_request_method(), $this->getAction(), [], $this);
+			$actionMessages = $this->entity()->getActionMessages($this->getAction());
+			if(!empty($actionMessages))
+			{
+				foreach ($actionMessages as $alertType => $alertMessages)
+				{
+					if(is_array($alertMessages))
+					{
+						foreach ($alertMessages as $alertMessage)
+						{
+							zbase_alert($alertType, $alertMessage);
+						}
+					}
+				}
+			}
+			if(!empty($ret))
+			{
+				$url = zbase_url_previous();
+				return zbase_redirect()->to($url);
+			}
+		}
 		if(!$this->checkUrlRequest())
 		{
 			return zbase_abort(404);
@@ -66,7 +91,7 @@ class Db extends Datatable implements Widgets\WidgetInterface, Widgets\Controlle
 	/**
 	 * Validate widget
 	 */
-	public function validateWidget()
+	public function validateWidget($action)
 	{
 		$this->_pre();
 	}

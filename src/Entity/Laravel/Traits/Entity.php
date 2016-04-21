@@ -142,7 +142,7 @@ trait Entity
 		{
 			$this->casts['options'] = 'array';
 		}
-		$this->perPage = zbase_data_get($this->entityAttributes, 'table.perPage', $this->perPage);
+		$this->perPage = zbase_data_get($this->entityAttributes, 'table.perPage', 10);
 		if(!empty($this->dbColumns))
 		{
 			foreach ($this->dbColumns as $columnName => $column)
@@ -208,6 +208,15 @@ trait Entity
 			$this->repository = new \Zbase\Entity\Laravel\Repository($this);
 		}
 		return $this->repository;
+	}
+
+	/**
+	 * Proxy to self::repository()
+	 * @return Interfaces\EntityRepositoryInterface
+	 */
+	public function repo()
+	{
+		return $this->repository();
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="DataOptions">

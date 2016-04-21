@@ -1,4 +1,45 @@
 // PHP JS START
+function explode(delimiter, string, limit) {
+	if (arguments.length < 2 || typeof delimiter === 'undefined' || typeof string === 'undefined')
+	{
+		return null;
+	}
+	if (delimiter === '' || delimiter === false || delimiter === null) {
+		return false;
+	}
+	if (typeof delimiter === 'function' || typeof delimiter === 'object' || typeof string === 'function' || typeof string ===
+			'object') {
+		return {
+			0: ''
+		};
+	}
+	if (delimiter === true) {
+		delimiter = '1';
+	}
+	delimiter += '';
+	string += '';
+	var s = string.split(delimiter);
+	if (typeof limit === 'undefined') {
+		return s;
+	}
+	if (limit === 0) {
+		limit = 1;
+	}
+	if (limit > 0) {
+		if (limit >= s.length) {
+			return s;
+		}
+		return s.slice(0, limit - 1)
+				.concat([s.slice(limit - 1)
+							.join(delimiter)
+				]);
+	}
+	if (-limit >= s.length) {
+		return [];
+	}
+	s.splice(s.length + limit);
+	return s;
+}
 function in_array(needle, haystack, argStrict) {
 	var key = '',
 			strict = !!argStrict;
@@ -58,6 +99,16 @@ function dd(v) {
 function var_dump(v) {
 	if (window.console) {
 		console.log(v);
+	}
+}
+/**
+ * Check if function exists
+ * @param {type} func
+ * @returns {Boolean}
+ */
+function function_exists(func) {
+	if (eval("typeof(" + func + ") == typeof(Function)")) {
+		return true;
 	}
 }
 /**
@@ -159,6 +210,27 @@ function zbase_get_checkbox_value(selector)
 	}
 	return undefined;
 }
+
+/**
+ * return the Form Element value
+ * @param {object} ele
+ * @returns {mixed}
+ */
+function zbase_get_form_element_value(ele)
+{
+	var type = jQuery(ele).attr('type');
+	if (type === 'radio' || type === 'checkbox')
+	{
+		if (jQuery(ele).parent().hasClass('checked'))
+		{
+			return jQuery(ele).val();
+		} else {
+			return jQuery(ele).val();
+		}
+	}
+	return jQuery(ele).val();
+}
+
 /**
  * Add checkbox Event
  * @param {string} selector Selector
@@ -186,7 +258,11 @@ function zbase_alert(type, msg, selector, opt)
 		type = 'danger';
 	}
 	var div = jQuery('<div>').addClass('alert alert-' + type).html(msg);
-	var manipulation = opt.manipulation !== undefined ? opt.manipulation : undefined;
+	var manipulation = opt !== undefined && opt.manipulation !== undefined ? opt.manipulation : undefined;
+	if (selector.length > 0)
+	{
+		selector.find('.alert').remove();
+	}
 	zbase_dom_insert_html(div, selector, manipulation);
 	return div;
 }
@@ -249,11 +325,11 @@ function zbase_dom_insert_html(html, selector, mode)
  * Post
  * @param {string} url The URL
  * @param {object} data Some POSTd Data
- * @param {callback} success Success Callback
+ * @param {callback} successCb Success Callback
  * @param {object} opt Options
  * @returns void
  */
-function zbase_ajax_post(url, data, success, opt)
+function zbase_ajax_post(url, data, successCb, opt)
 {
 	jQuery.ajax({
 		type: 'POST',
@@ -261,7 +337,10 @@ function zbase_ajax_post(url, data, success, opt)
 		data: data,
 		success: function (data)
 		{
-			return data;
+			if (function_exists(successCb))
+			{
+				eval(successCb + '(data);');
+			}
 		}
 	});
 }
@@ -269,18 +348,24 @@ function zbase_ajax_post(url, data, success, opt)
  * GET
  * @param {string} url The URL
  * @param {object} data Some POSTd Data
- * @param {callback} success Success Callback
+ * @param {callback} successCb Success Callback
  * @param {object} opt Options
  * @returns void
  */
-function zbase_ajax_get(url, data, success, opt)
+function zbase_ajax_get(url, data, successCb, opt)
 {
 	jQuery.ajax({
 		type: 'GET',
 		dataType: 'json',
 		url: url,
 		data: data,
-		success: success
+		success: function (data)
+		{
+			if (function_exists(successCb))
+			{
+				eval(successCb + '(data);');
+			}
+		}
 	});
 }
 
@@ -301,6 +386,18 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	{
 		window.location = responseJSON.redirect;
 	}
+	if (responseJSON.success !== undefined)
+	{
+		zbase_alert('success', responseJSON.success, jQuery('.page-content-inner'), {manipulation: 'prepend'});
+	}
+	if (responseJSON.error !== undefined)
+	{
+		zbase_alert('error', responseJSON.error, jQuery('.page-content-inner'), {manipulation: 'prepend'});
+	}
+	if (responseJSON.warning !== undefined)
+	{
+		zbase_alert('warning', responseJSON.warning, jQuery('.page-content-inner'), {manipulation: 'prepend'});
+	}
 });
 jQuery(document).ajaxError(function (event, request, settings) {
 });
@@ -316,6 +413,7 @@ jQuery(document).ajaxSuccess(function (event, request, settings) {
 //<editor-fold defaultstate="collapsed" desc="Zbase">
 var Zbase = function () {
 	_this = this;
+	_this.prefix = 'zbase';
 
 	/**
 	 * Confirmation buttons
@@ -332,6 +430,7 @@ var Zbase = function () {
 				var alertType = dataConfig.alertType !== undefined ? dataConfig.alertType : 'error';
 				var message = dataConfig.message !== undefined ? dataConfig.message : null;
 				var url = dataConfig.url !== undefined ? dataConfig.url : null;
+				var callback = dataConfig.callback !== undefined ? dataConfig.callback : null;
 				var opt = {manipulation: 'insertBefore'};
 				if (message !== null && url !== null)
 				{
@@ -344,6 +443,7 @@ var Zbase = function () {
 						 */
 						var divAlert = zbase_alert(alertType, message, jQuery(btn).parent(), opt);
 						jQuery(btn).hide();
+						jQuery(btn).siblings().hide();
 						var btnNo = jQuery('<button type="button" class="btn btn-no btn-success ' + zbase_get_element_size(btn) + '">No</button>');
 						var btnYes = jQuery('<button type="button" class="btn btn-yes btn-danger ' + zbase_get_element_size(btn) + '">Yes</button>');
 						var btnDiv = jQuery('<div>').html(btnNo.outerHtml() + btnYes.outerHtml());
@@ -351,9 +451,10 @@ var Zbase = function () {
 							btnDiv.remove();
 							divAlert.remove();
 							jQuery(btn).show();
+							jQuery(btn).siblings().show();
 						});
 						jQuery(btnDiv).find('.btn-yes').click(function () {
-							zbase_ajax_post(url, {}, null, {});
+							zbase_ajax_post(url, {}, callback, {});
 						});
 						zbase_dom_insert_html(btnDiv, btn, 'insertbefore');
 					}
@@ -393,10 +494,89 @@ var Zbase = function () {
 			});
 		}
 	};
+
+	/**
+	 * Check URLs if they are to be Ajaxed
+	 * @returns {void}
+	 */
+	var initAjaxFromUrls = function ()
+	{
+		if (jQuery('.zbase-ajax-url').length > 0)
+		{
+			jQuery('.zbase-ajax-url').click(function () {
+				var ele = jQuery(this);
+				var dataConfig = zbase_get_element_config(ele);
+				var url = dataConfig.url !== undefined ? dataConfig.url : ele.attr('href');
+				var method = dataConfig.method !== undefined ? dataConfig.method : 'get';
+				var form = dataConfig.form !== undefined ? dataConfig.form : false;
+				var elements = dataConfig.elements !== undefined ? dataConfig.elements : [];
+				var callback = dataConfig.callback !== undefined ? dataConfig.callback : null;
+				if (!empty(form) && !empty(elements))
+				{
+					var data = {};
+					jQuery.each(elements, function (i, ele) {
+						var name = null;
+						if (ele.indexOf('inputByName') >= 0)
+						{
+							ele = 'input[name="' + explode('=', ele)[1] + '"]:checked';
+							name = jQuery(ele).attr('data-name');
+						} else {
+							name = jQuery(ele).attr('name');
+						}
+						var val = zbase_get_form_element_value(jQuery(ele));
+						eval('data.' + name + ' = \'' + val + '\';');
+					});
+					zbase_ajax_post(url, data, callback, {});
+				} else {
+					if (method === 'get')
+					{
+						zbase_ajax_get(url, {}, callback, {});
+					} else {
+						zbase_ajax_post(url, {}, callback, {});
+					}
+				}
+			});
+		}
+	};
+
+	/**
+	 * Clickable Text/Btns
+	 * @returns {void}
+	 */
+	var initClickableUrls = function ()
+	{
+		if (jQuery('.zbase-btn-clickable-url').length > 0)
+		{
+			jQuery('.zbase-btn-clickable-url').click(function () {
+				var ele = jQuery(this);
+				var dataConfig = zbase_get_element_config(ele);
+				var url = dataConfig.url !== undefined ? dataConfig.url : ele.attr('href');
+				window.location = url;
+			});
+		}
+	};
+
+	/**
+	 * TABS
+	 * @returns {void}
+	 */
+	var initTabs = function ()
+	{
+		jQuery('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+			localStorage.setItem(_this.prefix + 'lastTab', jQuery(this).attr('href'));
+		});
+		var lastTab = localStorage.getItem(_this.prefix + 'lastTab');
+		if (lastTab) {
+			jQuery('[href="' + lastTab + '"]').tab('show');
+		}
+	};
 	return {
 		init: function () {
+			initTabs();
 			initBtnActionConfirm();
 			initContentFromUrl();
+			initAjaxFromUrls();
+			initClickableUrls();
 		}
 	};
 }();

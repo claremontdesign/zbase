@@ -45,6 +45,18 @@ class Json
 		return $this;
 	}
 
+	public function addVariables($vars)
+	{
+		if(!empty($vars))
+		{
+			foreach ($vars as $key => $val)
+			{
+				$this->addVariable($key, $val);
+			}
+		}
+		return $this;
+	}
+
 	public function setVariable($key, $val)
 	{
 		$this->addVariable($key, $val);
@@ -60,4 +72,5 @@ class Json
 		header('Content-Type: application/json');
 		return json_encode($this->vars);
 	}
+
 }

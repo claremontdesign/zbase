@@ -24,7 +24,7 @@ zbase_view_script_add('messages', $js, false);
 ?>
 <div class="col-md-2">
 	<a href="#">
-		<img class="media-object" style="width: 150px;" src="<?php echo $msg->senderAvatarUrl() ?>" alt="<?php echo $msg->senderName() ?>" />
+		<img class="media-object" style="width: 80px;" src="<?php echo $msg->senderAvatarUrl() ?>" alt="<?php echo $msg->senderName() ?>" />
 	</a>
 	<a href="#">
 		<?php echo $msg->senderName() ?>

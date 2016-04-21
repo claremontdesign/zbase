@@ -12,10 +12,11 @@ class ModuleTest extends TestCase
 	 */
 	function testModuleRoute()
 	{
-		zbase()->loadModuleFrom(__DIR__ . '/../config/modules');
-		zbase_routes_init();
-		$this->assertTrue(zbase()->module('nodes') instanceof \Zbase\Module\ModuleInterface);
-		$this->assertSame(\Config::get('app.url') . '/admin/nodes', zbase_url_from_route('admin.nodes'));
+		$modules = zbase()->modules();
+		foreach ($modules as $module)
+		{
+			$this->assertTrue(zbase()->module($module->id()) instanceof \Zbase\Module\ModuleInterface);
+		}
 	}
 
 }

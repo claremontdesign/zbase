@@ -19,9 +19,10 @@ return [
 	'enable' => true,
 	'access' => 'user',
 	'class' => null,
-	'backend' => true,
+	'backend' => false,
 	'frontend' => true,
 	'url' => [
+		'backend' => 'messages/{action?}/{id?}/{task?}',
 		'frontend' => 'dashboard/messages/{action?}/{id?}/{task?}',
 	],
 	'controller' => [
@@ -72,6 +73,6 @@ return [
 					],
 				],
 			]
-		]
+		],
 	],
 ];

@@ -27,5 +27,5 @@ interface ControllerInterface
 	/**
 	 * Validate widget
 	 */
-	public function validateWidget();
+	public function validateWidget($action);
 }

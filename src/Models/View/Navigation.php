@@ -16,15 +16,10 @@ namespace Zbase\Models\View;
 use Zbase\Interfaces;
 use Zbase\Traits;
 
-class Navigation implements Interfaces\IdInterface, Interfaces\HtmlInterface, Interfaces\PositionInterface, Interfaces\AttributeInterface, Interfaces\StatusInterface
+class Navigation
 {
 
-	use Traits\Attribute,
-	 Traits\Html,
-	 Traits\Status,
-	 Traits\Position,
-	 Traits\Url,
-	 Traits\Id;
+	use Traits\Attribute;
 
 	/**
 	 * The HTML Prefix
@@ -34,16 +29,16 @@ class Navigation implements Interfaces\IdInterface, Interfaces\HtmlInterface, In
 	protected $htmlPrefix = 'nav-';
 
 	/**
-	 * Include in breadcrumb
-	 * @var false
-	 */
-	protected $breadcrumb = false;
-
-	/**
 	 * Label
 	 * @var string
 	 */
 	protected $label = null;
+
+	/**
+	 * Title
+	 * @var string
+	 */
+	protected $title = null;
 
 	/**
 	 * Icon
@@ -58,16 +53,10 @@ class Navigation implements Interfaces\IdInterface, Interfaces\HtmlInterface, In
 	protected $active = false;
 
 	/**
-	 * A separator/divider after
-	 * @var boolean
+	 * The Route
+	 * @var array
 	 */
-	protected $separator = false;
-
-	/**
-	 * Child Navs
-	 * @var Zbase\Models\View\Nav[];
-	 */
-	protected $children = [];
+	protected $route = [];
 
 	/**
 	 * Constructor
@@ -76,60 +65,21 @@ class Navigation implements Interfaces\IdInterface, Interfaces\HtmlInterface, In
 	public function __construct($attributes)
 	{
 		$this->setAttributes($attributes);
-		if(!empty($this->children))
+		if(!empty($this->route['name']))
 		{
-			$counter = 0;
-			foreach ($this->children as $id => $child)
+			if(zbase_route_name_is($this->route['name']))
 			{
-				$class = __CLASS__;
-				if(empty($child['id']))
-				{
-					$child['id'] = $this->id() . '-' . $id;
-				}
-				if(!isset($child['position']))
-				{
-					$child['position'] = $counter++;
-				}
-				$object = new $class($child);
-				unset($this->children[$id]);
-				if($object instanceof Interfaces\StatusInterface && !$object->enabled())
-				{
-					continue;
-				}
-				if($object instanceof Interfaces\AuthInterface && !$object->hasAccess())
-				{
-					continue;
-				}
-				if($object instanceof Interfaces\IdInterface)
-				{
-					$this->children[$object->id()] = $object;
-				}
+				$this->active = true;
 			}
 		}
-		if(zbase_url() == $this->getUrl())
+	}
+
+	public function getRouteUrl()
+	{
+		if(!empty($this->route))
 		{
-			$this->active = true;
+			return zbase_url_from_config(['route' => $this->route]);
 		}
-	}
-
-	/**
-	 * Check if there are children
-	 *
-	 * @return boolean
-	 */
-	public function hasChildren()
-	{
-		return !empty($this->children);
-	}
-
-	/**
-	 * @see $separator
-	 *
-	 * @return boolean
-	 */
-	public function hasSeparator()
-	{
-		return $this->separator;
 	}
 
 	/**
@@ -139,28 +89,14 @@ class Navigation implements Interfaces\IdInterface, Interfaces\HtmlInterface, In
 	 */
 	public function __toString()
 	{
-		$id = $this->id();
-		$script = $this->getScript();
-		if(!empty($id) && !empty($script))
-		{
-			return EOF . '<a href="' . $this->getHref() . '" title="' . $this->getTitle() . '" ' . $this->renderHtmlAttributes() . '>' . $this->getLabel() . '</a>' . EOF;
-		}
-		return '';
-	}
-
-	/**
-	 * If to include in main Menu
-	 *
-	 * @return boolean
-	 */
-	public function inMenu()
-	{
-		$inMenu = $this->getAttribute('inMenu', null);
-		if(!is_null($inMenu))
-		{
-			return $inMenu;
-		}
-		return true;
+		$str = '';
+		$str .= '<li class="' . (!empty($this->active) ? 'active' : '') . '">';
+		$str .= '<a href="' . $this->getRouteUrl() . '" title="' . $this->title . '" ' . $this->renderHtmlAttributes() . '>';
+		$str .= '<i class="' . $this->icon . '"></i>';
+		$str .= '<span class="title">' . $this->label . '</span>';
+		$str .= '</a>';
+		$str .= '</li>';
+		return $str;
 	}
 
 }

@@ -34,7 +34,7 @@ zbase_view_plugin_load('metronic-admin');
 						<!-- END PAGE HEADER-->
 						<!-- BEGIN PAGE CONTENT-->
 						<div class="row">
-							<div class="col-md-12">
+							<div class="col-md-12 page-content-inner">
 								{!! zbase_alerts_render() !!}
 								@yield('content')
 							</div>

@@ -69,6 +69,7 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 	protected $appends = [];
 	protected $casts = [];
 
+
 	/**
 	 * Create a new Eloquent model instance.
 	 *

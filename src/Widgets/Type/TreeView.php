@@ -193,14 +193,19 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 		$newRow['text'] = $row->title();
 		$newRow['id'] = $row->id();
 		$selected = $this->selectedRows();
+		// dd($selected);die;
 		if($selected instanceof \Illuminate\Database\Eloquent\Collection)
 		{
 			$newRow['state']['expanded'] = false;
 			foreach ($selected as $sel)
 			{
+				$parents = $sel->ancestors()->lists('category_id')->toArray();
 				if($sel->id() == $row->id())
 				{
 					$newRow['state']['selected'] = true;
+				}
+				if(in_array($row->id(), $parents))
+				{
 					$newRow['state']['expanded'] = true;
 				}
 			}
@@ -277,7 +282,7 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	/**
 	 * Validate widget
 	 */
-	public function validateWidget()
+	public function validateWidget($action)
 	{
 
 	}

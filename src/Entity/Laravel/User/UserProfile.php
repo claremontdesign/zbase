@@ -26,6 +26,15 @@ class UserProfile extends BaseEntity
 	 */
 	protected $entityName = 'user_profile';
 
+	public function avatarUrl()
+	{
+		if(empty($this->avatar))
+		{
+			$this->avatar = 'http://api.adorable.io/avatars/285/' . time() . '.png';
+		}
+		return $this->avatar;
+	}
+	// <editor-fold defaultstate="collapsed" desc="TableDefinitions">
 	/**
 	 * Table Relations
 	 * @param array $relations Configuration default data
@@ -198,4 +207,6 @@ class UserProfile extends BaseEntity
 		];
 		return $columns;
 	}
+
+	// </editor-fold>
 }

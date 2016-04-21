@@ -53,7 +53,7 @@ trait Html
 		{
 			$htmlAttributes = $this->getHtmlAttributes();
 		}
-		if(!empty($htmlAttributes))
+		if(!empty($htmlAttributes) && is_array($htmlAttributes))
 		{
 			$attributes = [];
 			foreach ($htmlAttributes as $key => $value)

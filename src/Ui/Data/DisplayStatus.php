@@ -23,5 +23,4 @@ class DisplayStatus extends Data
 	 * @var string
 	 */
 	protected $_type = 'displayStatus';
-
 }

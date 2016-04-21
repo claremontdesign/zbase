@@ -33,13 +33,16 @@ class Message extends BaseEntity implements WidgetEntityInterface
 	 */
 	protected $_actionMessages = [];
 
-	protected static function boot()
-	{
-		parent::boot();
-		static::saved(function($node) {
-			$node->_updateAlphaId();
-		});
-	}
+	/**
+	 * The Message REcipient Object
+	 * @var Recipient
+	 */
+	protected $_msgRecipient = null;
+
+//	protected static function boot()
+//	{
+//		parent::boot();
+//	}
 
 	public function id()
 	{
@@ -68,12 +71,33 @@ class Message extends BaseEntity implements WidgetEntityInterface
 
 	public function alphaId()
 	{
-		return $this->alpha_id;
+		return $this->recipient_alpha_id;
 	}
 
 	public function sender()
 	{
 		return zbase_user_byid($this->sender_id);
+	}
+
+	public function recipient()
+	{
+		return zbase_user_byid($this->owner_id);
+	}
+
+	/**
+	 * @return Recipient
+	 */
+	public function messageRecipient()
+	{
+		if(!$this->_msgRecipient instanceof Recipient)
+		{
+			if(!empty($this->message_recipient_id))
+			{
+				$msgRecipient = new Recipient();
+				$this->_msgRecipient = $msgRecipient->repository()->byId($this->message_recipient_id);
+			}
+		}
+		return $this->_msgRecipient;
 	}
 
 	/**
@@ -95,11 +119,29 @@ class Message extends BaseEntity implements WidgetEntityInterface
 	 */
 	public function senderAvatarUrl()
 	{
-		if(property_exists($this, 'sender_avatar'))
+		return $this->sender()->profile()->avatarUrl();
+	}
+
+	/**
+	 * Return the Recipient
+	 * @return String
+	 */
+	public function recipientName()
+	{
+		if(property_exists($this, 'owner_first_name'))
 		{
-			return $this->sender_avatar;
+			return $this->owner_first_name . ' ' . $this->owner_last_name;
 		}
-		return $this->sender()->profile()->avatar;
+		return $this->recipient()->displayName();
+	}
+
+	/**
+	 * Sender Avatar
+	 * @return string
+	 */
+	public function recipientAvatarUrl()
+	{
+		return $this->recipient()->profile()->avatarUrl();
 	}
 
 	public function readUrl()
@@ -154,19 +196,24 @@ class Message extends BaseEntity implements WidgetEntityInterface
 	 */
 	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
 	{
+		if(!empty($this->message_recipient_id))
+		{
+			$recipient = new Recipient;
+			$msgRecipient = $recipient->repository()->byId($this->message_recipient_id);
+		}
 		if($action == 'read')
 		{
-			if(empty($this->read_status))
+			if(empty($msgRecipient->read_status))
 			{
-				$this->read_status = 1;
-				$this->save();
+				$msgRecipient->read_status = 1;
+				$msgRecipient->save();
 			}
 		}
 		if(strtolower($method) == 'post')
 		{
 			if(!empty($data['msg']))
 			{
-				$oMessage = $this->repository()->byAlphaId($data['msg']);
+				$oMessage = $this->fetchByAlphaId($data['msg']);
 			}
 			if(!empty($oMessage))
 			{
@@ -194,16 +241,16 @@ class Message extends BaseEntity implements WidgetEntityInterface
 					}
 					$messageObject = zbase_entity($this->entityName, [], true);
 					$newMessage = $messageObject->newMessage($message, $subject, $sender, $recipient, $options);
-					$this->reply_status = 1;
-					$this->save();
+					$msgRecipient->reply_status = 1;
+					$msgRecipient->save();
 					$this->_actionMessages[$action]['success'][] = _zt('Message sent.', ['%title%' => $newMessage->subject()]);
 					return true;
 				}
 			}
 			if($action == 'trash')
 			{
-				$this->trash_status = 1;
-				$this->save();
+				$msgRecipient->trash_status = 1;
+				$msgRecipient->save();
 				$this->_actionMessages[$action]['success'][] = _zt('Message trashed.', ['%title%' => $this->subject()]);
 				return true;
 			}
@@ -238,7 +285,7 @@ class Message extends BaseEntity implements WidgetEntityInterface
 	 */
 	public function querySorting($sorting, $filters = [], $options = [])
 	{
-		$sort = ['messages.message_id' => 'DESC'];
+		$sort = ['messages.created_at' => 'DESC'];
 		return $sort;
 	}
 
@@ -254,6 +301,12 @@ class Message extends BaseEntity implements WidgetEntityInterface
 		$joins = [];
 		$joins[] = [
 			'type' => 'join',
+			'model' => 'messages_recipient as messages_recipient',
+			'foreign_key' => 'messages_recipient.message_id',
+			'local_key' => 'messages.message_id',
+		];
+		$joins[] = [
+			'type' => 'join',
 			'model' => 'users as sender',
 			'foreign_key' => 'messages.sender_id',
 			'local_key' => 'sender.user_id',
@@ -263,6 +316,18 @@ class Message extends BaseEntity implements WidgetEntityInterface
 			'model' => 'users_profile as sender_profile',
 			'foreign_key' => 'messages.sender_id',
 			'local_key' => 'sender_profile.user_id',
+		];
+		$joins[] = [
+			'type' => 'join',
+			'model' => 'users as owner',
+			'foreign_key' => 'messages_recipient.user_id',
+			'local_key' => 'owner.user_id',
+		];
+		$joins[] = [
+			'type' => 'join',
+			'model' => 'users_profile as owner_profile',
+			'foreign_key' => 'messages_recipient.user_id',
+			'local_key' => 'owner_profile.user_id',
 		];
 		return $joins;
 	}
@@ -274,21 +339,17 @@ class Message extends BaseEntity implements WidgetEntityInterface
 	 */
 	public function querySelects($filters)
 	{
-		$selects = ['messages.user_id'];
-		$selects[] = 'messages.sender_id';
-		$selects[] = 'messages.alpha_id';
-		$selects[] = 'messages.subject';
-		$selects[] = 'messages.read_status';
-		$selects[] = 'messages.trash_status';
-		$selects[] = 'messages.reply_status';
-		$selects[] = 'messages.is_starred';
-		$selects[] = 'messages.is_important';
-		$selects[] = 'messages.is_draft';
-		$selects[] = 'messages.created_at';
-		$selects[] = 'messages.updated_at';
+		$selects = [];
+		$selects[] = 'messages.*';
+		$selects[] = 'messages_recipient.*';
+		$selects[] = 'messages_recipient.user_id as owner_id';
+		$selects[] = 'messages_recipient.alpha_id as recipient_alpha_id';
 		$selects[] = 'sender_profile.first_name as sender_first_name';
 		$selects[] = 'sender_profile.last_name as sender_last_name';
 		$selects[] = 'sender_profile.avatar as sender_avatar';
+		$selects[] = 'owner_profile.first_name as owner_first_name';
+		$selects[] = 'owner_profile.last_name as owner_last_name';
+		$selects[] = 'owner_profile.avatar as owner_avatar';
 		return $selects;
 	}
 
@@ -304,12 +365,21 @@ class Message extends BaseEntity implements WidgetEntityInterface
 		$queryFilters = [];
 		if(!empty($filters))
 		{
+			if(!empty($filters['alpha']))
+			{
+				$queryFilters['alpha'] = [
+					'eq' => [
+						'field' => 'messages_recipient.alpha_id',
+						'value' => $filters['alpha']['eq']['value']
+					]
+				];
+			}
 			$isPublic = !empty($filters['public']) ? true : false;
 			if(!empty($isPublic))
 			{
 				$queryFilters['status'] = [
 					'eq' => [
-						'field' => 'messages.status',
+						'field' => 'messages_recipient.status',
 						'value' => 2
 					]
 				];
@@ -319,7 +389,7 @@ class Message extends BaseEntity implements WidgetEntityInterface
 			{
 				$queryFilters['user'] = [
 					'eq' => [
-						'field' => 'messages.user_id',
+						'field' => 'messages_recipient.user_id',
 						'value' => zbase_auth_user()->id()
 					]
 				];
@@ -345,9 +415,6 @@ class Message extends BaseEntity implements WidgetEntityInterface
 		{
 			$this->subject = $subject;
 			$this->content = $message;
-			$this->read_status = 0;
-			$this->trash_status = 0;
-			$this->reply_status = 0;
 			if(!empty($options['parent_id']))
 			{
 				$this->parent_id = $options['parent_id'];
@@ -368,16 +435,10 @@ class Message extends BaseEntity implements WidgetEntityInterface
 			{
 				$this->sender_id = $sender->id();
 			}
-			if(!$recipient instanceof \Zbase\Entity\Laravel\User\User && is_numeric($recipient))
-			{
-				$recipient = zbase_user_byid($recipient);
-			}
-			if($recipient instanceof \Zbase\Entity\Laravel\User\User)
-			{
-				$this->user_id = $recipient->id();
-			}
-			$this->status = 2;
 			$this->save();
+			// For the Recipient
+			$this->_msgRecipient($recipient);
+			$this->_msgSender($sender);
 			return $this;
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
@@ -390,22 +451,57 @@ class Message extends BaseEntity implements WidgetEntityInterface
 	}
 
 	/**
-	 * Generate and Update Row Alpha ID
-	 * @return void
+	 *
+	 * @param \Zbase\Entity\Laravel\User\User $sender
+	 * @return type
 	 */
-	protected function _updateAlphaId()
+	protected function _msgSender($sender)
 	{
-		if(empty($this->alpha_id) && !empty($this->message_id) && !empty($this->alphable))
+		// For the Sender
+		$msgSender = new Recipient();
+		$msgSender->read_status = 1;
+		$msgSender->admin_read_status = 1;
+		if($sender instanceof \Zbase\Entity\Laravel\User\User)
 		{
-			$alphaId = zbase_generate_hash([$this->message_id, time()], $this->entityName);
-			$i = 1;
-			while (!empty($this->fetchByAlphaId($alphaId)))
-			{
-				$alphaId = zbase_generate_hash([time(), $i++, $this->message_id], $this->entityName);
-			}
-			$this->alpha_id = $alphaId;
-			$this->save();
+			$msgSender->user_id = $sender->id();
 		}
+		$msgSender->trash_status = 0;
+		$msgSender->reply_status = 0;
+		$msgSender->admin_read_status = 1;
+		$msgSender->status = 2;
+		$msgSender->is_in = 0;
+		$msgSender->is_out = 1;
+		$msgSender->message_id = $this->message_id;
+		$msgSender->save();
+		return $msgSender;
+	}
+
+	/**
+	 *
+	 * @param type $recipient
+	 * @return \Zbase\Entity\Laravel\Message\Recipient
+	 */
+	protected function _msgRecipient($recipient)
+	{
+		$msgRecipient = new Recipient();
+		if(!$recipient instanceof \Zbase\Entity\Laravel\User\User && is_numeric($recipient))
+		{
+			$recipient = zbase_user_byid($recipient);
+		}
+		if($recipient instanceof \Zbase\Entity\Laravel\User\User)
+		{
+			$msgRecipient->user_id = $recipient->id();
+		}
+		$msgRecipient->read_status = 0;
+		$msgRecipient->admin_read_status = 1;
+		$msgRecipient->trash_status = 0;
+		$msgRecipient->reply_status = 0;
+		$msgRecipient->status = 2;
+		$msgRecipient->is_in = 1;
+		$msgRecipient->is_out = 0;
+		$msgRecipient->message_id = $this->message_id;
+		$msgRecipient->save();
+		return $msgRecipient;
 	}
 
 	/**
@@ -415,7 +511,12 @@ class Message extends BaseEntity implements WidgetEntityInterface
 	 */
 	public function fetchByAlphaId($alphaId)
 	{
-		return $this->repository()->byAlphaId($alphaId);
+		$fil = [];
+		$fil['alpha'] = ['eq' => ['value' => $alphaId]];
+		$filters = $this->queryFilters($fil);
+		$joins = $this->queryJoins($filters);
+		$selects = $this->querySelects($filters);
+		return $this->repository()->all($selects, $filters, [], $joins)->first();
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="Entity Configuration">
@@ -432,11 +533,11 @@ class Message extends BaseEntity implements WidgetEntityInterface
 				'entity' => 'user',
 				'type' => 'onetomany',
 				'class' => [
-					'method' => 'user'
+					'method' => 'sender'
 				],
 				'keys' => [
 					'local' => 'user_id',
-					'foreign' => 'user_id'
+					'foreign' => 'sender_id'
 				],
 			],
 		];
@@ -452,20 +553,6 @@ class Message extends BaseEntity implements WidgetEntityInterface
 	public static function tableColumns($columns = [], $entity = [])
 	{
 		$columns = [
-			'user_id' => [
-				'length' => 16,
-				'hidden' => false,
-				'fillable' => true,
-				'type' => 'integer',
-				'index' => true,
-				'unsigned' => true,
-				'foreign' => [
-					'table' => 'users',
-					'column' => 'user_id',
-					'onDelete' => 'cascade'
-				],
-				'comment' => 'Owner ID'
-			],
 			'sender_id' => [
 				'length' => 16,
 				'hidden' => false,
@@ -516,132 +603,6 @@ class Message extends BaseEntity implements WidgetEntityInterface
 				'type' => 'text',
 				'comment' => 'Content'
 			],
-			'status' => [
-				'filterable' => [
-					'name' => 'status',
-					'enable' => true
-				],
-				'sortable' => [
-					'name' => 'status',
-					'enable' => true
-				],
-				'hidden' => false,
-				'default' => 2,
-				'fillable' => false,
-				'nullable' => true,
-				'unsigned' => true,
-				'type' => 'boolean',
-				'index' => true,
-				'comment' => 'Is message viewable to the user?'
-			],
-			'read_status' => [
-				'filterable' => [
-					'name' => 'read',
-					'enable' => true
-				],
-				'sortable' => [
-					'name' => 'read',
-					'enable' => true
-				],
-				'hidden' => false,
-				'fillable' => false,
-				'nullable' => true,
-				'unsigned' => true,
-				'default' => 0,
-				'type' => 'boolean',
-				'index' => true,
-				'comment' => 'Read Status'
-			],
-			'trash_status' => [
-				'filterable' => [
-					'name' => 'trash',
-					'enable' => true
-				],
-				'sortable' => [
-					'name' => 'trash',
-					'enable' => true
-				],
-				'hidden' => false,
-				'fillable' => false,
-				'nullable' => true,
-				'unsigned' => true,
-				'type' => 'boolean',
-				'default' => 0,
-				'index' => true,
-				'comment' => 'Trash Status'
-			],
-			'reply_status' => [
-				'filterable' => [
-					'name' => 'reply',
-					'enable' => true
-				],
-				'sortable' => [
-					'name' => 'reply',
-					'enable' => true
-				],
-				'hidden' => false,
-				'fillable' => false,
-				'default' => 0,
-				'nullable' => true,
-				'unsigned' => true,
-				'type' => 'boolean',
-				'index' => true,
-				'comment' => 'Reply Status'
-			],
-			'is_starred' => [
-				'filterable' => [
-					'name' => 'star',
-					'enable' => true
-				],
-				'sortable' => [
-					'name' => 'star',
-					'enable' => true
-				],
-				'hidden' => false,
-				'fillable' => false,
-				'nullable' => true,
-				'unsigned' => true,
-				'type' => 'boolean',
-				'default' => 0,
-				'index' => true,
-				'comment' => 'Starred'
-			],
-			'is_important' => [
-				'filterable' => [
-					'name' => 'important',
-					'enable' => true
-				],
-				'sortable' => [
-					'name' => 'important',
-					'enable' => true
-				],
-				'hidden' => false,
-				'fillable' => false,
-				'nullable' => true,
-				'unsigned' => true,
-				'type' => 'boolean',
-				'default' => 0,
-				'index' => true,
-				'comment' => 'Important'
-			],
-			'is_draft' => [
-				'filterable' => [
-					'name' => 'draft',
-					'enable' => true
-				],
-				'sortable' => [
-					'name' => 'draft',
-					'enable' => true
-				],
-				'hidden' => false,
-				'fillable' => false,
-				'nullable' => true,
-				'default' => 0,
-				'unsigned' => true,
-				'type' => 'boolean',
-				'index' => true,
-				'comment' => 'Draft'
-			],
 			'parent_id' => [
 				'filterable' => [
 					'name' => 'parentid',
@@ -670,7 +631,7 @@ class Message extends BaseEntity implements WidgetEntityInterface
 			'name' => 'messages',
 			'primaryKey' => 'message_id',
 			'timestamp' => true,
-			'alphaId' => true,
+			'alphaId' => false,
 			'optionable' => true,
 			'description' => 'Messaging',
 		];

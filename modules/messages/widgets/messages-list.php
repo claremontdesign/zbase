@@ -33,14 +33,32 @@ return [
 			'filter' => ['public' => true, 'currentUser' => true, 'query' => [
 					'trashStatus' => [
 						'eq' => [
-							'field' => 'messages.trash_status',
+							'field' => 'messages_recipient.trash_status',
 							'value' => 0
 						],
 					],
 					'draftStatus' => [
 						'eq' => [
-							'field' => 'messages.is_draft',
+							'field' => 'messages_recipient.is_draft',
 							'value' => 0
+						],
+					],
+					'is_in' => [
+						'eq' => [
+							'field' => 'messages_recipient.is_in',
+							'value' => 1
+						],
+					],
+					'is_out' => [
+						'eq' => [
+							'field' => 'messages_recipient.is_out',
+							'value' => 0
+						],
+					],
+					'status' => [
+						'eq' => [
+							'field' => 'messages_recipient.status',
+							'value' => 2
 						],
 					],
 				]]

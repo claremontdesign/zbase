@@ -45,7 +45,7 @@ $rows = $ui->getRows();
 						?>
 						<a href="<?php echo $msg->readUrl(); ?>" class="list-group-item <?php echo implode(' ', $classes); ?>">
 							<span class="glyphicon glyphicon-star-empty"></span>
-							<span class="name" style="min-width: 120px; display: inline-block;"><?php echo $msg->senderName() ?></span>
+							<span class="name" style="min-width: 200px; display: inline-block;"><?php echo $msg->senderName() ?></span>
 							<span class=""><?php echo $msg->subject() ?></span>
 							<span class="badge"><?php echo zbase_view_render(zbase_view_file_contents('ui.components.time'), ['date' => $msg->getTimeSent()]); ?></span>
 							<span class="pull-right">

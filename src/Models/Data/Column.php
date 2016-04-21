@@ -112,7 +112,9 @@ class Column extends Data implements Interfaces\IdInterface
 				'id' => $dataType,
 				'type' => 'data.' . $dataType,
 				'enable' => true,
-				'value' => $value
+				'value' => $value,
+				'hasAccess' => true,
+				'options' => $this->getAttribute('options'),
 			];
 			$this->_value = \Zbase\Ui\Ui::factory($dataTypeConfiguration);
 		}

@@ -180,6 +180,10 @@ function zbase_data_get($target, $key, $default = null)
 	{
 		return value($target);
 	}
+	if($target instanceof Interfaces\EntityInterface && is_string($key) && method_exists($target, $key))
+	{
+		return $target->{$key}();
+	}
 	if($target instanceof Interfaces\AttributeInterface && is_string($key))
 	{
 		return $target->getAttribute($key);
@@ -287,6 +291,13 @@ function zbase_object_factory($className, $config = [])
  */
 function zbase_abort($code, $message = null, $headers = [])
 {
+	if(zbase_request_is_ajax())
+	{
+		if($code == 404)
+		{
+			return new \Zbase\Exceptions\NotFoundHttpException($message);
+		}
+	}
 	return abort($code, $message);
 }
 
@@ -459,23 +470,39 @@ function zbase_view_meta_keywords($keywords)
  */
 function zbase_alerts_render($type = null)
 {
+
 	if(!empty($type))
 	{
 		$alerts = zbase_alerts($type);
 		if(!empty($alerts))
 		{
+			if(zbase_request_is_ajax())
+			{
+				zbase()->json()->setVariable($type, $alerts);
+				return;
+			}
 			$params = ['type' => $type, 'alerts' => $alerts];
 			$template = zbase_view_file_contents(zbase_config_get('view.templates.alerts.' . $type, 'alerts.' . $type));
 			return zbase_view_render($template, $params);
 		}
 		return null;
 	}
-	$str = '';
-	$str .= zbase_alerts_render('error');
-	$str .= zbase_alerts_render('warning');
-	$str .= zbase_alerts_render('success');
-	$str .= zbase_alerts_render('info');
-	return $str;
+	if(zbase_request_is_ajax())
+	{
+		zbase_alerts_render('error');
+		zbase_alerts_render('warning');
+		zbase_alerts_render('success');
+		zbase_alerts_render('info');
+	}
+	else
+	{
+		$str = '';
+		$str .= zbase_alerts_render('error');
+		$str .= zbase_alerts_render('warning');
+		$str .= zbase_alerts_render('success');
+		$str .= zbase_alerts_render('info');
+		return $str;
+	}
 }
 
 // </editor-fold>

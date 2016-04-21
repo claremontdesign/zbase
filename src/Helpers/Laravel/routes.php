@@ -15,6 +15,16 @@
  */
 
 /**
+ * Check if current route is $name
+ * @param string $name The name to test
+ * @return boolean
+ */
+function zbase_route_name_is($name)
+{
+	return \Request::route()->getName() == $name;
+}
+
+/**
  * Retrieve a route-parameter value
  *
  * @param string $key
@@ -81,6 +91,32 @@ function zbase_routes_init($routes = null)
 								'enable' => true
 							];
 							$routes[$adminKey]['children'][$module->id()] = $adminRoute;
+							if($module->isNode())
+							{
+								$nodes = ['files', 'category'];
+								foreach ($nodes as $n)
+								{
+									$adminRoute = [
+										'controller' => [
+											'name' => 'backendModule',
+											'method' => 'index',
+											'enable' => true,
+											'params' => [
+												'module' => $module,
+												'node' => $n,
+												'nodeNamespace' => $module->nodeNamespace()
+											]
+										],
+										'form' => [
+											'enable' => true
+										],
+										'url' => 'nodes/' . $n . '/' . $module->sectionUrl('backend'),
+										'backend' => true,
+										'enable' => true
+									];
+									$routes[$adminKey]['children'][$module->id() . '_' . $n] = $adminRoute;
+								}
+							}
 						}
 						if($module->hasFrontend())
 						{
@@ -100,6 +136,31 @@ function zbase_routes_init($routes = null)
 								'enable' => true
 							];
 							$routes[$module->id()] = $frontRoute;
+							if($module->isNode())
+							{
+								$nodes = ['files', 'category'];
+								foreach ($nodes as $n)
+								{
+									$frontRoute = [
+										'controller' => [
+											'name' => 'pageModule',
+											'method' => 'index',
+											'enable' => true,
+											'params' => [
+												'module' => $module,
+												'node' => $n,
+												'nodeNamespace' => $module->nodeNamespace()
+											]
+										],
+										'form' => [
+											'enable' => true
+										],
+										'url' => 'nodes/' . $n . '/' . $module->sectionUrl(),
+										'enable' => true
+									];
+									$routes[$module->id() . '_' . $n] = $frontRoute;
+								}
+							}
 						}
 					}
 				}

@@ -110,6 +110,15 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	}
 
 	/**
+	 * Form is deleting
+	 * @return type
+	 */
+	public function isDeleting()
+	{
+		return $this->_action == 'delete';
+	}
+
+	/**
 	 * set that form has error
 	 */
 	public function setHasError()
@@ -135,6 +144,14 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	public function controller($action)
 	{
 		$this->setAction($action);
+		if($this->isDeleting())
+		{
+			$deleteViewFile = $this->_v('event.' . zbase_section() . '.delete.pre.view.file', false);
+			if(!empty($deleteViewFile))
+			{
+				$this->_viewParams['viewFile'] = $deleteViewFile;
+			}
+		}
 		if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
 		{
 			if($this->entity()->hasSoftDelete())
@@ -181,6 +198,10 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 					}
 					return $this->_postEvent($action);
 				}
+				if($action == 'restore' || $action == 'ddelete')
+				{
+					return $this->_postEvent($action);
+				}
 			}
 			if($this->isCreating())
 			{
@@ -212,7 +233,30 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		{
 			return zbase_redirect()->to($this->entity()->alphaUrl());
 		}
-		$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post', null);
+		$isAjax = zbase_request_is_ajax();
+		$requestMethod = strtolower(zbase_request_method());
+		if($isAjax)
+		{
+			if($requestMethod == 'post')
+			{
+				$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post-json.post', $this->_v('event.' . zbase_section() . '.' . $action . '.post-json'));
+			}
+			else
+			{
+				$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post-json', $this->_v('event.' . zbase_section() . '.' . $action . '.post'));
+			}
+		}
+		else
+		{
+			if($requestMethod == 'post')
+			{
+				$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post.post', null);
+			}
+			else
+			{
+				$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post', null);
+			}
+		}
 		if(is_null($e))
 		{
 			if(zbase_is_back())
@@ -221,7 +265,15 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				{
 					$action = 'update';
 				}
-				$params = ['action' => $action, 'id' => $this->entity()->id()];
+				$byAlphaId = $this->_v('entity.repo.byAlphaId.route', false);
+				if(!empty($byAlphaId))
+				{
+					$params = ['action' => $action, 'id' => $this->entity()->alphaId()];
+				}
+				else
+				{
+					$params = ['action' => $action, 'id' => $this->entity()->id()];
+				}
 			}
 			else
 			{
@@ -239,6 +291,13 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		}
 		if(!empty($e))
 		{
+			if(!empty($e['data']))
+			{
+				if($isAjax)
+				{
+					zbase()->json()->addVariables($e['data']);
+				}
+			}
 			if(!empty($e['route']))
 			{
 				$params = zbase_route_inputs();
@@ -246,10 +305,27 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				{
 					$params = array_merge($params, $e['route']['params']);
 				}
+				if(zbase_is_back())
+				{
+					$byAlphaId = $this->_v('entity.repo.byAlphaId.route', false);
+					if(!empty($byAlphaId))
+					{
+						$params['id'] = $this->entity()->alphaId();
+					}
+					else
+					{
+						$params['id'] = $this->entity()->id();
+					}
+				}
+				$e['route']['params'] = $params;
 				$url = zbase_url_from_config($e);
 			}
 		}
-		return zbase_redirect()->to($url);
+		if(!empty($url))
+		{
+			return zbase_redirect()->to($url);
+		}
+		return true;
 	}
 
 	/**
@@ -264,8 +340,16 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	/**
 	 * Validate widget
 	 */
-	public function validateWidget()
+	public function validateWidget($action)
 	{
+		if($this->_urlHasRequest)
+		{
+			if(empty($this->_entity))
+			{
+				return zbase_abort(404);
+			}
+		}
+		$this->setAction($action);
 		$this->prepare();
 		if(zbase_request_method() == 'post')
 		{
@@ -273,6 +357,10 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			if(!empty($currentTab))
 			{
 				zbase_session_flash('sessiontab', $currentTab);
+			}
+			if($this->isDeleting())
+			{
+				return;
 			}
 			$validationRules = $this->getValidationRules();
 			if(!empty($validationRules))
@@ -381,8 +469,8 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 						{
 							if($widgetElement->hasValidations())
 							{
-								$this->_validationRules = array_replace_recursive($this->_validationRules, $widgetElement->getValidationRules());
-								$this->_validationMessages = array_replace_recursive($this->_validationMessages, $widgetElement->getValidationMessages());
+								$this->_validationRules = array_replace_recursive($this->_validationRules, $widgetElement->getValidationRules($this->getAction()));
+								$this->_validationMessages = array_replace_recursive($this->_validationMessages, $widgetElement->getValidationMessages($this->getAction()));
 							}
 						}
 					}

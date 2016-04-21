@@ -30,7 +30,10 @@ return [
 				'trash' => [
 					'post' => [
 						'route' => [
-							'name' => 'messages'
+							'name' => 'messages',
+							'params' => [
+								'action' => 'index'
+							]
 						]
 					],
 				],

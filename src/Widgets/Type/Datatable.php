@@ -216,11 +216,11 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 			$filters = [];
 			$sorting = [];
 			$joins = [];
+			$selects = ['*'];
 			if($this->isNode())
 			{
 				$urlFilters = $this->getRequestFilters();
 				$entityObject = $this->entityObject();
-				$selects = ['*'];
 				if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
 				{
 					/**
@@ -306,7 +306,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 				if(!empty($this->_entity))
 				{
 					$repo = $this->_repo();
-					if($this->_entity->hasSoftDelete())
+					if($this->_entity->hasSoftDelete() && $this->nodeIncludeTrashed())
 					{
 						$this->_rows = $repo->withTrashed()->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, true);
 					}
@@ -579,7 +579,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	/**
 	 * Validate widget
 	 */
-	public function validateWidget()
+	public function validateWidget($action)
 	{
 		$this->_pre();
 	}

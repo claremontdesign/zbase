@@ -179,6 +179,12 @@ abstract class Ui
 		return $this->_hasAccess;
 	}
 
+	public function setHasAccess($access)
+	{
+		$this->_hasAccess = $access;
+		return $this;
+	}
+
 	/**
 	 * @var string
 	 * access = renter

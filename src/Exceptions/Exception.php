@@ -15,7 +15,13 @@ namespace Zbase\Exceptions;
  * @project Zbase
  * @package Zbase/Exceptions/Exception
  */
-class Exception extends \Exception
+class Exception extends \RuntimeException
 {
 
+	protected $statusCode = 500;
+
+	public function getStatusCode()
+	{
+		return $this->statusCode;
+	}
 }

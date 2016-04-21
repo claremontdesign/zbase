@@ -23,8 +23,14 @@ function zbase_response($response)
 {
 	if(zbase_request_is_ajax())
 	{
+		$code = 200;
+		if($response instanceof \RuntimeException)
+		{
+			$code = $response->getStatusCode();
+		}
 		zbase()->json()->setVariable('_token', zbase_csrf_token());
-		return response()->json(zbase()->json()->getVariables());
+		zbase_alerts_render();
+		return response()->json(zbase()->json()->getVariables(), $code);
 	}
 	return $response;
 }

@@ -19,5 +19,5 @@ use Zbase\Exceptions\Exception;
 
 class UnauthorizedException extends Exception
 {
-
+	protected $statusCode = 401;
 }

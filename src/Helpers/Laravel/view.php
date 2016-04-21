@@ -167,6 +167,15 @@ function zbase_view_file_contents($name)
 	}
 
 	$package = zbase_view_template_package();
+	// - check.contents.back.$name
+	if(zbase_is_back())
+	{
+		$viewFile = $package . '::contents.back.' . $name;
+		if(\View::exists($viewFile))
+		{
+			return $viewFile;
+		}
+	}
 	// - check contents.$name
 	$viewFile = $package . '::contents.' . $name;
 	if(\View::exists($viewFile))

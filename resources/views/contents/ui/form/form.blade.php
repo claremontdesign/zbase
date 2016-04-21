@@ -12,10 +12,14 @@ $formTag = $ui->hasFormTag();
 <div <?php echo $wrapperAttributes ?>>
 	<?php if(empty($ui->isNested())): ?>
 		<?php if(!empty($formTag)): ?>
-			<?php echo $ui->startTag();?>
-			<?php endif; ?>
-			<?php echo $ui->renderCSRFToken(); ?>
+			<?php echo $ui->startTag(); ?>
 		<?php endif; ?>
+		<?php echo $ui->renderCSRFToken(); ?>
+	<?php endif; ?>
+	<?php if(!empty($viewFile)): ?>
+		<?php echo zbase_view_render(zbase_view_file_contents($viewFile), compact('ui')); ?>
+	<?php endif; ?>
+	<?php if(empty($viewFile)): ?>
 		<?php if(!empty($elements)): ?>
 			<?php foreach ($elements as $element): ?>
 				<?php echo $element ?>
@@ -24,15 +28,16 @@ $formTag = $ui->hasFormTag();
 		<?php if(!empty($tabs)): ?>
 			<?php echo $tabs ?>
 		<?php endif; ?>
+	<?php endif; ?>
 
-		<?php if(!empty($submitButton) && !empty($formTag)): ?>
-			<hr />
-			<?php echo $ui->renderSubmitButton();?>
-		<?php endif; ?>
+	<?php if(!empty($submitButton) && !empty($formTag)): ?>
+		<hr />
+		<?php echo $ui->renderSubmitButton(); ?>
+	<?php endif; ?>
 
-		<?php if(empty($ui->isNested())): ?>
-			<?php if(!empty($formTag)): ?>
-			<?php echo $ui->endTag();?>
+	<?php if(empty($ui->isNested())): ?>
+		<?php if(!empty($formTag)): ?>
+			<?php echo $ui->endTag(); ?>
 		<?php endif; ?>
 	<?php endif; ?>
 </div>

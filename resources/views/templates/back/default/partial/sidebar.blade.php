@@ -10,13 +10,24 @@
 				<!-- BEGIN SIDEBAR TOGGLER BUTTON -->
 			</li>
 			<li class="start ">
-				<a href="<?php echo zbase_url_from_route('admin')?>">
+				<a href="<?php echo zbase_url_from_route('admin') ?>">
 					<i class="fa fa-home"></i>
 					<span class="title">
 						Dashboard
 					</span>
 				</a>
 			</li>
+			<?php
+			$modules = zbase()->modules();
+			foreach ($modules as $module)
+			{
+				if($module->hasNavigation(zbase_section()))
+				{
+					$navigation = $module->getNavigation(zbase_section());
+					echo $navigation;
+				}
+			}
+			?>
 		</ul>
 		<!-- END SIDEBAR MENU -->
 	</div>

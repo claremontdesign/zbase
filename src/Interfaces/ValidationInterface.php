@@ -21,19 +21,22 @@ interface ValidationInterface
 
 	/**
 	 * Return all validation rules
+	 * @param string $action Current Action
 	 * @return array
 	 */
-	public function getValidationRules();
+	public function getValidationRules($action = null);
 
 	/**
 	 * REturn the validation messages
+	 * @param string $action Current Action
 	 * @return array
 	 */
-	public function getValidationMessages();
+	public function getValidationMessages($action = null);
 
 	/**
 	 * Check if there are validations
+	 * @param string $action Current Action
 	 * @return boolean
 	 */
-	public function hasValidations();
+	public function hasValidations($action = null);
 }

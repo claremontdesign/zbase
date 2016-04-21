@@ -374,6 +374,16 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="DataTable Widget Query Interface/Methods">
+
+	/**
+	 * Return SELECTs
+	 * @param array $filters
+	 */
+	public function querySelects($filters)
+	{
+		return ['*'];
+	}
+
 	/**
 	 * Join Query
 	 * @param array $filters Array of Filters
@@ -414,6 +424,23 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		$queryFilters = [];
 		if(!empty($filters))
 		{
+			/**
+			 * run through a given filters, possibly valid query filters
+			 */
+			if(!empty($filters))
+			{
+				foreach($filters as $fK => $fV)
+				{
+					if(!empty($fV['eq']) && !empty($fV['eq']['field'])  && !empty($fV['eq']['value']))
+					{
+						if(!preg_match('/' . static::$nodeNamePrefix . '\./', $fV['eq']['field']))
+						{
+							$fV['eq']['field'] = static::$nodeNamePrefix . '.' . $fV['eq']['field'];
+						}
+						$queryFilters[$fK] = $fV;
+					}
+				}
+			}
 			$isPublic = !empty($filters['public']) ? true : false;
 			if(!empty($isPublic))
 			{
@@ -588,14 +615,14 @@ class Node extends BaseEntity implements WidgetEntityInterface
 					if(array_key_exists($sortName, $this->sortableColumns) && in_array(strtolower($direction), ['desc', 'asc']))
 					{
 						$column = $this->sortableColumns[$sortName]['column'];
-						$sort['node.' . $column] = strtoupper($direction);
+						$sort[static::$nodeNamePrefix . '.' . $column] = strtoupper($direction);
 					}
 				}
 			}
 		}
 		if(empty($sort))
 		{
-			$sort[] = ['node.created_at' => 'DESC'];
+			$sort[] = [static::$nodeNamePrefix . '.created_at' => 'DESC'];
 		}
 		return $sort;
 	}
@@ -694,40 +721,40 @@ class Node extends BaseEntity implements WidgetEntityInterface
 					$undoText = '';
 					if(!empty($this->hasSoftDelete()))
 					{
-						$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->alphaId()]) . '" title="Undo Delete" class="undodelete">Undo</a>.';
+						$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->alphaId()]) . '" title="Undo Delete" class="undodelete">Undo</a>';
 						$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->alphaId()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
 					}
 					$this->_actionMessages[$action]['success'][] = _zt('Deleted "%title%"! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
 					return true;
 				}
-				if($action == 'restore')
+			}
+			if($action == 'restore')
+			{
+				if($this->trashed())
 				{
-					if($this->trashed())
-					{
-						$this->restore();
-						$this->log($action);
-						zbase_db_transaction_commit();
-						zbase_cache_flush([$this->getTable()]);
-						$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was restored!', ['%title%' => $this->title, '%id%' => $this->id()]);
-						return true;
-					}
-					$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
-					return false;
+					$this->restore();
+					$this->log($action);
+					zbase_db_transaction_commit();
+					zbase_cache_flush([$this->getTable()]);
+					$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was restored!', ['%title%' => $this->title, '%id%' => $this->id()]);
+					return true;
 				}
-				if($action == 'ddelete')
+				$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
+				return false;
+			}
+			if($action == 'ddelete')
+			{
+				if($this->trashed())
 				{
-					if($this->trashed())
-					{
-						$this->forceDelete();
-						$this->log($action);
-						zbase_db_transaction_commit();
-						zbase_cache_flush([$this->getTable()]);
-						$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was removed from database!', ['%title%' => $this->title, '%id%' => $this->id()]);
-						return true;
-					}
-					$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
-					return false;
+					$this->forceDelete();
+					$this->log($action);
+					zbase_db_transaction_commit();
+					zbase_cache_flush([$this->getTable()]);
+					$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was removed from database!', ['%title%' => $this->title, '%id%' => $this->id()]);
+					return true;
 				}
+				$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
+				return false;
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{

@@ -173,5 +173,13 @@ return [
 			'enable' => true,
 			'model' => Zbase\Entity\__FRAMEWORK__\Message\Message::class
 		],
+		'messages_recipient' => [
+			'enable' => true,
+			'model' => Zbase\Entity\__FRAMEWORK__\Message\Recipient::class
+		],
+		'messages_files' => [
+			'enable' => true,
+			'model' => Zbase\Entity\__FRAMEWORK__\Message\File::class
+		],
 	],
 ];

@@ -46,6 +46,11 @@ return [
 					],
 				]
 			],
+			'nodes' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('js/nodes/nodes.js'),
+				'enable' => true
+			],
 			// <editor-fold defaultstate="collapsed" desc="Jquery">
 			'jquery' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,

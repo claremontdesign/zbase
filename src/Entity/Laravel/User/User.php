@@ -251,7 +251,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					'middle_name' => !empty($attributesProfile['middle_name']) ? $attributesProfile['middle_name'] : null,
 					'dob' => !empty($attributesProfile['dob']) ? $attributesProfile['dob'] : null,
 					'gender' => !empty($attributesProfile['gender']) ? $attributesProfile['gender'] : null,
-					'avatar' => !empty($attributesProfile['avatar']) ? $attributesProfile['avatar'] : null,
+					'avatar' => !empty($attributesProfile['avatar']) ? $attributesProfile['avatar'] : 'http://api.adorable.io/avatars/285/' . $model->alpha_id . '.png'
 				];
 				$model->profile()->create(array_replace_recursive($attributesProfile, $profileAttributes));
 			}
@@ -688,7 +688,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 // </editor-fold>
-
+	// <editor-fold defaultstate="collapsed" desc="TableDefiniations">
 	/**
 	 * Default Data
 	 * @param array $defaultData Configuration default data
@@ -968,4 +968,5 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		return $relations;
 	}
 
+	// </editor-fold>
 }

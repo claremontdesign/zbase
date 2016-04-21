@@ -21,7 +21,7 @@ interface ElementInterface
 
 	public function getType();
 
-	public function getValidationRules();
+	public function getValidationRules($action = null);
 
-	public function getValidationMessages();
+	public function getValidationMessages($action = null);
 }

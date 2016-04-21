@@ -40,11 +40,11 @@ trait Validations
 	 * Return all validation rules
 	 * @return array
 	 */
-	public function getValidationRules()
+	public function getValidationRules($action = null)
 	{
 		if(empty($this->_fixValidation))
 		{
-			$this->_validation();
+			$this->_validation($action);
 		}
 		if($this->hasValidations())
 		{
@@ -56,11 +56,11 @@ trait Validations
 	 * REturn the validation messages
 	 * @return array
 	 */
-	public function getValidationMessages()
+	public function getValidationMessages($action = null)
 	{
 		if(empty($this->_fixValidation))
 		{
-			$this->_validation();
+			$this->_validation($action);
 		}
 		return $this->_validationMessages;
 	}
@@ -69,11 +69,11 @@ trait Validations
 	 * Check if there are validations
 	 * @return boolean
 	 */
-	public function hasValidations()
+	public function hasValidations($action = null)
 	{
 		if(empty($this->_fixValidation))
 		{
-			$this->_validation();
+			$this->_validation($action);
 		}
 		return !empty($this->_validationRules);
 	}
@@ -86,9 +86,10 @@ trait Validations
 	 * validations.required
 	 * validations.required.message
 	 */
-	protected function _validation()
+	protected function _validation($action = null)
 	{
-		$validations = $this->_v('validations', []);
+		$section = zbase_section();
+		$validations = $this->_v('validations.' . $action . '.' . $section, $this->_v('validations.' . $action, $this->_v('validations', [])));
 		$this->_fixValidation = true;
 		if(!empty($validations))
 		{

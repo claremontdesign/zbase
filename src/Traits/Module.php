@@ -26,6 +26,13 @@ trait Module
 	protected $module;
 
 	/**
+	 * The Node name e.g. file or category
+	 * For Node generic support
+	 * @var string
+	 */
+	protected $nodeName;
+
+	/**
 	 * Set the Module
 	 * @param \Zbase\Http\Controllers\Laravel\Module\ModuleInterface $module
 	 * @return \Zbase\Http\Controllers\Laravel\BackendModuleController
@@ -45,6 +52,16 @@ trait Module
 		return $this->module;
 	}
 
+	/**
+	 * The Nodename
+	 * @param string $node
+	 */
+	public function setNode($node)
+	{
+		$this->nodeName = $node;
+		return $this;
+	}
+
 	public function controllerIndex()
 	{
 		if(!$this->getModule()->hasAccess())
@@ -61,23 +78,34 @@ trait Module
 		/**
 		 * Check for widgets
 		 */
-		$action = $this->getRouteParameter('action', 'index');
+		$widgetsAction = $action = $this->getRouteParameter('action', 'index');
+		$requestMethod = zbase_request_method();
+		if(!empty($this->nodeName))
+		{
+			$widgetsAction = $requestMethod . '-node-' . $this->nodeName . '-' . $action;
+			$htmls = [];
+		}
 		$isAjax = zbase_request_is_ajax();
 		if($isAjax)
 		{
-			$action = 'json-' . $action;
+			$widgetsAction = (!empty($this->nodeName) ? $requestMethod . '-node-' . $this->nodeName . '-' : '') . 'json-' . $action;
 			$htmls = [];
 		}
-		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($action);
+		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($widgetsAction);
 		if(empty($widgets))
 		{
 			return zbase_abort(404);
 		}
 		foreach ($widgets as $widget)
 		{
+			if(!empty($this->nodeName))
+			{
+				zbase()->json()->addVariable('node', ['prefix'=>$this->getModule()->nodeNamespace(), 'name' => $this->nodeName, 'support' => 1]);
+				$widget->setNodename($this->nodeName)->setNodeSupport(true);
+			}
 			if($widget instanceof \Zbase\Widgets\ControllerInterface)
 			{
-				$v = $widget->validateWidget();
+				$v = $widget->validateWidget($action);
 				if($v instanceof \Illuminate\Contracts\Validation\Validator)
 				{
 					if($isAjax)
@@ -92,6 +120,18 @@ trait Module
 					}
 				}
 				$ret = $widget->controller($this->getRouteParameter('action', 'index'));
+				if($ret instanceof \Zbase\Exceptions\NotFoundHttpException)
+				{
+					return $this->notFound();
+				}
+				if($ret instanceof \Zbase\Exceptions\UnauthorizedException)
+				{
+					return $this->unathorized();
+				}
+				if($ret instanceof \Zbase\Exceptions\Exception)
+				{
+					return $this->error();
+				}
 				if($ret instanceof \Illuminate\Http\RedirectResponse)
 				{
 					if($isAjax)

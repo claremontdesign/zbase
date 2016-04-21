@@ -119,7 +119,7 @@ class View extends Widgets\Widget implements Widgets\WidgetInterface, Widgets\Co
 		}
 	}
 
-	public function validateWidget()
+	public function validateWidget($action)
 	{
 
 	}

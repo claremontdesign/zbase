@@ -40,6 +40,12 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	protected $withTrashed = false;
 
 	/**
+	 * View only trashed rows
+	 * @var boolean
+	 */
+	protected $onlyTrashed = false;
+
+	/**
 	 * Constructor
 	 * @param Interfaces\EntityInterface $model
 	 */
@@ -62,16 +68,31 @@ class Repository implements Interfaces\EntityRepositoryInterface
 			throw new InvalidArgumentException('Invalid id');
 		}
 		$withTrashed = $this->withTrashed;
+		$onlyTrashed = $this->onlyTrashed;
+		$prefix = $this->getModel()->getTable();
+		if(!empty($withTrashed))
+		{
+			$prefix .= '_withtrashed';
+		}
+		if(!empty($onlyTrashed))
+		{
+			$prefix .= '_onlytrashed';
+		}
 		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args()), function() use ($id, $columns, $withTrashed){
+				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns, $withTrashed, $onlyTrashed){
 			if(!empty($withTrashed))
 			{
 				return $this->getModel()->withTrashed()->find(intval($id), $columns);
+			}
+			if(!empty($onlyTrashed))
+			{
+				return $this->getModel()->onlyTrashed()->find(intval($id), $columns);
 			}
 			return $this->getModel()->find(intval($id), $columns);
 				}, [$this->getModel()->getTable()]
 		);
 	}
+
 	/**
 	 * Find by Alpha id
 	 * @param string $id
@@ -86,16 +107,23 @@ class Repository implements Interfaces\EntityRepositoryInterface
 			throw new InvalidArgumentException('Invalid id');
 		}
 		$withTrashed = $this->withTrashed;
+		$onlyTrashed = $this->onlyTrashed;
+		$prefix = $this->getModel()->getTable();
+		if(!empty($withTrashed))
+		{
+			$prefix .= '_withtrashed';
+		}
+		if(!empty($onlyTrashed))
+		{
+			$prefix .= '_onlytrashed';
+		}
 		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args()), function() use ($id, $columns, $withTrashed){
-			if(!empty($withTrashed))
-			{
-				return $this->by('alpha_id', $id, $columns)->first();
-			}
-			return $this->by('alpha_id', $id, $columns)->first();
+				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns){
+					return $this->by('alpha_id', $id, $columns)->first();
 				}, [$this->getModel()->getTable()]
 		);
 	}
+
 	/**
 	 * Find by Slug
 	 * @param string $id
@@ -110,13 +138,19 @@ class Repository implements Interfaces\EntityRepositoryInterface
 			throw new InvalidArgumentException('Invalid id');
 		}
 		$withTrashed = $this->withTrashed;
+		$onlyTrashed = $this->onlyTrashed;
+		$prefix = $this->getModel()->getTable();
+		if(!empty($withTrashed))
+		{
+			$prefix .= '_withtrashed';
+		}
+		if(!empty($onlyTrashed))
+		{
+			$prefix .= '_onlytrashed';
+		}
 		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args()), function() use ($id, $columns, $withTrashed){
-			if(!empty($withTrashed))
-			{
-				return $this->by('slug', $id, $columns)->first();
-			}
-			return $this->by('slug', $id, $columns)->first();
+				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns){
+					return $this->by('slug', $id, $columns)->first();
 				}, [$this->getModel()->getTable()]
 		);
 	}
@@ -194,17 +228,28 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$paginate = $this->getModel()->getPerPage();
 		}
+		$withTrashed = $this->withTrashed;
+		$onlyTrashed = $this->onlyTrashed;
+		$prefix = $this->getModel()->getTable();
+		if(!empty($withTrashed))
+		{
+			$prefix .= '_withtrashed';
+		}
+		if(!empty($onlyTrashed))
+		{
+			$prefix .= '_onlytrashed';
+		}
 		if(!empty($paginate))
 		{
 			return zbase_cache(
-					zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder, $paginate, $columns){
+					zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder, $paginate, $columns){
 				return $builder->paginate($paginate, $columns);
 				}, [$this->getModel()->getTable()]
 			);
 		}
 
 		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder){
+				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder){
 			return $builder->get();
 				}, [$this->getModel()->getTable()]
 		);
@@ -311,6 +356,10 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$model = $model->withTrashed();
 		}
+		if(!empty($this->onlyTrashed))
+		{
+			$model = $model->onlyTrashed();
+		}
 		if(!empty($joins))
 		{
 			$model = $model->joinModels($joins);
@@ -407,6 +456,16 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	public function withTrashed($flag = true)
 	{
 		$this->withTrashed = $flag;
+		return $this;
+	}
+
+	/**
+	 * If to include trashed rows
+	 * @param boolean $flag
+	 */
+	public function onlyTrashed($flag = true)
+	{
+		$this->onlyTrashed = $flag;
 		return $this;
 	}
 

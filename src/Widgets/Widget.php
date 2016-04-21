@@ -106,6 +106,13 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	protected $_module = null;
 
 	/**
+	 * Node Suppport?
+	 * @var boolean
+	 */
+	protected $_nodeSupport = false;
+	protected $_nodeName = null;
+
+	/**
 	 * Constructor
 	 * @param string $widgetId
 	 * @param array $configuration
@@ -114,6 +121,37 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	{
 		$this->_widgetId = $widgetId;
 		$this->setAttributes($configuration);
+	}
+
+	/**
+	 * The generice node name
+	 * @param type $nodeName
+	 * @return \Zbase\Widgets\Widget
+	 */
+	public function setNodeName($nodeName)
+	{
+		$this->_nodeName = $nodeName;
+		return $this;
+	}
+
+	/**
+	 * Do we need generic node support?
+	 * @param type $flag
+	 * @return \Zbase\Widgets\Widget
+	 */
+	public function setNodeSupport($flag)
+	{
+		$this->_nodeSupport = $flag;
+		return $this;
+	}
+
+	/**
+	 * return the node namespace
+	 * @return string
+	 */
+	public function getNodeNamespace()
+	{
+		return $this->getModule()->nodeNamespace();
 	}
 
 	public function id()
@@ -241,6 +279,15 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
+	 * Check if we are filtering for the current user
+	 * @return boolean
+	 */
+	public function isAdmin()
+	{
+		return $this->_v('entity.filter.admin', false);
+	}
+
+	/**
 	 * Node Typoe Entity
 	 * @return type
 	 */
@@ -276,6 +323,15 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	public function nodePrefix()
 	{
 		return $this->_v('entity.node.prefix', null);
+	}
+
+	/**
+	 * If to include trashed data
+	 * @return boolean
+	 */
+	public function nodeIncludeTrashed()
+	{
+		return $this->_v('entity.node.trashed', false);
 	}
 
 	/**
@@ -318,6 +374,10 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 		if(is_null($this->_entity))
 		{
 			$entityName = $this->_v('entity.name', null);
+			if(!empty($this->_nodeSupport))
+			{
+				$entityName = $this->getNodeNamespace() . '_' . strtolower($this->_nodeName);
+			}
 			if(!is_null($entityName))
 			{
 				$this->_entityObject = $entity = zbase()->entity($entityName, [], true);
@@ -363,9 +423,12 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 					if(!empty($id))
 					{
 						$filters = $this->_v('entity.filter.query', []);
+						$selects = ['*'];
+						$joins = [];
 						$this->_urlHasRequest = true;
 						if($this->isNode())
 						{
+							zbase()->json()->addVariable('id', $id);
 							if($this->isCurrentUser())
 							{
 								$filters['user'] = ['eq' => ['field' => 'user_id', 'value' => zbase_auth_user()->id()]];
@@ -382,15 +445,44 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 							{
 								$filters['slug'] = ['eq' => ['field' => 'slug', 'value' => $id]];
 							}
-							if($entity->hasSoftDelete() && $this->isCurrentUser())
+							if(method_exists($entity, 'querySelects'))
 							{
-								return $this->_entity = $entity->repository()->withTrashed()->all(['*'], $filters)->first();
+								$selects = $entity->querySelects($filters);
+							}
+							if(method_exists($entity, 'queryJoins'))
+							{
+								$joins = $entity->queryJoins($filters, $this->getRequestSorting());
+							}
+							if(method_exists($entity, 'queryFilters'))
+							{
+								$filters = $entity->queryFilters($filters);
+							}
+							/**
+							 * Merge filters from widget configuration
+							 * entity.filter.query
+							 */
+							$filters = array_merge($filters, $this->_v('entity.filter.query', []));
+							$action = $this->getAction();
+							$debug = zbase_request_query_input('__widgetEntityDebug', false);
+							if($this->isAdmin())
+							{
+								if($action == 'restore' || $action == 'ddelete')
+								{
+									return $this->_entity = $entity->repository()->onlyTrashed()->all($selects, $filters, [], $joins)->first();
+								}
 							}
 							else
 							{
-//								dd($filters, $entity->repository()->setDebug(false)->all(['*'], $filters));
-								return $this->_entity = $entity->repository()->setDebug(false)->all(['*'], $filters)->first();
+								if($entity->hasSoftDelete() && $this->isCurrentUser())
+								{
+									if($action == 'restore' || $action == 'ddelete')
+									{
+										return $this->_entity = $entity->repository()->onlyTrashed()->all($selects, $filters, [], $joins)->first();
+									}
+									return $this->_entity = $entity->repository()->setDebug($debug)->withTrashed()->all($selects, $filters, [], $joins)->first();
+								}
 							}
+							return $this->_entity = $entity->repository()->setDebug($debug)->all($selects, $filters, [], $joins)->first();
 						}
 					}
 				}

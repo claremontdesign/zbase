@@ -16,7 +16,7 @@
  */
 return [
 	'id' => 'nodes-category',
-	'enable' => true,
+	'enable' => false,
 	'access' => 'admin',
 	'class' => null,
 	'backend' => true,

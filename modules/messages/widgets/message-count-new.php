@@ -36,19 +36,31 @@ return [
 			'filter' => ['public' => true, 'currentUser' => true, 'query' => [
 					'trashStatus' => [
 						'eq' => [
-							'field' => 'messages.trash_status',
+							'field' => 'messages_recipient.trash_status',
 							'value' => 0
 						],
 					],
 					'draftStatus' => [
 						'eq' => [
-							'field' => 'messages.is_draft',
+							'field' => 'messages_recipient.is_draft',
 							'value' => 0
 						],
 					],
 					'readStatus' => [
 						'eq' => [
-							'field' => 'messages.read_status',
+							'field' => 'messages_recipient.read_status',
+							'value' => 0
+						],
+					],
+					'isInbox' => [
+						'eq' => [
+							'field' => 'messages_recipient.is_in',
+							'value' => 1
+						],
+					],
+					'isOutbox' => [
+						'eq' => [
+							'field' => 'messages_recipient.is_out',
 							'value' => 0
 						],
 					],

@@ -20,6 +20,9 @@ namespace Zbase\Module;
  * module.access = access level
  * module.class = The classname to use
  * module.backend = true|false
+ * module.node = true|false This module has node entities on it. Support for node entities will be added like routes
+ * module.node.enable = true|false This module has node entities on it. Support for node entities will be added like routes
+ * module.node.prefix = node prefix
  * module.frontend = true|false
  * module.url.front = the front URL key
  * module.url.back = the back URL key; default to module.id
@@ -72,6 +75,28 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	public function __construct($configuration = null)
 	{
 		$this->setConfiguration($configuration);
+	}
+
+	/**
+	 * Return the Module Navigation
+	 */
+	public function getNavigation($section = 'back')
+	{
+		$nav = $this->_v('navigation.' . $section . '.nav', []);
+		if(!empty($nav))
+		{
+			$nav['id'] = $this->id();
+			return new \Zbase\Models\View\Navigation($nav);
+		}
+	}
+
+	/**
+	 * Check if there is a navigation entry for admin
+	 * @return boolean
+	 */
+	public function hasNavigation($section = 'back')
+	{
+		return (bool) $this->_v('navigation.' . $section . '.enable', false);
 	}
 
 	/**
@@ -160,6 +185,25 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	public function isEnableAndAccessible()
 	{
 		return $this->isEnable() && $this->hasAccess();
+	}
+
+	/**
+	 * Is module needed a node support?
+	 * For generic node support
+	 * @reutrn boolean
+	 */
+	public function isNode()
+	{
+		return (bool) $this->_v('node.enable', false);
+	}
+
+	/**
+	 * Return the node prefix
+	 * @return string
+	 */
+	public function nodeNamespace()
+	{
+		return $this->_v('node.namespace', null);
 	}
 
 	/**
