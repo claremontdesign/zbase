@@ -93,28 +93,32 @@ function zbase_routes_init($routes = null)
 							$routes[$adminKey]['children'][$module->id()] = $adminRoute;
 							if($module->isNode())
 							{
-								$nodes = ['files', 'category'];
-								foreach ($nodes as $n)
+								$nodes = $module->getNodesSupport();
+								if(!empty($nodes))
 								{
-									$adminRoute = [
-										'controller' => [
-											'name' => 'backendModule',
-											'method' => 'index',
-											'enable' => true,
-											'params' => [
-												'module' => $module,
-												'node' => $n,
-												'nodeNamespace' => $module->nodeNamespace()
-											]
-										],
-										'form' => [
+									foreach ($nodes as $n)
+									{
+										$adminRoute = [
+											'controller' => [
+												'name' => 'backendModule',
+												'method' => 'index',
+												'enable' => true,
+												'params' => [
+													'module' => $module,
+													'node' => $n,
+													'nodeNamespace' => $module->nodeNamespace()
+												]
+											],
+											'form' => [
+												'enable' => true
+											],
+											'url' => 'nodes/' . $n . '/' . $module->sectionUrl('backend'),
+											'backend' => true,
 											'enable' => true
-										],
-										'url' => 'nodes/' . $n . '/' . $module->sectionUrl('backend'),
-										'backend' => true,
-										'enable' => true
-									];
-									$routes[$adminKey]['children'][$module->id() . '_' . $n] = $adminRoute;
+										];
+										// var_dump('Module', $module->id(), 'node_' . $module->nodeNamespace() . '_' . $n, 'nodes/' . $n . '/' . $module->sectionUrl('backend'), '===');
+										$routes[$adminKey]['children']['node_' . $module->nodeNamespace() . '_' . $n] = $adminRoute;
+									}
 								}
 							}
 						}
@@ -138,27 +142,30 @@ function zbase_routes_init($routes = null)
 							$routes[$module->id()] = $frontRoute;
 							if($module->isNode())
 							{
-								$nodes = ['files', 'category'];
-								foreach ($nodes as $n)
+								$nodes = $module->getNodesSupport();
+								if(!empty($nodes))
 								{
-									$frontRoute = [
-										'controller' => [
-											'name' => 'pageModule',
-											'method' => 'index',
-											'enable' => true,
-											'params' => [
-												'module' => $module,
-												'node' => $n,
-												'nodeNamespace' => $module->nodeNamespace()
-											]
-										],
-										'form' => [
+									foreach ($nodes as $n)
+									{
+										$frontRoute = [
+											'controller' => [
+												'name' => 'pageModule',
+												'method' => 'index',
+												'enable' => true,
+												'params' => [
+													'module' => $module,
+													'node' => $n,
+													'nodeNamespace' => $module->nodeNamespace()
+												]
+											],
+											'form' => [
+												'enable' => true
+											],
+											'url' => 'nodes/' . $n . '/' . $module->sectionUrl(),
 											'enable' => true
-										],
-										'url' => 'nodes/' . $n . '/' . $module->sectionUrl(),
-										'enable' => true
-									];
-									$routes[$module->id() . '_' . $n] = $frontRoute;
+										];
+										$routes['node_' . $module->nodeNamespace() . '_' . $n] = $frontRoute;
+									}
 								}
 							}
 						}

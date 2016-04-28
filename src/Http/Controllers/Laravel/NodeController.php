@@ -41,5 +41,27 @@ class NodeController extends Controller
 		}
 		return $this->notfound();
 	}
+	/**
+	 * Serve a Node Image
+	 * @return Response
+	 */
+	public function imageCategory()
+	{
+		$node = zbase_route_input('node', null);
+		$id = zbase_route_input('id', null);
+		if(!empty($node) && !empty($id))
+		{
+			$entity = zbase_entity($node . '_category', [], true);
+			if(!empty($entity))
+			{
+				$entity = $entity->repository()->byAlphaId($id);
+				if(!empty($entity))
+				{
+					return $entity->serveImage(zbase_route_input('w'), zbase_route_input('h'), zbase_route_input('q'));
+				}
+			}
+		}
+		return $this->notfound();
+	}
 
 }

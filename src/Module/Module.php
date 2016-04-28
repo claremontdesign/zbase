@@ -22,7 +22,8 @@ namespace Zbase\Module;
  * module.backend = true|false
  * module.node = true|false This module has node entities on it. Support for node entities will be added like routes
  * module.node.enable = true|false This module has node entities on it. Support for node entities will be added like routes
- * module.node.prefix = node prefix
+ * module.node.namespace = node prefix
+ * module.node.nodes = list of nodes for routing
  * module.frontend = true|false
  * module.url.front = the front URL key
  * module.url.back = the back URL key; default to module.id
@@ -119,6 +120,9 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 		return (bool) $this->_v('frontend', false);
 	}
 
+
+
+
 	/**
 	 * The URL Key per section
 	 * default: /$moduleId()/$action/$record/$task
@@ -204,6 +208,15 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	public function nodeNamespace()
 	{
 		return $this->_v('node.namespace', null);
+	}
+
+	/**
+	 * Return the Nodes that needed support
+	 * @return array
+	 */
+	public function getNodesSupport()
+	{
+		return $this->_v('node.nodes', null);
 	}
 
 	/**

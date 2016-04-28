@@ -37,3 +37,31 @@ function nodeFileAfterUpdate(data)
 {
 
 }
+
+/**Node Category**/
+/**
+ * JSTree Node Category when clicked
+ * @param {Event} evt
+ * @param {Object} node
+ * @returns {void}
+ */
+function nodeCategoryJstreeOnClicked(evt, node)
+{
+	// console.log(evt, node);
+	var tree = jQuery(evt.target);
+	if (tree.length > 0)
+	{
+		var dataConfig = zbase_get_element_config(tree);
+		var url = dataConfig.url !== undefined ? dataConfig.url : null;
+		var infopane = dataConfig.infopane !== undefined ? dataConfig.infopane : null;
+		var singleNode = dataConfig.node !== undefined ? dataConfig.node : null;
+		url = url.replace('ACTION', 'view').replace('ID', node.node.id);
+		zbase_ajax_get(url, {}, function(data){
+			if(singleNode !== undefined)
+			{
+				jQuery(infopane).html(eval('data.html.' + singleNode));
+			}
+		}, {loaderTarget: infopane});
+		return;
+	}
+}

@@ -252,5 +252,14 @@ return [
 			'url' => '/img/{node?}/{id?}/{w?}/{h?}/{q?}',
 			'enable' => true
 		],
+		'nodeCategoryImage' => [
+			'controller' => [
+				'name' => 'node',
+				'method' => 'imageCategory',
+				'enable' => true
+			],
+			'url' => '/img-category/{node?}/{id?}/{w?}/{h?}/{q?}',
+			'enable' => true
+		],
 	],
 ];

@@ -124,8 +124,18 @@ function zbase_json_by_key(obj, key)
 		return obj[key];
 	}
 	return undefined;
-
 }
+
+/**
+ * Go To URL
+ * @param {string} url
+ * @returns {void}
+ */
+function zbase_gotoLocation(url)
+{
+	window.location = url;
+}
+
 /**
  * Return a Random String
  * @param {int} len The Length of string to generate
@@ -327,7 +337,7 @@ function zbase_dom_insert_html(html, selector, mode)
  * @param {object} data Some POSTd Data
  * @param {callback} successCb Success Callback
  * @param {object} opt Options
- * @returns void
+ * @returns XHRRequest
  */
 function zbase_ajax_post(url, data, successCb, opt)
 {
@@ -335,13 +345,7 @@ function zbase_ajax_post(url, data, successCb, opt)
 		type: 'POST',
 		url: url,
 		data: data,
-		success: function (data)
-		{
-			if (function_exists(successCb))
-			{
-				eval(successCb + '(data);');
-			}
-		}
+		success: successCb
 	});
 }
 /**
@@ -350,7 +354,7 @@ function zbase_ajax_post(url, data, successCb, opt)
  * @param {object} data Some POSTd Data
  * @param {callback} successCb Success Callback
  * @param {object} opt Options
- * @returns void
+ * @returns XHRRequest
  */
 function zbase_ajax_get(url, data, successCb, opt)
 {
@@ -359,13 +363,23 @@ function zbase_ajax_get(url, data, successCb, opt)
 		dataType: 'json',
 		url: url,
 		data: data,
-		success: function (data)
+		beforeSend: function ()
 		{
-			if (function_exists(successCb))
+			if (opt.loaderTarget !== undefined)
 			{
-				eval(successCb + '(data);');
+				App.blockUI({
+					target: opt.loaderTarget
+				});
 			}
-		}
+		},
+		complete: function ()
+		{
+			if (opt.loaderTarget !== undefined)
+			{
+				 App.unblockUI(opt.loaderTarget);
+			}
+		},
+		success: successCb
 	});
 }
 
@@ -377,6 +391,14 @@ jQuery.ajaxSetup({
 	headers: {'X-CSRF-TOKEN': jQuery('meta[name=_token]').attr('content')}
 });
 jQuery(document).ajaxComplete(function (event, request, settings) {
+	if(request === undefined)
+	{
+		return;
+	}
+	if(request.responseJSON === undefined)
+	{
+		return;
+	}
 	var responseJSON = request.responseJSON;
 	if (responseJSON._token !== undefined)
 	{
@@ -547,7 +569,7 @@ var Zbase = function () {
 	{
 		if (jQuery('.zbase-btn-clickable-url').length > 0)
 		{
-			jQuery('.zbase-btn-clickable-url').click(function () {
+			jQuery('.zbase-btn-clickable-url').click(function (e) {
 				var ele = jQuery(this);
 				var dataConfig = zbase_get_element_config(ele);
 				var url = dataConfig.url !== undefined ? dataConfig.url : ele.attr('href');

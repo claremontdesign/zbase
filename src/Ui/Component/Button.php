@@ -161,9 +161,20 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 		$route = $this->route;
 		if(!empty($route))
 		{
-			if($this->tag == 'a')
+			if(!empty($attr['onclick']))
 			{
-				$attr['href'] = zbase_url_from_route($route, $this->routeParams);
+				$attr['onclick'] = "zbase_gotoLocation('".zbase_url_from_route($route, $this->routeParams)."')";
+				if($this->tag == 'a')
+				{
+					$attr['href'] = '#';
+				}
+			}
+			else
+			{
+				if($this->tag == 'a')
+				{
+					$attr['href'] = zbase_url_from_route($route, $this->routeParams);
+				}
 			}
 		}
 		return $attr;

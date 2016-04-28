@@ -39,6 +39,12 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	 */
 	public static $nodeNamePrefix = 'node';
 
+	/**
+	 * The Route Name to use
+	 * @var string
+	 */
+	protected $routeName = 'node';
+
 	protected static function boot()
 	{
 		parent::boot();
@@ -92,6 +98,102 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	}
 
 	/**
+	 * Category Avatar
+	 */
+	public function avatar()
+	{
+		$avatar = $this->getDataOption('avatar', null);
+		if(!empty($avatar))
+		{
+			return $avatar;
+		}
+		return false;
+	}
+
+	/**
+	 * cATEGORY iMAGE uRL
+	 * @return type
+	 */
+	public function avatarUrl($options = [])
+	{
+		$fullImage = false;
+		$params = ['node' => static::$nodeNamePrefix];
+		$params['id'] = $this->alphaId();
+		if(empty($options) || !empty($options['full']))
+		{
+			$fullImage = true;
+		}
+		$params['w'] = !empty($options['w']) ? $options['w'] : 150;
+		$params['h'] = !empty($options['h']) ? $options['h'] : 0;
+		$params['q'] = !empty($options['q']) ? $options['q'] : 80;
+		if(!empty($options['thumbnail']))
+		{
+			$params['w'] = !empty($options['w']) ? $options['w'] : $this->thWidth;
+			$params['h'] = !empty($options['h']) ? $options['h'] : $this->thHeight;
+			$params['q'] = !empty($options['q']) ? $options['q'] : $this->thQuality;
+		}
+		return zbase_url_from_route('nodeCategoryImage', $params);
+	}
+
+	/**
+	 * Serve the File
+	 * @param integer $width
+	 * @param integer $height
+	 * @param integer $quality Image Quality
+	 * @param boolean $download If to download
+	 * @return boolean
+	 */
+	public function serveImage($width, $height = null, $quality = null, $download = false)
+	{
+		$folder = zbase_storage_path() . '/' . zbase_tag() . '/' . static::$nodeNamePrefix . '_category' . '/' . $this->id() . '/';
+		$path = $folder . $this->avatar();
+		if(file_exists($path))
+		{
+			$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
+						if(empty($width))
+						{
+							$size = getimagesize($path);
+							$width = $size[0];
+							$height = $size[1];
+						}
+						if(!empty($width) && empty($height))
+						{
+							return $image->make($path)->resize($width, null, function($constraint)
+						{
+										$constraint->upsize();
+										$constraint->aspectRatio();
+						});
+						}
+						if(empty($width) && !empty($height))
+						{
+							return $image->make($path)->resize(null, $height, function($constraint)
+						{
+										$constraint->upsize();
+										$constraint->aspectRatio();
+						});
+						}
+						return $image->make($path)->resize($width, $height);
+				});
+			return \Response::make($cachedImage, 200, array('Content-Type' => $this->mimetype));
+		}
+		return false;
+	}
+
+	/**
+	 * Return this URL for Action
+	 */
+	public function actionUrl($action, $task = null)
+	{
+		$params = ['action' => $action, 'task' => $task];
+		$params['id'] = $this->alphaId();
+		if(zbase_is_back())
+		{
+			return zbase_url_from_route('admin.node_' . $this->routeName . '_category', $params);
+		}
+		return zbase_url_from_route('node_' . static::$nodeNamePrefix . '_category', $params);
+	}
+
+	/**
 	 *
 	 * @return boolean
 	 */
@@ -142,6 +244,40 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		return null;
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="Image Upload">
+	/**
+	 * Upload a file for this node
+	 * @param string $index The Upload file name/index or the URL to file to download and save
+	 * @return void
+	 */
+	public function uploadNodeFile($index = 'file')
+	{
+		try
+		{
+			$folder = zbase_storage_path() . '/' . zbase_tag() . '/' . static::$nodeNamePrefix . '_category' . '/' . $this->id() . '/';
+			zbase_directory_check($folder, true);
+			if(!empty($_FILES[$index]['name']))
+			{
+				$filename = $this->alphaId();//zbase_file_name_from_file($_FILES[$index]['name'], time(), true);
+				$uploadedFile = zbase_file_upload_image($index, $folder, $filename, 'png');
+			}
+			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
+			{
+				$filename = basename($uploadedFile);
+				$this->setDataOption('avatar', $filename);
+				$this->save();
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			if(zbase_is_dev())
+			{
+				dd($e);
+			}
+			zbase_abort(500);
+		}
+	}
+
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="NodeWidgetControll">
 	/**
 	 * Widget entity interface.
@@ -153,6 +289,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	 */
 	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
 	{
+//		dd($method, $action, $data);
 		if(($action == 'update' && strtolower($method) == 'post') || ($action == 'create' && strtolower($method) == 'post'))
 		{
 			$this->nodeAttributes($data);
@@ -174,7 +311,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 						}
 						else
 						{
-							$parentCategoryNode = $this->repository()->byId($p);
+							$parentCategoryNode = $this->repository()->byAlphaId($p);
 						}
 						if($parentCategoryNode instanceof Interfaces\EntityInterface)
 						{
@@ -196,6 +333,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 				}
 				$this->save();
 				$this->_setParentNodes($parentNodes);
+				$this->uploadNodeFile();
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
@@ -206,10 +344,26 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			{
 				$this->save();
 				$this->_setParentNodes($parentNodes);
+				$this->uploadNodeFile();
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
 				$this->_actionMessages[$action]['success'][] = _zt('Saved "%title%"!', ['%title%' => $this->title, '%id%' => $this->id()]);
+				return true;
+			}
+			if($action == 'delete' && strtolower($method) == 'post')
+			{
+				$this->delete();
+				$this->log($action);
+				zbase_db_transaction_commit();
+				zbase_cache_flush([$this->getTable()]);
+				$undoText = '';
+				if(!empty($this->hasSoftDelete()))
+				{
+					$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->id()]) . '" title="Undo Delete" class="undodelete">Undo</a>.';
+					$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->id()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
+				}
+				$this->_actionMessages[$action]['success'][] = _zt('Deleted "%title%"! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
 				return true;
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -247,21 +401,6 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			if($action == 'move')
 			{
 
-			}
-			if($action == 'delete')
-			{
-				$this->delete();
-				$this->log($action);
-				zbase_db_transaction_commit();
-				zbase_cache_flush([$this->getTable()]);
-				$undoText = '';
-				if(!empty($this->hasSoftDelete()))
-				{
-					$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->id()]) . '" title="Undo Delete" class="undodelete">Undo</a>.';
-					$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->id()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
-				}
-				$this->_actionMessages[$action]['success'][] = _zt('Deleted "%title%"! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
-				return true;
 			}
 			if($action == 'restore')
 			{

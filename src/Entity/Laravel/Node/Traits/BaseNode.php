@@ -50,6 +50,7 @@ trait BaseNode
 	 */
 	public function nodeWidgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
 	{
+		dd($action, $data);
 		zbase_db_transaction_start();
 		try
 		{

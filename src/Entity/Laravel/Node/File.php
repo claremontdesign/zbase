@@ -40,7 +40,6 @@ class File extends BaseEntity implements WidgetEntityInterface
 	 * @var string
 	 */
 	public static $nodeNamePrefix = 'node';
-	protected $routeName = 'node';
 	protected $thWidth = 150;
 	protected $thHeight = 150;
 	protected $thQuality = 80;

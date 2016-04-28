@@ -55,7 +55,6 @@ trait Node
 		return [];
 	}
 
-
 	/**
 	 * Generate and Update Row Alpha ID
 	 * @return void
@@ -167,6 +166,7 @@ trait Node
 
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="Table Definition">
 	/**
 	 * Return table minimum columns requirement
 	 * @return array
@@ -261,4 +261,5 @@ trait Node
 		return $columns;
 	}
 
+	// </editor-fold>
 }

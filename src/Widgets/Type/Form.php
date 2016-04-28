@@ -348,6 +348,14 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			{
 				return zbase_abort(404);
 			}
+			if($this->isAdmin() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+			{
+				$children = $this->_entity->getImmediateDescendants();
+				if($children->count())
+				{
+					return zbase_abort(404);
+				}
+			}
 		}
 		$this->setAction($action);
 		$this->prepare();

@@ -315,9 +315,9 @@ trait File
 		$params['id'] = $this->alphaId();
 		if(zbase_is_back())
 		{
-			return zbase_url_from_route('admin.' . $this->routeName . '_files', $params);
+			return zbase_url_from_route('admin.node_' . static::$nodeNamePrefix . '_files', $params);
 		}
-		return zbase_url_from_route($this->routeName . '_files', $params);
+		return zbase_url_from_route('node_' . static::$nodeNamePrefix . '_files', $params);
 	}
 
 	public function alphaId()

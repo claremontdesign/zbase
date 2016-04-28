@@ -14,14 +14,30 @@ zbase_view_plugin_load('nodes');
  * @project Expression project.name is undefined on line 13, column 15 in Templates/Scripting/EmptyPHP.php.
  * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
  */
-if(empty($node))
+if(empty($node) & !empty($ui))
 {
 	$node = $ui->form()->entity();
 }
-$images = $node->files()->get();
+if(!empty($node))
+{
+	if($node instanceof Zbase\Entity\Laravel\Node\Node)
+	{
+		$images = $node->files()->get();
+	}
+	if($node instanceof Zbase\Entity\Laravel\Node\Category)
+	{
+		$isCategory = true;
+		$images = $node->avatar();
+	}
+}
 ?>
-<?php if(!empty($images)): ?>
-	<div class="row" id="node-files">
+<?php if(!empty($images) && !empty($isCategory)): ?>
+	<div class="col-xs-12 col-md-12" style="margin-bottom: 20px;">
+		<img class="img-thumbnail" src="<?php echo $node->avatarUrl(['thumbnail => true']) ?>" alt="<?php echo $node->title() ?>" />
+	</div>
+<?php endif; ?>
+<?php if(!empty($images) && !empty($isNode)): ?>
+	<div class="row" id="node-files" style="margin-bottom: 20px;">
 		<?php foreach ($images as $img): ?>
 			<div class="col-xs-12 col-md-6" data-id="<?php echo $img->alphaId() ?>" id="node-files-<?php echo $img->alphaId() ?>">
 				<div class="col-xs-4 col-md-2">
@@ -52,15 +68,15 @@ $images = $node->files()->get();
 								'#node-files-<?php echo $img->alphaId() ?>-title',
 								'inputByName=node-files-<?php echo $img->alphaId() ?>-status']
 								}">Update</button>
-						<?php if(!empty($enablePrimary)):?>
-						<button type="button" class="btn btn-info btn-sm zbase-ajax-url"
-								data-config="{
-								url: '<?php echo $img->actionUrl('primary') ?>',
-								form: true,
-								method: 'post',
-								callback: 'nodeFileAfterPrimary',
-								}">Set As Primary</button>
-						<?php endif;?>
+								<?php if(!empty($enablePrimary)): ?>
+							<button type="button" class="btn btn-info btn-sm zbase-ajax-url"
+									data-config="{
+									url: '<?php echo $img->actionUrl('primary') ?>',
+									form: true,
+									method: 'post',
+									callback: 'nodeFileAfterPrimary',
+									}">Set As Primary</button>
+								<?php endif; ?>
 						<button type="button" class="btn btn-danger btn-sm zbase-btn-action-confirm"
 								data-config="{url: '<?php echo $img->actionUrl('delete') ?>',
 								mode: 'yesno',

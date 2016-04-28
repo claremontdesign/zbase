@@ -13,7 +13,6 @@ namespace Zbase\Models\View;
  * @project Zbase
  * @package Zbase\Models\View
  */
-use Zbase\Interfaces;
 use Zbase\Traits;
 
 class Navigation
@@ -53,6 +52,12 @@ class Navigation
 	protected $active = false;
 
 	/**
+	 * Children
+	 * @var array
+	 */
+	protected $children = [];
+
+	/**
 	 * The Route
 	 * @var array
 	 */
@@ -74,6 +79,15 @@ class Navigation
 		}
 	}
 
+	/**
+	 * Check if navigation is Active
+	 * @return boolean
+	 */
+	public function isActive()
+	{
+		return $this->active;
+	}
+
 	public function getRouteUrl()
 	{
 		if(!empty($this->route))
@@ -89,14 +103,39 @@ class Navigation
 	 */
 	public function __toString()
 	{
+		$childStr = $this->_childrenMenu();
 		$str = '';
-		$str .= '<li class="' . (!empty($this->active) ? 'active' : '') . '">';
-		$str .= '<a href="' . $this->getRouteUrl() . '" title="' . $this->title . '" ' . $this->renderHtmlAttributes() . '>';
-		$str .= '<i class="' . $this->icon . '"></i>';
-		$str .= '<span class="title">' . $this->label . '</span>';
-		$str .= '</a>';
-		$str .= '</li>';
+		$str .= '<li class="' . (!empty($this->active) ? 'active' : '') . '">' . EOF;
+		$str .= '<a href="' . $this->getRouteUrl() . '" title="' . $this->title . '" ' . $this->renderHtmlAttributes() . '>' . EOF;
+		$str .= '<i class="' . $this->icon . '"></i>' . EOF;
+		$str .= '<span class="title">' . $this->label . '</span>' . EOF;
+		if(!empty($this->children))
+		{
+			$str .= '<span class="arrow"></span>';
+		}
+		$str .= '</a>' . EOF;
+		$str .= $childStr;
+		$str .= '</li>' . EOF;
 		return $str;
+	}
+
+	protected function _childrenMenu()
+	{
+		if(!empty($this->children))
+		{
+			$str = '<ul class="sub-menu">' . EOF;
+			foreach ($this->children as $k => $nav)
+			{
+				$n = new Navigation($nav);
+				if($n->isActive())
+				{
+					$this->active = true;
+				}
+				$str .= $n;
+			}
+			$str .= '</ul>' . EOF;
+			return $str;
+		}
 	}
 
 }

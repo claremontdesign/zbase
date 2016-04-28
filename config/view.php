@@ -180,6 +180,21 @@ return [
 				]
 			],
 			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="Widget:JStree">
+			'jstree' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('metronic/plugins/jstree/dist/jstree.min.js'),
+				'enable' => true,
+				'dependents' => [
+					[
+						'id' => 'jstree-css',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/jstree/dist/themes/default/style.min.css'),
+						'enable' => true,
+					],
+				]
+			],
+			// </editor-fold>
 			// <editor-fold defaultstate="collapsed" desc="Metronic::Admin">
 			'metronic-admin' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
@@ -224,7 +239,7 @@ return [
 					[
 						'id' => 'metronic-admin-app',
 						'type' => \Zbase\Models\View::JAVASCRIPT,
-						'src' => zbase_path_asset('metronic/scripts/core/app.js'),
+						'src' => zbase_path_asset('metronic/scripts/core/app-zbase.js'),
 						'enable' => true,
 						'position' => 495,
 					],

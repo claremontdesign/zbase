@@ -12,6 +12,7 @@ if(empty($rows))
 {
 	return;
 }
+$isAdmin = $ui->isAdmin();
 $form = $ui->form();
 $selectedRows = $ui->selectedRows();
 zbase_view_plugin_load('bootstrap-treeview');
@@ -30,7 +31,7 @@ if(!empty($selectedRows))
 	{
 		if(is_object($sel))
 		{
-			$htmls[] = '<input type="hidden" value="' . $sel->id() . '" id="' . $uiId . 'Category' . $sel->id() . '" name="category[]">';
+			$htmls[] = '<input type="hidden" value="' . $sel->alphaId() . '" id="' . $uiId . 'Category' . $sel->alphaId() . '" name="category[]">';
 		}
 		else
 		{
@@ -44,8 +45,11 @@ $treeViewOptions = [
 if($form instanceof \Zbase\Widgets\Type\FormInterface)
 {
 	$treeViewOptions[] = 'showCheckbox: false';
-	$treeViewOptions[] = 'onNodeUnselected: function(event, node) {var nodeId = \'' . $uiId . 'Category\'+node.id;jQuery(\'#\' + nodeId).remove();}';
-	$treeViewOptions[] = 'onNodeSelected: function(event, node) {var nodeId = \'' . $uiId . 'Category\'+node.id;jQuery(\'#' . $uiId . 'TreeView\').parent().append(\'<input type="hidden" value="\'+node.id+\'" id="\'+nodeId+\'" name="category[]">\');}';
+	if(!$ui->isDatatable())
+	{
+		$treeViewOptions[] = 'onNodeUnselected: function(event, node) {var nodeId = \'' . $uiId . 'Category\'+node.id;jQuery(\'#\' + nodeId).remove();}';
+		$treeViewOptions[] = 'onNodeSelected: function(event, node) {var nodeId = \'' . $uiId . 'Category\'+node.id;jQuery(\'#' . $uiId . 'TreeView\').parent().append(\'<input type="hidden" value="\'+node.id+\'" id="\'+nodeId+\'" name="category[]">\');}';
+	}
 }
 $treeOptions = $ui->getAttribute('treeOptions');
 $label = $ui->getAttribute('label');

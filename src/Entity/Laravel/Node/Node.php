@@ -48,12 +48,6 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	 */
 	public static $nodeNamePrefix = 'node';
 
-	/**
-	 * Route name
-	 * @var type
-	 */
-	protected $routeName = 'node';
-
 	protected static function boot()
 	{
 		parent::boot();
@@ -125,6 +119,22 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	{
 		return zbase_auth_has() && zbase_auth_user()->id() == $this->user_id;
 	}
+
+
+	/**
+	 * Return this URL for Action
+	 */
+	public function actionUrl($action, $task = null)
+	{
+		$params = ['action' => $action, 'task' => $task];
+		$params['id'] = $this->alphaId();
+		if(zbase_is_back())
+		{
+			return zbase_url_from_route('admin.' . $this->routeName . '_node', $params);
+		}
+		return zbase_url_from_route(static::$nodeNamePrefix . '_node', $params);
+	}
+
 
 	/**
 	 * Widget entity interface.

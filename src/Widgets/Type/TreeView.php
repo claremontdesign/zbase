@@ -69,6 +69,14 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	protected $_actionCreateButton = null;
 
 	/**
+	 * Has Actions Flag?
+	 * @var boolean
+	 */
+	protected $_hasActions = false;
+	protected $_actions = [];
+	protected $_actionButtons = [];
+
+	/**
 	 * Prepare
 	 */
 	protected function _pre()
@@ -82,6 +90,105 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	{
 		$this->_actions = $actions;
 		return $this;
+	}
+
+	/**
+	 * Render the actions
+	 */
+	public function renderRowActions($row, $children = null)
+	{
+		if(!$row instanceof \Zbase\Interfaces\EntityInterface)
+		{
+			return;
+		}
+		$rowTrashed = false;
+		if($this->_entity->hasSoftDelete())
+		{
+			$rowTrashed = $row->trashed();
+		}
+		if(!empty($this->_actions))
+		{
+			$this->_actionButtons = [];
+			foreach ($this->_actions as $actionName => $action)
+			{
+				if(!empty($children->count()) && $actionName == 'delete')
+				{
+					continue;
+				}
+				if($actionName == 'delete' || $actionName == 'update')
+				{
+					if($rowTrashed)
+					{
+						continue;
+					}
+				}
+				if($actionName == 'restore' || $actionName == 'ddelete')
+				{
+					if(empty($rowTrashed))
+					{
+						continue;
+					}
+				}
+				$label = !empty($action['label']) ? $action['label'] : ucfirst($actionName);
+				if(strtolower($label) == 'ddelete')
+				{
+					$label = _zt('Forever Delete');
+				}
+				$action['type'] = 'component.button';
+				$action['id'] = $this->id() . 'Action' . $actionName;
+				$action['size'] = 'extrasmall';
+				$action['label'] = _zt($label);
+				$action['tag'] = 'a';
+				$action['html']['attributes']['wrapper']['onclick'] = true;
+				if(!empty($action['route']['name']))
+				{
+					if(!empty($action['route']['params']))
+					{
+						foreach ($action['route']['params'] as $paramName => $paramValue)
+						{
+							if(preg_match('/row::/', $paramValue))
+							{
+								$rowIndex = str_replace('row::', '', $paramValue);
+								$action['route']['params'][$paramName] = zbase_data_get($row, $rowIndex);
+							}
+						}
+					}
+					$action['routeParams'] = $action['route']['params'];
+					$action['route'] = $action['route']['name'];
+				}
+				if($actionName == 'create')
+				{
+					$action['color'] = 'blue';
+				}
+				if($actionName == 'update')
+				{
+					$action['color'] = 'green';
+				}
+				if($actionName == 'delete')
+				{
+					$action['color'] = 'red';
+				}
+				if($actionName == 'restore')
+				{
+					$action['color'] = 'warning';
+				}
+				if($actionName == 'ddelete')
+				{
+					$action['color'] = 'red';
+				}
+				$btn = \Zbase\Ui\Ui::factory($action);
+				if($actionName == 'create')
+				{
+					if(!$this->_actionCreateButton instanceof \Zbase\Ui\UiInterface)
+					{
+						$this->_actionCreateButton = $btn;
+					}
+					continue;
+				}
+				$this->_actionButtons[] = $btn;
+			}
+			return implode("\n", $this->_actionButtons);
+		}
 	}
 
 	/**
@@ -111,7 +218,10 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 								if(preg_match('/row::/', $paramValue))
 								{
 									$rowIndex = str_replace('row::', '', $paramValue);
-									$action['route']['params'][$paramName] = zbase_data_get($row, $rowIndex);
+									if(!empty($row))
+									{
+										$action['route']['params'][$paramName] = zbase_data_get($row, $rowIndex);
+									}
 								}
 							}
 						}
@@ -168,15 +278,27 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	 */
 	public function getTree($options = [])
 	{
-		$rows = $this->getRows();
-		if(!empty($rows))
+		if(empty($this->prepared))
 		{
-			foreach ($rows as $row)
+			$rows = $this->getRows();
+			if(!empty($rows))
 			{
-				$this->_tree[] = $this->_treeRow($row);
+				foreach ($rows as $row)
+				{
+					$this->_tree[] = $this->_treeRow($row, $options);
+				}
 			}
 		}
 		return $this->_tree;
+	}
+
+	/**
+	 * Check if TreeView act as a Datatable
+	 * @return boolean
+	 */
+	public function isDatatable()
+	{
+		return $this->_v('treeOptions.datatable', false);
 	}
 
 	/**
@@ -187,26 +309,70 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 	 * @param type $row
 	 * @return array
 	 */
-	protected function _treeRow($row)
+	protected function _treeRow($row, $options = [])
 	{
 		$newRow = [];
-		$newRow['text'] = $row->title();
-		$newRow['id'] = $row->id();
+		$jsTree = !empty($options['jstree']) ? true : false;
+		$children = $row->getImmediateDescendants();
+		if($jsTree)
+		{
+			$newRow['text'] = $row->title();
+		}
+		else
+		{
+			$texts = [];
+			if($this->isAdmin())
+			{
+				$texts[] = '<span>' . $this->renderRowActions($row, $children) . '</span>';
+			}
+			$texts[] = $row->title();
+			$newRow['text'] = implode(' ', $texts);
+		}
+		$newRow['id'] = $row->alphaId();
+		$newRow['state']['expanded'] = false;
 		$selected = $this->selectedRows();
-		// dd($selected);die;
+		if(!empty($children))
+		{
+			$newRow['id'] = $row->alphaId();
+		}
+		else
+		{
+
+		}
 		if($selected instanceof \Illuminate\Database\Eloquent\Collection)
 		{
-			$newRow['state']['expanded'] = false;
+			if($jsTree)
+			{
+
+			}
+			else
+			{
+				$newRow['state']['expanded'] = false;
+			}
 			foreach ($selected as $sel)
 			{
 				$parents = $sel->ancestors()->lists('category_id')->toArray();
 				if($sel->id() == $row->id())
 				{
-					$newRow['state']['selected'] = true;
+					if($jsTree)
+					{
+						$newRow['state']['selected'] = true;
+					}
+					else
+					{
+						$newRow['state']['selected'] = true;
+					}
 				}
 				if(in_array($row->id(), $parents))
 				{
-					$newRow['state']['expanded'] = true;
+					if($jsTree)
+					{
+						$newRow['state']['opened'] = true;
+					}
+					else
+					{
+						$newRow['state']['expanded'] = true;
+					}
 				}
 			}
 		}
@@ -216,17 +382,31 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 			{
 				if($sel == $row->id())
 				{
-					$newRow['state']['selected'] = true;
-					$newRow['state']['expanded'] = true;
+					if($jsTree)
+					{
+						$newRow['state']['selected'] = true;
+						$newRow['state']['opened'] = true;
+					}
+					else
+					{
+						$newRow['state']['selected'] = true;
+						$newRow['state']['expanded'] = true;
+					}
 				}
 			}
 		}
-		$children = $row->getImmediateDescendants();
 		if(!empty($children))
 		{
 			foreach ($children as $child)
 			{
-				$newRow['nodes'][] = $this->_treeRow($child);
+				if($jsTree)
+				{
+					$newRow['children'][] = $this->_treeRow($child, $options);
+				}
+				else
+				{
+					$newRow['nodes'][] = $this->_treeRow($child, $options);
+				}
 			}
 		}
 		return $newRow;
@@ -254,6 +434,11 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 					{
 						$this->_viewParams['node'] = $entity;
 						$this->_selectedRows = $entity->categories()->get();
+					}
+					if($entity instanceof \Zbase\Entity\Laravel\Node\Category)
+					{
+						$this->_viewParams['node'] = $entity;
+						$this->_selectedRows = $entity->parent()->get();
 					}
 				}
 			}

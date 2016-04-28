@@ -92,6 +92,7 @@ trait Module
 			$htmls = [];
 		}
 		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($widgetsAction);
+		// dd($this->getModule(), $widgetsAction, $widgets);
 		if(empty($widgets))
 		{
 			return zbase_abort(404);
@@ -145,7 +146,7 @@ trait Module
 				}
 				if($isAjax)
 				{
-					$htmls[$widget->id()] = $widget->render();
+					$htmls[str_replace('-','_',$widget->id())] = $widget->render();
 				}
 			}
 		}
