@@ -86,6 +86,7 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		$this->app['config']['database.connections.mysql.prefix'] = zbase_db_prefix();
 		$this->app['config']['auth.providers.users.model'] = get_class(zbase_entity('user'));
 		$this->app['config']['auth.passwords.users.table'] = zbase_config_get('entity.user_tokens.table.name');
+		$this->app['config']['auth.passwords.users.email'] = zbase_view_file_contents('auth.password.email.password');
 		require __DIR__ . '/Http/Controllers/Laravel/routes.php';
 
 

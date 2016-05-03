@@ -1,7 +1,9 @@
 <?php
+
 namespace Zbase;
 
 ini_set('max_execution_time', 300);
+
 /**
  * Zbase Main
  *
@@ -329,7 +331,14 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 						$name = str_replace('.php', '', basename($file));
 						$widget['id'] = $name;
 					}
-					$this->widgets[$name] = $widget;
+					if(!empty($widget['type']) && !is_array($widget['type']) && strtolower($widget['type']) == 'placeholder')
+					{
+						$this->widget($name, $widget);
+					}
+					else
+					{
+						$this->widgets[$name] = $widget;
+					}
 					// $this->widget($widget);
 				}
 			}
@@ -353,10 +362,6 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 		else
 		{
 			$name = $widget;
-		}
-		if($name == 'post-category')
-		{
-//			dd($config);
 		}
 		if(!empty($name))
 		{
@@ -396,6 +401,10 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 				{
 					$w = new \Zbase\Widgets\Type\View($name, $config);
 				}
+				if(strtolower($type) == 'placeholder')
+				{
+					$w = new \Zbase\Widgets\Type\Placeholder($name, $config);
+				}
 				if(strtolower($type) == 'db')
 				{
 					$w = new \Zbase\Widgets\Type\Db($name, $config);
@@ -404,6 +413,10 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 				{
 					if($w->enabled())
 					{
+						if(strtolower($type) == 'placeholder')
+						{
+							zbase_view_placeholder_add($w->getPlaceholder(), $w->id(), $w);
+						}
 						return $this->widgets[$name] = $w;
 					}
 				}

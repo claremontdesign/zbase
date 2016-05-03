@@ -141,12 +141,15 @@ class PasswordController extends Controller
 	 */
 	public function postEmail(Request $request)
 	{
-		$this->validate($request, ['email' => 'required|email|exists:' . zbase_config_get('entity.user.table.name') . ',' . zbase_config_get('entity.user.table.columns.email.name')]);
+		$this->validate($request,
+				['email' => 'required|email|exists:' . zbase_config_get('entity.user.table.name') . ',email']);
 
 		$response = \Password::sendResetLink($request->only('email'), function (Message $message) {
 					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
 					$message->subject($this->getEmailSubject());
 		});
+
+//		$response = $this->sendResetLinkEmail($request);
 
 		switch ($response)
 		{
