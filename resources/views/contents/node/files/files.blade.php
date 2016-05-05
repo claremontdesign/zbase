@@ -1,4 +1,5 @@
 <?php
+zbase_view_plugin_load('zbase');
 zbase_view_plugin_load('nodes');
 //zbase_view_plugin_load('nodes-upload-krajee');
 /**
@@ -22,22 +23,31 @@ if(!empty($node))
 {
 	if($node instanceof Zbase\Entity\Laravel\Node\Node)
 	{
+		$isNode = true;
 		$images = $node->files()->get();
 	}
 	if($node instanceof Zbase\Entity\Laravel\Node\Category)
 	{
 		$isCategory = true;
-		$images = $node->avatar();
+	}
+	if($node instanceof Zbase\Entity\Laravel\User\User)
+	{
+		$isUser = true;
 	}
 }
 ?>
-<?php if(!empty($images) && !empty($isCategory)): ?>
+<?php if(!empty($isCategory)): ?>
 	<div class="col-xs-12 col-md-12" style="margin-bottom: 20px;">
 		<img class="img-thumbnail" src="<?php echo $node->avatarUrl(['thumbnail => true']) ?>" alt="<?php echo $node->title() ?>" />
 	</div>
 <?php endif; ?>
+<?php if(!empty($isUser)): ?>
+	<div class="col-xs-12 col-md-12" style="margin-bottom: 20px;">
+		<img class="img-thumbnail" src="<?php echo $node->avatarUrl(['thumbnail => true']) ?>" alt="<?php echo $node->displayName() ?>" />
+	</div>
+<?php endif; ?>
 <?php if(!empty($images) && !empty($isNode)): ?>
-	<div class="row" id="node-files" style="margin-bottom: 20px;">
+	<div class="row" id="node-files" style="margin: 20px;">
 		<?php foreach ($images as $img): ?>
 			<div class="col-xs-12 col-md-6" data-id="<?php echo $img->alphaId() ?>" id="node-files-<?php echo $img->alphaId() ?>">
 				<div class="col-xs-4 col-md-2">
@@ -62,7 +72,7 @@ if(!empty($node))
 								url: '<?php echo $img->actionUrl('update') ?>',
 								form: true,
 								method: 'post',
-								callback: 'nodeFileAfterUpdate',
+								callback: nodeFileAfterUpdate,
 								elements: [
 								'#node-files-<?php echo $img->alphaId() ?>-excerpt',
 								'#node-files-<?php echo $img->alphaId() ?>-title',
@@ -74,14 +84,14 @@ if(!empty($node))
 									url: '<?php echo $img->actionUrl('primary') ?>',
 									form: true,
 									method: 'post',
-									callback: 'nodeFileAfterPrimary',
+									callback: nodeFileAfterPrimary,
 									}">Set As Primary</button>
 								<?php endif; ?>
 						<button type="button" class="btn btn-danger btn-sm zbase-btn-action-confirm"
 								data-config="{url: '<?php echo $img->actionUrl('delete') ?>',
 								mode: 'yesno',
 								message: 'Are you sure you want to delete this image?',
-								callback: 'nodeFileAfterDelete'
+								callback: nodeFileAfterDelete
 								}">Delete</button>
 					</div>
 				</div>

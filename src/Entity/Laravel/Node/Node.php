@@ -212,7 +212,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 				$this->categories()->detach();
 				foreach ($data['category'] as $categoryId)
 				{
-					$category = zbase_entity(static::$nodeNamePrefix . '_category')->repository()->byId($categoryId);
+					$category = zbase_entity(static::$nodeNamePrefix . '_category')->repository()->byAlphaId($categoryId);
 					if($category instanceof Nested)
 					{
 						$this->categories()->attach($category);
@@ -231,6 +231,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	{
 		try
 		{
+			$defaultImageFormat = zbase_config_get('node.files.image.format', 'png');
 			$folder = zbase_storage_path() . '/' . zbase_tag() . '/' . static::$nodeNamePrefix . '/' . $this->id() . '/';
 			zbase_directory_check($folder, true);
 			$nodeFileObject = zbase_entity(static::$nodeNamePrefix . '_files', [], true);
@@ -265,7 +266,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			if(!empty($_FILES[$index]['name']))
 			{
 				$filename = zbase_file_name_from_file($_FILES[$index]['name'], time(), true);
-				$uploadedFile = zbase_file_upload_image($index, $folder, $filename, 'png');
+				$uploadedFile = zbase_file_upload_image($index, $folder, $filename, $defaultImageFormat);
 			}
 			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
 			{
@@ -760,7 +761,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 					$this->log($action);
 					zbase_db_transaction_commit();
 					zbase_cache_flush([$this->getTable()]);
-					$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was removed from database!', ['%title%' => $this->title, '%id%' => $this->id()]);
+					$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" forever deleted!', ['%title%' => $this->title, '%id%' => $this->id()]);
 					return true;
 				}
 				$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);

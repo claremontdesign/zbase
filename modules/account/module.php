@@ -58,11 +58,24 @@ return [
 			]
 		],
 	],
-	'widgets' => [
-		'controller' => [
+	'event' => [
+		'front' => [
 			'index' => [
-				'account' => null
-			]
+				'post' => [
+					'post' => [
+						'route' => [
+							'name' => 'account',
+						]
+					]
+				],
+			],
 		],
 	],
-];
+	'widgets' => [
+		'controller' => [
+			'index' => function(){
+				return zbase_config_get('modules.account.widgets.controller.index', ['account' => null]);
+					}
+				],
+			],
+		];

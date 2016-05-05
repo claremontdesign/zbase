@@ -151,9 +151,14 @@ class Radio extends \Zbase\Ui\Form\Type\Multi
 		{
 			return parent::__toString();
 		}
+		$labelClass = $this->_v('html.attributes.label.class', []);
+		// $inputClass = $this->_v('html.attributes.input.class', []);
 		$this->_prepared();
-		$str = '<div id="' . $this->_type . '-' . $this->getHtmlId() . '-form-group" class="' . $this->_type . '-form-group">';
+		$str = '<div id="' . $this->_type . '-' . $this->getHtmlId() . '-form-group" class="col-md-12 ' . $this->_type . '-form-group form-group">';
+		$str .= '<label class="' . implode(' ', $labelClass) . '">' . $this->getLabel() . '</label>';
+		$str .= '<div class="radio-list">';
 		$str .= $this->renderMultiOptions();
+		$str .= '</div>';
 		$str .= \View::make(zbase_view_file_contents('ui.form.helpblock'), array('ui' => $this))->__toString();
 		$str .= '</div>';
 		return $str;

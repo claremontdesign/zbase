@@ -303,6 +303,7 @@ trait File
 			$params['h'] = !empty($options['h']) ? $options['h'] : $this->thHeight;
 			$params['q'] = !empty($options['q']) ? $options['q'] : $this->thQuality;
 		}
+		$params['ext'] = zbase_config_get('node.files.image.format', 'png');
 		return zbase_url_from_route('nodeImage', $params);
 	}
 
@@ -424,6 +425,7 @@ trait File
 	{
 		if($this->isUrl())
 		{
+			$defaultImageFormat = zbase_config_get('node.files.image.format', 'png');
 			$path = $this->url;
 			$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
 						if(empty($width))
@@ -450,7 +452,7 @@ trait File
 						}
 						return $image->make($path)->resize($width, $height);
 				});
-			return \Response::make($cachedImage, 200, array('Content-Type' => 'image/png'));
+			return \Response::make($cachedImage, 200, array('Content-Type' => 'image/' . $defaultImageFormat));
 		}
 		else
 		{

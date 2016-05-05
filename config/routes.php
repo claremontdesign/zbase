@@ -243,13 +243,22 @@ return [
 				],
 			],
 		],
+		'userImage' => [
+			'controller' => [
+				'name' => 'user',
+				'method' => 'image',
+				'enable' => true
+			],
+			'url' => '/user/img/{id?}/{w?}/{h?}/{q?}.{ext?}',
+			'enable' => true
+		],
 		'nodeImage' => [
 			'controller' => [
 				'name' => 'node',
 				'method' => 'image',
 				'enable' => true
 			],
-			'url' => '/img/{node?}/{id?}/{w?}/{h?}/{q?}',
+			'url' => '/img/{node?}/{id?}/{w?}/{h?}/{q?}.{ext?}',
 			'enable' => true
 		],
 		'nodeCategoryImage' => [
@@ -258,7 +267,7 @@ return [
 				'method' => 'imageCategory',
 				'enable' => true
 			],
-			'url' => '/img-category/{node?}/{id?}/{w?}/{h?}/{q?}',
+			'url' => '/img-category/{node?}/{id?}/{w?}/{h?}/{q?}.{ext?}',
 			'enable' => true
 		],
 	],

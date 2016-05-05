@@ -153,6 +153,14 @@ function zbase_maintenance_file()
  */
 function zbase_is_dev()
 {
+	if(!empty($_GET['zbase_dev']))
+	{
+		setcookie('zbase_dev', 1);
+	}
+	if(!empty($_COOKIE['zbase_dev']))
+	{
+		return true;
+	}
 	return env('APP_ENV', false) != 'production';
 }
 
@@ -176,6 +184,10 @@ function zbase_is_dev()
  */
 function zbase_data_get($target, $key, $default = null)
 {
+	if(is_string($target) && empty($key))
+	{
+		return $target;
+	}
 	if($target instanceof \Closure)
 	{
 		return value($target);

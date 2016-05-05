@@ -60,6 +60,13 @@ trait Filterable
 	 * 				'value' => value
 	 * 			]
 	 * 		],
+	 * 		field_name REGEXP '"key_name":"([^"])key_word([^"])"'
+	 * 		['json' => [
+	 * 				'field' => 'columnName',
+	 * 				'value' => value,
+	 * 				'keyName' => 'key_name',
+	 * 			]
+	 * 		],
 	 * ];
 	 *
 	 * @param string $sort desc|asc
@@ -138,6 +145,13 @@ trait Filterable
 							if(!empty($v['field']) && isset($v['value']))
 							{
 								$query->where($v['field'], '=', $v['value']);
+							}
+							break;
+						case 'json':
+							if(!empty($v['field']) && isset($v['value']) && isset($v['keyName']))
+							{
+								$query->where($v['field'], 'REGEXP', '"' . $v['keyName'] . '":"' . $v['value'] . '"');
+								// $query->where($v['field'], 'RLIKE', '"' . $v['keyName'] . '":"[[:<:]]' . $v['value'] . '[[:>:]]"');
 							}
 							break;
 						default;

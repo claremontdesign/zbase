@@ -54,6 +54,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	/**
+	 * The Entity Id
+	 * @return integer
+	 */
+	public function alphaId()
+	{
+		return $this->alpha_id;
+	}
+
+	/**
 	 * The Username
 	 * @return string
 	 */
@@ -74,6 +83,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	public function displayName()
 	{
 		return $this->profile()->first_name . ' ' . $this->profile()->last_name;
+	}
+
+	public function getFirstNameAttribute()
+	{
+		return $this->profile()->first_name;
+	}
+
+	public function getLastNameAttribute()
+	{
+		return $this->profile()->last_name;
 	}
 
 	/**
@@ -381,6 +400,115 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="Image">
+
+	/**
+	 * Upload a file for this node
+	 * @param string $index The Upload file name/index or the URL to file to download and save
+	 * @return void
+	 */
+	public function uploadProfileImage($index = 'file')
+	{
+		if(!empty($_FILES[$index]['name']))
+		{
+			try
+			{
+				$folder = zbase_storage_path() . '/' . zbase_tag() . '/user/' . $this->id() . '/';
+				zbase_directory_check($folder, true);
+				if(!empty($_FILES[$index]['name']))
+				{
+					$filename = $this->alphaId();
+					$uploadedFile = zbase_file_upload_image($index, $folder, $filename, zbase_config_get('node.files.image.format', 'png'));
+				}
+				if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
+				{
+					return basename($uploadedFile);
+				}
+			} catch (\Zbase\Exceptions\RuntimeException $e)
+			{
+				if(zbase_is_dev())
+				{
+					dd($e);
+				}
+				zbase_abort(500);
+			}
+		}
+	}
+
+	/**
+	 * cATEGORY iMAGE uRL
+	 * @return type
+	 */
+	public function avatarUrl($options = [])
+	{
+		if($this->profile()->isAvatarUrl())
+		{
+			return $this->profile->avatar;
+		}
+		$fullImage = false;
+		$params['id'] = $this->alphaId();
+		if(empty($options) || !empty($options['full']))
+		{
+			$fullImage = true;
+		}
+		$params['w'] = !empty($options['w']) ? $options['w'] : 150;
+		$params['h'] = !empty($options['h']) ? $options['h'] : 0;
+		$params['q'] = !empty($options['q']) ? $options['q'] : 80;
+		if(!empty($options['thumbnail']))
+		{
+			$params['w'] = !empty($options['w']) ? $options['w'] : $this->thWidth;
+			$params['h'] = !empty($options['h']) ? $options['h'] : $this->thHeight;
+			$params['q'] = !empty($options['q']) ? $options['q'] : $this->thQuality;
+		}
+		$params['ext'] = zbase_config_get('node.files.image.format', 'png');
+		return zbase_url_from_route('userImage', $params);
+	}
+
+	/**
+	 * Serve the File
+	 * @param integer $width
+	 * @param integer $height
+	 * @param integer $quality Image Quality
+	 * @param boolean $download If to download
+	 * @return boolean
+	 */
+	public function serveImage($width, $height = null, $quality = null, $download = false)
+	{
+		$folder = zbase_storage_path() . '/' . zbase_tag() . '/user/' . $this->id() . '/';
+		$path = $folder . $this->profile()->avatar;
+		if(file_exists($path))
+		{
+			$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
+						if(empty($width))
+						{
+							$size = getimagesize($path);
+							$width = $size[0];
+							$height = $size[1];
+						}
+						if(!empty($width) && empty($height))
+						{
+							return $image->make($path)->resize($width, null, function($constraint)
+						{
+										$constraint->upsize();
+										$constraint->aspectRatio();
+						});
+						}
+						if(empty($width) && !empty($height))
+						{
+							return $image->make($path)->resize(null, $height, function($constraint)
+						{
+										$constraint->upsize();
+										$constraint->aspectRatio();
+						});
+						}
+						return $image->make($path)->resize($width, $height);
+				});
+			return \Response::make($cachedImage, 200, array('Content-Type' => $this->mimetype));
+		}
+		return false;
+	}
+
+	// </editor-fold>
 	/**
 	 * Widget entity interface.
 	 * 	Data should be validated first before passing it here
@@ -409,6 +537,42 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				if(!empty($data['password']) && !empty($data['password_confirm']))
 				{
 					$this->updateRequestPassword($data['password_confirm']);
+				}
+				$this->updateProfile($data);
+				return true;
+			}
+		}
+	}
+
+	/**
+	 * Update Profile
+	 * @param $data
+	 */
+	public function updateProfile($data)
+	{
+		$fillables = $this->profile()->getFillable();
+		if(!empty($fillables))
+		{
+			$newData = [];
+			$profileImage = $this->uploadProfileImage();
+			if(!empty($profileImage))
+			{
+				$newData['avatar'] = $profileImage;
+			}
+			$userProfile = zbase_entity('user_profile')->where('user_id', $this->id());
+			foreach ($data as $key => $val)
+			{
+				if(in_array($key, $fillables))
+				{
+					$newData[$key] = $val;
+				}
+			}
+			if(!empty($newData))
+			{
+				$saved = $userProfile->update($newData);
+				if(!empty($saved))
+				{
+					zbase_alert('success', _zt('Profile Updated.'));
 				}
 			}
 		}
@@ -687,7 +851,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		return false;
 	}
 
-// </editor-fold>
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="TableDefiniations">
 	/**
 	 * Default Data

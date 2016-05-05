@@ -468,5 +468,4 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		$this->onlyTrashed = $flag;
 		return $this;
 	}
-
 }

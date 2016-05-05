@@ -65,13 +65,46 @@ return [
 				],
 			],
 		],
+		'event' => [
+			'front' => [
+				'index' => [
+					'post' => [
+						'post' => [
+							'route' => [
+								'name' => 'account',
+							]
+						]
+					],
+				],
+			],
+		],
 		'tabs' => [
 			'account' => [
 				'type' => 'tab',
 				'label' => 'Profile',
 				'id' => 'profile',
 				'group' => 'accountTab',
-				'enable' => false,
+				'enable' => true,
+				'elements' => [
+					'first_name' => [
+						'type' => 'text',
+						'id' => 'first_name',
+						'enable' => true,
+						'label' => 'First Name',
+						'entity' => [
+							'property' => 'first_name'
+						]
+					],
+					'last_name' => [
+						'type' => 'text',
+						'id' => 'last_name',
+						'enable' => true,
+						'label' => 'Last Name',
+						'entity' => [
+							'property' => 'last_name'
+						]
+					],
+				],
 			],
 			'email' => [
 				'type' => 'tab',
@@ -178,6 +211,31 @@ return [
 						'widget' => 'accountConfirm',
 					],
 				],
+			],
+			'images' => [
+				'type' => 'tab',
+				'label' => 'Profile Image',
+				'id' => 'images',
+				'group' => 'accountTab',
+				'enable' => true,
+				'elements' => [
+					'file' => [
+						'type' => 'file',
+						'id' => 'file',
+						'label' => '',
+						'entity' => [
+							'property' => 'file',
+						],
+						'html' => [
+							'content' => [
+								'pre' => [
+									'enable' => true,
+									'view' => zbase_view_file_contents('node.files.files')
+								]
+							],
+						],
+					],
+				]
 			],
 		],
 	],

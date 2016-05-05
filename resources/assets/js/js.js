@@ -385,10 +385,8 @@ function zbase_ajax_get(url, data, successCb, opt)
 
 
 // ZBASE COMMONS END
-
-
 jQuery.ajaxSetup({
-	headers: {'X-CSRF-TOKEN': jQuery('meta[name=_token]').attr('content')}
+	headers: {'X-CSRF-TOKEN': jQuery('meta[name=_token]').length > 0 ? jQuery('meta[name=_token]').attr('content') : (jQuery('input[name="_token"]').length > 0 ? jQuery('input[name="_token"]').val() : null)}
 });
 jQuery(document).ajaxComplete(function (event, request, settings) {
 	if(request === undefined)
@@ -402,7 +400,14 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	var responseJSON = request.responseJSON;
 	if (responseJSON._token !== undefined)
 	{
-		jQuery('meta[name=_token]').attr('content', responseJSON._token);
+		if(jQuery('meta[name=_token]').length > 0)
+		{
+			jQuery('meta[name=_token]').attr('content', responseJSON._token);
+		}
+		if(jQuery('input[name="_token"]').length > 0)
+		{
+			jQuery('input[name="_token"]').val(responseJSON._token);
+		}
 	}
 	if (responseJSON.redirect !== undefined)
 	{

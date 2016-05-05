@@ -3,8 +3,11 @@
 	<!-- BEGIN TOP NAVIGATION BAR -->
 	<div class="header-inner">
 		<!-- BEGIN LOGO -->
-		<a class="navbar-brand" href="index.html">
-			<img src="<?php echo zbase_path_asset('metronic/img/logo.png'); ?>" alt="logo" class="img-responsive"/>
+		<a class="navbar-brand" href="<?php echo zbase_url_from_route('admin')?>">
+			<?php
+			$adminName = zbase_config_get('view.package.templates.metronic.logotext', '<img src="' . zbase_path_asset('metronic/img/logo.png') . '" alt="logo" class="img-responsive"/>');
+			echo $adminName;
+			?>
 		</a>
 		<!-- END LOGO -->
 		<!-- BEGIN RESPONSIVE MENU TOGGLER -->
@@ -17,7 +20,7 @@
 			<!-- BEGIN USER LOGIN DROPDOWN -->
 			<li class="dropdown user">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
-					<img alt="" src="<?php echo zbase_path_asset('metronic/img/avatar1_small.jpg')?>"/>
+					<img alt="" src="<?php echo zbase_auth_user()->avatarUrl(['w' => 30])?>"/>
 					<span class="username">
 						<?php echo zbase_auth_user()->displayName()?>
 					</span>

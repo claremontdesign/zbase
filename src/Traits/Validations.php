@@ -89,6 +89,10 @@ trait Validations
 	protected function _validation($action = null)
 	{
 		$section = zbase_section();
+		if(empty($action))
+		{
+			$action = zbase_route_input('action');
+		}
 		$validations = $this->_v('validations.' . $action . '.' . $section, $this->_v('validations.' . $action, $this->_v('validations', [])));
 		$this->_fixValidation = true;
 		if(!empty($validations))

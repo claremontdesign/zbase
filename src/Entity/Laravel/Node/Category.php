@@ -132,6 +132,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			$params['h'] = !empty($options['h']) ? $options['h'] : $this->thHeight;
 			$params['q'] = !empty($options['q']) ? $options['q'] : $this->thQuality;
 		}
+		$params['ext'] = zbase_config_get('node.files.image.format', 'png');
 		return zbase_url_from_route('nodeCategoryImage', $params);
 	}
 
@@ -259,7 +260,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			if(!empty($_FILES[$index]['name']))
 			{
 				$filename = $this->alphaId();//zbase_file_name_from_file($_FILES[$index]['name'], time(), true);
-				$uploadedFile = zbase_file_upload_image($index, $folder, $filename, 'png');
+				$uploadedFile = zbase_file_upload_image($index, $folder, $filename, zbase_config_get('node.files.image.format', 'png'));
 			}
 			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
 			{
@@ -289,7 +290,6 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	 */
 	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
 	{
-//		dd($method, $action, $data);
 		if(($action == 'update' && strtolower($method) == 'post') || ($action == 'create' && strtolower($method) == 'post'))
 		{
 			$this->nodeAttributes($data);
@@ -301,6 +301,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			$parentNodes = [];
 			if(!empty($parent))
 			{
+				$currentParent = $this->ancestors()->first();
 				if(is_array($parent))
 				{
 					foreach ($parent as $p)
@@ -315,7 +316,10 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 						}
 						if($parentCategoryNode instanceof Interfaces\EntityInterface)
 						{
-							$parentNodes[] = $parentCategoryNode;
+							if($currentParent->id() != $parentCategoryNode->id())
+							{
+								$parentNodes[] = $parentCategoryNode;
+							}
 						}
 						else
 						{
@@ -439,6 +443,16 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	}
 
 	// </editor-fold>
+
+	/**
+	 *
+	 * @param string $value
+	 */
+	public function setSlugAttribute($value)
+	{
+		$this->attributes['slug'] = $value;
+	}
+
 	/**
 	 * Generate and Update Row Alpha ID
 	 * @return void
@@ -458,7 +472,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	 */
 	protected function _setParentNodes($parentNodes)
 	{
-		if(is_array($parentNodes))
+		if(!empty($parentNodes) && is_array($parentNodes))
 		{
 			foreach ($parentNodes as $p)
 			{

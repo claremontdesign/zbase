@@ -26,7 +26,16 @@ class UserProfile extends BaseEntity
 	 */
 	protected $entityName = 'user_profile';
 
-	public function avatarUrl()
+	/**
+	 * Check if avatar is a url
+	 * @return type
+	 */
+	public function isAvatarUrl()
+	{
+		return preg_match('/http/', $this->avatar);
+	}
+
+	public function avatarUrl($options = [])
 	{
 		if(empty($this->avatar))
 		{

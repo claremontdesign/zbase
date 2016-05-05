@@ -35,7 +35,6 @@ function nodeFileAfterDelete(data)
  */
 function nodeFileAfterUpdate(data)
 {
-
 }
 
 /**Node Category**/

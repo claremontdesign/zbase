@@ -42,6 +42,10 @@ return [
 				'name' => Zbase\Http\Controllers\__FRAMEWORK__\Auth\PasswordController::class,
 				'enable' => true
 			],
+			'user' => [
+				'name' => Zbase\Http\Controllers\__FRAMEWORK__\UserController::class,
+				'enable' => true
+			],
 		],
 	],
 ];

@@ -317,6 +317,14 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 						$params['id'] = $this->entity()->id();
 					}
 				}
+				if($action == 'ddelete')
+				{
+					if(isset($params['id']) && isset($params['action']))
+					{
+						unset($params['id']);
+						unset($params['action']);
+					}
+				}
 				$e['route']['params'] = $params;
 				$url = zbase_url_from_config($e);
 			}
@@ -495,14 +503,14 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				{
 					if($tabName == $currentTab)
 					{
-						$this->_validationRules[$e->name()] = $e->getValidationRules();
-						$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
+						$this->_validationRules[$e->name()] = $e->getValidationRules($this->getAction());
+						$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages($this->getAction()));
 					}
 				}
 				else
 				{
-					$this->_validationRules[$e->name()] = $e->getValidationRules();
-					$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages());
+					$this->_validationRules[$e->name()] = $e->getValidationRules($this->getAction());
+					$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages($this->getAction()));
 				}
 			}
 		}
