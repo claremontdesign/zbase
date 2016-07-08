@@ -5,7 +5,7 @@
 		<label class="col-md-4 control-label">E-Mail Address</label>
 
 		<div class="col-md-6">
-			<input type="email" class="form-control" name="email" value="{{ zbase_form_old('email') }}">
+			<input type="email" class="form-control" required name="email" value="{{ zbase_form_old('email') }}" x-moz-errormessage="Please Enter Email Address">
 		</div>
 	</div>
 
@@ -13,7 +13,7 @@
 		<label class="col-md-4 control-label">Password</label>
 
 		<div class="col-md-6">
-			<input type="password" class="form-control" name="password">
+			<input type="password" class="form-control" name="password" required x-moz-errormessage="Please Enter Password">
 		</div>
 	</div>
 
