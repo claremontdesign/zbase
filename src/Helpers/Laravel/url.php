@@ -19,8 +19,14 @@
  * @param type $name
  * @param type $params
  */
-function zbase_url_from_route($name, $params = [])
+function zbase_url_from_route($name, $params = [], $relative = false)
 {
+	// $relative = true;
+	if(!empty($relative))
+	{
+		$home = route('index');
+		return str_replace($home, '', route($name, $params));
+	}
 	return route($name, $params);
 }
 
@@ -44,7 +50,7 @@ function zbase_url_from_current($params = [], $replace = true, $add = false)
 	if(!empty($replace))
 	{
 		$qs = zbase_request_query_inputs();
-		foreach($params as $pK => $pV)
+		foreach ($params as $pK => $pV)
 		{
 			if(array_key_exists($pK, $qs))
 			{
@@ -58,13 +64,20 @@ function zbase_url_from_current($params = [], $replace = true, $add = false)
 	{
 		if(is_array($v))
 		{
-			foreach($v as $vK => $vV)
+			foreach ($v as $vK => $vV)
 			{
-				$urlQ[] = $k . '['.$vK.']=' . $vV;
+				$urlQ[] = $k . '[' . $vK . ']=' . $vV;
 			}
-		} else {
+		}
+		else
+		{
 			$urlQ[] = $k . '=' . $v;
 		}
+	}
+	if(zbase_is_angular())
+	{
+		$home = route('index');
+		return '#' . str_replace($home, '', zbase_url() . '?' . implode('&', $urlQ));
 	}
 	return zbase_url() . '?' . implode('&', $urlQ);
 }
@@ -100,10 +113,14 @@ function zbase_url_create($path, array $parameters = null, $secure = false)
  * @param array $params Some parameters
  * @return string
  */
-function zbase_url_from_config($config, $params = [])
+function zbase_url_from_config($config, $params = [], $relative = false)
 {
 	if(is_string($config))
 	{
+		if(zbase_is_angular())
+		{
+			return '#' . $config;
+		}
 		return $config;
 	}
 	if(is_array($config))
@@ -112,10 +129,14 @@ function zbase_url_from_config($config, $params = [])
 		{
 			$name = $config['route']['name'];
 			$params = !empty($config['route']['params']) ? $config['route']['params'] : [];
-			return zbase_url_from_route($name, $params);
+			return zbase_url_from_route($name, $params, $relative);
 		}
 		if(!empty($config['link']) && is_string($config['link']))
 		{
+			if(zbase_is_angular())
+			{
+				return '#' . $config['link'];
+			}
 			return $config['link'];
 		}
 	}
@@ -138,4 +159,29 @@ function zbase_url_array_to_get($array)
 		return implode('&', $a);
 	}
 	return null;
+}
+
+/**
+ * 'url' => '/api/{username}/{key}/{format}/{module}/{object}/{method}/{paramOne?}/{paramTwo?}/{paramThree?}/{paramFour?}/{paramFive?}/{paramSix?}',
+ * Create an API URL
+ * @param array $params
+ * @return string
+ */
+function zbase_api_url($params)
+{
+	$array = [];
+	$array['username'] = !empty($params['username']) ? $params['username'] : 'username';
+	$array['key'] = !empty($params['key']) ? $params['key'] : 'key';
+	$array['format'] = !empty($params['format']) ? $params['format'] : 'json';
+	$array['module'] = !empty($params['module']) ? $params['module'] : null;
+	$array['object'] = !empty($params['object']) ? $params['object'] : null;
+	$array['method'] = !empty($params['method']) ? $params['method'] : null;
+	$array['paramOne'] = !empty($params['paramOne']) ? $params['paramOne'] : null;
+	$array['paramTwo'] = !empty($params['paramTwo']) ? $params['paramTwo'] : null;
+	$array['paramThree'] = !empty($params['paramThree']) ? $params['paramThree'] : null;
+	$array['paramFour'] = !empty($params['paramFour']) ? $params['paramFour'] : null;
+	$array['paramFive'] = !empty($params['paramFive']) ? $params['paramFive'] : null;
+	$array['paramSix'] = !empty($params['paramSix']) ? $params['paramSix'] : null;
+
+	return zbase_url_from_route('api', $array);
 }

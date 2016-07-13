@@ -13,7 +13,7 @@
   <div class="row">
     <div class="col-md-6 col-md-push-3">
 		<p class="lead">
-			The file that you are looking for is not here.
+			Unauthorized access to resource.
 		</p>
     </div>
   </div>

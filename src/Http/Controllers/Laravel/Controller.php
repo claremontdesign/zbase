@@ -60,9 +60,9 @@ class Controller extends BaseController implements \Zbase\Interfaces\ControllerI
 	 * @param string $msg
 	 * @return type
 	 */
-	public function notfound($msg = null)
+	public function notfound($msg = 'Page not found.')
 	{
-		return zbase_abort(404, $msg);
+		return zbase_abort(404, _zt($msg));
 	}
 
 	/**
@@ -71,9 +71,9 @@ class Controller extends BaseController implements \Zbase\Interfaces\ControllerI
 	 * @param string $msg
 	 * @return type
 	 */
-	public function unathorized($msg = null)
+	public function unathorized($msg = 'Unauthorized Access.')
 	{
-		return zbase_abort(401, $msg);
+		return zbase_abort(401, _zt($msg));
 	}
 
 	/**
@@ -82,9 +82,20 @@ class Controller extends BaseController implements \Zbase\Interfaces\ControllerI
 	 * @param string $msg
 	 * @return type
 	 */
-	public function error($msg = null)
+	public function error($msg = 'Server Error.')
 	{
-		return zbase_abort(505, $msg);
+		return zbase_abort(505, _zt($msg));
+	}
+
+	/**
+	 * Method not allowed
+	 *
+	 * @param string $msg
+	 * @return type
+	 */
+	public function methodNotAllowed($msg = 'Method not allowed.')
+	{
+		return zbase_abort(405, _zt($msg));
 	}
 
 	/**
@@ -260,4 +271,5 @@ class Controller extends BaseController implements \Zbase\Interfaces\ControllerI
 	{
 		zbase_alert($type, $msg, $options);
 	}
+
 }

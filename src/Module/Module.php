@@ -40,6 +40,7 @@ namespace Zbase\Module;
  *
  * controller will be check first, then widgets.
  *
+ * modules.module.routes
  * modules.module.widgets
  * modules.module.widgets.controller
  * modules.module.widgets.controller = array|string; Widget/s will be loaded when actions will is defined, unless specific action is defined.
@@ -247,6 +248,15 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	}
 
 	/**
+	 * Return module set routes
+	 * @return array
+	 */
+	public function getRoutes()
+	{
+		return $this->_v('routes', []);
+	}
+
+	/**
 	 * Return widgets by Index and IndexName
 	 * @param string $index
 	 * @param string $indexName
@@ -376,10 +386,9 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	 * @param mixed $default
 	 * @return mixed
 	 */
-	protected function _v($key, $default = null)
+	public function _v($key, $default = null)
 	{
 		return zbase_data_get($this->getConfiguration(), $key, $default);
 	}
-
 	// </editor-fold>
 }

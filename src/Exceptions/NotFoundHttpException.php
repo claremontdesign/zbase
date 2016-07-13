@@ -21,8 +21,5 @@ class NotFoundHttpException extends Exception
 {
 	protected $statusCode = 404;
 
-	public function render($request, Exception $e)
-	{
-		return response()->view(zbase_view_file('errors.404'), compact('request', 'e'));
-	}
+	protected $statusMessage = 'Page not found.';
 }

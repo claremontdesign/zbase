@@ -270,5 +270,15 @@ return [
 			'url' => '/img-category/{node?}/{id?}/{w?}/{h?}/{q?}.{ext?}',
 			'enable' => true
 		],
+		'api' => [
+			'controller' => [
+				'name' => 'api',
+				'method' => 'index',
+				'enable' => true
+			],
+			'httpVerb' => ['get', 'post', 'put', 'patch'],
+			'url' => '/api/{username}/{key}/{format}/{module}/{object}/{method}/{paramOne?}/{paramTwo?}/{paramThree?}/{paramFour?}/{paramFive?}/{paramSix?}',
+			'enable' => true
+		],
 	],
 ];

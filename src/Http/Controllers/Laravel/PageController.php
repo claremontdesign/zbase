@@ -43,6 +43,11 @@ class PageController extends Controller
 		return $this->view(zbase_view_file('page.contact'));
 	}
 
+	public function js()
+	{
+		return $this->view(zbase_view_file('page.js'));
+	}
+
 	protected function _contactUs()
 	{
 		$success = false;

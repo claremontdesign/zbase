@@ -21,16 +21,70 @@
  */
 function zbase_response($response)
 {
-	if(zbase_request_is_ajax())
+	$errorResponse = false;
+	$xmlResponse = false;
+	$responseFormat = zbase_response_format();
+	if($responseFormat == 'json' || zbase_request_is_ajax())
+	{
+		$jsonResponse = true;
+	}
+	if($responseFormat == 'xml')
+	{
+		$xmlResponse = true;
+	}
+	if(!empty($jsonResponse))
 	{
 		$code = 200;
 		if($response instanceof \RuntimeException)
 		{
 			$code = $response->getStatusCode();
+			zbase()->json()->setVariable('statusCode', $code);
+			if($code !== 200)
+			{
+				$errorResponse = true;
+				zbase()->json()->setVariable('statusMessage', $response->getStatusMessage());
+			}
 		}
-		zbase()->json()->setVariable('_token', zbase_csrf_token());
-		zbase_alerts_render();
-		return response()->json(zbase()->json()->getVariables(), $code);
+		/**
+		 * its ajax, but method is GET
+		 */
+		if(empty($errorResponse))
+		{
+			$tokenResponse = zbase_request_input('token', zbase_request_query_input('token', false));
+			if(!$tokenResponse)
+			{
+				zbase()->json()->setVariable('_token', zbase_csrf_token());
+			}
+		}
+		$forceResponse = zbase_request_input('forceResponse', zbase_request_query_input('forceResponse', false));
+		/**
+		 * JSONP Callback
+		 */
+		$jsonCallback = zbase_request_query_input('callback', false);
+		if(!$forceResponse)
+		{
+			zbase_alerts_render();
+			if(!empty($jsonCallback))
+			{
+				return response()->json(zbase()->json()->getVariables(), $code)->setCallback($jsonCallback);
+			}
+			else
+			{
+				return response()->json(zbase()->json()->getVariables(), $code);
+			}
+		}
+	}
+	if($response instanceof \RuntimeException)
+	{
+		return $response->render(zbase_request(), $response);
+	}
+	/**
+	 * REsponse with a javascript code
+	 */
+	if($responseFormat == 'javascript')
+	{
+		$response = \Response::make($response, 200);
+		$response->header('Content-Type', 'application/javascript');
 	}
 	return $response;
 }
@@ -87,4 +141,23 @@ function zbase_redirect_with_message($to, $message)
 function zbase_redirect()
 {
 	return redirect();
+}
+
+/**
+ * SEt the REsponse Format
+ * @param type $responseFormat The response format xml|json|html
+ * @return void
+ */
+function zbase_response_format_set($responseFormat = 'html')
+{
+	zbase()->setResponseFormat($responseFormat);
+}
+
+/**
+ * Retur the response format
+ * @return string
+ */
+function zbase_response_format()
+{
+	return zbase()->getResponseFormat();
 }

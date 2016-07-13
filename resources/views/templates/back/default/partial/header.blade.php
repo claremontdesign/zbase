@@ -5,7 +5,7 @@
 		<!-- BEGIN LOGO -->
 		<a class="navbar-brand" href="<?php echo zbase_url_from_route('admin')?>">
 			<?php
-			$adminName = zbase_config_get('view.package.templates.metronic.logotext', '<img src="' . zbase_path_asset('metronic/img/logo.png') . '" alt="logo" class="img-responsive"/>');
+			$adminName = zbase_config_get('view.package.templates.metronic.logotext', '<img src="' . zbase_path_asset('img/logo.png') . '" alt="logo" class="img-responsive"/>');
 			echo $adminName;
 			?>
 		</a>

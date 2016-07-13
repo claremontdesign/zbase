@@ -641,7 +641,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				}
 				if(empty($formTag))
 				{
-					$tab['form'] = $this;
+					$tab['form'] = clone $this;
 					$this->setFormTag(false);
 				}
 				$tabs[$tabName] = $tab;
@@ -718,6 +718,10 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		{
 			$cancelButton = '<button onclick="window.history.back();" type="button" class="btn">Cancel</button>';
 		}
+		if(zbase_is_angular_template())
+		{
+			return $cancelButton . '&nbsp;<button class="btn" ' . $this->renderHtmlAttributes($attributes) . '>' . $this->submitButtonLabel() . '</button>';
+		}
 		return $cancelButton . '&nbsp;<button type="submit" ' . $this->renderHtmlAttributes($attributes) . '>' . $this->submitButtonLabel() . '</button>';
 	}
 
@@ -766,7 +770,12 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function startTag()
 	{
-		return '<form action="" method="POST" enctype="multipart/form-data">';
+		$attributes = $this->_v('form.startTag.' . $this->_action . '.html.attributes', $this->_v('form.startTag.html.attributes', []));
+		if(zbase_is_angular_template())
+		{
+			return '<form name="' . $this->getHtmlId() . '" role="form" ' . $this->renderHtmlAttributes($attributes) . '>';
+		}
+		return '<form action="" method="POST" enctype="multipart/form-data" ' . $this->renderHtmlAttributes($attributes) . '>';
 	}
 
 	/**

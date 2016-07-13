@@ -53,6 +53,13 @@ trait Html
 		{
 			$htmlAttributes = $this->getHtmlAttributes();
 		}
+		if(zbase_is_angular_template())
+		{
+			if(!empty($htmlAttributes['angular']))
+			{
+				$htmlAttributes = $htmlAttributes['angular'];
+			}
+		}
 		if(!empty($htmlAttributes) && is_array($htmlAttributes))
 		{
 			$attributes = [];

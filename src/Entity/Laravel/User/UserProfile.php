@@ -26,6 +26,8 @@ class UserProfile extends BaseEntity
 	 */
 	protected $entityName = 'user_profile';
 
+	protected $hidden = ['user_id'];
+
 	/**
 	 * Check if avatar is a url
 	 * @return type

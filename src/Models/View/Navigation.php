@@ -64,6 +64,14 @@ class Navigation
 	protected $route = [];
 
 	/**
+	 * Nav Format
+	 * @var string|HTML
+	 */
+	protected $format = '<li class="{CLASS_ISACTIVE}">'
+				. '{A_PRE}<a href="{URL}" title="{TITLE}" {A_ATTRIBUTES}>{LABEL}</a>{A_POST}'
+				. '</li>';
+
+	/**
 	 * Constructor
 	 * @param array $attributes
 	 */
@@ -92,6 +100,10 @@ class Navigation
 	{
 		if(!empty($this->route))
 		{
+			if(zbase_is_angular())
+			{
+				return zbase_url_from_config(['route' => $this->route], [], true);
+			}
 			return zbase_url_from_config(['route' => $this->route]);
 		}
 	}
@@ -103,19 +115,42 @@ class Navigation
 	 */
 	public function __toString()
 	{
+//		$childStr = $this->_childrenMenu();
+//		$str = '';
+//		$str .= '<li class="' . (!empty($this->active) ? 'active' : '') . '">' . EOF;
+//		$str .= '<a href="' . $url . '" title="' . $this->title . '" ' . $this->renderHtmlAttributes() . '>' . EOF;
+//		$str .= '<i class="' . $this->icon . '"></i>' . EOF;
+//		$str .= '<span class="title">' . $this->label . '</span>' . EOF;
+//		if(!empty($this->children))
+//		{
+//			$str .= '<span class="arrow"></span>';
+//		}
+//		$str .= '</a>' . EOF;
+//		$str .= $childStr;
+//		$str .= '</li>' . EOF;
+
+		$classIsActive = (!empty($this->active) ? 'active' : '');
+		$aPre = '';
+		$aPost = '';
+		$url = $this->getRouteUrl();
+		$title = $this->title;
+		$aAttributes = $this->renderHtmlAttributes();
+		$label = '';
+
 		$childStr = $this->_childrenMenu();
-		$str = '';
-		$str .= '<li class="' . (!empty($this->active) ? 'active' : '') . '">' . EOF;
-		$str .= '<a href="' . $this->getRouteUrl() . '" title="' . $this->title . '" ' . $this->renderHtmlAttributes() . '>' . EOF;
-		$str .= '<i class="' . $this->icon . '"></i>' . EOF;
-		$str .= '<span class="title">' . $this->label . '</span>' . EOF;
+		$label .= '<i class="' . $this->icon . '"></i>' . EOF;
+		$label .= '<span class="title">' . $this->label . '</span>' . EOF;
 		if(!empty($this->children))
 		{
-			$str .= '<span class="arrow"></span>';
+			$label .= '<span class="arrow"></span>';
 		}
-		$str .= '</a>' . EOF;
-		$str .= $childStr;
-		$str .= '</li>' . EOF;
+		$aPost .= $childStr;
+
+
+		$str = str_replace(
+				array('{CLASS_ISACTIVE}','{A_PRE}','{A_POST}','{URL}','{TITLE}','{A_ATTRIBUTES}','{LABEL}'),
+				array($classIsActive,$aPre,$aPost,$url,$title,$aAttributes,$label),
+				$this->format);
 		return $str;
 	}
 

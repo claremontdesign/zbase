@@ -78,7 +78,7 @@ trait Module
 		/**
 		 * Check for widgets
 		 */
-		$widgetsAction = $action = $this->getRouteParameter('action', 'index');
+		$widgetsAction = $action = str_replace('.','-',$this->getRouteParameter('action', 'index'));
 		$requestMethod = zbase_request_method();
 		if(!empty($this->nodeName))
 		{

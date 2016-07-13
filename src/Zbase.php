@@ -95,6 +95,13 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	protected $json = [];
 
 	/**
+	 * The Response format
+	 * default: html
+	 * @var string html|xml|json
+	 */
+	protected $responseFormat = 'html';
+
+	/**
 	 *
 	 * @var Models\Ui
 	 */
@@ -106,6 +113,26 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	 * @var array
 	 */
 	protected $entityModels = [];
+
+	/**
+	 * Return the response format
+	 * @return string
+	 */
+	public function getResponseFormat()
+	{
+		return $this->responseFormat;
+	}
+
+	/**
+	 * SEt the response format
+	 * @param string $responseFormat The response format json|xml|html
+	 * @return \Zbase\Zbase
+	 */
+	public function setResponseFormat($responseFormat = 'html')
+	{
+		$this->responseFormat = $responseFormat;
+		return $this;
+	}
 
 	public function setAuth($auth)
 	{

@@ -1133,4 +1133,57 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	// </editor-fold>
+
+	/**
+	 * Static API
+	 */
+
+	/**
+	 * User By Id
+	 * @param string|integer|array $id
+	 * @return object|array
+	 */
+	public static function findUserById($id)
+	{
+		if(is_array($id) && !empty($id['userId']))
+		{
+			$id = $id['userId'];
+		}
+		if(!empty($id) && is_numeric($id))
+		{
+			$entity = zbase()->entity('user', [], true);
+			$user = $entity->repo()->byId($id);
+			return ['user' => $user, 'user_profile' => $user->profile()];
+		}
+	}
+
+	/**
+	 * User By Email
+	 * @param string $email
+	 * @return object|array
+	 */
+	public static function findUserByEmail($email)
+	{
+		if(is_array($email) && !empty($email['email']))
+		{
+			$email = $email['email'];
+		}
+		if(!empty($email))
+		{
+			$entity = zbase()->entity('user', [], true);
+			$user = $entity->repo()->by('email', $email)->first();
+			return ['user' => $user, 'user_profile' => $user->profile()];
+		}
+	}
+
+	/**
+	 * User By Username
+	 * @param string $username
+	 * @return object|array
+	 */
+	public static function findUserByUsername($username)
+	{
+
+	}
+
 }

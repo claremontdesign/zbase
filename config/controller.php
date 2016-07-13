@@ -46,6 +46,10 @@ return [
 				'name' => Zbase\Http\Controllers\__FRAMEWORK__\UserController::class,
 				'enable' => true
 			],
+			'api' => [
+				'name' => Zbase\Http\Controllers\__FRAMEWORK__\ApiController::class,
+				'enable' => true
+			],
 		],
 	],
 ];

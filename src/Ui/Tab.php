@@ -73,7 +73,7 @@ class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	 */
 	public function id()
 	{
-		return $this->_group->id() . '-' . $this->id;
+		return $this->_group->id() . $this->id;
 	}
 
 	public function tabId()

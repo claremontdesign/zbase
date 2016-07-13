@@ -19,9 +19,32 @@ class Exception extends \RuntimeException
 {
 
 	protected $statusCode = 500;
+	protected $statusMessage = 'Server Error.';
+
+	public function __construct($message = "", $code = 0, Exception $previous = null)
+	{
+		$this->setStatusMessage($message);
+	}
 
 	public function getStatusCode()
 	{
 		return $this->statusCode;
 	}
+
+	public function getStatusMessage()
+	{
+		return $this->statusMessage;
+	}
+
+	public function setStatusMessage($statusMessage)
+	{
+		$this->statusMessage = $statusMessage;
+		return $this;
+	}
+
+	public function render($request, Exception $e)
+	{
+		return response()->view(zbase_view_file('errors.' . $this->getStatusCode()), compact('request', 'e'));
+	}
+
 }

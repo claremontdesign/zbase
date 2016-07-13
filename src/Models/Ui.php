@@ -38,4 +38,15 @@ class Ui
 		return $this->tabs;
 	}
 
+	/**
+	 * Return the Mobile Framework to use
+	 */
+	public function themeFramework()
+	{
+		if(zbase()->mobile()->isMobileTheme())
+		{
+			return env('UI_THEME_FRAMEWORK', null);
+		}
+		return null;
+	}
 }

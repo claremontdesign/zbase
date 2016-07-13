@@ -1,0 +1,29 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/*
+    Created on : Jul 6, 2016, 8:27:43 PM
+    Author     : Dennes B Abing <dennes.b.abing@gmail.com>
+*/
+
+.app{
+	background: white;
+}
+.app-content-loading {
+	text-align: center;
+	height: 100%;
+	width: 100%;
+	background: #fff;
+	position: relative;
+}
+
+.loading-spinner {
+	position: absolute;
+	font-size: 50px;
+	left: 50%;
+	top: 50%;
+	margin-left: -25px;
+	margin-top: -25px;
+}

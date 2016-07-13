@@ -1,5 +1,4 @@
 <?php
-zbase_view_plugin_load('zbase');
 zbase_view_plugin_load('nodes');
 //zbase_view_plugin_load('nodes-upload-krajee');
 /**

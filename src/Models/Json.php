@@ -24,7 +24,7 @@ class Json
 	 * The current module
 	 * @var Models\Module
 	 */
-	protected $vars = null;
+	protected $vars = array();
 
 	public function __construct()
 	{

@@ -33,6 +33,18 @@ return [
 		 * Form on each tab
 		 */
 		'form_tab' => false,
+		'submit' => [
+			'button' => [
+				'html' => [
+					'attributes' => [
+						'angular' => [
+							'ng-controller' => 'adminAccountMainController',
+							'ng-click' => 'modifyAccount($event)',
+						]
+					],
+				],
+			]
+		],
 		/**
 		 * Model configuration
 		 * The Current Data to manipulate

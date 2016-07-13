@@ -30,7 +30,9 @@ return [
 				'type' => \Zbase\Models\View::HEADMETA,
 				'enable' => true,
 				'name' => '_token',
-				'content' => function(){return zbase_csrf_token();},
+				'content' => function(){
+					return zbase_csrf_token();
+				},
 			],
 			'zbase' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
@@ -42,7 +44,7 @@ return [
 						'type' => \Zbase\Models\View::SCRIPT,
 						'enable' => true,
 						'script' => 'Zbase.init();',
-						'onLoad' => true,
+						'onLoad' => false,
 					],
 				]
 			],
@@ -163,8 +165,8 @@ return [
 						],
 					]
 				],
-			// </editor-fold>
 			],
+			// </editor-fold>
 			// <editor-fold defaultstate="collapsed" desc="Widget:Tree">
 			'bootstrap-treeview' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
@@ -300,11 +302,93 @@ return [
 						'position' => 492,
 					],
 				]
+			],
+			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="Mobile::Angular">
+			'mobileangular' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('mobile/angular/dist/js/angular-1.3.0.min.js'),
+				'cdn' => 'http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular.min.js',
+				'enable' => true,
+				'position' => 500,
+				'dependents' => [
+					'meta-author' => [
+						'type' => \Zbase\Models\View::HEADMETA,
+						'enable' => true,
+						'name' => 'author',
+						'content' => 'Dennes B Abing'
+					],
+					[
+						'id' => 'mobileangular-route',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('mobile/angular/dist/js/angular-route-1.3.0.min.js'),
+						'cdn' => '//cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular-route.min.js',
+						'enable' => true,
+						'position' => 499,
+					],
+					[
+						'id' => 'mobileangular-cookies',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('mobile/angular/dist/js/angular-cookies-1.2.13.js'),
+						'cdn' => '//code.angularjs.org/1.2.13/angular-cookies.js',
+						'enable' => true,
+						'position' => 499,
+					],
+					[
+						'id' => 'mobileangular-ui',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('mobile/angular/dist/js/mobile-angular-ui.min.js'),
+						'enable' => true,
+						'position' => 498,
+					],
+					[
+						'id' => 'mobileangular-ui-gestures',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('mobile/angular/dist/js/mobile-angular-ui.gestures.min.js'),
+						'enable' => true,
+						'position' => 497,
+					],
+					[
+						'id' => 'mobileangular-zbase',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('mobile/angular/dist/js/zbase-angular.js'),
+						'enable' => false,
+						'position' => 496,
+					],
+					[
+						'id' => 'mobileangular-ui-hover',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('mobile/angular/dist/css/mobile-angular-ui-hover.min.css'),
+						'enable' => true,
+						'position' => 499,
+					],
+					[
+						'id' => 'mobileangular-ui-base',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('mobile/angular/dist/css/mobile-angular-ui-base.min.css'),
+						'enable' => true,
+						'position' => 498,
+					],
+					[
+						'id' => 'mobileangular-ui-desktop',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('mobile/angular/dist/css/mobile-angular-ui-desktop.min.css'),
+						'enable' => true,
+						'position' => 497,
+					],
+					[
+						'id' => 'mobileangular-zbase-style',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('mobile/angular/dist/css/zbase-angular.css'),
+						'enable' => true,
+						'position' => 496,
+					],
+				]
 			]
 		// </editor-fold>
 		],
 		'autoload' => [
-			'plugins' => ['meta-viewport', 'meta-charset', 'meta-http-equiv', 'meta-author', 'zbase', '_token']
+			'plugins' => ['_token']
 		]
 	// </editor-fold>
 	],

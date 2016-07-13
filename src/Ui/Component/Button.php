@@ -163,7 +163,7 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 		{
 			if(!empty($attr['onclick']))
 			{
-				$attr['onclick'] = "zbase_gotoLocation('".zbase_url_from_route($route, $this->routeParams)."')";
+				$attr['onclick'] = "zbase_gotoLocation('".zbase_url_from_route($route, $this->routeParams,true)."')";
 				if($this->tag == 'a')
 				{
 					$attr['href'] = '#';
@@ -173,7 +173,7 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 			{
 				if($this->tag == 'a')
 				{
-					$attr['href'] = zbase_url_from_route($route, $this->routeParams);
+					$attr['href'] = zbase_url_from_route($route, $this->routeParams,true);
 				}
 			}
 		}
@@ -189,7 +189,7 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 		$route = $this->route;
 		if(!empty($route))
 		{
-			return zbase_url_from_route($route, $this->routeParams);
+			return zbase_url_from_route($route, $this->routeParams,true);
 		}
 		return null;
 	}

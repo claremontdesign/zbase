@@ -66,6 +66,7 @@ function zbase_routes_init($routes = null)
 				$module = zbase()->module($moduleName);
 				if($module instanceof \Zbase\Module\ModuleInterface)
 				{
+					$routes = array_merge($routes, $module->getRoutes());
 					if(empty($routes[$adminKey]['children']))
 					{
 						$routes[$adminKey]['children'] = [];
@@ -347,6 +348,10 @@ function zbase_route_response($name, $route)
 		{
 			$params['content'] = zbase_data_get($route['view']['content'], null);
 		}
-		return zbase_response(zbase_view_render($view['name'], $params));
+		if($view['name'] == 'type.js')
+		{
+			zbase_response_format_set('javascript');
+		}
+		return zbase_response(zbase_view_render(zbase_view_file($view['name']), $params));
 	}
 }

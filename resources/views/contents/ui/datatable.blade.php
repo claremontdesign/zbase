@@ -12,7 +12,8 @@ if(!empty($hasActions))
 
 $tHeads = [];
 $tBodys = [];
-$tFoots = ['<td colspan="' . $columnCount . '">&nbsp;</td>'];
+// $tFoots = ['<td colspan="' . $columnCount . '">&nbsp;</td>'];
+$tFoots = [];
 if(!empty($columns))
 {
 	if(!empty($rows))
@@ -42,24 +43,52 @@ if(!empty($hasActions))
 	$tHeads[] = '<th>&nbsp;</th>';
 }
 ?>
-
+<?php if(zbase_is_mobile()): ?>
 <div <?php echo $wrapperAttributes ?>>
 	<?php if(!empty($columns)): ?>
-		<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.toolbar'), ['ui' => $ui]); ?>
 		<table class="table">
 			<thead>
 				<tr>
 					<?php echo implode("\n", $tHeads); ?>
 				</tr>
 			</thead>
+			<?php if(!empty($tFoots)):?>
 			<tfoot>
 				<tr>
 					<?php echo implode("\n", $tFoots); ?>
 				</tr>
 			</tfoot>
+			<?php endif;?>
 			<tbody>
 				<?php echo implode("\n", $tBodys); ?>
 			</tbody>
 		</table>
 	<?php endif; ?>
 </div>
+<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.toolbar'), ['ui' => $ui]); ?>
+
+<?php else: ?>
+
+	<div <?php echo $wrapperAttributes ?>>
+		<?php if(!empty($columns)): ?>
+			<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.toolbar'), ['ui' => $ui]); ?>
+			<table class="table">
+				<thead>
+					<tr>
+						<?php echo implode("\n", $tHeads); ?>
+					</tr>
+				</thead>
+				<tfoot>
+					<tr>
+						<?php echo implode("\n", $tFoots); ?>
+					</tr>
+				</tfoot>
+				<tbody>
+					<?php echo implode("\n", $tBodys); ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+	</div>
+
+
+<?php endif; ?>

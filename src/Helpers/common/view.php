@@ -961,12 +961,16 @@ function zbase_view_render_body()
 {
 	$str = '';
 	zbase()->view()->prepare();
+	$onloadScripts = zbase_view_placeholder_render('body_scripts_onload');
 	$str .= zbase_view_placeholder_render('body_javascripts');
 	$str .= EOF . '<script type="text/javascript">';
 	$str .= EOF . zbase_view_placeholder_render('body_scripts');
-	$str .= EOF . 'jQuery(document).ready(function(){'
-			. EOF . zbase_view_placeholder_render('body_scripts_onload')
-			. EOF . '});';
+	if(!empty($onloadScripts))
+	{
+		$str .= EOF . 'jQuery(document).ready(function(){'
+				. EOF . $onloadScripts
+				. EOF . '});';
+	}
 	$str .= EOF . '</script>';
 	return $str;
 }

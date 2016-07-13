@@ -367,40 +367,40 @@ class View
 			$jsVars = [];
 			$mobileDetector = zbase()->mobile()->detector();
 			$isMobile = $mobileDetector->isMobile();
-			if($isMobile)
+			if(!$mobileDetector->isMobileTheme())
 			{
 				$jsVars[] = 'isMobile=' . ($isMobile ? 'true;' : 'false;');
 				$jsVars[] = 'isMobileTablet=' . ($mobileDetector->isTablet() ? 'true' : 'false');
 				$jsVars[] = 'isMobileIOS=' . ($mobileDetector->isIos() ? 'true' : 'false');
 				$jsVars[] = 'isMobileAndroid=' . ($mobileDetector->isAndroidOs() ? 'true' : 'false');
-			}
-			$jsVars[] = 'screenWidth=window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName(\'body\')[0].clientWidth';
-			$jsVars[] = 'screenHeight=window.innerHeight|| document.documentElement.clientHeight|| document.getElementsByTagName(\'body\')[0].clientHeight';
-			$jQueryResize = 'window.onresize = function(){'
-					. 'if (typeof (window.innerWidth) == \'number\') {
-							screenWidth = window.innerWidth;
-							screenHeight = window.innerHeight;
-						} else {
-							if (document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)) {
-							screenWidth = document.documentElement.clientWidth;
-							screenHeight = document.documentElement.clientHeight;
+				$jsVars[] = 'screenWidth=window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName(\'body\')[0].clientWidth';
+				$jsVars[] = 'screenHeight=window.innerHeight|| document.documentElement.clientHeight|| document.getElementsByTagName(\'body\')[0].clientHeight';
+				$jQueryResize = 'window.onresize = function(){'
+						. 'if (typeof (window.innerWidth) == \'number\') {
+								screenWidth = window.innerWidth;
+								screenHeight = window.innerHeight;
 							} else {
-								if (document.body && (document.body.clientWidth || document.body.clientHeight))
-								{
-									screenWidth = document.body.clientWidth;
-									screenHeight = document.body.clientHeight;
+								if (document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)) {
+								screenWidth = document.documentElement.clientWidth;
+								screenHeight = document.documentElement.clientHeight;
+								} else {
+									if (document.body && (document.body.clientWidth || document.body.clientHeight))
+									{
+										screenWidth = document.body.clientWidth;
+										screenHeight = document.body.clientHeight;
+									}
 								}
 							}
-						}
-				};';
-			$jsVarsLoad = [
-				'id' => 'mobileDetect',
-				'type' => \Zbase\Models\View::SCRIPT,
-				'enable' => true,
-				'script' => '<script type="text/javascript">var ' . implode(',', $jsVars) . ';' . $jQueryResize . '</script>',
-				'placeholder' => 'head_scripts',
-			];
-			$this->add(self::SCRIPT, $jsVarsLoad);
+					};';
+//				$jsVarsLoad = [
+//					'id' => 'mobileDetect',
+//					'type' => \Zbase\Models\View::SCRIPT,
+//					'enable' => true,
+//					'script' => '<script type="text/javascript">var ' . implode(',', $jsVars) . ';' . $jQueryResize . '</script>',
+//					'placeholder' => 'head_scripts',
+//				];
+//				$this->add(self::SCRIPT, $jsVarsLoad);
+			}
 			$controller = zbase_request_controller();
 			if(!empty($controller))
 			{

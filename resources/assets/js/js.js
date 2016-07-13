@@ -376,7 +376,7 @@ function zbase_ajax_get(url, data, successCb, opt)
 		{
 			if (opt.loaderTarget !== undefined)
 			{
-				 App.unblockUI(opt.loaderTarget);
+				App.unblockUI(opt.loaderTarget);
 			}
 		},
 		success: successCb
@@ -386,25 +386,25 @@ function zbase_ajax_get(url, data, successCb, opt)
 
 // ZBASE COMMONS END
 jQuery.ajaxSetup({
-	headers: {'X-CSRF-TOKEN': jQuery('meta[name=_token]').length > 0 ? jQuery('meta[name=_token]').attr('content') : (jQuery('input[name="_token"]').length > 0 ? jQuery('input[name="_token"]').val() : null)}
+	headers: {'X-CSRF-TOKEN': jQuery('meta[name=_token]').length > 0 ? jQuery('meta[name=_token]').attr('content') : (jQuery('input[name="_token"]').length > 0 ? jQuery('input[name="_token"]').val() : null), 'angular' : 1}
 });
 jQuery(document).ajaxComplete(function (event, request, settings) {
-	if(request === undefined)
+	if (request === undefined)
 	{
 		return;
 	}
-	if(request.responseJSON === undefined)
+	if (request.responseJSON === undefined)
 	{
 		return;
 	}
 	var responseJSON = request.responseJSON;
 	if (responseJSON._token !== undefined)
 	{
-		if(jQuery('meta[name=_token]').length > 0)
+		if (jQuery('meta[name=_token]').length > 0)
 		{
 			jQuery('meta[name=_token]').attr('content', responseJSON._token);
 		}
-		if(jQuery('input[name="_token"]').length > 0)
+		if (jQuery('input[name="_token"]').length > 0)
 		{
 			jQuery('input[name="_token"]').val(responseJSON._token);
 		}
@@ -589,12 +589,14 @@ var Zbase = function () {
 	 */
 	var initTabs = function ()
 	{
-		jQuery('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-			localStorage.setItem(_this.prefix + 'lastTab', jQuery(this).attr('href'));
-		});
-		var lastTab = localStorage.getItem(_this.prefix + 'lastTab');
-		if (lastTab) {
-			jQuery('[href="' + lastTab + '"]').tab('show');
+		if (jQuery().tab) {
+			jQuery('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+				localStorage.setItem(_this.prefix + 'lastTab', jQuery(this).attr('href'));
+			});
+			var lastTab = localStorage.getItem(_this.prefix + 'lastTab');
+			if (lastTab) {
+				jQuery('[href="' + lastTab + '"]').tab('show');
+			}
 		}
 	};
 	return {

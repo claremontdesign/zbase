@@ -303,12 +303,13 @@ function zbase_object_factory($className, $config = [])
  */
 function zbase_abort($code, $message = null, $headers = [])
 {
-	if(zbase_request_is_ajax())
+	if($code == 404)
 	{
-		if($code == 404)
-		{
-			return new \Zbase\Exceptions\NotFoundHttpException($message);
-		}
+		return new \Zbase\Exceptions\NotFoundHttpException($message);
+	}
+	if($code == 401)
+	{
+		return new \Zbase\Exceptions\UnauthorizedException($message);
 	}
 	return abort($code, $message);
 }
@@ -526,4 +527,40 @@ function zbase_alerts_render($type = null)
 function zbase_site_name()
 {
 	return zbase_config_get('page.site.name', 'Zbase');
+}
+
+/**
+ * check if UI is angular
+ * @return boolean
+ */
+function zbase_is_angular()
+{
+	return zbase()->mobile()->isAngular();
+}
+
+/**
+ * Check if to serve angular template
+ * @return booleaan
+ */
+function zbase_is_angular_template()
+{
+	return zbase_request_query_input('angular', false);
+}
+
+/**
+ * Check if mobile
+ * @return boolean
+ */
+function zbase_is_mobile()
+{
+	return zbase()->mobile()->detector()->isMobile();
+}
+
+/**
+ * Check if tablet
+ * @return boolean
+ */
+function zbase_is_mobileTablet()
+{
+	return zbase()->mobile()->detector()->isTablet();
 }

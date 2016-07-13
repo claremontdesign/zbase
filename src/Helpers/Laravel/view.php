@@ -98,6 +98,10 @@ function zbase_view_template_package($tag = null)
 {
 	$tag = !empty($tag) ? $tag . '.' : null;
 	$section = zbase_section();
+	if(zbase()->mobile()->isMobileTheme())
+	{
+		return zbase_config_get('view.templates.' . $tag . $section . '.mobile.package', 'zbase');
+	}
 	return zbase_config_get('view.templates.' . $tag . $section . '.package', 'zbase');
 }
 
@@ -111,7 +115,12 @@ function zbase_view_template_theme($tag = null)
 {
 	$tag = !empty($tag) ? $tag . '.' : null;
 	$section = zbase_section();
-	return zbase_config_get('view.templates.' . $tag . $section . '.theme', 'default');
+	$theme = zbase_config_get('view.templates.' . $tag . $section . '.theme', 'default');
+	if(zbase()->mobile()->isMobileTheme())
+	{
+		$theme = zbase_config_get('view.templates.' . $tag . $section . '.mobile.theme', 'angular');
+	}
+	return $theme;
 }
 
 /**
@@ -139,6 +148,10 @@ function zbase_view_file($name, $section = 'front')
 	$theme = zbase_view_template_theme();
 	// - check $package.templates.$section.theme.$name
 	$viewFile = $package . '::templates.' . $section . '.' . $theme . '.' . $name;
+	if(preg_match('/type\./', $name))
+	{
+		$viewFile = $package . '::templates.' . $name;
+	}
 	if(\View::exists($viewFile))
 	{
 		return $viewFile;
@@ -151,6 +164,21 @@ function zbase_view_file($name, $section = 'front')
 		return $viewFile;
 	}
 	return $name;
+}
+
+/**
+ * Module View
+ * @param type $name
+ * @return string
+ */
+function zbase_view_file_module($name)
+{
+	$package = zbase_view_template_package();
+	$viewFile = $package . 'modules::' . $name;
+	if(\View::exists($viewFile))
+	{
+		return $viewFile;
+	}
 }
 
 /**
