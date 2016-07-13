@@ -27,3 +27,7 @@ and open the template in the editor.
 	margin-left: -25px;
 	margin-top: -25px;
 }
+
+.zbase-ui-wrapper .zbase-ui-wrapper-pageHeader{
+	margin-top:20px;
+}

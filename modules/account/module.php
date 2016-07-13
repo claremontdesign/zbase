@@ -147,7 +147,7 @@ return [
 								'auth' => false,
 								'url' => '/',
 								'templateUrl' => function(){
-									return zbase_angular_template_url('admin-angular-auth-login-template', [], true);
+									return zbase_angular_template_url('admin.login', [], true);
 								},
 										'controller' => 'adminAuthController'
 									],

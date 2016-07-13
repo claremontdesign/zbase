@@ -129,7 +129,7 @@ return [
 						'type' => 'text',
 						'id' => 'username',
 						'enable' => function(){
-							return zbase_config_get('auth.username.enable', true);
+							return zbase_config_get('auth.username.enable', false);
 						},
 						'label' => 'Username',
 						'entity' => [
