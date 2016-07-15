@@ -23,4 +23,5 @@ class File extends \Zbase\Ui\Form\Element
 	 * @var string
 	 */
 	protected $_type = 'file';
+	protected $_viewFile = 'ui.form.type.file';
 }

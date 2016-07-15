@@ -33,18 +33,17 @@ return [
 		 * Form on each tab
 		 */
 		'form_tab' => false,
-		'submit' => [
-			'button' => [
-				'html' => [
-					'attributes' => [
-						'angular' => [
-							'ng-controller' => 'adminAccountMainController',
-							'ng-click' => 'modifyAccount($event)',
-						]
-					],
-				],
-			]
-		],
+//		'submit' => [
+//			'button' => [
+//				'html' => [
+//					'attributes' => [
+//						'angular' => [
+//							'ng-controller' => 'adminAccountMainController',
+//						]
+//					],
+//				],
+//			]
+//		],
 		/**
 		 * Model configuration
 		 * The Current Data to manipulate
@@ -103,6 +102,11 @@ return [
 						'id' => 'first_name',
 						'enable' => true,
 						'label' => 'First Name',
+						'angular' => [
+							'ngModel' => [
+								'prefix' => 'currentUser.profile'
+							],
+						],
 						'entity' => [
 							'property' => 'first_name'
 						]
@@ -112,6 +116,11 @@ return [
 						'id' => 'last_name',
 						'enable' => true,
 						'label' => 'Last Name',
+						'angular' => [
+							'ngModel' => [
+								'prefix' => 'currentUser.profile'
+							],
+						],
 						'entity' => [
 							'property' => 'last_name'
 						]
@@ -135,6 +144,9 @@ return [
 						'entity' => [
 							'property' => 'username'
 						],
+						'angular' => [
+							'ngModel' => 'currentUser.username',
+						],
 						'validations' => [
 							'required' => [
 								'enable' => true,
@@ -147,6 +159,13 @@ return [
 								},
 								'message' => 'Username already exists.'
 							],
+							'not_in' => [
+								'enable' => true,
+								'text' => function(){
+									return 'not_in:' . zbase_auth_user()->username;
+								},
+								'message' => 'Please provide a different username.'
+							],
 						],
 					],
 					'email' => [
@@ -155,6 +174,9 @@ return [
 						'label' => 'Email Address',
 						'entity' => [
 							'property' => 'email'
+						],
+						'angular' => [
+							'ngModel' => 'currentUser.email',
 						],
 						'validations' => [
 							'required' => [
@@ -167,6 +189,13 @@ return [
 									return 'unique:' . zbase_entity('user')->getTable() . ',email,' . zbase_auth_user()->id() . ',user_id';
 								},
 								'message' => 'Email address already exists.'
+							],
+							'not_in' => [
+								'enable' => true,
+								'text' => function(){
+									return 'not_in:' . zbase_auth_user()->email;
+								},
+								'message' => 'Please provide a different email address.'
 							],
 						],
 					],
@@ -186,6 +215,9 @@ return [
 						'type' => 'password',
 						'id' => 'password',
 						'label' => 'New Password',
+						'angular' => [
+							'ngModel' => 'currentUser.password',
+						],
 						'validations' => [
 							'required' => [
 								'enable' => true,
@@ -206,7 +238,14 @@ return [
 						'type' => 'password',
 						'id' => 'password_confirm',
 						'label' => 'Confirm New Password',
+						'angular' => [
+							'ngModel' => 'currentUser.passwordConfirm',
+						],
 						'validations' => [
+							'required' => [
+								'enable' => true,
+								'message' => 'Please verify new password.'
+							],
 							'required_with' => [
 								'enable' => true,
 								'text' => 'required_with:password',
@@ -230,11 +269,34 @@ return [
 				'id' => 'images',
 				'group' => 'accountTab',
 				'enable' => true,
+				'formConfiguration' => [
+					'angular' => [
+						'form' => [
+							'startTag' => [
+								'html' => [
+									'attributes' => [
+										'flow-init' => function(){return '{target: \''.  zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfile']) . '\'}'; },
+										'flow-files-submitted' => '$flow.upload()',
+										'flow-file-added' => '!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]',
+									],
+								],
+							],
+						],
+						'submit' => [
+							'button' => [
+								'enable' => false,
+							],
+						],
+					],
+				],
 				'elements' => [
 					'file' => [
 						'type' => 'file',
 						'id' => 'file',
-						'label' => '',
+						'label' => 'Update Image',
+						'action' => function(){
+							return zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfile']);
+						},
 						'entity' => [
 							'property' => 'file',
 						],

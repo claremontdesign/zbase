@@ -38,7 +38,7 @@
 					<i class="fa fa-user"></i>
 					Account
 				</a>
-				<a class="list-group-item" href="<?php echo zbase_angular_url('admin.logout', []) ?>" ng-controller="adminAccountMainController" ng-click="logout()">
+				<a class="list-group-item" href="<?php echo zbase_angular_url('admin.logout', []) ?>" ng-click="logout()">
 					<i class="fa fa-key"></i>
 					Logout
 				</a>

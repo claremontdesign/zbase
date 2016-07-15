@@ -573,9 +573,11 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				if(!empty($saved))
 				{
 					zbase_alert('success', _zt('Profile Updated.'));
+					return true;
 				}
 			}
 		}
+		return false;
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="UPDATE Password">
@@ -738,11 +740,14 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.', ['%email%' => $this->email()]));
 				zbase_messenger_email($this->email(), 'account-noreply', _zt('New Email address update request'), zbase_view_file_contents('email.account.newEmailAddressRequest'), ['entity' => $this, 'newEmailAddress' => $newEmailAddress, 'code' => $code]);
 				zbase_db_transaction_commit();
+				return true;
 			} catch (\Zbase\Exceptions\RuntimeException $e)
 			{
 				zbase_db_transaction_rollback();
 				return false;
 			}
+		} else {
+			zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.', ['%email%' => $this->email()]));
 		}
 	}
 

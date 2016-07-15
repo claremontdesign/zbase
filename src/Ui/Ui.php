@@ -231,8 +231,12 @@ abstract class Ui
 	 * @param mixed $default
 	 * @return mixed
 	 */
-	protected function _v($key, $default = null)
+	public function _v($key, $default = null)
 	{
+		if(zbase_is_angular_template())
+		{
+			return zbase_data_get($this->getAttributes(), 'angular.' . $key, zbase_data_get($this->getAttributes(), $key, $default));
+		}
 		return zbase_data_get($this->getAttributes(), $key, $default);
 	}
 

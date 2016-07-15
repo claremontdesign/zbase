@@ -258,4 +258,14 @@ use AuthenticatesAndRegistersUsers,
 		return zbase_config_get('auth.messages.failed', 'These credentials do not match our records');
 	}
 
+    /**
+     * Log the user out of the application.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function logout()
+    {
+        \Auth::guard($this->getGuard())->logout();
+        return zbase_redirect(property_exists($this, 'redirectAfterLogout') ? $this->redirectAfterLogout : '/');
+    }
 }

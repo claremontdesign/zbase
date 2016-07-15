@@ -160,9 +160,13 @@ class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 		$contents = parent::renderContents();
 		if($this->getForm() instanceof \Zbase\Widgets\WidgetInterface)
 		{
+			$this->_form->setHtmlPrefix($this->getHtmlId());
 			$str = $this->_form->startTag();
 			$str .= $contents;
-			$str .= $this->_form->renderSubmitButton();
+			if($this->_form->submitButton())
+			{
+				$str .= $this->_form->renderSubmitButton();
+			}
 			$str .= $this->_form->renderCSRFToken();
 			$str .= '<input type="hidden" value="' . $this->id . '" name="tab" />';
 			$str .= $this->_form->endTag();

@@ -21,6 +21,7 @@ namespace Zbase\Ui\Form;
  * $configuration.title
  * $configuration.description
  * $configuration.help
+ * $configuration.help.text
  * $configuration.validation
  * $configuration.id
  * $configuration.multipOptions
@@ -246,6 +247,31 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		{
 			$attr['class'][] = 'has-error';
 		}
+		if($this->hasValidations())
+		{
+			$angularPrefix = $this->_form->getHtmlId() . '.' . $this->name();
+			$attr['ng-class'] = [];
+			$attr['ng-class']['has-error'] = [];
+			if(zbase_is_angular_template())
+			{
+				$attr['ng-class']['has-error'][] = $angularPrefix . '.$dirty';
+			}
+			if($this->hasValidation('required'))
+			{
+				$attr['ng-class']['has-error'][] = $angularPrefix . '.$error.required';
+			}
+			if(!empty($attr['ng-class']) && is_array($attr['ng-class']))
+			{
+				foreach ($attr['ng-class'] as $v => $k)
+				{
+					if(is_array($k))
+					{
+						$attr['ng-class'][$v] = implode(' && ', $k);
+					}
+				}
+				$attr['ng-class'] = str_replace(array('{"', '":"', '"}'), array('{\'', '\': ', ' }'), json_encode($attr['ng-class']));
+			}
+		}
 		return $attr;
 	}
 
@@ -272,6 +298,40 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		$attr['name'] = $this->name();
 		$attr['value'] = $this->getValue();
 		$attr['class'][] = 'form-control';
+		if(zbase_is_angular_template())
+		{
+			$ngModel = $this->_v('angular.ngModel', null);
+			if(is_array($ngModel))
+			{
+				if(!empty($ngModel['prefix']))
+				{
+					$ngModel = $ngModel['prefix'] . '.' . $this->name();
+				}
+				if(!empty($ngModel['ngModel']))
+				{
+					$ngModel = $ngModel['ngModel'];
+				}
+			}
+			if(!empty($ngModel))
+			{
+				$attr['ng-model'] = $ngModel;
+			}
+			if($this->hasValidation('min'))
+			{
+				$minValidation = $this->getValidation('min');
+				if(is_array($minValidation))
+				{
+					$attr['ng-minlength'] = $minValidation[1];
+				}
+			}
+		}
+		if($this->hasValidations())
+		{
+			if($this->hasValidation('required'))
+			{
+				$attr['required'] = null;
+			}
+		}
 		return $attr;
 	}
 

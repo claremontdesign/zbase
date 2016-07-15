@@ -56,6 +56,12 @@ function zbase_response($response)
 				zbase()->json()->setVariable('_token', zbase_csrf_token());
 			}
 		}
+		zbase()->json()->setVariable('_alerts', [
+			'errors' => zbase_alerts('error'),
+			'messages' => zbase_alerts('success'),
+			'info' => zbase_alerts('info'),
+			'warning' => zbase_alerts('warning'),
+		]);
 		$forceResponse = zbase_request_input('forceResponse', zbase_request_query_input('forceResponse', false));
 		/**
 		 * JSONP Callback
@@ -76,6 +82,21 @@ function zbase_response($response)
 	}
 	if($response instanceof \RuntimeException)
 	{
+		if($response->getStatusCode() == '302')
+		{
+			if(zbase_is_angular_template())
+			{
+				zbase_alerts_render();
+				if(!empty($jsonCallback))
+				{
+					return response()->json(zbase()->json()->getVariables(), 302)->setCallback($jsonCallback);
+				}
+				else
+				{
+					return response()->json(zbase()->json()->getVariables(), 302);
+				}
+			}
+		}
 		return $response->render(zbase_request(), $response);
 	}
 	/**
@@ -131,16 +152,26 @@ function zbase_exception_throw()
 function zbase_redirect_with_message($to, $message)
 {
 	zbase_alert('error', $message);
-	return redirect($to);
+	return zbase_redirect($to);
 }
 
 /**
  * Redirect
  * @return redirect
  */
-function zbase_redirect()
+function zbase_redirect($to = null, $status = 302, $headers = [], $secure = null)
 {
-	return redirect();
+	if(zbase_is_angular_template())
+	{
+		zbase()->json()->setVariable('_redirect', $to);
+		$response = new \Zbase\Exceptions\HttpException('Redirecting to ' . $to);
+		$response->setStatusCode($status);
+		return $response;
+	}
+	else
+	{
+		return redirect($to, $status, $headers, $secure);
+	}
 }
 
 /**

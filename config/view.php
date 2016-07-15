@@ -356,6 +356,13 @@ return [
 						'position' => 496,
 					],
 					[
+						'id' => 'mobileangular-ng-flow-standalone',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('mobile/angular/dist/js/ng-flow-standalone.min.js'),
+						'enable' => true,
+						'position' => 494,
+					],
+					[
 						'id' => 'mobileangular-ui-hover',
 						'type' => \Zbase\Models\View::STYLESHEET,
 						'href' => zbase_path_asset('mobile/angular/dist/css/mobile-angular-ui-hover.min.css'),

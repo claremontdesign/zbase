@@ -1,7 +1,6 @@
 <script type="text/javascript">
-
 	app.controller('adminDashboardController',
-			function ($scope, $http) {
+			function ($rootScope, $http, userService) {
 
 			}
 	)

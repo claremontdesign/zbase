@@ -38,7 +38,12 @@ trait Html
 	{
 		$id = method_exists($this, 'id') ? $this->id() : null;
 		$prefix = property_exists($this, 'htmlPrefix') ? $this->htmlPrefix : null;
-		return $prefix . $id;
+		return zbase_string_camel_case($prefix . '_' . $id);
+	}
+
+	public function setHtmlPrefix($htmlPrefix)
+	{
+		$this->htmlPrefix = $htmlPrefix;
 	}
 
 	/**
@@ -71,7 +76,7 @@ trait Html
 				}
 				else
 				{
-					$attributes[] = $key . '="' . $value . '"';
+					$attributes[] = $key . '="' . zbase_data_get($value) . '"';
 				}
 			}
 			return implode(' ', $attributes);

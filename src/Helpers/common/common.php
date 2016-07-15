@@ -182,7 +182,7 @@ function zbase_is_dev()
  * @param  mixed   $default
  * @return mixed
  */
-function zbase_data_get($target, $key, $default = null)
+function zbase_data_get($target, $key = null, $default = null)
 {
 	if(is_string($target) && empty($key))
 	{

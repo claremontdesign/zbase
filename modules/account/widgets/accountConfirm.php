@@ -30,6 +30,9 @@ return [
 				'type' => 'password',
 				'id' => 'account_password',
 				'label' => 'Account Password',
+				'angular' => [
+					'ngModel' => 'currentUser.accountPassword',
+				],
 				'validations' => [
 					'required' => [
 						'enable' => true,

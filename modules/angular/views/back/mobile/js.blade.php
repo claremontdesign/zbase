@@ -7,6 +7,7 @@ $isMobile = zbase_is_mobile();
 $isMobileTablet = zbase_is_mobileTablet();
 $routeProviders = [];
 $controllers = [];
+$mainControllerString = [];
 foreach ($modules as $module)
 {
 	$moduleRouteProviders = $module->_v('angular.mobile.' . $section . '.routeProvider', []);
@@ -53,8 +54,14 @@ foreach ($modules as $module)
 			}
 			if(!empty($controller) && !empty($controllerString))
 			{
-				// $controllers[] = 'app.controller(\'' . $controller . '\', ' . $controllerString . ');';
-				$controllers[] = $controllerString ;
+				if(strtolower($controller) == 'maincontroller')
+				{
+					$mainControllerString[] = $controllerString;
+				}
+				else
+				{
+					$controllers[] = $controllerString;
+				}
 			}
 		}
 	}
@@ -64,7 +71,7 @@ foreach ($modules as $module)
 	(function () {
 		'use strict';
 		var app = angular.module('MobileAngularUi<?php echo $prefix ?>', [
-			'ngRoute', 'ngCookies',
+			'ngRoute', 'ngCookies','flow',
 			'mobile-angular-ui',
 			'mobile-angular-ui.gestures'
 		], function ($interpolateProvider) {
@@ -88,26 +95,36 @@ foreach ($modules as $module)
 			});
 <?php endif; ?>
 <?php echo!empty($controllers) ? implode("\n", $controllers) : ''; ?>
+
+		app.controller('MainController',
+				function ($rootScope, $http, $window) {
+					<?php echo!empty($mainControllerString) ? implode("\n", $mainControllerString) : null; ?>
+				}
+		);
+
 		app.factory('flashMessengerService', flashMessengerService);
 		flashMessengerService.$inject = ['$rootScope'];
 		function flashMessengerService($rootScope) {
 			var service = {};
 			service.success = success;
 			service.error = error;
+			service.info = info;
+			service.warning = warning;
+			service.clear = clearFlashMessage;
 			initService();
 			return service;
 			function initService() {
 				$rootScope.$on('$locationChangeStart', function () {
 					clearFlashMessage();
 				});
-				function clearFlashMessage() {
-					var flash = $rootScope.flash;
-					if (flash) {
-						if (!flash.keepAfterLocationChange) {
-							delete $rootScope.flash;
-						} else {
-							flash.keepAfterLocationChange = false;
-						}
+			}
+			function clearFlashMessage() {
+				var flash = $rootScope.flash;
+				if (flash) {
+					if (!flash.keepAfterLocationChange) {
+						delete $rootScope.flash;
+					} else {
+						flash.keepAfterLocationChange = false;
 					}
 				}
 			}
@@ -125,6 +142,20 @@ foreach ($modules as $module)
 					keepAfterLocationChange: keepAfterLocationChange
 				};
 			}
+			function warning(message, keepAfterLocationChange) {
+				$rootScope.flash = {
+					message: message,
+					type: 'warning',
+					keepAfterLocationChange: keepAfterLocationChange
+				};
+			}
+			function info(message, keepAfterLocationChange) {
+				$rootScope.flash = {
+					message: message,
+					type: 'info',
+					keepAfterLocationChange: keepAfterLocationChange
+				};
+			}
 		}
 		app.factory('userService', userService);
 		userService.$inject = ['$http'];
@@ -137,13 +168,59 @@ foreach ($modules as $module)
 			}
 		}
 		var httpInterceptor = function ($provide, $httpProvider) {
-			$provide.factory('httpInterceptor', function ($q, flashMessengerService) {
+			$provide.factory('httpInterceptor', function ($q, flashMessengerService, $rootScope) {
 				return {
+					request: function(request) {
+						flashMessengerService.clear();
+						if (request.beforeSend)
+						{
+							request.beforeSend();
+						}
+						return request;
+					},
 					response: function (response) {
+						$rootScope.loading = false;
+						if (response.status === 302)
+						{
+							$window.location.reload();
+							return response;
+						}
+						if (response.data !== undefined)
+						{
+							if (response.data._alerts !== undefined)
+							{
+								$.each(response.data._alerts, function (alertType, alerts) {
+									$.each(alerts, function (i, alert) {
+										if (alertType == 'errors')
+										{
+											flashMessengerService.error(alert);
+										}
+										if (alertType == 'messages')
+										{
+											flashMessengerService.success(alert);
+										}
+										if (alertType == 'warning')
+										{
+											flashMessengerService.warning(alert);
+										}
+										if (alertType == 'info')
+										{
+											flashMessengerService.info(alert);
+										}
+									});
+								});
+							}
+							if(response.data.api !== undefined && response.data.api.errors !== undefined)
+							{
+								flashMessengerService.error(response.data.api.errors.join('<br />'));
+							}
+						}
 						return response || $q.when(response);
 					},
 					responseError: function (response) {
+						$rootScope.loading = false;
 						if (response.status === 401) {
+							$window.location.reload();
 						}
 						if (response.data !== undefined)
 						{

@@ -10,7 +10,7 @@
 			</div>
 		</div>
 
-		<div class="form-group"  ng-class="{'has - error': form.password.$dirty && form.password.$error.required }">
+		<div class="form-group"  ng-class="{'has-error': form.password.$dirty && form.password.$error.required }">
 			<label class="col-md-4 control-label">Password</label>
 
 			<div class="col-md-6">

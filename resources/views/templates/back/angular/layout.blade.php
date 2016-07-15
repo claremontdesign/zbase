@@ -46,7 +46,7 @@ else
 			{!! zbase_view_render_head() !!}
 			{!! zbase_view_render_body() !!}
 		</head>
-		<body ui-prevent-touchmove-defaults>
+		<body ui-prevent-touchmove-defaults ng-controller="MainController">
 
 			<?php if(zbase_auth_has()): ?>
 				<!-- Sidebars -->
@@ -77,7 +77,7 @@ else
 						<div ng-show="loading" class="app-content-loading">
 							<i class="fa fa-spinner fa-spin loading-spinner"></i>
 						</div>
-						<div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error' }" ng-if="flash" ng-bind="flash.message"></div>
+						<div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error','alert-info': flash.type === 'info', 'alert-warning': flash.type === 'warning' }" ng-if="flash" ng-bind="flash.message"></div>
 						<div class="app-content">
 							<ng-view></ng-view>
 						</div>

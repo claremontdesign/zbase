@@ -122,4 +122,50 @@ trait Validations
 		}
 	}
 
+
+	/**
+	 * Check if a rule exists in the validation
+	 * @param string $rule Rule NAme
+	 *
+	 * @return boolean
+	 */
+	public function hasValidation($ruleName)
+	{
+		if($this->hasValidations())
+		{
+			foreach($this->_validationRules as $rule)
+			{
+				if($ruleName == $rule || preg_match('/^'.$ruleName.':/i', $rule) > 0)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Return a Validation Rule
+	 * @param string $ruleName
+	 *
+	 * @return array|string|null
+	 */
+	public function getValidation($ruleName)
+	{
+		if($this->hasValidations())
+		{
+			foreach($this->_validationRules as $rule)
+			{
+				if($ruleName == $rule || preg_match('/^'.$ruleName.':/i', $rule) > 0)
+				{
+					if($ruleName == 'min')
+					{
+						return explode(':', $rule);
+					}
+					return $rule;
+				}
+			}
+		}
+		return null;
+	}
 }

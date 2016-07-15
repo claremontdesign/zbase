@@ -99,7 +99,7 @@ return [
 						'controller' => 'adminDashboardController',
 						'view' => [
 							'file' => function(){
-								return zbase_view_render(zbase_view_file_module('angular.views.back.mobile.controllers.dashboard'));
+								return zbase_view_render(zbase_view_file_module('angular.views.back.mobile.controllers.adminDashboardController'));
 								}
 						],
 					],
