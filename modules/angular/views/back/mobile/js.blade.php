@@ -8,9 +8,14 @@ $isMobileTablet = zbase_is_mobileTablet();
 $routeProviders = [];
 $controllers = [];
 $mainControllerString = [];
+$mobileIndex = zbase_is_mobile() ? 'mobile.' : '';
 foreach ($modules as $module)
 {
-	$moduleRouteProviders = $module->_v('angular.mobile.' . $section . '.routeProvider', []);
+	if(!$module->isEnable())
+	{
+		continue;
+	}
+	$moduleRouteProviders = $module->_v('angular.mobile.' . $section . '.routeProvider', $module->_v('angular.' . $section . '.routeProvider', []));
 	if(!empty($moduleRouteProviders))
 	{
 		foreach ($moduleRouteProviders as $moduleRouteProvider)
@@ -29,11 +34,11 @@ foreach ($modules as $module)
 			$controller = zbase_data_get($moduleRouteProvider, 'controller', null);
 			if(!empty($url) && !empty($templateUrl) && !empty($controller))
 			{
-				$routeProviders[] = '$routeProvider.when(\'' . $url . '\', {templateUrl : \'' . $templateUrl . '?angular=1\',controller  : \'' . $controller . '\', reloadOnSearch: false});';
+				$routeProviders[] = '$routeProvider.when(\'' . $url . '\', {templateUrl : \'' . $templateUrl . '?at=1\',controller  : \'' . $controller . '\', reloadOnSearch: false});';
 			}
 		}
 	}
-	$moduleControllers = $module->_v('angular.mobile.' . $section . '.controllers', []);
+	$moduleControllers = $module->_v('angular.mobile.' . $section . '.controllers', $module->_v('angular.' . $section . '.controllers', []));
 	if(!empty($moduleControllers))
 	{
 		foreach ($moduleControllers as $moduleController)
@@ -66,19 +71,24 @@ foreach ($modules as $module)
 		}
 	}
 }
+
 ?>
 <script type="text/javascript">
+
+/* ng-infinite-scroll - v1.0.0 - 2013-02-23 */
+var mod;mod=angular.module("infinite-scroll",[]),mod.directive("infiniteScroll",["$rootScope","$window","$timeout",function(i,n,e){return{link:function(t,l,o){var r,c,f,a;return n=angular.element(n),f=0,null!=o.infiniteScrollDistance&&t.$watch(o.infiniteScrollDistance,function(i){return f=parseInt(i,10)}),a=!0,r=!1,null!=o.infiniteScrollDisabled&&t.$watch(o.infiniteScrollDisabled,function(i){return a=!i,a&&r?(r=!1,c()):void 0}),c=function(){var e,c,u,d;return d=n.height()+n.scrollTop(),e=l.offset().top+l.height(),c=e-d,u=n.height()*f>=c,u&&a?i.$$phase?t.$eval(o.infiniteScroll):t.$apply(o.infiniteScroll):u?r=!0:void 0},n.on("scroll",c),t.$on("$destroy",function(){return n.off("scroll",c)}),e(function(){return o.infiniteScrollImmediateCheck?t.$eval(o.infiniteScrollImmediateCheck)?c():void 0:c()},0)}}}]);
+/* ng-infinite-scroll - v1.0.0 - 2013-02-23 */
+
 	(function () {
 		'use strict';
 		var app = angular.module('MobileAngularUi<?php echo $prefix ?>', [
-			'ngRoute', 'ngCookies','flow',
+			'ngRoute', 'ngCookies', 'flow','infinite-scroll',
 			'mobile-angular-ui',
 			'mobile-angular-ui.gestures'
 		], function ($interpolateProvider) {
 			$interpolateProvider.startSymbol('<% ');
 			$interpolateProvider.endSymbol(' %>');
 		});
-
 
 		app.run(function ($transform, $rootScope, $location, $cookieStore, $http) {
 			window.$transform = $transform;
@@ -88,19 +98,20 @@ foreach ($modules as $module)
 				$http.defaults.headers.common['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata; // jshint ignore:line
 			}
 		});
-<?php if(!empty($routeProviders)): ?>
+		<?php if(!empty($routeProviders)): ?>
 			app.config(function ($routeProvider) {
-	<?php echo implode("\n", $routeProviders); ?>
+			<?php echo implode("\n", $routeProviders); ?>
 				$routeProvider.otherwise({redirectTo: '/'});
 			});
-<?php endif; ?>
-<?php echo!empty($controllers) ? implode("\n", $controllers) : ''; ?>
-
+		<?php endif; ?>
+		<?php echo!empty($controllers) ? implode("\n", $controllers) : ''; ?>
 		app.controller('MainController',
-				function ($rootScope, $http, $window) {
+				function ($rootScope, $http, $window, userService) {
 					<?php echo!empty($mainControllerString) ? implode("\n", $mainControllerString) : null; ?>
 				}
 		);
+
+
 
 		app.factory('flashMessengerService', flashMessengerService);
 		flashMessengerService.$inject = ['$rootScope'];
@@ -158,25 +169,39 @@ foreach ($modules as $module)
 			}
 		}
 		app.factory('userService', userService);
-		userService.$inject = ['$http'];
-		function userService($http) {
+		userService.$inject = ['$http','$rootScope'];
+		function userService($http, $rootScope) {
 			var service = {};
 			service.getCurrentUser = getCurrentUser;
+			service.updateCurrentUser = updateCurrentUser;
 			return service;
 			function getCurrentUser() {
 				return $http.get('<?php echo zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'current']) ?>');
 			}
+			function updateCurrentUser()
+			{
+				service.getCurrentUser()
+						.then(function (response) {
+							$rootScope.currentUser = response.data.api.result.user;
+						});
+			}
 		}
+
 		var httpInterceptor = function ($provide, $httpProvider) {
 			$provide.factory('httpInterceptor', function ($q, flashMessengerService, $rootScope) {
 				return {
-					request: function(request) {
+					request: function (request) {
+						if(request.data === undefined)
+						{
+							request.data = {};
+							request.data.angular = 1;
+						}
 						flashMessengerService.clear();
 						if (request.beforeSend)
 						{
 							request.beforeSend();
 						}
-						return request;
+						return request || $q.when(request);
 					},
 					response: function (response) {
 						$rootScope.loading = false;
@@ -210,7 +235,7 @@ foreach ($modules as $module)
 									});
 								});
 							}
-							if(response.data.api !== undefined && response.data.api.errors !== undefined)
+							if (response.data.api !== undefined && response.data.api.errors !== undefined)
 							{
 								flashMessengerService.error(response.data.api.errors.join('<br />'));
 							}

@@ -131,6 +131,19 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	}
 
 	/**
+	 * Return the Current Page
+	 */
+	public function getCurrentPage()
+	{
+		$sorting = zbase_request_query_input('page');
+		if(!empty($sorting))
+		{
+			return $sorting;
+		}
+		return 1;
+	}
+
+	/**
 	 * Return node sortable Columns
 	 * @return array|null
 	 */
@@ -600,6 +613,42 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		$attr['class'][] = 'zbase-widget-wrapper-' . $this->_type;
 		$attr['id'] = 'zbase-widget-wrapper-' . $this->id();
 		return $attr;
+	}
+
+	/**
+	 * Convert Data to JSON
+	 *
+	 * @return array
+	 */
+	public function toArray()
+	{
+		$rows = $this->getRows();
+		$datas = [
+			'page' => $rows->currentPage(),
+			'maxPage' => $rows->lastPage(),
+			// 'total' => $rows->total()
+		];
+		$columns = $this->getProcessedColumns();
+		if(!empty($rows))
+		{
+			foreach ($rows as $row)
+			{
+				$data = [];
+				foreach ($columns as $column)
+				{
+					$column->setRow($row)->prepare();
+					$value = $column->renderValue();
+					if($value instanceof \Zbase\Ui\UiInterface)
+					{
+						$data[$column->id()] = $column->renderValue()->__toString();
+					} else {
+						$data[$column->id()] = $column->renderValue();
+					}
+				}
+				$datas['rows'][] = $data;
+			}
+		}
+		return $datas;
 	}
 
 }

@@ -1,47 +1,48 @@
 <?php if(zbase_is_angular_template()): ?>
-	<form ng-hide="loginPasswordToggle" class="form-horizontal" name="form" ng-submit="login()" role="form">
-		{!! zbase_csrf_token_field('login') !!}
+	<form name="form" role="form" class="form-horizontal">
+		<div ng-hide="loginPasswordToggle">
+			<div class="form-group" ng-class="{'has-error': form.email.$dirty && form.email.$error.required }">
+				<label class="col-md-4 control-label">E-Mail Address</label>
 
-		<div class="form-group" ng-class="{'has-error': form.email.$dirty && form.email.$error.required }">
-			<label class="col-md-4 control-label">E-Mail Address</label>
+				<div class="col-md-6">
+					<input ng-model="email" type="email" class="form-control" required name="email" value="" />
+				</div>
+			</div>
 
-			<div class="col-md-6">
-				<input ng-model="email" type="email" class="form-control" required name="email" value="" />
+			<div class="form-group"  ng-class="{'has-error': form.password.$dirty && form.password.$error.required }">
+				<label class="col-md-4 control-label">Password</label>
+
+				<div class="col-md-6">
+					<input type="password" ng-model="password" class="form-control" name="password" required>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="col-md-6 col-md-offset-4">
+					<button class="btn btn-primary" ng-disabled="form.$invalid" ng-click="login()">
+						<i class="fa fa-btn fa-sign-in"></i> Login
+					</button>
+					<a class="btn btn-link" ng-click="loginPasswordToggle = true">Forgot Your Password?</a>
+				</div>
 			</div>
 		</div>
-
-		<div class="form-group"  ng-class="{'has-error': form.password.$dirty && form.password.$error.required }">
-			<label class="col-md-4 control-label">Password</label>
-
-			<div class="col-md-6">
-				<input type="password" ng-model="password" class="form-control" name="password" required>
+		<div ng-show="loginPasswordToggle">
+			<div class="form-group" ng-class="{'has-error': form.email.$dirty && form.email.$error.required }">
+				<label class="col-md-4 control-label">E-Mail Address</label>
+				<div class="col-md-6">
+					<input type="email" ng-model="email" required
+						   class="form-control" name="email"
+						   value="">
+				</div>
 			</div>
-		</div>
 
-		<div class="form-group">
-			<div class="col-md-6 col-md-offset-4">
-				<button type="submit" class="btn btn-primary" ng-disabled="form.$invalid">
-					<i class="fa fa-btn fa-sign-in"></i> Login
-				</button>
-				<a class="btn btn-link" ng-click="loginPasswordToggle = true">Forgot Your Password?</a>
-			</div>
-		</div>
-	</form>
-	<form ng-show="loginPasswordToggle" class="form-horizontal" role="form" method="POST" action="{{ zbase_url_create('password')}}">
-		{!! zbase_csrf_token_field('login') !!}
-		<div class="form-group">
-			<label class="col-md-4 control-label">E-Mail Address</label>
-			<div class="col-md-6">
-				<input type="email" class="form-control" name="email" value="{{ zbase_form_old('email')}}">
-			</div>
-		</div>
-
-		<div class="form-group">
-			<div class="col-md-6 col-md-offset-4">
-				<button type="submit" class="btn btn-primary">
-					<i class="fa fa-btn fa-envelope"></i> Send Password Reset Link
-				</button>
-				<a class="btn btn-link" ng-click="loginPasswordToggle = false">Login</a>
+			<div class="form-group">
+				<div class="col-md-6 col-md-offset-4">
+					<button class="btn btn-primary" ng-disabled="form.$invalid" ng-click="lostPassword()">
+						<i class="fa fa-btn fa-envelope"></i> Send Password Reset Link
+					</button>
+					<a class="btn btn-link" ng-click="loginPasswordToggle = false">Login</a>
+				</div>
 			</div>
 		</div>
 	</form>

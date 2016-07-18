@@ -54,14 +54,18 @@ class Column extends Data implements Interfaces\IdInterface
 	 * @param string $tag The HTML Tag
 	 * @return string
 	 */
-	public function renderValue($tag)
+	public function renderValue($tag = null)
 	{
 		$this->prepare();
-		$str = [];
-		$str[] = '<' . $tag . '>';
-		$str[] = $this->_value;
-		$str[] = '</' . $tag . '>';
-		return implode("\n", $str);
+		if(!empty($tag))
+		{
+			$str = [];
+			$str[] = '<' . $tag . '>';
+			$str[] = $this->_value;
+			$str[] = '</' . $tag . '>';
+			return implode("\n", $str);
+		}
+		return $this->_value;
 	}
 
 	/**

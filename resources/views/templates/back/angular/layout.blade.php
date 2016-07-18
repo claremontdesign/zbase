@@ -50,11 +50,11 @@ else
 
 			<?php if(zbase_auth_has()): ?>
 				<!-- Sidebars -->
-				<div ng-include="'<?php echo zbase_url_from_route('admin-angular-mobile-sidebar') ?>'"
+				<div ng-include="'<?php echo zbase_url_from_route('admin-angular-mobile-sidebar') ?>?at=1'"
 					 ui-track-as-search-param='true'
 					 class="sidebar sidebar-left"></div>
 
-				<div ng-include="'<?php echo zbase_url_from_route('admin-angular-mobile-sidebar-right') ?>'"
+				<div ng-include="'<?php echo zbase_url_from_route('admin-angular-mobile-sidebar-right') ?>?at=1'"
 					 class="sidebar sidebar-right"></div>
 
 				<div class="app"
@@ -91,7 +91,7 @@ else
 						<div ng-show="loading" class="app-content-loading">
 							<i class="fa fa-spinner fa-spin loading-spinner"></i>
 						</div>
-						<div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error' }" ng-if="flash" ng-bind="flash.message"></div>
+						<div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error','alert-info': flash.type === 'info', 'alert-warning': flash.type === 'warning' }" ng-if="flash" ng-bind="flash.message"></div>
 						<div class="app-content">
 							<ng-view></ng-view>
 						</div>

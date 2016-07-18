@@ -21,9 +21,21 @@
  */
 function zbase_response($response)
 {
+	// HTTP/1.1 204 No Content
+//	$apiResponse = zbase()->json()->getVariable('api');
+//	if(!empty($apiResponse) && $apiResponse instanceof \Zbase\Exceptions\HttpException && $apiResponse->getStatusCode() == 204)
+//	{
+//		$response->header('HTTP/1.1 204 No Content');
+//		return $response;
+//	}
+	$returnNoContent = '';
 	$errorResponse = false;
 	$xmlResponse = false;
 	$responseFormat = zbase_response_format();
+	if(zbase_is_json())
+	{
+		$responseFormat = 'json';
+	}
 	if($responseFormat == 'json' || zbase_request_is_ajax())
 	{
 		$jsonResponse = true;
@@ -31,6 +43,11 @@ function zbase_response($response)
 	if($responseFormat == 'xml')
 	{
 		$xmlResponse = true;
+	}
+	if(zbase_is_angular_template())
+	{
+		$responseFormat = 'html';
+		$jsonResponse = false;
 	}
 	if(!empty($jsonResponse))
 	{
@@ -66,7 +83,7 @@ function zbase_response($response)
 		/**
 		 * JSONP Callback
 		 */
-		$jsonCallback = zbase_request_query_input('callback', false);
+		$jsonCallback = zbase_request_query_input('callback', zbase_request_query_input('jsonp', false));
 		if(!$forceResponse)
 		{
 			zbase_alerts_render();
@@ -84,7 +101,7 @@ function zbase_response($response)
 	{
 		if($response->getStatusCode() == '302')
 		{
-			if(zbase_is_angular_template())
+			if(zbase_is_json())
 			{
 				zbase_alerts_render();
 				if(!empty($jsonCallback))

@@ -1,17 +1,16 @@
 <script type="text/javascript">
 	app.controller('adminAccountMainController',
-			function ($rootScope, $http, $window, userService) {
-				initController();
-				function initController() {
-					loadCurrentUser();
-				}
-				function loadCurrentUser() {
-					userService.getCurrentUser()
-							.then(function (response) {
-								$rootScope.currentUser = response.data.api.result.user;
-								$rootScope.originalCurrentUser = response.data.api.result.user;
-							});
-				}
+			function ($rootScope, $http, $window, userService, $scope) {
+				$scope.avatar = $rootScope.currentUser.avatar;
+				$scope.$on('flow::fileSuccess', function (event, $flow, flowFile, message) {
+					var response = JSON.parse(message);
+					$scope.avatar = response.api.result.url;
+					$rootScope.currentUser.avatar = $scope.avatar;
+					$rootScope.loading = false;
+				});
+				$scope.$on('flow::fileAdded', function (event, $flow, flowFile) {
+					$rootScope.loading = true;
+				});
 				$rootScope.submitaccounttabsprofileAccount = function () {
 					var data = {
 						first_name: $rootScope.currentUser.profile.first_name,
@@ -23,7 +22,6 @@
 								if(response.api.result.user !== undefined)
 								{
 									$rootScope.currentUser = response.api.result.user;
-									$rootScope.originalCurrentUser = response.api.result.user;
 								}
 							});
 				}
@@ -49,14 +47,7 @@
 								$rootScope.currentUser.accountPassword = null;
 							});
 				}
-				$rootScope.submitaccounttabsimagesAccount = function () {
-					var data = {
-					};
-					$http.post('<?php echo zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfileImage']) ?>', data)
-							.success(function (response) {
-
-							});
-				}
+				$rootScope.submitaccounttabsimagesAccount = function () {}
 			}
 	);
 </script>

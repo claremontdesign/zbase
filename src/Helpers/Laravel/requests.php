@@ -239,6 +239,10 @@ function zbase_request_raw_post()
  */
 function zbase_is_json()
 {
+	if(zbase_request_query_input('jsonp', false))
+	{
+		return true;
+	}
 	return \Request::wantsJson();
 }
 

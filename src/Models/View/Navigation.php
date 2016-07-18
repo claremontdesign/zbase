@@ -64,6 +64,12 @@ class Navigation
 	protected $route = [];
 
 	/**
+	 *
+	 * @var boolean
+	 */
+	protected $isAngular = false;
+
+	/**
 	 * Nav Format
 	 * @var string|HTML
 	 */
@@ -96,13 +102,33 @@ class Navigation
 		return $this->active;
 	}
 
+	/**
+	 * SET/GET If angular
+	 *
+	 * @param boolean $flag
+	 * @return \Zbase\Models\View\Navigation|boolean
+	 */
+	public function isAngular($flag = null)
+	{
+		if(is_bool($flag))
+		{
+			$this->isAngular = $flag;
+			return $this;
+		}
+		return $this->isAngular;
+	}
+
+	/**
+	 * Generate URL
+	 * @return type
+	 */
 	public function getRouteUrl()
 	{
 		if(!empty($this->route))
 		{
-			if(zbase_is_angular())
+			if($this->isAngular())
 			{
-				return zbase_url_from_config(['route' => $this->route], [], true);
+				return zbase_angular_url($this->route);
 			}
 			return zbase_url_from_config(['route' => $this->route]);
 		}

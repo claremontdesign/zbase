@@ -402,6 +402,11 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 
 	// <editor-fold defaultstate="collapsed" desc="Image">
 
+	public function profileFolder()
+	{
+		return zbase_storage_path() . '/' . zbase_tag() . '/user/' . $this->id() . '/';
+	}
+
 	/**
 	 * Upload a file for this node
 	 * @param string $index The Upload file name/index or the URL to file to download and save
@@ -409,29 +414,27 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function uploadProfileImage($index = 'file')
 	{
-		if(!empty($_FILES[$index]['name']))
+		try
 		{
-			try
+			$folder = $this->profileFolder();
+			zbase_directory_check($folder, true);
+			$filename = md5($this->alphaId() . time());
+			$uploadedFile = zbase_file_upload_image($index, $folder, $filename, zbase_config_get('node.files.image.format', 'png'));
+			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
 			{
-				$folder = zbase_storage_path() . '/' . zbase_tag() . '/user/' . $this->id() . '/';
-				zbase_directory_check($folder, true);
-				if(!empty($_FILES[$index]['name']))
+				if(file_exists($folder . $this->profile->avatar))
 				{
-					$filename = $this->alphaId();
-					$uploadedFile = zbase_file_upload_image($index, $folder, $filename, zbase_config_get('node.files.image.format', 'png'));
+					unlink($folder . $this->profile->avatar);
 				}
-				if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
-				{
-					return basename($uploadedFile);
-				}
-			} catch (\Zbase\Exceptions\RuntimeException $e)
-			{
-				if(zbase_is_dev())
-				{
-					dd($e);
-				}
-				zbase_abort(500);
+				return basename($uploadedFile);
 			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			if(zbase_is_dev())
+			{
+				dd($e);
+			}
+			zbase_abort(500);
 		}
 	}
 
@@ -447,6 +450,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		}
 		$fullImage = false;
 		$params['id'] = $this->alphaId();
+		$params['image'] = $this->profile->avatar;
 		if(empty($options) || !empty($options['full']))
 		{
 			$fullImage = true;
@@ -456,9 +460,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$params['q'] = !empty($options['q']) ? $options['q'] : 80;
 		if(!empty($options['thumbnail']))
 		{
-			$params['w'] = !empty($options['w']) ? $options['w'] : $this->thWidth;
-			$params['h'] = !empty($options['h']) ? $options['h'] : $this->thHeight;
-			$params['q'] = !empty($options['q']) ? $options['q'] : $this->thQuality;
+			$params['w'] = !empty($options['w']) ? $options['w'] : (property_exists($this, 'thWidth') ? $this->thWidth : 150);
+			$params['h'] = !empty($options['h']) ? $options['h'] : (property_exists($this, 'thHeight') ? $this->thHeight : 0);
+			$params['q'] = !empty($options['q']) ? $options['q'] : (property_exists($this, 'thQuality') ? $this->thQuality : 80);
 		}
 		$params['ext'] = zbase_config_get('node.files.image.format', 'png');
 		return zbase_url_from_route('userImage', $params);
@@ -503,7 +507,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 						}
 						return $image->make($path)->resize($width, $height);
 				});
-			return \Response::make($cachedImage, 200, array('Content-Type' => $this->mimetype));
+			return \Response::make($cachedImage, 200, array('Content-Type' => 'image/png'));
 		}
 		return false;
 	}
@@ -554,10 +558,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		if(!empty($fillables))
 		{
 			$newData = [];
-			$profileImage = $this->uploadProfileImage();
-			if(!empty($profileImage))
+			if(!empty($data['avatar']))
 			{
-				$newData['avatar'] = $profileImage;
+				$newData['avatar'] = $data['avatar'];
+			}
+			else
+			{
+				$profileImage = $this->uploadProfileImage();
+				if(!empty($profileImage))
+				{
+					$newData['avatar'] = $profileImage;
+				}
 			}
 			$userProfile = zbase_entity('user_profile')->where('user_id', $this->id());
 			foreach ($data as $key => $val)
@@ -580,6 +591,24 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		return false;
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="LOST Password">
+	public function lostPassword()
+	{
+		$response = \Password::sendResetLink(['email' => $this->email], function (\Illuminate\Mail\Message $message) {
+					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
+					$message->subject('Your Password Reset Link');
+		});
+
+		switch ($response)
+		{
+			case \Password::RESET_LINK_SENT:
+				zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
+				return true;
+		}
+		return false;
+	}
+
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="UPDATE Password">
 	/**
 	 * Password has been resetted
@@ -746,7 +775,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				zbase_db_transaction_rollback();
 				return false;
 			}
-		} else {
+		}
+		else
+		{
 			zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.', ['%email%' => $this->email()]));
 		}
 	}

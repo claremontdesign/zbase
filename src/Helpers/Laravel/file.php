@@ -127,6 +127,17 @@ function zbase_storage_path($path = null)
 }
 
 /**
+ * Return TMP Folder
+ * @param type $path
+ */
+function zbase_tmp_path($path = null)
+{
+	$tmpPath = zbase_storage_path() . '/tmp/' . $path;
+	zbase_directory_check($tmpPath, true);
+	return $tmpPath;
+}
+
+/**
  * Check if directory exists, else create it
  * @param string $path
  * @param boolean $create
@@ -238,17 +249,54 @@ function zbase_file_name_from_file($file, $fileName, $isUpload = false)
  */
 function zbase_file_upload_image($index, $folder, $newFilename, $encodingFormat = 'jpg', $size = [])
 {
+	/**
+	 * Using angular flow.js
+	 * https://github.com/flowjs/flow-php-server
+	 *
+	  "flowChunkNumber" => "1"
+	  "flowChunkSize" => "1048576"
+	  "flowCurrentChunkSize" => "83167"
+	  "flowTotalSize" => "83167"
+	  "flowIdentifier" => "83167-Avatar2jpg"
+	  "flowFilename" => "Avatar2.jpg"
+	  "flowRelativePath" => "Avatar2.jpg"
+	  "flowTotalChunks" => "1"
+	 *
+	 */
+	$tmpFolder = zbase_tmp_path();
 	$newFile = $folder . str_replace(array('.png', '.jpg', '.gif', '.bmp', '.jpeg'), '.' . $encodingFormat, $newFilename);
-	zbase_directory_check($folder, true);
-	$im = \Image::make($_FILES[$index]['tmp_name']);
-	if(!empty($size))
+	if(!empty(zbase_request_query_input('flowChunkNumber', false)))
 	{
-		$im->resize($size[0], $size[1], function ($constraint) {
-			$constraint->aspectRatio();
-		});
+		if(\Flow\Basic::save($newFile, $tmpFolder))
+		{
+			$im = \Image::make($newFile);
+		}
+		else
+		{
+			// zbase()->json()->setVariable('files', $_FILES);
+			// zbase()->json()->setVariable('success', false);
+			// zbase()->json()->setVariable('get', $_GET);
+			// zbase()->json()->setVariable('post', $_POST);
+			return zbase_abort(204);
+		}
 	}
-	$im->encode($encodingFormat, 100)->save($newFile);
-	return $newFile;
+	if(!empty($_FILES[$index]['tmp_name']))
+	{
+		zbase_directory_check($folder, true);
+		$im = \Image::make($_FILES[$index]['tmp_name']);
+	}
+	if(!empty($im))
+	{
+		if(!empty($size))
+		{
+			$im->resize($size[0], $size[1], function ($constraint) {
+				$constraint->aspectRatio();
+			});
+		}
+		$im->encode($encodingFormat, 100)->save($newFile);
+		return $newFile;
+	}
+	return false;
 }
 
 /**
@@ -264,6 +312,7 @@ function zbase_file_mime_type($file)
 	}
 	return null;
 }
+
 /**
  * eturns the size of the image file in bytes or false if image instance is not created from a file.
  * @param string $file The File to question

@@ -13,7 +13,8 @@
 		"intervention/image": "^2.3",
 		"intervention/imagecache": "^2.3",
 		"nesbot/carbon": "~1.14",
-		"baum/baum": ">1.1"
+		"baum/baum": ">1.1",
+		"flowjs/flow-php-server": ">1"
 	},
 	"require-dev": {
 	},

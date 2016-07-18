@@ -33,6 +33,35 @@ return [
 	// http://zbase.com/api/username/key/json/account/user/byemail/dennes.b.abing@gmail.com
 	'api' => [
 		// <editor-fold defaultstate="collapsed" desc="API">
+		// <editor-fold defaultstate="collapsed" desc="user.password">
+		'user.password' => [
+			'enable' => true,
+			'class' => \Zbase\Entity\Laravel\User\Api::class,
+			'method' => 'password',
+			'requestMethod' => 'post',
+			'params' => [
+				'email' => [
+					'validations' => [
+						'required' => [
+							'enable' => true,
+						],
+						'email' => [
+							'enable' => true,
+						],
+						'exists' => [
+							'enable' => true,
+							'text' => function(){
+								return 'exists:' . zbase_entity('user')->getTable() . ',email';
+							},
+							'message' => 'Email address not found.'
+						],
+					],
+					'name' => 'Email Address',
+					'varname' => 'username',
+				],
+			],
+		],
+		// </editor-fold>
 		// <editor-fold defaultstate="collapsed" desc="user.login">
 		'user.login' => [
 			'enable' => true,
@@ -89,6 +118,16 @@ return [
 					'name' => 'Last Name',
 				],
 			],
+		],
+		// </editor-fold>
+		// <editor-fold defaultstate="collapsed" desc="user.updateProfileImage">
+		'user.updateProfileImage' => [
+			'enable' => true,
+			'class' => \Zbase\Entity\Laravel\User\Api::class,
+			'method' => 'updateProfileImage',
+			'requestMethod' => ['get','post'],
+			'notParams' => ['userId'],
+			'params' => [],
 		],
 		// </editor-fold>
 		// <editor-fold defaultstate="collapsed" desc="user.updateEmail">
@@ -205,52 +244,9 @@ return [
 			'class' => \Zbase\Entity\Laravel\User\Api::class,
 			'method' => 'current',
 		],
-		'user.byid' => [
-			'enable' => true,
-			'class' => \Zbase\Entity\Laravel\User\Api::class,
-			'method' => 'findUserById',
-			'params' => [
-				'paramOne' => [
-					'validations' => [
-						'required' => [
-							'enable' => true,
-							'message' => 'UserID is Required.'
-						],
-						'numeric' => [
-							'enable' => true,
-							'message' => 'UserID must be a number.'
-						],
-					],
-					'name' => 'UserID',
-					'varname' => 'userId'
-				],
-			],
-		],
-		'user.byemail' => [
-			'enable' => true,
-			'class' => \Zbase\Entity\Laravel\User\Api::class,
-			'method' => 'findUserByEmail',
-			'params' => [
-				'paramOne' => [
-					'validations' => [
-						'required' => [
-							'enable' => true,
-							'message' => 'Email address is Required.'
-						],
-						'email' => [
-							'enable' => true,
-							'message' => 'Invalid email address.'
-						],
-					],
-					'name' => 'Email',
-					'varname' => 'email'
-				],
-			],
-		],
 	// </editor-fold>
 	],
-	'routes' => [
-	],
+	'routes' => [],
 	'angular' => [
 		'mobile' => [
 			'backend' => [

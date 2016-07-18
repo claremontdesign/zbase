@@ -25,11 +25,15 @@
 			$modules = zbase()->modules();
 			foreach ($modules as $module)
 			{
-				if($module->hasNavigation(zbase_section()))
+				if($module->isEnable())
 				{
-					$navigation = $module->getNavigation(zbase_section());
-					$navigation->setAttribute('format', '<a class="list-group-item {CLASS_ISACTIVE}" href="{URL}">{LABEL}</a>');
-					echo $navigation;
+					if($module->hasNavigation(zbase_section()))
+					{
+						$navigation = $module->getNavigation(zbase_section());
+						$navigation->isAngular(true);
+						$navigation->setAttribute('format', '<a class="list-group-item {CLASS_ISACTIVE}" href="{URL}">{LABEL}</a>');
+						echo $navigation;
+					}
 				}
 			}
 			?>

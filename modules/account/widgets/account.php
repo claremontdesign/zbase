@@ -275,9 +275,9 @@ return [
 							'startTag' => [
 								'html' => [
 									'attributes' => [
-										'flow-init' => function(){return '{target: \''.  zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfile']) . '\'}'; },
-										'flow-files-submitted' => '$flow.upload()',
-										'flow-file-added' => '!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]',
+										'ng-controller' => 'adminAccountMainController',
+										'flow-init' => function(){return '{headers:{\'X-CSRF-TOKEN\': \''.  zbase_csrf_token().'\'}, target: \''.  zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfileImage']) . '\'}'; },
+										'flow-files-submitted' => '$flow.upload();',
 									],
 								],
 							],
@@ -295,12 +295,17 @@ return [
 						'id' => 'file',
 						'label' => 'Update Image',
 						'action' => function(){
-							return zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfile']);
+							return zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfileImage']);
 						},
 						'entity' => [
 							'property' => 'file',
 						],
 						'html' => [
+							'attributes' => [
+								'input' => [
+									'style' => 'width: 100px;'
+								],
+							],
 							'content' => [
 								'pre' => [
 									'enable' => true,

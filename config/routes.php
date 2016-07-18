@@ -249,7 +249,7 @@ return [
 				'method' => 'image',
 				'enable' => true
 			],
-			'url' => '/user/img/{id?}/{w?}/{h?}/{q?}.{ext?}',
+			'url' => '/user/img/{id?}/{image?}/{w?}/{h?}/{q?}.{ext?}',
 			'enable' => true
 		],
 		'nodeImage' => [

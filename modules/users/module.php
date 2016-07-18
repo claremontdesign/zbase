@@ -1,0 +1,122 @@
+<?php
+
+/**
+ * Dx
+ *
+ * @link http://dennesabing.com
+ * @author Dennes B Abing <dennes.b.abing@gmail.com>
+ * @license proprietary
+ * @copyright Copyright (c) 2015 ClaremontDesign/MadLabs-Dx
+ * @version 0.0.0.1
+ * @since Mar 5, 2016 11:51:42 PM
+ * @file profile.php
+ * @project Expression project.name is undefined on line 13, column 15 in Templates/Scripting/EmptyPHP.php.
+ * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
+ *
+ * zbase()->loadModuleFrom(PATH_TO_MODULES);
+ * 		- widgets will be added automatically if a "widget" folder is found (zbase()->loadWidgetsFrom(PATH_TO_WIDGETS))
+ *
+ */
+return [
+	'id' => 'users',
+	'enable' => true,
+	'access' => 'user',
+	'class' => null,
+	'backend' => true,
+	'frontend' => false,
+	'url' => [
+		'backend' => 'users/{action?}',
+	],
+	'navigation' => [
+		'back' => [
+			'enable' => true,
+			'nav' => [
+				'route' => [
+					'name' => 'admin.users'
+				],
+				'icon' => 'fa fa-users',
+				'label' => 'Users',
+				'title' => 'Manage Users'
+			]
+		],
+	],
+	'api' => [
+		'users.logout' => [
+			'enable' => true,
+			'class' => \Zbase\Entity\Laravel\User\Api::class,
+			'method' => 'logout',
+		],
+	],
+	'routes' => [
+		'admin-users-template' => [
+			'url' => 'admin/templates/users.html',
+			'view' => [
+				'enable' => true,
+				'layout' => 'blank',
+				'name' => 'type.html',
+				'content' => function(){
+					$angularDatatable = zbase_angular_widget_datatable('users', 'admin-users');
+					$string = null;
+					if(!empty($angularDatatable['template']))
+					{
+						$string = $angularDatatable['template'];
+					}
+					return $string;
+				}
+			],
+		],
+	],
+	'angular' => [
+		'backend' => [
+			'routeProvider' => [
+				[
+					'url' => function(){
+							return zbase_angular_route('admin.users', [], true);
+						},
+					'templateUrl' => function(){
+							return zbase_angular_template_url('admin-users-template', []);
+						},
+					'controller' => 'adminUsersController'
+				],
+			],
+			'controllers' => [
+				[
+					'controller' => 'adminUsersController',
+					'view' => [
+						'file' => function(){
+							return zbase_view_render(zbase_view_file_module('users.views.angular.controllers.adminUsersController'));
+						}
+					],
+				],
+			],
+		]
+	],
+	'controller' => [
+		'back' => [
+			'action' => [
+				'index' => [
+					'page' => [
+						'title' => 'Manage Users',
+						'headTitle' => 'Manage Users',
+						'subTitle' => '',
+						'breadcrumbs' => [
+							['label' => 'Users', 'link' => '#'],
+						],
+					],
+				],
+			]
+		],
+	],
+	'event' => [],
+	'widgets' => [
+		'back' => [
+			'controller' => [
+				'action' => [
+					'index' => [
+						'admin-users' => null
+					],
+				],
+			],
+		],
+	],
+];

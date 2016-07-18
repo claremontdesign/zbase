@@ -19,6 +19,42 @@ class Api
 {
 
 	/**
+	 * Update profile Image
+	 * @param array $data
+	 */
+	public static function updateProfileImage($data)
+	{
+		$ret = ['success' => false];
+		if(!empty($data['userId']))
+		{
+			$userId = $data['userId'];
+			unset($data['userId']);
+		}
+		else
+		{
+			if(zbase_auth_has())
+			{
+				$userId = zbase_auth_user()->id();
+			}
+		}
+		if(!empty($userId))
+		{
+			$user = static::findUserById($userId, true);
+		}
+		if(!empty($user) && $user instanceof User)
+		{
+			$uploaded = $user->uploadProfileImage();
+			if(!empty($uploaded))
+			{
+				$user->updateProfile(['avatar' => $uploaded]);
+				$ret['success'] = true;
+				$ret['url'] = $user->avatarUrl(['thumbnail' => true]);
+				return $ret;
+			}
+		}
+	}
+
+	/**
 	 * Update User Profile
 	 * @param array $data
 	 */
@@ -82,7 +118,6 @@ class Api
 		return $ret;
 	}
 
-
 	/**
 	 * Update Email Address
 	 * @param strin $data
@@ -115,7 +150,6 @@ class Api
 		return $ret;
 	}
 
-
 	/**
 	 * Login a User
 	 * @param string|aray $username
@@ -139,9 +173,37 @@ class Api
 				{
 					\Auth::login($user);
 					$ret['success'] = true;
+					return $ret;
 				}
 			}
 		}
+		zbase_alert(\Zbase\Zbase::ALERT_ERROR, 'Login error.');
+		return $ret;
+	}
+
+	/**
+	 * REset Password
+	 * @return boolean
+	 */
+	public static function password($username)
+	{
+		$ret = ['success' => false];
+		if(is_array($username) && !empty($username['username']))
+		{
+			$username = $username['username'];
+			$entity = zbase()->entity('user', [], true);
+			$user = $entity->repo()->by('email', $username)->first();
+			if(!empty($user))
+			{
+				$success = $user->lostPassword();
+				if($success)
+				{
+					$ret = ['success' => true];
+					return $ret;
+				}
+			}
+		}
+		// zbase_alert(\Zbase\Zbase::ALERT_ERROR, 'Login error.');
 		return $ret;
 	}
 
@@ -182,8 +244,10 @@ class Api
 			}
 		}
 		$arr['profile'] = $user->profile()->toArray();
+		unset($arr['profile']['avatar']);
 		unset($arr['options']);
 		$arr['accountPassword'] = null;
+		$arr['avatar'] = $user->avatarUrl(['thumbnail' => true]);
 		$arr['id'] = $arr['alpha_id'];
 		unset($arr['alpha_id']);
 		return $arr;
@@ -244,4 +308,5 @@ class Api
 			return ['user' => self::userApi($entity->repo()->by('email', $email)->first())];
 		}
 	}
+
 }

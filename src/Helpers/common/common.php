@@ -311,6 +311,12 @@ function zbase_abort($code, $message = null, $headers = [])
 	{
 		return new \Zbase\Exceptions\UnauthorizedException($message);
 	}
+	if($code == 204)
+	{
+		$response = new \Zbase\Exceptions\UnauthorizedException($message);
+		$response->setStatusCode(204);
+		return $response;
+	}
 	return abort($code, $message);
 }
 
@@ -544,7 +550,7 @@ function zbase_is_angular()
  */
 function zbase_is_angular_template()
 {
-	return zbase_request_query_input('angular', false);
+	return zbase_request_query_input('at', false);
 }
 
 /**

@@ -243,7 +243,11 @@ trait Api
 	{
 		if(!empty($this->apiConfiguration['params']))
 		{
-			$notParams = $this->apiConfiguration['notParams'];
+			$notParams = [];
+			if(!empty($this->apiConfiguration['notParams']))
+			{
+				$notParams = $this->apiConfiguration['notParams'];
+			}
 			$inputs = zbase_route_inputs();
 			unset($inputs['username']);
 			unset($inputs['key']);
