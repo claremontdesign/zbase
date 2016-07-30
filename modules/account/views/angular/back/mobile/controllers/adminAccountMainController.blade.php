@@ -1,6 +1,8 @@
 <script type="text/javascript">
 	app.controller('adminAccountMainController',
 			function ($rootScope, $http, $window, userService, $scope) {
+				$rootScope.viewTitle = 'Account Information';
+				$rootScope.pageTitle = 'Account Information';
 				$scope.avatar = $rootScope.currentUser.avatar;
 				$scope.$on('flow::fileSuccess', function (event, $flow, flowFile, message) {
 					var response = JSON.parse(message);

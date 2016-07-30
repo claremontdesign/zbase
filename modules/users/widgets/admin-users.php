@@ -24,6 +24,11 @@ return [
 			],
 			'controller' => 'adminUsersController',
 			'view' => [
+				'list' => [
+					'type' => 'list',
+					'link' => '#/users/view/<% APINAME.id %>',
+					'url' => '/users/view/',
+				],
 				'file' => null,
 				'format' => '<span>Email Address</span>: <span><% APINAME.email %></span>',
 			]
@@ -76,7 +81,35 @@ return [
 				'enable' => true,
 				'data' => [
 					'type' => 'integer',
-					'index' => 'id'
+					'index' => 'alpha_id'
+				],
+			],
+			'pageTitle' => [
+				'label' => 'Page Title',
+				'enable' => function(){
+					if(zbase_is_json())
+					{
+						return true;
+					}
+					return false;
+				},
+				'data' => [
+					'type' => 'string',
+					'index' => 'User: $$profile.first_name $$profile.last_name'
+				],
+			],
+			'viewTitle' => [
+				'label' => 'Title',
+				'enable' => function(){
+					if(zbase_is_json())
+					{
+						return true;
+					}
+					return false;
+				},
+				'data' => [
+					'type' => 'string',
+					'index' => 'User: $$profile.first_name $$profile.last_name'
 				],
 			],
 			'email' => [
@@ -87,22 +120,30 @@ return [
 					'index' => 'email'
 				],
 			],
-			'name' => [
-				'label' => 'Price',
+			'first_name' => [
+				'label' => 'First Name',
 				'enable' => true,
 				'data' => [
 					'type' => 'string',
-					'index' => 'name'
+					'index' => 'profile.first_name'
 				],
 			],
-//			'status' => [
-//				'label' => 'Status',
-//				'enable' => true,
-//				'data' => [
-//					'type' => 'displayStatus',
-//					'index' => 'status'
-//				],
-//			],
+			'last_name' => [
+				'label' => 'Last Name',
+				'enable' => true,
+				'data' => [
+					'type' => 'string',
+					'index' => 'profile.last_name'
+				],
+			],
+			'status' => [
+				'label' => 'Status',
+				'enable' => true,
+				'data' => [
+					'type' => 'displayStatus',
+					'index' => 'status'
+				],
+			],
 			'created_at' => [
 				'label' => 'Created',
 				'enable' => true,

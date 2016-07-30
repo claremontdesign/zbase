@@ -352,6 +352,28 @@ trait Entity
 
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="RELATIONSHIP">
+
+	/**
+	 * Check for relationship
+	 *
+	 * @param string $relationship
+	 * @return boolean
+	 */
+	public function hasRelationship($relationship)
+	{
+		if(!empty($this->relationship))
+		{
+			foreach ($this->relationship as $rK => $rV)
+			{
+				if($rK == $relationship)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	/**
 	 *
 	 * @param string $method The property or method to be called
@@ -487,4 +509,12 @@ trait Entity
 		return $this->filterableColumns;
 	}
 
+	/**
+	 * Return the Table columns
+	 * @return array
+	 */
+	public function getColumns()
+	{
+		return $this->dbColumns;
+	}
 }

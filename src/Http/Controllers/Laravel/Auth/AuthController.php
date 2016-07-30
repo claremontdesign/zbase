@@ -52,6 +52,7 @@ use AuthenticatesAndRegistersUsers,
 	 * @var string
 	 */
 	protected $redirectTo = '/home';
+	protected $redirectAfterLogout = '/';
 
 	/**
 	 * Create a new authentication controller instance.
@@ -63,7 +64,13 @@ use AuthenticatesAndRegistersUsers,
 		$this->middleware('guest', ['except' => 'logout']);
 		if(zbase_is_back())
 		{
-			$this->redirectTo = '/admin';
+			$this->redirectTo = zbase_url_from_route('admin');
+			$this->redirectAfterLogout = zbase_url_from_route('admin');
+		}
+		else
+		{
+			$this->redirectTo = zbase_url_from_route('home');
+			$this->redirectAfterLogout = zbase_url_from_route('index');
 		}
 	}
 
@@ -106,23 +113,49 @@ use AuthenticatesAndRegistersUsers,
 	 * Get a validator for an incoming registration request.
 	 *
 	 * @param  array  $data
+	 * @TODO check if role is given, check it against the list of ROLES from DB
 	 * @return \Illuminate\Contracts\Validation\Validator
 	 */
 	protected function registerValidator(array $data)
 	{
+		$userEntity = zbase_entity('user');
+		$messages = [];
 		$rules = [
 			'name' => 'required|max:255',
 			'email' => 'required|email|max:255|unique:' . zbase_config_get('entity.user.table.name'),
 		];
-		if(zbase_entity('user')->usernameEnabled())
+		if(!isset($data['name']))
+		{
+			unset($rules['name']);
+		}
+		$messages['email.unique'] = 'Email address used already.';
+		if($userEntity->usernameEnabled())
 		{
 			$rules['username'] = 'required|min:3|max:32|unique:' . zbase_config_get('entity.user.table.name');
+			$messages['username.unique'] = 'Username already exists.';
 		}
-		if(!zbase_entity('user')->passwordAutoGenerate())
+		if($userEntity->passwordAutoGenerate())
+		{
+			$data['password'] = $userEntity->generatePassword();
+			$data['raw_password'] = $data['password'];
+		}
+		else
 		{
 			$rules['password'] = 'required|confirmed|min:6';
+			$rules['password_confirmation'] = 'same:password';
+			$messages['password.min'] = 'Password too short.';
+			$messages['password_confirmation.same'] = 'Passwords not the same. Kindly verify password.';
 		}
-		return Validator::make($data, $rules);
+		if(!empty($data['role']))
+		{
+			$roles = zbase()->entity('user_roles', [], true)->listAllRoles();
+			if(!empty($roles))
+			{
+				$rules['role'] = 'in:' . implode(',', $roles);
+				$messages['role.in'] = 'Kindly select a role in the given list.';
+			}
+		}
+		return Validator::make($data, $rules, $messages);
 	}
 
 	/**
@@ -258,14 +291,15 @@ use AuthenticatesAndRegistersUsers,
 		return zbase_config_get('auth.messages.failed', 'These credentials do not match our records');
 	}
 
-    /**
-     * Log the user out of the application.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function logout()
-    {
-        \Auth::guard($this->getGuard())->logout();
-        return zbase_redirect(property_exists($this, 'redirectAfterLogout') ? $this->redirectAfterLogout : '/');
-    }
+	/**
+	 * Log the user out of the application.
+	 *
+	 * @return \Illuminate\Http\Response
+	 */
+	public function logout()
+	{
+		\Auth::guard($this->getGuard())->logout();
+		return zbase_redirect(property_exists($this, 'redirectAfterLogout') ? $this->redirectAfterLogout : '/');
+	}
+
 }

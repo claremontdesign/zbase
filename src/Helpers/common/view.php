@@ -942,7 +942,12 @@ function zbase_view_render_head()
 {
 	$str = '';
 	zbase()->view()->prepare();
-	$str .= '<title>' . zbase()->view()->pageTitle() . '</title>';
+	if(zbase_is_angular())
+	{
+		$str .= '<title ng-bind="pageTitle">' . zbase()->view()->pageTitle() . '</title>';
+	} else {
+		$str .= '<title>' . zbase()->view()->pageTitle() . '</title>';
+	}
 	$str .= zbase_view_head_metas_render();
 	$str .= zbase_view_stylesheets_render();
 	$str .= zbase_view_head_links_render();

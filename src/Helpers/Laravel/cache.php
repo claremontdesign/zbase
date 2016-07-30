@@ -69,8 +69,20 @@ function zbase_cache_driver()
  * @param integer $minutes number of minutes to store items. Default: 60m
  * @return mixed
  */
-function zbase_cache($key, \Closure $callback, array $tags = null, $minutes = 60)
+function zbase_cache($key, \Closure $callback, array $tags = null, $minutes = 60, $options = array())
 {
+	if($minutes === null)
+	{
+		$minutes = 60;
+	}
+	$logFile = !empty($options['logFile']) ? $options['logFile'] : __FUNCTION__;
+	$logMsg = !empty($options['logMsg']) ? $options['logMsg'] : __FUNCTION__;
+	if(zbase_cache_has($key, $tags))
+	{
+		zbase_log($key . ' -- CACHE HIT' . PHP_EOL . $logMsg, null, $logFile);
+		return zbase_cache_get($key, $tags);
+	}
+	zbase_log($key . ' -- CACHE MISS' . PHP_EOL . $logMsg, null, $logFile);
 	if(!zbase_cache_enable())
 	{
 		return $callback();
@@ -194,7 +206,7 @@ function zbase_cache_key($object = null, $method = null, array $arguments = null
 	$strings = [];
 	if(!empty($prefix))
 	{
-		$strings[] = $prefix;
+		$strings[] = md5($prefix);
 	}
 	if(is_object($object))
 	{

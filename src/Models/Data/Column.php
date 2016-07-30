@@ -112,15 +112,29 @@ class Column extends Data implements Interfaces\IdInterface
 		}
 		else
 		{
-			$dataTypeConfiguration = [
-				'id' => $dataType,
-				'type' => 'data.' . $dataType,
-				'enable' => true,
-				'value' => $value,
-				'hasAccess' => true,
-				'options' => $this->getAttribute('options'),
-			];
-			$this->_value = \Zbase\Ui\Ui::factory($dataTypeConfiguration);
+			if(zbase_is_json())
+			{
+				if(strtolower($dataType) == 'timestamp')
+				{
+					$this->_value = $value->format(DATE_ISO8601);
+				}
+				else if(strtolower($dataType) == 'displaystatus')
+				{
+					$this->_value = (bool) $value;
+				}
+			}
+			else
+			{
+				$dataTypeConfiguration = [
+					'id' => $dataType,
+					'type' => 'data.' . $dataType,
+					'enable' => true,
+					'value' => $value,
+					'hasAccess' => true,
+					'options' => $this->getAttribute('options'),
+				];
+				$this->_value = \Zbase\Ui\Ui::factory($dataTypeConfiguration);
+			}
 		}
 	}
 

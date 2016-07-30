@@ -789,7 +789,14 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		$attributes = $this->_v('form.startTag.' . $this->_action . '.html.attributes', $this->_v('form.startTag.html.attributes', []));
 		if(zbase_is_angular_template())
 		{
-			return '<form ng-submit="submit' . $this->getHtmlId() . '()" name="' . $this->getHtmlId() . '" role="form" ' . $this->renderHtmlAttributes($attributes) . '>';
+			/**
+			 * false is disabled
+			 */
+			if(!isset($attributes['ng-submit']))
+			{
+				$attributes['ng-submit'] = 'submit' . $this->getHtmlId() . '()';
+			}
+			return '<form name="' . $this->getHtmlId() . '" role="form" ' . $this->renderHtmlAttributes($attributes) . '>';
 		}
 		return '<form action="" method="POST" enctype="multipart/form-data" ' . $this->renderHtmlAttributes($attributes) . '>';
 	}

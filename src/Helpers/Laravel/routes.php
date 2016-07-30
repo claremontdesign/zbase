@@ -177,21 +177,100 @@ function zbase_routes_init($routes = null)
 	}
 	if(!empty($routes))
 	{
+		$usernameRoute = false;
+		if(!empty($routes['usernameroute']))
+		{
+			$usernameRoute = true;
+		}
 		foreach ($routes as $name => $route)
 		{
-			zbase_route_init($name, $route);
-			if(!empty($route['children']))
+			if(!empty($route['url']))
 			{
-				$cRoutes = [];
-				foreach ($route['children'] as $cName => $cRoute)
+				zbase_route_init($name, $route);
+				if(!empty($route['children']))
 				{
-					$cRoute['url'] = $route['url'] . '/' . (!empty($cRoute['url']) ? $cRoute['url'] : $cName);
-					$cRoutes[$name . '.' . $cName] = $cRoute;
+					$cRoutes = [];
+					$uCRoutes = [];
+					foreach ($route['children'] as $cName => $cRoute)
+					{
+						$cRoute['url'] = $route['url'] . '/' . (!empty($cRoute['url']) ? $cRoute['url'] : $cName);
+						$cRoutes[$name . '.' . $cName] = $cRoute;
+					}
+					zbase_routes_init($cRoutes);
 				}
-				zbase_routes_init($cRoutes);
+			}
+		}
+
+		/**
+		 * Using Username Route
+		 */
+		if(!empty($usernameRoute))
+		{
+			$routeParameterName = zbase_route_username_prefix();
+			$usernameRoutePrefix = '/{' . $routeParameterName . '?}';
+			$usernameroute = [
+				'controller' => [
+					'name' => 'user',
+					'method' => 'username',
+					'enable' => true
+				],
+				'url' => $usernameRoutePrefix,
+				'enable' => true
+			];
+			zbase_route_init($routeParameterName, $usernameroute);
+			foreach ($routes as $name => $route)
+			{
+				if(!empty($route['url']))
+				{
+					$route['url'] = str_replace('//', '/', $usernameRoutePrefix . '/' . $route['url']);
+					zbase_route_init($routeParameterName . $name, $route);
+					if(!empty($route['children']))
+					{
+						$uCRoutes = [];
+						foreach ($route['children'] as $cName => $cRoute)
+						{
+							$cRoute['url'] = $route['url'] . '/' . (!empty($cRoute['url']) ? $cRoute['url'] : $cName);
+							$cRoutes[$routeParameterName . $name . '.' . $cName] = $cRoute;
+						}
+						zbase_routes_init($cRoutes);
+					}
+				}
 			}
 		}
 	}
+}
+
+/**
+ * Return the UsernameRoutePrefix / Username Route Parameter Name
+ *
+ * @return string
+ */
+function zbase_route_username_prefix()
+{
+	return 'usernameroute';
+}
+
+/**
+ * Check if Username route is valid
+ *
+ * @return boolean
+ */
+function zbase_route_username_get()
+{
+	$username = zbase_route_input(zbase_route_username_prefix(), false);
+	if(!empty($username))
+	{
+		$username = strtolower($username);
+		/**
+		 * Check if valid username
+		 */
+		$user = zbase()->entity('user')->repo()->by('username', $username, ['username'])->first();
+		if($user instanceof \Zbase\Interfaces\EntityInterface)
+		{
+			return $username;
+		}
+	}
+	return false;
 }
 
 /**
@@ -254,6 +333,8 @@ function zbase_route_response($name, $route)
 	{
 		return zbase_response(view(zbase_view_file('maintenance')));
 	}
+	$usernameRoute = zbase_route_username_get();
+	$usernameRoutePrefix = zbase_route_username_prefix();
 	zbase()->setCurrentRouteName($name);
 	$guest = true;
 	$authed = false;
@@ -297,9 +378,19 @@ function zbase_route_response($name, $route)
 	{
 		if(!empty($backend))
 		{
-			if((empty(zbase_auth_has()) || !zbase_auth_is('admin')) && $name != 'admin.login')
+			if(!empty($usernameRoute))
 			{
-				return redirect(zbase_url_from_route('admin.login'));
+				if((empty(zbase_auth_has()) || !zbase_auth_is('admin')) && $name != $usernameRoutePrefix . 'admin.login')
+				{
+					return redirect(zbase_url_from_route('admin.login'));
+				}
+			}
+			else
+			{
+				if((empty(zbase_auth_has()) || !zbase_auth_is('admin')) && $name != 'admin.login')
+				{
+					return redirect(zbase_url_from_route('admin.login'));
+				}
 			}
 		}
 		else
@@ -308,9 +399,19 @@ function zbase_route_response($name, $route)
 			{
 				return redirect(zbase_url_from_route('home'));
 			}
-			if(!empty($authed) && !zbase_auth_has() && $name != 'login')
+			if(!empty($usernameRoute))
 			{
-				return redirect(zbase_url_from_route('login'));
+				if(!empty($authed) && !zbase_auth_has() && $name != $usernameRoutePrefix . 'login')
+				{
+					return redirect(zbase_url_from_route('login'));
+				}
+			}
+			else
+			{
+				if(!empty($authed) && !zbase_auth_has() && $name != 'login')
+				{
+					return redirect(zbase_url_from_route('login'));
+				}
 			}
 		}
 	}

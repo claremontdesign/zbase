@@ -184,6 +184,8 @@ function zbase_is_dev()
  */
 function zbase_data_get($target, $key = null, $default = null)
 {
+
+
 	if(is_string($target) && empty($key))
 	{
 		return $target;
@@ -192,9 +194,73 @@ function zbase_data_get($target, $key = null, $default = null)
 	{
 		return value($target);
 	}
+	if($target instanceof Interfaces\EntityInterface)
+	{
+		// $key = '$$profile.first_name has too 5% much $$email';
+		$pattern = '/(\$\$\S+)/';
+		preg_match_all($pattern, $key, $matches);
+		if(!empty($matches[0]))
+		{
+			$vs = [];
+			foreach ($matches[0] as $v)
+			{
+				$vs[$v] = zbase_value_get($target, str_replace('$$', '', $v));
+			}
+			return strtr($key, $vs);
+		}
+	}
 	if($target instanceof Interfaces\EntityInterface && is_string($key) && method_exists($target, $key))
 	{
 		return $target->{$key}();
+	}
+	if($target instanceof \Zbase\Interfaces\EntityInterface && is_string($key) && !empty(preg_match('/\./', $key)))
+	{
+		$keyEx = explode('.', $key);
+		if(!empty($keyEx))
+		{
+			$kCount = count($keyEx);
+			$kCounter = 0;
+			foreach ($keyEx as $k)
+			{
+				$kCounter++;
+				if($kCounter == $kCount)
+				{
+					if(method_exists($target, $k))
+					{
+						$target = $target->$k();
+					}
+					else
+					{
+						if(property_exists($target, $k))
+						{
+							$value = $target->$k;
+						}
+						else
+						{
+							$value = $target->getAttribute($k);
+						}
+					}
+				}
+				else
+				{
+					if(method_exists($target, $k))
+					{
+						$target = $target->$k();
+					}
+					else
+					{
+						if(method_exists($target, 'hasRelationship') && $target->hasRelationship($k))
+						{
+							$target = $target->$k();
+						}
+					}
+				}
+				if(!empty($value) && !is_object($value))
+				{
+					return $value;
+				}
+			}
+		}
 	}
 	if($target instanceof Interfaces\AttributeInterface && is_string($key))
 	{
@@ -536,29 +602,16 @@ function zbase_site_name()
 }
 
 /**
- * check if UI is angular
- * @return boolean
- */
-function zbase_is_angular()
-{
-	return zbase()->mobile()->isAngular();
-}
-
-/**
- * Check if to serve angular template
- * @return booleaan
- */
-function zbase_is_angular_template()
-{
-	return zbase_request_query_input('at', false);
-}
-
-/**
- * Check if mobile
+ * Check if mobile device or environment is mobile
  * @return boolean
  */
 function zbase_is_mobile()
 {
+	$mobile = env('APP_ENV_MOBILE', false);
+	if(!empty($mobile))
+	{
+		return true;
+	}
 	return zbase()->mobile()->detector()->isMobile();
 }
 
@@ -569,4 +622,29 @@ function zbase_is_mobile()
 function zbase_is_mobileTablet()
 {
 	return zbase()->mobile()->detector()->isTablet();
+}
+
+/**
+ * Logging
+ */
+
+/**
+ * Log to File
+ * @param string $msg the mssg to write
+ * @param string $logFile the file to write the log
+ *
+ * @return null
+ */
+function zbase_log($msg, $type = null, $logFile = null)
+{
+	$folder = zbase_storage_path() . '/logs/';
+	zbase_directory_check($folder);
+	$file = !empty($logFile) ? $logFile : 'log.txt';
+	$file = str_replace(array('/', '\\',':'), '_', $file);
+	if(preg_match('/.txt/', $file) == 0)
+	{
+		$file .= '.txt';
+	}
+	$msg = date('Y-m-d H:i:s') . ' : ' . zbase_ip() . PHP_EOL . $msg .  PHP_EOL . "--------------------" . PHP_EOL;
+	file_put_contents($folder . $file, $msg . PHP_EOL, FILE_APPEND);
 }

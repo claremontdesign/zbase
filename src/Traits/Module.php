@@ -155,7 +155,7 @@ trait Module
 					if(zbase_is_json() && $widget instanceof \Zbase\Widgets\Type\Datatable)
 					{
 						$angularTemplate = zbase_angular_widget_datatable($this->getModule(), $widget);
-						$jsonIndexName = $angularTemplate['name'];
+						$jsonIndexName = $angularTemplate['serviceName'];
 					}
 					zbase()->json()->addVariable($jsonIndexName, $widget->toArray());
 				}

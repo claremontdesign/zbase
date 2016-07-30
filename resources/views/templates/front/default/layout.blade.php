@@ -2,22 +2,14 @@
 if(zbase_is_angular_template())
 {
 	?>
-	<div ui-content-for="title">
-		<span><?php echo zbase()->view()->title() ?></span>
-	</div>
-	<div class="scrollable">
-		<div class="scrollable-content">
-			<div class='section'>
-				@yield('content')
-			</div>
-		</div>
-	</div>
+		@include(zbase_view_file('type.angular'))
 	<?php
 }
 else
 {
 	ob_start('zbase_view_compile');
 	zbase_view_plugin_load('bootstrap');
+	zbase_view_plugin_load('jquery');
 	?>
 	<!DOCTYPE html>
 	<html lang="en">

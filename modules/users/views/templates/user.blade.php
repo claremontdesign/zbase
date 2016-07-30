@@ -1,0 +1,1 @@
+<span>Email: <% APINAME.email %></span>

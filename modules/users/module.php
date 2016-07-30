@@ -65,6 +65,21 @@ return [
 				}
 			],
 		],
+		'admin-user-template' => [
+			// 'url' => 'admin/templates/user.html',
+			'url' => 'admin/users/view',
+//			'view' => [
+//				'enable' => true,
+//				'layout' => 'blank',
+//				'name' => 'type.html',
+//				'content' => function(){
+//					$angularDatatable = zbase_angular_widget_datatable('users', 'admin-users');
+//					$content = zbase_view_render(zbase_view_file_module('users.views.templates.user'));
+//					$content = str_replace('APINAME', $angularDatatable['serviceGetSelectedItem'], $content);
+//					return $content;
+//				}
+//			],
+		],
 	],
 	'angular' => [
 		'backend' => [
@@ -75,6 +90,15 @@ return [
 						},
 					'templateUrl' => function(){
 							return zbase_angular_template_url('admin-users-template', []);
+						},
+					'controller' => 'adminUsersController'
+				],
+				[
+					'url' => function(){
+							return zbase_angular_route('admin.users', ['action' => 'view'], true) . '/:itemId';
+						},
+					'templateUrl' => function(){
+							return zbase_url_from_route('admin-user-template', [],true);
 						},
 					'controller' => 'adminUsersController'
 				],
@@ -114,6 +138,9 @@ return [
 				'action' => [
 					'index' => [
 						'admin-users' => null
+					],
+					'view' => [
+						'admin-user' => null
 					],
 				],
 			],

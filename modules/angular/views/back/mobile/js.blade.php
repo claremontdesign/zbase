@@ -270,8 +270,6 @@ var mod;mod=angular.module("infinite-scroll",[]),mod.directive("infiniteScroll",
 		};
 		angular.module('MobileAngularUi<?php echo $prefix ?>').config(httpInterceptor);
 
-
-
 		//<editor-fold defaultstate="collapsed" desc="TOuchServices">
 		app.directive('toucharea', ['$touch', function ($touch) {
 				return {

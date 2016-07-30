@@ -20,7 +20,7 @@
 			<!-- BEGIN USER LOGIN DROPDOWN -->
 			<li class="dropdown user">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
-					<img alt="" src="<?php echo zbase_auth_user()->avatarUrl(['w' => 30])?>"/>
+					<img style="width:28px;" alt="" src="<?php echo zbase_auth_user()->avatarUrl(['w' => 30])?>"/>
 					<span class="username">
 						<?php echo zbase_auth_user()->displayName()?>
 					</span>

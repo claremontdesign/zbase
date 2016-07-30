@@ -4,16 +4,7 @@ $isMobileTablet = zbase_is_mobileTablet();
 if(zbase_is_angular_template())
 {
 	?>
-	<div ui-content-for="title">
-		<span><?php echo zbase()->view()->title() ?></span>
-	</div>
-	<div class="scrollable">
-		<div class="scrollable-content">
-			<div class='section'>
-				@yield('content')
-			</div>
-		</div>
-	</div>
+	@include(zbase_view_file('type.angular'))
 	<?php
 }
 else
@@ -34,7 +25,7 @@ else
 	zbase_view_javascripts_set(['mobileangular-zbase' => $mobileAngular]);
 	?>
 	<!DOCTYPE html>
-	<html ng-app="MobileAngularUi<?php echo $prefix ?>">
+	<html ng-app="MobileAngularUi<?php echo $prefix ?>" ng-controller="MainController">
 		<head>
 			<meta charset="utf-8" />
 			<base href="/admin" />
@@ -46,7 +37,7 @@ else
 			{!! zbase_view_render_head() !!}
 			{!! zbase_view_render_body() !!}
 		</head>
-		<body ui-prevent-touchmove-defaults ng-controller="MainController">
+		<body ui-prevent-touchmove-defaults>
 
 			<?php if(zbase_auth_has()): ?>
 				<!-- Sidebars -->
@@ -64,7 +55,7 @@ else
 					<!-- Navbars -->
 					<div class="navbar navbar-app navbar-absolute-top">
 						<div class="navbar-brand navbar-brand-center" ui-yield-to="title">
-							<?php echo zbase()->view()->title() ?>
+							<% viewTitle %>
 						</div>
 						<div class="btn-group pull-left">
 							<div ui-toggle="uiSidebarLeft" class="btn sidebar-toggle">

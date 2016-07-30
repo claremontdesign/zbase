@@ -76,6 +76,10 @@ trait Html
 				}
 				else
 				{
+					if($value === false)
+					{
+						continue;
+					}
 					$attributes[] = $key . '="' . zbase_data_get($value) . '"';
 				}
 			}

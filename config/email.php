@@ -28,6 +28,6 @@ return [
 		'contactus' => [
 			'email' => 'info@zbase.com',
 			'Name' => 'Contact Us',
-		]
+		],
 	],
 ];
