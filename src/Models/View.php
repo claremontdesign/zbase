@@ -133,7 +133,14 @@ class View
 	 */
 	public function setPageTitle($pageTitle)
 	{
-		$this->pageTitle = $pageTitle;
+		if($pageTitle instanceof \Closure)
+		{
+			$this->pageTitle = $pageTitle();
+		}
+		else
+		{
+			$this->pageTitle = $pageTitle;
+		}
 		return $this;
 	}
 

@@ -21,7 +21,15 @@
  */
 function zbase_url_from_route($name, $params = [], $relative = false)
 {
-	// $relative = true;
+	$prefix = '';
+	$usernameRouteParameterName = zbase_route_username_prefix();
+	$usernameRoute = zbase_route_username_get();
+	if(!empty($usernameRoute))
+	{
+		$prefix = $usernameRouteParameterName;
+		$params[$usernameRouteParameterName] = $usernameRoute;
+	}
+	$name = $prefix . $name;
 	if(!empty($relative))
 	{
 		$home = route('index');
@@ -74,7 +82,7 @@ function zbase_url_from_current($params = [], $replace = true, $add = false)
 			$urlQ[] = $k . '=' . $v;
 		}
 	}
-	if(zbase_is_angular())
+	if(zbase_is_angular_template())
 	{
 		$home = route('index');
 		return '#' . str_replace($home, '', zbase_url() . '?' . implode('&', $urlQ));
@@ -117,7 +125,7 @@ function zbase_url_from_config($config, $params = [], $relative = false)
 {
 	if(is_string($config))
 	{
-		if(zbase_is_angular())
+		if(zbase_is_angular_template())
 		{
 			return '#' . $config;
 		}
@@ -133,7 +141,7 @@ function zbase_url_from_config($config, $params = [], $relative = false)
 		}
 		if(!empty($config['link']) && is_string($config['link']))
 		{
-			if(zbase_is_angular())
+			if(zbase_is_angular_template())
 			{
 				return '#' . $config['link'];
 			}

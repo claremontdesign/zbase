@@ -21,9 +21,21 @@
  */
 function zbase_response($response)
 {
+	// HTTP/1.1 204 No Content
+//	$apiResponse = zbase()->json()->getVariable('api');
+//	if(!empty($apiResponse) && $apiResponse instanceof \Zbase\Exceptions\HttpException && $apiResponse->getStatusCode() == 204)
+//	{
+//		$response->header('HTTP/1.1 204 No Content');
+//		return $response;
+//	}
+	$returnNoContent = '';
 	$errorResponse = false;
 	$xmlResponse = false;
 	$responseFormat = zbase_response_format();
+	if(zbase_is_json())
+	{
+		$responseFormat = 'json';
+	}
 	if($responseFormat == 'json' || zbase_request_is_ajax())
 	{
 		$jsonResponse = true;
@@ -31,6 +43,11 @@ function zbase_response($response)
 	if($responseFormat == 'xml')
 	{
 		$xmlResponse = true;
+	}
+	if(zbase_is_angular_template())
+	{
+		$responseFormat = 'html';
+		$jsonResponse = false;
 	}
 	if(!empty($jsonResponse))
 	{
@@ -56,11 +73,17 @@ function zbase_response($response)
 				zbase()->json()->setVariable('_token', zbase_csrf_token());
 			}
 		}
+		zbase()->json()->setVariable('_alerts', [
+			'errors' => zbase_alerts('error'),
+			'messages' => zbase_alerts('success'),
+			'info' => zbase_alerts('info'),
+			'warning' => zbase_alerts('warning'),
+		]);
 		$forceResponse = zbase_request_input('forceResponse', zbase_request_query_input('forceResponse', false));
 		/**
 		 * JSONP Callback
 		 */
-		$jsonCallback = zbase_request_query_input('callback', false);
+		$jsonCallback = zbase_request_query_input('callback', zbase_request_query_input('jsonp', false));
 		if(!$forceResponse)
 		{
 			zbase_alerts_render();
@@ -76,6 +99,21 @@ function zbase_response($response)
 	}
 	if($response instanceof \RuntimeException)
 	{
+		if($response->getStatusCode() == '302')
+		{
+			if(zbase_is_json())
+			{
+				zbase_alerts_render();
+				if(!empty($jsonCallback))
+				{
+					return response()->json(zbase()->json()->getVariables(), 302)->setCallback($jsonCallback);
+				}
+				else
+				{
+					return response()->json(zbase()->json()->getVariables(), 302);
+				}
+			}
+		}
 		return $response->render(zbase_request(), $response);
 	}
 	/**
@@ -131,16 +169,26 @@ function zbase_exception_throw()
 function zbase_redirect_with_message($to, $message)
 {
 	zbase_alert('error', $message);
-	return redirect($to);
+	return zbase_redirect($to);
 }
 
 /**
  * Redirect
  * @return redirect
  */
-function zbase_redirect()
+function zbase_redirect($to = null, $status = 302, $headers = [], $secure = null)
 {
-	return redirect();
+	if(zbase_is_angular_template())
+	{
+		zbase()->json()->setVariable('_redirect', $to);
+		$response = new \Zbase\Exceptions\HttpException('Redirecting to ' . $to);
+		$response->setStatusCode($status);
+		return $response;
+	}
+	else
+	{
+		return redirect($to, $status, $headers, $secure);
+	}
 }
 
 /**

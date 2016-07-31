@@ -78,7 +78,7 @@ trait Module
 		/**
 		 * Check for widgets
 		 */
-		$widgetsAction = $action = str_replace('.','-',$this->getRouteParameter('action', 'index'));
+		$widgetsAction = $action = str_replace('.', '-', $this->getRouteParameter('action', 'index'));
 		$requestMethod = zbase_request_method();
 		if(!empty($this->nodeName))
 		{
@@ -101,7 +101,7 @@ trait Module
 		{
 			if(!empty($this->nodeName))
 			{
-				zbase()->json()->addVariable('node', ['prefix'=>$this->getModule()->nodeNamespace(), 'name' => $this->nodeName, 'support' => 1]);
+				zbase()->json()->addVariable('node', ['prefix' => $this->getModule()->nodeNamespace(), 'name' => $this->nodeName, 'support' => 1]);
 				$widget->setNodename($this->nodeName)->setNodeSupport(true);
 			}
 			if($widget instanceof \Zbase\Widgets\ControllerInterface)
@@ -146,7 +146,18 @@ trait Module
 				}
 				if($isAjax)
 				{
-					$htmls[str_replace('-','_',$widget->id())] = $widget->render();
+					$htmls[str_replace('-', '_', $widget->id())] = $widget->render();
+				}
+				if(zbase_is_json())
+				{
+					zbase_response_format_set('json');
+					$jsonIndexName = $widget->id();
+					if(zbase_is_json() && $widget instanceof \Zbase\Widgets\Type\Datatable)
+					{
+						$angularTemplate = zbase_angular_widget_datatable($this->getModule(), $widget);
+						$jsonIndexName = $angularTemplate['serviceName'];
+					}
+					zbase()->json()->addVariable($jsonIndexName, $widget->toArray());
 				}
 			}
 		}

@@ -43,10 +43,7 @@ class Ui
 	 */
 	public function themeFramework()
 	{
-		if(zbase()->mobile()->isMobileTheme())
-		{
-			return env('UI_THEME_FRAMEWORK', null);
-		}
-		return null;
+		return 'angular';
 	}
+
 }

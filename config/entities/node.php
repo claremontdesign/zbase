@@ -31,5 +31,9 @@ return [
 			'enable' => true,
 			'model' => Zbase\Entity\__FRAMEWORK__\Node\File::class
 		],
+		'node_logs' => [
+			'enable' => true,
+			'model' => Zbase\Entity\__FRAMEWORK__\Node\Log::class
+		],
 	],
 ];

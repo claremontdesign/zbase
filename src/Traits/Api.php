@@ -200,7 +200,7 @@ trait Api
 	 *
 	 *
 	 */
-	// <editor-fold defaultstate="collapsed" desc="comment">
+	// <editor-fold defaultstate="collapsed" desc="api">
 	public function api()
 	{
 		$validation = $this->validateApi();
@@ -243,6 +243,11 @@ trait Api
 	{
 		if(!empty($this->apiConfiguration['params']))
 		{
+			$notParams = [];
+			if(!empty($this->apiConfiguration['notParams']))
+			{
+				$notParams = $this->apiConfiguration['notParams'];
+			}
 			$inputs = zbase_route_inputs();
 			unset($inputs['username']);
 			unset($inputs['key']);
@@ -259,21 +264,26 @@ trait Api
 			foreach ($this->apiConfiguration['params'] as $paramName => $param)
 			{
 				$pRules = array();
-				if(!empty($param['validation']))
+				if(!empty($param['validations']))
 				{
-					foreach ($param['validation'] as $rule => $ruleConfig)
+					foreach ($param['validations'] as $ruleName => $ruleConfig)
 					{
 						$enable = true;
+						$rule = $ruleName;
 						if(isset($ruleConfig['enable']))
 						{
 							$enable = $ruleConfig['enable'];
 						}
 						if(!empty($enable))
 						{
+							if(!empty($ruleConfig['text']))
+							{
+								$rule = zbase_data_get($ruleConfig, 'text');
+							}
 							$pRules[] = $rule;
 							if(!empty($ruleConfig['message']))
 							{
-								$messages[$paramName . '.' . $rule] = $ruleConfig['message'];
+								$messages[$paramName . '.' . $ruleName] = $ruleConfig['message'];
 							}
 						}
 					}
@@ -282,7 +292,7 @@ trait Api
 				{
 					$rules[$paramName] = implode('|', $pRules);
 				}
-				if(!empty($param['name']) && isset($inputs[$paramName]))
+				if(isset($inputs[$paramName]))
 				{
 					if(!empty($param['varname']))
 					{
@@ -290,7 +300,17 @@ trait Api
 					}
 					else
 					{
-						$this->params[$param['name']] = $inputs[$paramName];
+						$this->params[$paramName] = $inputs[$paramName];
+					}
+				}
+			}
+			if(!empty($notParams))
+			{
+				foreach ($notParams as $nParam)
+				{
+					if(isset($this->params[$nParam]))
+					{
+						unset($this->params[$nParam]);
 					}
 				}
 			}

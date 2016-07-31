@@ -78,6 +78,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
+		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns, $withTrashed, $onlyTrashed){
 			if(!empty($withTrashed))
@@ -117,9 +118,10 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
+		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns){
-					return $this->by('alpha_id', $id, $columns)->first();
+			return $this->by('alpha_id', $id, $columns)->first();
 				}, [$this->getModel()->getTable()]
 		);
 	}
@@ -148,9 +150,10 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
+		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns){
-					return $this->by('slug', $id, $columns)->first();
+			return $this->by('slug', $id, $columns)->first();
 				}, [$this->getModel()->getTable()]
 		);
 	}
@@ -239,19 +242,26 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
+
 		if(!empty($paginate))
 		{
+			$logMsg = __METHOD__ . PHP_EOL;
+			$logMsg .= $builder->getQuery()->toSql() . PHP_EOL;
+			$logMsg .= json_encode($builder->getQuery()->getBindings()) . PHP_EOL;
 			return zbase_cache(
 					zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder, $paginate, $columns){
 				return $builder->paginate($paginate, $columns);
-				}, [$this->getModel()->getTable()]
+				}, [$this->getModel()->getTable()], null, ['logFile' => 'Repo_' . $this->getModel()->getTable(), 'logMsg' => $logMsg]
 			);
 		}
-
+		$logMsg = __METHOD__ . PHP_EOL;
+		$logMsg .= $builder->getQuery()->toSql() . PHP_EOL;
+		$logMsg .= json_encode($builder->getQuery()->getBindings()) . PHP_EOL;
+		$prefix .= $builder->getQuery()->toSql() . json_encode($builder->getQuery()->getBindings());
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder){
 			return $builder->get();
-				}, [$this->getModel()->getTable()]
+				}, [$this->getModel()->getTable()], null, ['logFile' => 'Repo_' . $this->getModel()->getTable(), 'logMsg' => $logMsg]
 		);
 	}
 
@@ -266,10 +276,13 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	public function count($filters = null, $joins = null, $unions = null, $group = null, $options = null)
 	{
 		$builder = $this->_query(['COUNT(1)'], $filters, null, $joins, $unions, $group, $options);
+		$logMsg = __METHOD__ . PHP_EOL;
+		$logMsg .= $builder->getQuery()->toSql() . PHP_EOL;
+		$logMsg .= json_encode($builder->getQuery()->getBindings()) . PHP_EOL;
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder){
 			return $builder->count();
-				}, [$this->getModel()->getTable()]
+				}, [$this->getModel()->getTable()], null, ['logFile' => 'Repo_' . $this->getModel()->getTable(), 'logMsg' => $logMsg]
 		);
 	}
 
@@ -468,4 +481,5 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		$this->onlyTrashed = $flag;
 		return $this;
 	}
+
 }

@@ -25,11 +25,15 @@
 			$modules = zbase()->modules();
 			foreach ($modules as $module)
 			{
-				if($module->hasNavigation(zbase_section()))
+				if($module->isEnable())
 				{
-					$navigation = $module->getNavigation(zbase_section());
-					$navigation->setAttribute('format', '<a class="list-group-item {CLASS_ISACTIVE}" href="{URL}">{LABEL}</a>');
-					echo $navigation;
+					if($module->hasNavigation(zbase_section()))
+					{
+						$navigation = $module->getNavigation(zbase_section());
+						$navigation->isAngular(true);
+						$navigation->setAttribute('format', '<a class="list-group-item {CLASS_ISACTIVE}" href="{URL}">{LABEL}</a>');
+						echo $navigation;
+					}
 				}
 			}
 			?>
@@ -38,7 +42,7 @@
 					<i class="fa fa-user"></i>
 					Account
 				</a>
-				<a class="list-group-item" href="<?php echo zbase_angular_url('admin.logout', []) ?>" ng-controller="adminAccountMainController" ng-click="logout()">
+				<a class="list-group-item" href="<?php echo zbase_angular_url('admin.logout', []) ?>" ng-click="logout()">
 					<i class="fa fa-key"></i>
 					Logout
 				</a>

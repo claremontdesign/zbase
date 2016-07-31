@@ -50,6 +50,11 @@ return [
 				'method' => 'index',
 				'enable' => true
 			],
+			'page' => [
+				'title' => function(){
+					return zbase_site_name();
+				},
+			],
 			'url' => '/admin',
 			'middleware' => [
 				'admin' => true,
@@ -65,6 +70,11 @@ return [
 					],
 					'middleware' => [
 						'guestOnly' => true,
+					],
+					'page' => [
+						'headTitle' => function(){
+							return 'Login';
+						},
 					],
 					'form' => [
 						'enable' => true
@@ -249,7 +259,7 @@ return [
 				'method' => 'image',
 				'enable' => true
 			],
-			'url' => '/user/img/{id?}/{w?}/{h?}/{q?}.{ext?}',
+			'url' => '/user/img/{id?}/{image?}/{w?}/{h?}/{q?}.{ext?}',
 			'enable' => true
 		],
 		'nodeImage' => [

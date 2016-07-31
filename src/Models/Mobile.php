@@ -114,7 +114,7 @@ class Mobile
 	 */
 	public function isAngular()
 	{
-		return zbase()->ui()->themeFramework() == 'angular';
+		return zbase_is_angular();
 	}
 
 }

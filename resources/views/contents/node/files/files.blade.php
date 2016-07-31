@@ -14,6 +14,7 @@ zbase_view_plugin_load('nodes');
  * @project Expression project.name is undefined on line 13, column 15 in Templates/Scripting/EmptyPHP.php.
  * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
  */
+$isAngularTemplate = zbase_is_angular_template();
 if(empty($node) & !empty($ui))
 {
 	$node = $ui->form()->entity();
@@ -41,9 +42,13 @@ if(!empty($node))
 	</div>
 <?php endif; ?>
 <?php if(!empty($isUser)): ?>
-	<div class="col-xs-12 col-md-12" style="margin-bottom: 20px;">
-		<img class="img-thumbnail" src="<?php echo $node->avatarUrl(['thumbnail => true']) ?>" alt="<?php echo $node->displayName() ?>" />
-	</div>
+	<?php if(!empty($isAngularTemplate)): ?>
+		<img ng-src="<% avatar %>" class="img-thumbnail user-img-thumbnail" style="width:150px;" flow-img="$flow.files[0]" src="<?php echo $node->avatarUrl(['thumbnail => true']) ?>" alt="<?php echo $node->displayName() ?>" />
+	<?php else: ?>
+		<div class="col-xs-12 col-md-12" style="margin-bottom: 20px;">
+			<img class="img-thumbnail" src="<?php echo $node->avatarUrl(['thumbnail => true']) ?>" alt="<?php echo $node->displayName() ?>" />
+		</div>
+	<?php endif; ?>
 <?php endif; ?>
 <?php if(!empty($images) && !empty($isNode)): ?>
 	<div class="row" id="node-files" style="margin: 20px;">

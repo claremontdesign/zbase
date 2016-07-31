@@ -17,6 +17,7 @@ namespace Zbase\Traits;
  */
 trait User
 {
+
 	/**
 	 * Create a new user instance after a valid registration.
 	 *
@@ -28,7 +29,9 @@ trait User
 		$user = [
 			'status' => $this->defaultNewUserStatus(),
 			'username' => !empty($data['username']) ? $data['username'] : null,
-			'name' => $data['name'],
+			'name' => !empty($data['name']) ? $data['name'] : null,
+			'first_name' => !empty($data['first_name']) ? $data['first_name'] : null,
+			'last_name' => !empty($data['last_name']) ? $data['last_name'] : null,
 			'email' => $data['email'],
 			'email_verified' => $this->emailVerificationEnabled() ? 0 : 1,
 			'email_verified_at' => null,
@@ -38,10 +41,35 @@ trait User
 			'updated_at' => zbase_date_now(),
 			'deleted_at' => null,
 		];
+		$user['raw_password'] = $data['password'];
+		if(empty($user['name']) && !empty($data['first_name']))
+		{
+			$user['name'] = $data['first_name'];
+			if(!empty($data['last_name']))
+			{
+				$user['name'] .= ' ' . $data['last_name'];
+			}
+		}
+		if(!empty($data['role']))
+		{
+			$user['role'] = strtolower($data['role']);
+		}
 		unset($data['username']);
 		unset($data['name']);
 		unset($data['email']);
 		unset($data['password']);
+		if(!empty($data['first_name']))
+		{
+			unset($data['first_name']);
+		}
+		if(!empty($data['last_name']))
+		{
+			unset($data['last_name']);
+		}
+		if(!empty($data['role']))
+		{
+			unset($data['role']);
+		}
 		$user = array_merge_recursive($user, $data);
 		return zbase_entity('user')->create($user);
 	}
@@ -85,4 +113,5 @@ trait User
 		}
 		return false;
 	}
+
 }

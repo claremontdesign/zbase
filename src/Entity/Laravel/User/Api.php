@@ -19,6 +19,138 @@ class Api
 {
 
 	/**
+	 * Update profile Image
+	 * @param array $data
+	 */
+	public static function updateProfileImage($data)
+	{
+		$ret = ['success' => false];
+		if(!empty($data['userId']))
+		{
+			$userId = $data['userId'];
+			unset($data['userId']);
+		}
+		else
+		{
+			if(zbase_auth_has())
+			{
+				$userId = zbase_auth_user()->id();
+			}
+		}
+		if(!empty($userId))
+		{
+			$user = static::findUserById($userId, true);
+		}
+		if(!empty($user) && $user instanceof User)
+		{
+			$uploaded = $user->uploadProfileImage();
+			if(!empty($uploaded))
+			{
+				$user->updateProfile(['avatar' => $uploaded]);
+				$ret['success'] = true;
+				$ret['url'] = $user->avatarUrl(['thumbnail' => true]);
+				return $ret;
+			}
+		}
+	}
+
+	/**
+	 * Update User Profile
+	 * @param array $data
+	 */
+	public static function updateProfile($data)
+	{
+		$ret = ['success' => false];
+		if(!empty($data['userId']))
+		{
+			$userId = $data['userId'];
+			unset($data['userId']);
+		}
+		else
+		{
+			if(zbase_auth_has())
+			{
+				$userId = zbase_auth_user()->id();
+			}
+		}
+		if(!empty($userId))
+		{
+			$user = static::findUserById($userId, true);
+		}
+		if(!empty($user) && $user instanceof User)
+		{
+			$user->updateProfile($data);
+			$ret['success'] = true;
+		}
+		$ret['user'] = static::userApi(static::findUserById($userId, true));
+		return $ret;
+	}
+
+	/**
+	 * Update Email Address
+	 * @param strin $data
+	 */
+	public static function updateEmail($data)
+	{
+		$ret = ['success' => false];
+		if(!empty($data['userId']))
+		{
+			$userId = $data['userId'];
+			unset($data['userId']);
+		}
+		else
+		{
+			if(zbase_auth_has())
+			{
+				$userId = zbase_auth_user()->id();
+			}
+		}
+		if(!empty($userId))
+		{
+			$user = static::findUserById($userId, true);
+		}
+		if(!empty($user) && $user instanceof User && !empty($data['email']))
+		{
+			$user->updateRequestEmailAddress($data['email']);
+			$ret['success'] = true;
+		}
+		$ret['user'] = static::userApi(static::findUserById($userId, true));
+		return $ret;
+	}
+
+	/**
+	 * Update Email Address
+	 * @param strin $data
+	 */
+	public static function updatePassword($data)
+	{
+		$ret = ['success' => false];
+		if(!empty($data['userId']))
+		{
+			$userId = $data['userId'];
+			unset($data['userId']);
+		}
+		else
+		{
+			if(zbase_auth_has())
+			{
+				$userId = zbase_auth_user()->id();
+			}
+		}
+		if(!empty($userId))
+		{
+			$user = static::findUserById($userId, true);
+		}
+		if(!empty($user) && $user instanceof User && !empty($data['password']) && !empty($data['passwordConfirm']))
+		{
+			$user->updateRequestPassword($data['password']);
+			$ret['success'] = true;
+		}
+		$ret['user'] = static::userApi(static::findUserById($userId, true));
+		return $ret;
+	}
+
+	/**
 	 * Login a User
 	 * @param string|aray $username
 	 * @param string $password
@@ -27,7 +159,7 @@ class Api
 	 */
 	public static function login($username, $password = '')
 	{
-		$ret = ['login' => false];
+		$ret = ['success' => false];
 		if(is_array($username) && !empty($username['username']) && !empty($username['password']))
 		{
 			$password = $username['password'];
@@ -40,10 +172,38 @@ class Api
 				if(!empty($same))
 				{
 					\Auth::login($user);
-					$ret['login'] = true;
+					$ret['success'] = true;
+					return $ret;
 				}
 			}
 		}
+		zbase_alert(\Zbase\Zbase::ALERT_ERROR, 'Login error.');
+		return $ret;
+	}
+
+	/**
+	 * REset Password
+	 * @return boolean
+	 */
+	public static function password($username)
+	{
+		$ret = ['success' => false];
+		if(is_array($username) && !empty($username['username']))
+		{
+			$username = $username['username'];
+			$entity = zbase()->entity('user', [], true);
+			$user = $entity->repo()->by('email', $username)->first();
+			if(!empty($user))
+			{
+				$success = $user->lostPassword();
+				if($success)
+				{
+					$ret = ['success' => true];
+					return $ret;
+				}
+			}
+		}
+		// zbase_alert(\Zbase\Zbase::ALERT_ERROR, 'Login error.');
 		return $ret;
 	}
 
@@ -69,6 +229,9 @@ class Api
 			'password_updated_at',
 			'updated_at',
 			'deleted_at',
+			'username',
+			'created_at',
+			'user_id',
 			'remember_token'
 		];
 		$arr = [];
@@ -81,7 +244,13 @@ class Api
 			}
 		}
 		$arr['profile'] = $user->profile()->toArray();
-		return ['user' => $arr];
+		unset($arr['profile']['avatar']);
+		unset($arr['options']);
+		$arr['accountPassword'] = null;
+		$arr['avatar'] = $user->avatarUrl(['thumbnail' => true]);
+		$arr['id'] = $arr['alpha_id'];
+		unset($arr['alpha_id']);
+		return $arr;
 	}
 
 	/**
@@ -92,7 +261,7 @@ class Api
 	{
 		if(zbase_auth_has())
 		{
-			return static::findUserById(zbase_auth_user()->id());
+			return ['user' => self::userApi(static::findUserById(zbase_auth_user()->id(), true))];
 		}
 		return [];
 	}
@@ -102,7 +271,7 @@ class Api
 	 * @param string|integer|array $id
 	 * @return object|array
 	 */
-	public static function findUserById($id)
+	public static function findUserById($id, $object = false)
 	{
 		if(is_array($id) && !empty($id['userId']))
 		{
@@ -111,7 +280,14 @@ class Api
 		if(!empty($id) && is_numeric($id))
 		{
 			$entity = zbase()->entity('user', [], true);
-			return self::userApi($entity->repo()->byId($id));
+			if(!empty($object))
+			{
+				return $entity->repo()->byId($id);
+			}
+			else
+			{
+				return ['user' => self::userApi($entity->repo()->byId($id))];
+			}
 		}
 	}
 
@@ -120,7 +296,7 @@ class Api
 	 * @param string $email
 	 * @return object|array
 	 */
-	public static function findUserByEmail($email)
+	public static function findUserByEmail($email, $object = false)
 	{
 		if(is_array($email) && !empty($email['email']))
 		{
@@ -129,18 +305,8 @@ class Api
 		if(!empty($email))
 		{
 			$entity = zbase()->entity('user', [], true);
-			return self::userApi($entity->repo()->by('email', $email)->first());
+			return ['user' => self::userApi($entity->repo()->by('email', $email)->first())];
 		}
-	}
-
-	/**
-	 * User By Username
-	 * @param string $username
-	 * @return object|array
-	 */
-	public static function findUserByUsername($username)
-	{
-
 	}
 
 }

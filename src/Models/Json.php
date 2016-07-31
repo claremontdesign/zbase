@@ -62,6 +62,15 @@ class Json
 		$this->addVariable($key, $val);
 	}
 
+	public function getVariable($key)
+	{
+		if(!empty($this->vars[$key]))
+		{
+			return $this->vars[$key];
+		}
+		return null;
+	}
+
 	public function getVariables()
 	{
 		return $this->vars;

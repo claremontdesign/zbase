@@ -84,6 +84,27 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 	}
 
 	/**
+	 * Return all Roles
+	 *
+	 * @return array|null
+	 */
+	public static function listAllRoles()
+	{
+		$entity = zbase()->entity('user_roles', [], true);
+		$roles = $entity->repo()->all();
+		if(!empty($roles))
+		{
+			$lists = [];
+			foreach ($roles as $role)
+			{
+				$lists[] = $role->name();
+			}
+			return $lists;
+		}
+		return null;
+	}
+
+	/**
 	 * Default Data
 	 * @param array $defaultData Configuration default data
 	 * @return array

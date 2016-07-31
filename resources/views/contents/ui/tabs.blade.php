@@ -12,7 +12,7 @@ $tabs = $ui->tabs();
 				<?php foreach ($tabs as $tab): ?>
 					<?php $tabCounter++; ?>
 					<li ui-class="{'active': <?php echo $ui->getHtmlId() ?>activeTab == <?php echo $tabCounter; ?>}">
-						<a ui-set="{'<?php echo $ui->getHtmlId() ?>activeTab': <?php echo $tabCounter; ?>}" ng-click="tab<?php echo $tab->getHtmlId() ?>Click()">
+						<a ui-set="{'<?php echo $ui->getHtmlId() ?>activeTab': <?php echo $tabCounter; ?>}">
 							<?php echo $tab->label() ?>
 						</a>
 					</li>

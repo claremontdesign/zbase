@@ -507,4 +507,20 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 		return $this->_entityObject;
 	}
 
+	/**
+	 * To String
+	 * @return string
+	 */
+	public function __toString()
+	{
+		$content = parent::__toString();
+		if(zbase_is_angular_template())
+		{
+			$serviceName = zbase_angular_module_servicename($this->getModule(), $this);
+			$scopeName = zbase_angular_module_scopename($this->getModule(), $this);
+			$content = str_replace('ANGULAR_WIDGET_MODULE_SERVICENAME', $serviceName, $content);
+			$content = str_replace('ANGULAR_WIDGET_MODULE_SCOPENAME', $scopeName, $content);
+		}
+		return $content;
+	}
 }

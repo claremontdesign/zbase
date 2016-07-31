@@ -25,6 +25,17 @@ function zbase_string_camel_case($value)
 }
 
 /**
+ * Convert a String money to number format
+ *
+ * @param string $string
+ * @return float|decimal
+ */
+function zbase_string_to_decimal($string)
+{
+	return (float) str_replace(array(',', ' '), '', $string);
+}
+
+/**
  * Convert a string to snake case
  *
  * @param string $value

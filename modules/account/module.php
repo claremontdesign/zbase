@@ -33,6 +33,36 @@ return [
 	// http://zbase.com/api/username/key/json/account/user/byemail/dennes.b.abing@gmail.com
 	'api' => [
 		// <editor-fold defaultstate="collapsed" desc="API">
+		// <editor-fold defaultstate="collapsed" desc="user.password">
+		'user.password' => [
+			'enable' => true,
+			'class' => \Zbase\Entity\Laravel\User\Api::class,
+			'method' => 'password',
+			'requestMethod' => 'post',
+			'params' => [
+				'email' => [
+					'validations' => [
+						'required' => [
+							'enable' => true,
+						],
+						'email' => [
+							'enable' => true,
+						],
+						'exists' => [
+							'enable' => true,
+							'text' => function(){
+								return 'exists:' . zbase_entity('user')->getTable() . ',email';
+							},
+							'message' => 'Email address not found.'
+						],
+					],
+					'name' => 'Email Address',
+					'varname' => 'username',
+				],
+			],
+		],
+		// </editor-fold>
+		// <editor-fold defaultstate="collapsed" desc="user.login">
 		'user.login' => [
 			'enable' => true,
 			'class' => \Zbase\Entity\Laravel\User\Api::class,
@@ -40,7 +70,7 @@ return [
 			'requestMethod' => 'post',
 			'params' => [
 				'paramOne' => [
-					'validation' => [
+					'validations' => [
 						'required' => [
 							'enable' => true,
 						],
@@ -52,7 +82,7 @@ return [
 					'varname' => 'username'
 				],
 				'paramTwo' => [
-					'validation' => [
+					'validations' => [
 						'required' => [
 							'enable' => true,
 						],
@@ -62,6 +92,148 @@ return [
 				],
 			],
 		],
+		// </editor-fold>
+		// <editor-fold defaultstate="collapsed" desc="user.updateProfile">
+		'user.updateProfile' => [
+			'enable' => true,
+			'class' => \Zbase\Entity\Laravel\User\Api::class,
+			'method' => 'updateProfile',
+			'requestMethod' => 'post',
+			'notParams' => ['userId'],
+			'params' => [
+				'first_name' => [
+					'validations' => [
+						'required' => [
+							'enable' => true,
+						],
+					],
+					'name' => 'Last Name',
+				],
+				'last_name' => [
+					'validations' => [
+						'required' => [
+							'enable' => true,
+						],
+					],
+					'name' => 'Last Name',
+				],
+			],
+		],
+		// </editor-fold>
+		// <editor-fold defaultstate="collapsed" desc="user.updateProfileImage">
+		'user.updateProfileImage' => [
+			'enable' => true,
+			'class' => \Zbase\Entity\Laravel\User\Api::class,
+			'method' => 'updateProfileImage',
+			'requestMethod' => ['get','post'],
+			'notParams' => ['userId'],
+			'params' => [],
+		],
+		// </editor-fold>
+		// <editor-fold defaultstate="collapsed" desc="user.updateEmail">
+		'user.updateEmail' => [
+			'enable' => true,
+			'class' => \Zbase\Entity\Laravel\User\Api::class,
+			'method' => 'updateEmail',
+			'requestMethod' => 'post',
+			'notParams' => ['userId'],
+			'params' => [
+				'email' => [
+					'validations' => [
+						'required' => [
+							'enable' => true,
+						],
+						'email' => [
+							'enable' => true,
+						],
+						'unique' => [
+							'enable' => true,
+							'text' => function(){
+								return 'unique:' . zbase_entity('user')->getTable() . ',email,' . zbase_auth_user()->id() . ',user_id';
+							},
+							'message' => 'Email address already exists.'
+						],
+						'not_in' => [
+							'enable' => true,
+							'text' => function(){
+								return 'not_in:' . zbase_auth_user()->email;
+							},
+							'message' => 'Please provide a different email address.'
+						],
+					],
+					'name' => 'Email Address',
+				],
+				'accountpassword' => [
+					'validations' => [
+						'required' => [
+							'enable' => true,
+						],
+						'accountPassword' => [
+							'enable' => true,
+							'message' => 'Account password don\'t match.'
+						],
+					],
+					'name' => 'Account Password',
+				],
+			],
+		],
+		// </editor-fold>
+		// <editor-fold defaultstate="collapsed" desc="user.updatePassword">
+		'user.updatePassword' => [
+			'enable' => true,
+			'class' => \Zbase\Entity\Laravel\User\Api::class,
+			'method' => 'updatePassword',
+			'requestMethod' => 'post',
+			'notParams' => ['userId'],
+			'params' => [
+				'password' => [
+					'label' => 'New Password',
+					'validations' => [
+						'required' => [
+							'enable' => true,
+							'message' => 'A new password is required.'
+						],
+						'min' => [
+							'enable' => true,
+							'text' => 'min:6',
+							'message' => 'Password too short.'
+						],
+						'passwordStrengthCheck' => [
+							'enable' => true,
+							'message' => 'Password is too weak.'
+						],
+					],
+				],
+				'passwordConfirm' => [
+					'label' => 'Confirm New Password',
+					'validations' => [
+						'required_with' => [
+							'enable' => true,
+							'text' => 'required_with:password',
+							'message' => 'Please verify new password.'
+						],
+						'same' => [
+							'enable' => true,
+							'text' => 'same:password',
+							'message' => 'New passwords are not the same.'
+						],
+					],
+				],
+				'accountpassword' => [
+					'validations' => [
+						'required' => [
+							'enable' => true,
+						],
+						'accountPassword' => [
+							'enable' => true,
+							'message' => 'Account password don\'t match.'
+						],
+					],
+					'label' => 'Account Password',
+				],
+			],
+		],
+		// </editor-fold>
 		'user.logout' => [
 			'enable' => true,
 			'class' => \Zbase\Entity\Laravel\User\Api::class,
@@ -72,156 +244,115 @@ return [
 			'class' => \Zbase\Entity\Laravel\User\Api::class,
 			'method' => 'current',
 		],
-		'user.byid' => [
-			'enable' => true,
-			'class' => \Zbase\Entity\Laravel\User\Api::class,
-			'method' => 'findUserById',
-			'params' => [
-				'paramOne' => [
-					'validation' => [
-						'required' => [
-							'enable' => true,
-							'message' => 'UserID is Required.'
-						],
-						'numeric' => [
-							'enable' => true,
-							'message' => 'UserID must be a number.'
-						],
-					],
-					'name' => 'UserID',
-					'varname' => 'userId'
-				],
-			],
-		],
-		'user.byemail' => [
-			'enable' => true,
-			'class' => \Zbase\Entity\Laravel\User\Api::class,
-			'method' => 'findUserByEmail',
-			'params' => [
-				'paramOne' => [
-					'validation' => [
-						'required' => [
-							'enable' => true,
-							'message' => 'Email address is Required.'
-						],
-						'email' => [
-							'enable' => true,
-							'message' => 'Invalid email address.'
-						],
-					],
-					'name' => 'Email',
-					'varname' => 'email'
-				],
-			],
-		],
 	// </editor-fold>
 	],
-	'routes' => [
-		'admin-angular-auth-login-template' => [
-			'url' => 'admin/angular/template/auth-login.html',
-			'view' => [
-				'enable' => true,
-				'layout' => 'blank',
-				'name' => 'type.html',
-				'content' => function(){
-					return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.templates.auth.login'));
-				}
-			],
-			'middleware' => [
-				'guestOnly' => true,
-			],
-		],
-	],
+	'routes' => [],
 	'angular' => [
 		'mobile' => [
 			'backend' => [
 				'routeProvider' => [
 					[
 						'url' => function(){
-							return zbase_angular_route('admin.account', [], true);
-						},
-								'templateUrl' => function(){return zbase_angular_template_url('account',[], true);},
-								'controller' => 'adminAccountMainController'
-							],
-							[
-								'auth' => false,
-								'url' => '/',
-								'templateUrl' => function(){
-									return zbase_angular_template_url('admin.login', [], true);
-								},
-										'controller' => 'adminAuthController'
-									],
-								],
-								'controllers' => [
-									[
-										'controller' => 'adminAccountMainController',
-										'view' => [
-											'file' => function(){
-												return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.account'));
-								}
-										],
-									],
-									[
-										'auth' => false,
-										'controller' => 'adminAuthController',
-										'view' => [
-											'file' => function(){
-												return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.auth'));
-								}
-										],
-									],
-								],
-							]
+								return zbase_angular_route('admin.account', [], true);
+							},
+						'templateUrl' => function(){
+								return zbase_angular_template_url('account', [], true);
+							},
+						'controller' => 'adminAccountMainController'
+					],
+					[
+						'url' => function(){
+								return zbase_angular_route('admin.logout', [], true);
+							},
+						'controller' => 'adminAccountMainController'
+					],
+					[
+						'auth' => false,
+						'url' => '/',
+						'templateUrl' => function(){
+								return zbase_angular_template_url('admin.login', [], true);
+							},
+						'controller' => 'adminAuthController'
+					],
+				],
+				'controllers' => [
+					[
+						'controller' => 'mainController',
+						'view' => [
+							'file' => function(){
+								return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.mainController'));
+							}
+						],
+					],
+					[
+						'controller' => 'adminAccountMainController',
+						'view' => [
+							'file' => function(){
+								return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.adminAccountMainController'));
+							}
+						],
+					],
+					[
+						'auth' => false,
+						'controller' => 'adminAuthController',
+						'view' => [
+							'file' => function(){
+								return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.adminAuthController'));
+							}
+						],
+					],
+				],
+			]
+		]
+	],
+	'controller' => [
+		'back' => [
+			'action' => [
+				'index' => [
+					'page' => [
+						'title' => 'Account Information',
+						'headTitle' => 'Account',
+						'subTitle' => 'Manage account and login information',
+						'breadcrumbs' => [
+							['label' => 'Account', 'link' => '#'],
+						],
+					],
+				],
+			]
+		],
+		'front' => [
+			'action' => [
+				'index' => [
+					'page' => [
+						'title' => 'Account Information',
+						'headTitle' => 'Account',
+						'subTitle' => 'Manage account and login information',
+						'breadcrumbs' => [
+							['label' => 'Account', 'link' => '#'],
+						],
+					],
+				],
+			]
+		],
+	],
+	'event' => [
+		'front' => [
+			'index' => [
+				'post' => [
+					'post' => [
+						'route' => [
+							'name' => 'account',
 						]
-					],
-					'controller' => [
-						'back' => [
-							'action' => [
-								'index' => [
-									'page' => [
-										'title' => 'Account Information',
-										'headTitle' => 'Account',
-										'subTitle' => 'Manage account and login information',
-										'breadcrumbs' => [
-											['label' => 'Account', 'link' => '#'],
-										],
-									],
-								],
-							]
-						],
-						'front' => [
-							'action' => [
-								'index' => [
-									'page' => [
-										'title' => 'Account Information',
-										'headTitle' => 'Account',
-										'subTitle' => 'Manage account and login information',
-										'breadcrumbs' => [
-											['label' => 'Account', 'link' => '#'],
-										],
-									],
-								],
-							]
-						],
-					],
-					'event' => [
-						'front' => [
-							'index' => [
-								'post' => [
-									'post' => [
-										'route' => [
-											'name' => 'account',
-										]
-									]
-								],
-							],
-						],
-					],
-					'widgets' => [
-						'controller' => [
-							'index' => function(){
-								return zbase_config_get('modules.account.widgets.controller.index', ['account' => null]);
+					]
+				],
+			],
+		],
+	],
+	'widgets' => [
+		'controller' => [
+			'index' => function(){
+						return zbase_config_get('modules.account.widgets.controller.index', ['account' => null]);
 					}
-								],
-							],
-						];
+				],
+			],
+		];

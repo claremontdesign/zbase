@@ -182,8 +182,10 @@ function zbase_is_dev()
  * @param  mixed   $default
  * @return mixed
  */
-function zbase_data_get($target, $key, $default = null)
+function zbase_data_get($target, $key = null, $default = null)
 {
+
+
 	if(is_string($target) && empty($key))
 	{
 		return $target;
@@ -192,9 +194,73 @@ function zbase_data_get($target, $key, $default = null)
 	{
 		return value($target);
 	}
+	if($target instanceof Interfaces\EntityInterface)
+	{
+		// $key = '$$profile.first_name has too 5% much $$email';
+		$pattern = '/(\$\$\S+)/';
+		preg_match_all($pattern, $key, $matches);
+		if(!empty($matches[0]))
+		{
+			$vs = [];
+			foreach ($matches[0] as $v)
+			{
+				$vs[$v] = zbase_value_get($target, str_replace('$$', '', $v));
+			}
+			return strtr($key, $vs);
+		}
+	}
 	if($target instanceof Interfaces\EntityInterface && is_string($key) && method_exists($target, $key))
 	{
 		return $target->{$key}();
+	}
+	if($target instanceof \Zbase\Interfaces\EntityInterface && is_string($key) && !empty(preg_match('/\./', $key)))
+	{
+		$keyEx = explode('.', $key);
+		if(!empty($keyEx))
+		{
+			$kCount = count($keyEx);
+			$kCounter = 0;
+			foreach ($keyEx as $k)
+			{
+				$kCounter++;
+				if($kCounter == $kCount)
+				{
+					if(method_exists($target, $k))
+					{
+						$target = $target->$k();
+					}
+					else
+					{
+						if(property_exists($target, $k))
+						{
+							$value = $target->$k;
+						}
+						else
+						{
+							$value = $target->getAttribute($k);
+						}
+					}
+				}
+				else
+				{
+					if(method_exists($target, $k))
+					{
+						$target = $target->$k();
+					}
+					else
+					{
+						if(method_exists($target, 'hasRelationship') && $target->hasRelationship($k))
+						{
+							$target = $target->$k();
+						}
+					}
+				}
+				if(!empty($value) && !is_object($value))
+				{
+					return $value;
+				}
+			}
+		}
 	}
 	if($target instanceof Interfaces\AttributeInterface && is_string($key))
 	{
@@ -261,7 +327,8 @@ function zbase_data_get($target, $key, $default = null)
  * Return the value of the given arguments
  *
  * @param mixed|Closure|array|object  $target
- * @param string $key
+ * @param string $key Dot notated key or string
+ * @param mixed $default Default value to return
  * @return mixed
  */
 function zbase_value_get($target, $key = null, $default = null)
@@ -310,6 +377,12 @@ function zbase_abort($code, $message = null, $headers = [])
 	if($code == 401)
 	{
 		return new \Zbase\Exceptions\UnauthorizedException($message);
+	}
+	if($code == 204)
+	{
+		$response = new \Zbase\Exceptions\UnauthorizedException($message);
+		$response->setStatusCode(204);
+		return $response;
 	}
 	return abort($code, $message);
 }
@@ -362,13 +435,23 @@ function zbase_model_name($modelName, $key = null, $default = null)
 /**
  * Return an instance of a Model
  * @param string $modelName
- * @param string $key
  * @param string $default
  * @return object
  */
-function zbase_model($modelName)
+function zbase_model($modelName, $default = null)
 {
-	return '';
+	$modelName = zbase_model_name($modelName);
+	if(!empty($modelName))
+	{
+		$enable = zbase_value_get($modelName, 'enable', false);
+		$modelName = zbase_value_get($modelName, 'model', $default);
+		if(!empty($modelName) && !empty($enable))
+		{
+			$model = new $modelName;
+			return $model;
+		}
+	}
+	return null;
 }
 
 /**
@@ -530,29 +613,16 @@ function zbase_site_name()
 }
 
 /**
- * check if UI is angular
- * @return boolean
- */
-function zbase_is_angular()
-{
-	return zbase()->mobile()->isAngular();
-}
-
-/**
- * Check if to serve angular template
- * @return booleaan
- */
-function zbase_is_angular_template()
-{
-	return zbase_request_query_input('angular', false);
-}
-
-/**
- * Check if mobile
+ * Check if mobile device or environment is mobile
  * @return boolean
  */
 function zbase_is_mobile()
 {
+	$mobile = env('APP_ENV_MOBILE', false);
+	if(!empty($mobile))
+	{
+		return true;
+	}
 	return zbase()->mobile()->detector()->isMobile();
 }
 
@@ -563,4 +633,43 @@ function zbase_is_mobile()
 function zbase_is_mobileTablet()
 {
 	return zbase()->mobile()->detector()->isTablet();
+}
+
+/**
+ * Logging
+ */
+
+/**
+ * Log to File
+ * @param string $msg the mssg to write
+ * @param string $type Type of Log
+ * @param string $logFile the file to write the log
+ * @param string|Entity The entity to save the log
+ * @return null
+ */
+function zbase_log($msg, $type = null, $logFile = null, $entity = null)
+{
+	if(!empty($entity))
+	{
+		if(!$entity instanceof \Zbase\Interfaces\EntityInterface)
+		{
+			$entity = zbase_entity($entity);
+		}
+		if($entity instanceof \Zbase\Interfaces\EntityLogInterface)
+		{
+			$options = [];
+			zbase_entity($entity)->log($msg, $type, $options);
+			return;
+		}
+	}
+	$folder = zbase_storage_path() . '/logs/' . date('Y/m/d/');
+	zbase_directory_check($folder, true);
+	$file = !empty($logFile) ? $logFile : 'log.txt';
+	$file = str_replace(array('/', '\\', ':'), '_', $file);
+	if(preg_match('/.txt/', $file) == 0)
+	{
+		$file .= '.txt';
+	}
+	$msg = date('Y-m-d H:i:s') . ' : ' . zbase_ip() . PHP_EOL . $msg . PHP_EOL . "--------------------" . PHP_EOL;
+	file_put_contents($folder . $file, $msg . PHP_EOL, FILE_APPEND);
 }

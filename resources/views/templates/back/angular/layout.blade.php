@@ -4,16 +4,7 @@ $isMobileTablet = zbase_is_mobileTablet();
 if(zbase_is_angular_template())
 {
 	?>
-	<div ui-content-for="title">
-		<span><?php echo zbase()->view()->title() ?></span>
-	</div>
-	<div class="scrollable">
-		<div class="scrollable-content">
-			<div class='section'>
-				@yield('content')
-			</div>
-		</div>
-	</div>
+	@include(zbase_view_file('type.angular'))
 	<?php
 }
 else
@@ -34,7 +25,7 @@ else
 	zbase_view_javascripts_set(['mobileangular-zbase' => $mobileAngular]);
 	?>
 	<!DOCTYPE html>
-	<html ng-app="MobileAngularUi<?php echo $prefix ?>">
+	<html ng-app="MobileAngularUi<?php echo $prefix ?>" ng-controller="MainController">
 		<head>
 			<meta charset="utf-8" />
 			<base href="/admin" />
@@ -50,11 +41,11 @@ else
 
 			<?php if(zbase_auth_has()): ?>
 				<!-- Sidebars -->
-				<div ng-include="'<?php echo zbase_url_from_route('admin-angular-mobile-sidebar') ?>'"
+				<div ng-include="'<?php echo zbase_url_from_route('admin-angular-mobile-sidebar') ?>?at=1'"
 					 ui-track-as-search-param='true'
 					 class="sidebar sidebar-left"></div>
 
-				<div ng-include="'<?php echo zbase_url_from_route('admin-angular-mobile-sidebar-right') ?>'"
+				<div ng-include="'<?php echo zbase_url_from_route('admin-angular-mobile-sidebar-right') ?>?at=1'"
 					 class="sidebar sidebar-right"></div>
 
 				<div class="app"
@@ -64,7 +55,7 @@ else
 					<!-- Navbars -->
 					<div class="navbar navbar-app navbar-absolute-top">
 						<div class="navbar-brand navbar-brand-center" ui-yield-to="title">
-							<?php echo zbase()->view()->title() ?>
+							<% viewTitle %>
 						</div>
 						<div class="btn-group pull-left">
 							<div ui-toggle="uiSidebarLeft" class="btn sidebar-toggle">
@@ -77,7 +68,7 @@ else
 						<div ng-show="loading" class="app-content-loading">
 							<i class="fa fa-spinner fa-spin loading-spinner"></i>
 						</div>
-						<div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error' }" ng-if="flash" ng-bind="flash.message"></div>
+						<div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error','alert-info': flash.type === 'info', 'alert-warning': flash.type === 'warning' }" ng-if="flash" ng-bind="flash.message"></div>
 						<div class="app-content">
 							<ng-view></ng-view>
 						</div>
@@ -91,7 +82,7 @@ else
 						<div ng-show="loading" class="app-content-loading">
 							<i class="fa fa-spinner fa-spin loading-spinner"></i>
 						</div>
-						<div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error' }" ng-if="flash" ng-bind="flash.message"></div>
+						<div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error','alert-info': flash.type === 'info', 'alert-warning': flash.type === 'warning' }" ng-if="flash" ng-bind="flash.message"></div>
 						<div class="app-content">
 							<ng-view></ng-view>
 						</div>

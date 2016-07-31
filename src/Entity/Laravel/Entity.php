@@ -69,7 +69,6 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 	protected $appends = [];
 	protected $casts = [];
 
-
 	/**
 	 * Create a new Eloquent model instance.
 	 *
@@ -102,6 +101,15 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 	public static function entityConfiguration($entity = [])
 	{
 		return $entity;
+	}
+
+	/**
+	 * Cast this Model to another Model
+	 * @return \Zbase\Entity\Laravel\Entity
+	 */
+	public function cast()
+	{
+		return $this;
 	}
 
 }

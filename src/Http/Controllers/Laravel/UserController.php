@@ -20,6 +20,14 @@ class UserController extends Controller
 {
 
 	/**
+	 * User Page
+	 */
+	public function username()
+	{
+		
+	}
+
+	/**
 	 * Serve a Node Image
 	 * @return Response
 	 */

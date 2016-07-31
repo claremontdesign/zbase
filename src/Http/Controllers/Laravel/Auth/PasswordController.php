@@ -141,25 +141,32 @@ class PasswordController extends Controller
 	 */
 	public function postEmail(Request $request)
 	{
-		$this->validate($request,
-				['email' => 'required|email|exists:' . zbase_config_get('entity.user.table.name') . ',email']);
-
-		$response = \Password::sendResetLink($request->only('email'), function (Message $message) {
-					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
-					$message->subject($this->getEmailSubject());
-		});
-
-//		$response = $this->sendResetLinkEmail($request);
-
-		switch ($response)
+		$this->validate($request, ['email' => 'required|email|exists:' . zbase_config_get('entity.user.table.name') . ',email']);
+		$entity = zbase()->entity('user', [], true);
+		$user = $entity->repo()->by('email', $username)->first();
+		if(!empty($user))
 		{
-			case \Password::RESET_LINK_SENT:
-				zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
-				return redirect()->back()->with('status', trans($response));
-
-			case \Password::INVALID_USER:
-				return redirect()->back()->withErrors(['email' => trans($response)]);
+			$response = $user->lostPassword();
+			if(!empty($response))
+			{
+				return redirect()->back()->with('status', trans(\Password::RESET_LINK_SENT));
+			}
 		}
+		return redirect()->back()->withErrors(['email' => trans(\Password::INVALID_USER)]);
+//		$response = \Password::sendResetLink($request->only('email'), function (Message $message) {
+//					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
+//					$message->subject($this->getEmailSubject());
+//		});
+//
+//		switch ($response)
+//		{
+//			case \Password::RESET_LINK_SENT:
+//				zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
+//				return redirect()->back()->with('status', trans($response));
+//
+//			case \Password::INVALID_USER:
+//				return redirect()->back()->withErrors(['email' => trans($response)]);
+//		}
 	}
 
 	/**

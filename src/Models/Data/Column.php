@@ -54,14 +54,18 @@ class Column extends Data implements Interfaces\IdInterface
 	 * @param string $tag The HTML Tag
 	 * @return string
 	 */
-	public function renderValue($tag)
+	public function renderValue($tag = null)
 	{
 		$this->prepare();
-		$str = [];
-		$str[] = '<' . $tag . '>';
-		$str[] = $this->_value;
-		$str[] = '</' . $tag . '>';
-		return implode("\n", $str);
+		if(!empty($tag))
+		{
+			$str = [];
+			$str[] = '<' . $tag . '>';
+			$str[] = $this->_value;
+			$str[] = '</' . $tag . '>';
+			return implode("\n", $str);
+		}
+		return $this->_value;
 	}
 
 	/**
@@ -108,15 +112,29 @@ class Column extends Data implements Interfaces\IdInterface
 		}
 		else
 		{
-			$dataTypeConfiguration = [
-				'id' => $dataType,
-				'type' => 'data.' . $dataType,
-				'enable' => true,
-				'value' => $value,
-				'hasAccess' => true,
-				'options' => $this->getAttribute('options'),
-			];
-			$this->_value = \Zbase\Ui\Ui::factory($dataTypeConfiguration);
+			if(zbase_is_json())
+			{
+				if(strtolower($dataType) == 'timestamp')
+				{
+					$this->_value = $value->format(DATE_ISO8601);
+				}
+				else if(strtolower($dataType) == 'displaystatus')
+				{
+					$this->_value = (bool) $value;
+				}
+			}
+			else
+			{
+				$dataTypeConfiguration = [
+					'id' => $dataType,
+					'type' => 'data.' . $dataType,
+					'enable' => true,
+					'value' => $value,
+					'hasAccess' => true,
+					'options' => $this->getAttribute('options'),
+				];
+				$this->_value = \Zbase\Ui\Ui::factory($dataTypeConfiguration);
+			}
 		}
 	}
 

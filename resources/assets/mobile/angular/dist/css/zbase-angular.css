@@ -15,8 +15,9 @@ and open the template in the editor.
 	text-align: center;
 	height: 100%;
 	width: 100%;
-	background: #fff;
-	position: relative;
+	background: rgba(255,255,255,0.5);
+    position: absolute;
+    z-index: 9999999999999;
 }
 
 .loading-spinner {
@@ -30,4 +31,16 @@ and open the template in the editor.
 
 .zbase-ui-wrapper .zbase-ui-wrapper-pageHeader{
 	margin-top:20px;
+}
+
+.zbase-datatable-loader
+{
+    position: absolute;
+    bottom: 0px;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    border-top: 1px solid gray;
+    left: 1px;
 }

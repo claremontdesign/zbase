@@ -628,12 +628,17 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				$tab['group'] = $this->id() . 'tabs';
 				if(!empty($tab['elements']))
 				{
+					$hasFileElement = false;
 					foreach ($tab['elements'] as $elementName => $element)
 					{
 						if(empty($element['id']))
 						{
 							$element['id'] = $elementName;
 							$element['name'] = $elementName;
+						}
+						if(!empty($element['type']) && $element['type'] == 'file')
+						{
+							$hasFileElement = true;
 						}
 						$tab['contents'][] = $this->_createElement($element, $tabName);
 					}
@@ -642,6 +647,13 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				if(empty($formTag))
 				{
 					$tab['form'] = clone $this;
+					/**
+					 * Form Configuration in a tab
+					 */
+					if(!empty($tab['formConfiguration']))
+					{
+						$tab['form']->setAttributes($tab['formConfiguration']);
+					}
 					$this->setFormTag(false);
 				}
 				$tabs[$tabName] = $tab;
@@ -720,6 +732,10 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		}
 		if(zbase_is_angular_template())
 		{
+			if(!empty($this->_validationRules))
+			{
+				return $cancelButton . '&nbsp;<button ng-disabled="' . $this->getHtmlId() . '.$invalid" class="btn" ' . $this->renderHtmlAttributes($attributes) . '>' . $this->submitButtonLabel() . '</button>';
+			}
 			return $cancelButton . '&nbsp;<button class="btn" ' . $this->renderHtmlAttributes($attributes) . '>' . $this->submitButtonLabel() . '</button>';
 		}
 		return $cancelButton . '&nbsp;<button type="submit" ' . $this->renderHtmlAttributes($attributes) . '>' . $this->submitButtonLabel() . '</button>';
@@ -773,6 +789,13 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		$attributes = $this->_v('form.startTag.' . $this->_action . '.html.attributes', $this->_v('form.startTag.html.attributes', []));
 		if(zbase_is_angular_template())
 		{
+			/**
+			 * false is disabled
+			 */
+			if(!isset($attributes['ng-submit']))
+			{
+				$attributes['ng-submit'] = 'submit' . $this->getHtmlId() . '()';
+			}
 			return '<form name="' . $this->getHtmlId() . '" role="form" ' . $this->renderHtmlAttributes($attributes) . '>';
 		}
 		return '<form action="" method="POST" enctype="multipart/form-data" ' . $this->renderHtmlAttributes($attributes) . '>';

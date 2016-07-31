@@ -31,6 +31,11 @@ class Exception extends \RuntimeException
 		return $this->statusCode;
 	}
 
+	public function setStatusCode($statusCode)
+	{
+		return $this->statusCode = $statusCode;
+	}
+
 	public function getStatusMessage()
 	{
 		return $this->statusMessage;

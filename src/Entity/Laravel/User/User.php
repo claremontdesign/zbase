@@ -82,17 +82,32 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 
 	public function displayName()
 	{
-		return $this->profile()->first_name . ' ' . $this->profile()->last_name;
+		$profile = $this->profile();
+		if(!empty($profile))
+		{
+			return $profile->first_name . ' ' . $profile->last_name;
+		}
+		return null;
 	}
 
 	public function getFirstNameAttribute()
 	{
-		return $this->profile()->first_name;
+		$profile = $this->profile();
+		if(!empty($profile))
+		{
+			return $profile->first_name;
+		}
+		return null;
 	}
 
 	public function getLastNameAttribute()
 	{
-		return $this->profile()->last_name;
+		$profile = $this->profile();
+		if(!empty($profile))
+		{
+			return $profile->last_name;
+		}
+		return null;
 	}
 
 	/**
@@ -101,7 +116,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 * @param string $action create|update|delete|restore|ddelete
 	 * @return array
 	 */
-	public function getActionMessages($action)
+	public function getActionMessages($action = null)
 	{
 		if(!empty($this->_actionMessages[$action]))
 		{
@@ -237,9 +252,33 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public static function create(array $attributes = [])
 	{
+		$logMsg = [];
+		if(empty($attributes['profile']))
+		{
+			$profileColumns = zbase_entity('user_profile')->getColumns();
+			if(!empty($profileColumns))
+			{
+				foreach ($profileColumns as $profileColumnKey => $profileColumnVal)
+				{
+					foreach ($attributes as $attName => $attValue)
+					{
+						if($attName == $profileColumnKey)
+						{
+							$attributes['profile'][$attName] = $attValue;
+							unset($attributes[$attName]);
+						}
+					}
+				}
+			}
+		}
+		if(!empty($attributes['email']))
+		{
+			$logMsg[] = 'Email: ' . $attributes['email'];
+		}
 		zbase_db_transaction_start();
 		if(!empty($attributes['profile']))
 		{
+			$logMsg[] = 'Attribute profile found';
 			$attributesProfile = $attributes['profile'];
 			unset($attributes['profile']);
 		}
@@ -248,10 +287,12 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$model->toggleRelationshipMode();
 		if(!empty($attributes['password']))
 		{
+			$logMsg[] = 'Attribute password found';
 			$model->password = $attributes['password'];
 		}
 		if(!empty($attributes['status']))
 		{
+			$logMsg[] = 'Attribute status found';
 			$model->status = $attributes['status'];
 		}
 		$role = self::roles()->getRelated()->repository()->by('role_name', !empty($attributes['role']) ? $attributes['role'] : zbase_config_get('auth.role.default', 'user'))->first();
@@ -259,6 +300,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		if(!empty($role))
 		{
 			$model->roles()->save($role);
+			$logMsg[] = 'Role: ' . $role->name() . ' saved!';
 			$model->alpha_id = zbase_generate_hash([$model->user_id, rand(1, 1000), time()], $model->getTable());
 			$model->save();
 			if(!empty($attributesProfile))
@@ -273,16 +315,22 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					'avatar' => !empty($attributesProfile['avatar']) ? $attributesProfile['avatar'] : 'http://api.adorable.io/avatars/285/' . $model->alpha_id . '.png'
 				];
 				$model->profile()->create(array_replace_recursive($attributesProfile, $profileAttributes));
+				$logMsg[] = 'Profile saved!';
 			}
 			$model->toggleRelationshipMode();
 			if($model->sendWelcomeMessage($attributes))
 			{
-				zbase_db_transaction_commit();
-				return $model;
+				$logMsg[] = 'Welcome message sent!';
 			}
+			zbase_db_transaction_commit();
+			$logMsg[] = 'User saved!';
+			zbase_log(implode(PHP_EOL, $logMsg), null, __METHOD__);
+			return $model;
 		}
 		else
 		{
+			$logMsg[] = 'Role is empty. zbase_db_transaction_rollback()';
+			zbase_log(implode(PHP_EOL, $logMsg), null, __METHOD__);
 			zbase_db_transaction_rollback();
 			throw new \Zbase\Exceptions\RuntimeException(_zt('User Role given not found.'));
 		}
@@ -322,7 +370,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					$this->save();
 				}
 			}
-			zbase_messenger_email($this->email(), 'account-noreply', _zt('Welcome!'), zbase_view_file_contents('email.account.new'), ['entity' => $this, 'code' => $code, 'attributes' => $attributes]);
+			$subject = zbase_config_get('email.account.new.subject', _zt('Welcome to ' . zbase_site_name() . '!'));
+			zbase_messenger_email($this->email(), 'account-noreply', $subject, zbase_view_file_contents('email.account.new'), ['entity' => $this, 'code' => $code, 'attributes' => $attributes]);
 			zbase_db_transaction_commit();
 			return true;
 		} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -367,7 +416,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function passwordAutoGenerate()
 	{
-		return !zbase_config_get('auth.register.password.required', false);
+		return zbase_config_get('auth.register.password.required', false);
 	}
 
 	/**
@@ -402,6 +451,11 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 
 	// <editor-fold defaultstate="collapsed" desc="Image">
 
+	public function profileFolder()
+	{
+		return zbase_storage_path() . '/' . zbase_tag() . '/user/' . $this->id() . '/';
+	}
+
 	/**
 	 * Upload a file for this node
 	 * @param string $index The Upload file name/index or the URL to file to download and save
@@ -409,29 +463,27 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function uploadProfileImage($index = 'file')
 	{
-		if(!empty($_FILES[$index]['name']))
+		try
 		{
-			try
+			$folder = $this->profileFolder();
+			zbase_directory_check($folder, true);
+			$filename = md5($this->alphaId() . time());
+			$uploadedFile = zbase_file_upload_image($index, $folder, $filename, zbase_config_get('node.files.image.format', 'png'));
+			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
 			{
-				$folder = zbase_storage_path() . '/' . zbase_tag() . '/user/' . $this->id() . '/';
-				zbase_directory_check($folder, true);
-				if(!empty($_FILES[$index]['name']))
+				if(file_exists($folder . $this->profile->avatar))
 				{
-					$filename = $this->alphaId();
-					$uploadedFile = zbase_file_upload_image($index, $folder, $filename, zbase_config_get('node.files.image.format', 'png'));
+					unlink($folder . $this->profile->avatar);
 				}
-				if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
-				{
-					return basename($uploadedFile);
-				}
-			} catch (\Zbase\Exceptions\RuntimeException $e)
-			{
-				if(zbase_is_dev())
-				{
-					dd($e);
-				}
-				zbase_abort(500);
+				return basename($uploadedFile);
 			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			if(zbase_is_dev())
+			{
+				dd($e);
+			}
+			zbase_abort(500);
 		}
 	}
 
@@ -447,6 +499,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		}
 		$fullImage = false;
 		$params['id'] = $this->alphaId();
+		$params['image'] = $this->profile->avatar;
 		if(empty($options) || !empty($options['full']))
 		{
 			$fullImage = true;
@@ -456,9 +509,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$params['q'] = !empty($options['q']) ? $options['q'] : 80;
 		if(!empty($options['thumbnail']))
 		{
-			$params['w'] = !empty($options['w']) ? $options['w'] : $this->thWidth;
-			$params['h'] = !empty($options['h']) ? $options['h'] : $this->thHeight;
-			$params['q'] = !empty($options['q']) ? $options['q'] : $this->thQuality;
+			$params['w'] = !empty($options['w']) ? $options['w'] : (property_exists($this, 'thWidth') ? $this->thWidth : 150);
+			$params['h'] = !empty($options['h']) ? $options['h'] : (property_exists($this, 'thHeight') ? $this->thHeight : 0);
+			$params['q'] = !empty($options['q']) ? $options['q'] : (property_exists($this, 'thQuality') ? $this->thQuality : 80);
 		}
 		$params['ext'] = zbase_config_get('node.files.image.format', 'png');
 		return zbase_url_from_route('userImage', $params);
@@ -503,7 +556,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 						}
 						return $image->make($path)->resize($width, $height);
 				});
-			return \Response::make($cachedImage, 200, array('Content-Type' => $this->mimetype));
+			return \Response::make($cachedImage, 200, array('Content-Type' => 'image/png'));
 		}
 		return false;
 	}
@@ -554,10 +607,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		if(!empty($fillables))
 		{
 			$newData = [];
-			$profileImage = $this->uploadProfileImage();
-			if(!empty($profileImage))
+			if(!empty($data['avatar']))
 			{
-				$newData['avatar'] = $profileImage;
+				$newData['avatar'] = $data['avatar'];
+			}
+			else
+			{
+				$profileImage = $this->uploadProfileImage();
+				if(!empty($profileImage))
+				{
+					$newData['avatar'] = $profileImage;
+				}
 			}
 			$userProfile = zbase_entity('user_profile')->where('user_id', $this->id());
 			foreach ($data as $key => $val)
@@ -573,11 +633,31 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				if(!empty($saved))
 				{
 					zbase_alert('success', _zt('Profile Updated.'));
+					return true;
 				}
 			}
 		}
+		return false;
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="LOST Password">
+	public function lostPassword()
+	{
+		$response = \Password::sendResetLink(['email' => $this->email], function (\Illuminate\Mail\Message $message) {
+					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
+					$message->subject('Your Password Reset Link');
+		});
+
+		switch ($response)
+		{
+			case \Password::RESET_LINK_SENT:
+				zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
+				return true;
+		}
+		return false;
+	}
+
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="UPDATE Password">
 	/**
 	 * Password has been resetted
@@ -738,11 +818,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.', ['%email%' => $this->email()]));
 				zbase_messenger_email($this->email(), 'account-noreply', _zt('New Email address update request'), zbase_view_file_contents('email.account.newEmailAddressRequest'), ['entity' => $this, 'newEmailAddress' => $newEmailAddress, 'code' => $code]);
 				zbase_db_transaction_commit();
+				return true;
 			} catch (\Zbase\Exceptions\RuntimeException $e)
 			{
 				zbase_db_transaction_rollback();
 				return false;
 			}
+		}
+		else
+		{
+			zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.', ['%email%' => $this->email()]));
 		}
 	}
 
