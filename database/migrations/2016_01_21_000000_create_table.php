@@ -49,6 +49,11 @@ class CreateTable extends Migration
 				{
 					continue;
 				}
+				$build = zbase_data_get($entity, 'build', true);
+				if(empty($build))
+				{
+					continue;
+				}
 				/**
 				 * acceptable value is false|string|classname
 				 * if null, will pass the entity
@@ -195,14 +200,9 @@ class CreateTable extends Migration
 							}
 							elseif($type == 'enum')
 							{
-								$enum = zbase_data_get($column, 'enum', []);
-								if(!empty($enum))
+								$enums = zbase_data_get($column, 'enum', []);
+								if(!empty($enums))
 								{
-									$enums = [];
-									foreach ($enum as $eV => $eK)
-									{
-										$enums[] = $eV;
-									}
 									$col = $table->enum($columnName, $enums);
 								}
 							}
@@ -295,6 +295,11 @@ class CreateTable extends Migration
 					if(!empty($rememberToken))
 					{
 						$table->rememberToken();
+					}
+					$ipAddressable = zbase_data_get($entity, 'table.ipAddress', false);
+					if(!empty($ipAddressable))
+					{
+						$table->ipAddress('ip_address')->comment('IP Address');
 					}
 					$alphaId = zbase_data_get($entity, 'table.alphaId', false);
 					if(!empty($alphaId))

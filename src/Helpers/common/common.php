@@ -327,7 +327,8 @@ function zbase_data_get($target, $key = null, $default = null)
  * Return the value of the given arguments
  *
  * @param mixed|Closure|array|object  $target
- * @param string $key
+ * @param string $key Dot notated key or string
+ * @param mixed $default Default value to return
  * @return mixed
  */
 function zbase_value_get($target, $key = null, $default = null)
@@ -434,13 +435,23 @@ function zbase_model_name($modelName, $key = null, $default = null)
 /**
  * Return an instance of a Model
  * @param string $modelName
- * @param string $key
  * @param string $default
  * @return object
  */
-function zbase_model($modelName)
+function zbase_model($modelName, $default = null)
 {
-	return '';
+	$modelName = zbase_model_name($modelName);
+	if(!empty($modelName))
+	{
+		$enable = zbase_value_get($modelName, 'enable', false);
+		$modelName = zbase_value_get($modelName, 'model', $default);
+		if(!empty($modelName) && !empty($enable))
+		{
+			$model = new $modelName;
+			return $model;
+		}
+	}
+	return null;
 }
 
 /**
@@ -631,20 +642,34 @@ function zbase_is_mobileTablet()
 /**
  * Log to File
  * @param string $msg the mssg to write
+ * @param string $type Type of Log
  * @param string $logFile the file to write the log
- *
+ * @param string|Entity The entity to save the log
  * @return null
  */
-function zbase_log($msg, $type = null, $logFile = null)
+function zbase_log($msg, $type = null, $logFile = null, $entity = null)
 {
-	$folder = zbase_storage_path() . '/logs/';
-	zbase_directory_check($folder);
+	if(!empty($entity))
+	{
+		if(!$entity instanceof \Zbase\Interfaces\EntityInterface)
+		{
+			$entity = zbase_entity($entity);
+		}
+		if($entity instanceof \Zbase\Interfaces\EntityLogInterface)
+		{
+			$options = [];
+			zbase_entity($entity)->log($msg, $type, $options);
+			return;
+		}
+	}
+	$folder = zbase_storage_path() . '/logs/' . date('Y/m/d/');
+	zbase_directory_check($folder, true);
 	$file = !empty($logFile) ? $logFile : 'log.txt';
-	$file = str_replace(array('/', '\\',':'), '_', $file);
+	$file = str_replace(array('/', '\\', ':'), '_', $file);
 	if(preg_match('/.txt/', $file) == 0)
 	{
 		$file .= '.txt';
 	}
-	$msg = date('Y-m-d H:i:s') . ' : ' . zbase_ip() . PHP_EOL . $msg .  PHP_EOL . "--------------------" . PHP_EOL;
+	$msg = date('Y-m-d H:i:s') . ' : ' . zbase_ip() . PHP_EOL . $msg . PHP_EOL . "--------------------" . PHP_EOL;
 	file_put_contents($folder . $file, $msg . PHP_EOL, FILE_APPEND);
 }

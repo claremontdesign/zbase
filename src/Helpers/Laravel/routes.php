@@ -30,9 +30,14 @@ function zbase_route_name_is($name)
  * @param string $key
  * @return string
  */
-function zbase_route_input($key)
+function zbase_route_input($key, $default = null)
 {
-	return \Route::current()->parameter($key);
+	$routing = \Route::current();
+	if($routing instanceof \Illuminate\Routing\Route)
+	{
+		return $routing->parameter($key);
+	}
+	return $default;
 }
 
 /**
@@ -41,7 +46,12 @@ function zbase_route_input($key)
  */
 function zbase_route_inputs()
 {
-	return \Route::current()->parameters();
+	$routing = \Route::current();
+	if($routing instanceof \Illuminate\Routing\Route)
+	{
+		return $routing->parameters();
+	}
+	return [];
 }
 
 /**

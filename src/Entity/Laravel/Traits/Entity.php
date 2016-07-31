@@ -98,6 +98,7 @@ trait Entity
 	 */
 	protected $repository = null;
 
+
 	/**
 	 * Create zbase like entity
 	 */
@@ -227,7 +228,12 @@ trait Entity
 	 */
 	public function getDataOptions()
 	{
-		return $this->options;
+		$options = $this->options;
+		if(!is_array($options))
+		{
+			$options = json_decode($options, true);
+		}
+		return $options;
 	}
 
 	/**
@@ -255,7 +261,11 @@ trait Entity
 	 */
 	public function setDataOption($key, $value)
 	{
-		$options = $this->options;
+		$options = $this->getDataOptions();
+		if(empty($options))
+		{
+			$options = [];
+		}
 		$options[$key] = $value;
 		$this->options = $options;
 		return $this;
@@ -268,7 +278,7 @@ trait Entity
 	 */
 	public function unsetDataOption($key)
 	{
-		$options = $this->options;
+		$options = $this->getDataOptions();
 		if(isset($options[$key]))
 		{
 			unset($options[$key]);
@@ -294,7 +304,7 @@ trait Entity
 	 */
 	public function getDataOption($key, $default = null)
 	{
-		$options = $this->options;
+		$options = $this->getDataOptions();
 		if(isset($options[$key]))
 		{
 			return $options[$key];
@@ -323,7 +333,7 @@ trait Entity
 				}
 			}
 		}
-		return parent::__get($key);
+		return $this->___get($key);
 	}
 
 	/**
@@ -347,7 +357,78 @@ trait Entity
 				}
 			}
 		}
-		return parent::__call($method, $parameters);
+		return $this->___call($method, $parameters);
+	}
+
+	/**
+	 * __get
+	 *
+	 * @param string $name Attribute name
+	 * @return mixed
+	 */
+	public function ___get($name)
+	{
+		$method = zbase_string_camel_case('get_' . $name);
+		if(method_exists($this, $method))
+		{
+			return $this->$method();
+		}
+		if(property_exists($this, $name))
+		{
+			return $this->$name;
+		}
+		if(!empty($this->attributes[$name]))
+		{
+			return $this->attributes[$name];
+		}
+		return parent::__get($name);
+	}
+
+	/**
+	 * __set
+	 *
+	 * @param string $name Attribute name
+	 * @param mixed $value Attribute value
+	 * @return object
+	 */
+	public function ___set($name, $value)
+	{
+		$method = zbase_string_camel_case('set_' . $name);
+		if(method_exists($this, $method))
+		{
+			$this->$method($value);
+			return $this;
+		}
+		if(property_exists($this, $name))
+		{
+			$this->$name = $value;
+			return $this;
+		}
+		$this->attributes[$name] = $value;
+		return parent::__set($name, $value);
+	}
+
+	/**
+	 * __call
+	 *
+	 * @param string $name
+	 * @param mixed $arguments
+	 * @return mixed
+	 */
+	public function ___call($name, $arguments = null)
+	{
+		if(zbase_string_starts_with($name, 'get'))
+		{
+			$names = str_replace('get_', '', zbase_string_snake_case($name));
+			return $this->___get(zbase_string_camel_case($names));
+		}
+		if(zbase_string_starts_with($name, 'set'))
+		{
+			$names = str_replace('set_', '', zbase_string_snake_case($name));
+			return $this->___set(zbase_string_camel_case($names), $arguments);
+		}
+		// throw new \Zbase\Exceptions\RuntimeException($name . ' method or property doesn\'t exists');
+		return parent::__call($name, $arguments);
 	}
 
 	// </editor-fold>
@@ -517,4 +598,5 @@ trait Entity
 	{
 		return $this->dbColumns;
 	}
+
 }

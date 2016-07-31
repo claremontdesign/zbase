@@ -114,3 +114,25 @@ function zbase_file_download_from_url($url, $savePath)
 	}
 	return null;
 }
+
+/**
+ * Return CSV Contents
+ *
+ * @param string $filename The filename
+ * @return array
+ */
+function zbase_get_csv($filename)
+{
+	if(zbase_file_exists($filename))
+	{
+		$fh = fopen($filename, "r");
+		$csvs = [];
+		while (!feof($fh))
+		{
+			$csvs[] = fgetcsv($fh);
+		}
+		fclose($fh);
+		return $csvs;
+	}
+	return false;
+}

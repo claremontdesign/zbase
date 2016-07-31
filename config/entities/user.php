@@ -48,6 +48,14 @@ return [
 				'description' => 'User Profiles'
 			]
 		],
+		'user_logs' => [
+			'enable' => true,
+			'model' => Zbase\Entity\__FRAMEWORK__\User\Log::class,
+			'table' => [
+				'name' => 'users_logs',
+				'description' => 'User Logs'
+			]
+		],
 		'user_roles' => [
 			'enable' => true,
 			'model' => Zbase\Entity\__FRAMEWORK__\User\Role::class,

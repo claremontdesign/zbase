@@ -116,7 +116,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 * @param string $action create|update|delete|restore|ddelete
 	 * @return array
 	 */
-	public function getActionMessages($action)
+	public function getActionMessages($action = null)
 	{
 		if(!empty($this->_actionMessages[$action]))
 		{

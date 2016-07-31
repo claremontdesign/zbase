@@ -78,6 +78,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
+		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns, $withTrashed, $onlyTrashed){
 			if(!empty($withTrashed))
@@ -117,6 +118,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
+		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns){
 			return $this->by('alpha_id', $id, $columns)->first();
@@ -148,6 +150,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
+		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns){
 			return $this->by('slug', $id, $columns)->first();
@@ -180,7 +183,6 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		}
 		else
 		{
-			//$filters[] = [$attribute => ['eq' => ['field' => $attribute, 'value' => $value]]];
 			$filters = [$attribute => $value];
 		}
 		return $this->all($columns, $filters, $sorting, $joins, $paginate, $unions, $group, $options);
@@ -255,7 +257,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		$logMsg = __METHOD__ . PHP_EOL;
 		$logMsg .= $builder->getQuery()->toSql() . PHP_EOL;
 		$logMsg .= json_encode($builder->getQuery()->getBindings()) . PHP_EOL;
-		$prefix .= $builder->getQuery()->toSql();
+		$prefix .= $builder->getQuery()->toSql() . json_encode($builder->getQuery()->getBindings());
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder){
 			return $builder->get();

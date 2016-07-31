@@ -149,7 +149,7 @@ function zbase_request_inputs()
  */
 function zbase_request_query_input($key, $default = null)
 {
-	return \Request::query($key, $default);
+	return isset($_GET[$key]) ? $_GET[$key] : $default;
 }
 
 /**
@@ -159,7 +159,7 @@ function zbase_request_query_input($key, $default = null)
  */
 function zbase_request_query_inputs()
 {
-	return \Request::query();
+	return isset($_GET) ? $_GET : [];
 }
 
 /**

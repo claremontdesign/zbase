@@ -65,6 +65,7 @@ class Migrate extends Command
 				}
 			}
 		}
+		echo "\n";
 		\File::cleanDirectory(database_path() . '/migrations');
 		\File::cleanDirectory(database_path() . '/seeds');
 		\File::cleanDirectory(database_path() . '/factories');
