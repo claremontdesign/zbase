@@ -27,6 +27,9 @@
 					<i class="fa fa-angle-down"></i>
 				</a>
 				<ul class="dropdown-menu">
+					<?php
+						$headerPullDownMenu = zbase_config_get('theme');
+					?>
 					<li>
 						<a href="<?php echo zbase_url_from_route('admin.account')?>">
 							<i class="fa fa-user"></i> My Profile

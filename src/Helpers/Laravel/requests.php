@@ -13,6 +13,38 @@
  * @project Zbase
  * @package Zbase/Laravel/Helpers
  */
+/**
+ * Return the Root URL
+ * @return string
+ */
+function zbase_url_root()
+{
+	return \Request::root();
+}
+
+/**
+ * Set if Admin here
+ */
+function zbase_url_parse_admin()
+{
+	$uri = zbase_url_uri();
+	if(!empty($uri))
+	{
+		$uriEx = explode('/', $uri);
+		$adminKey = zbase_admin_key();
+		foreach($uriEx as $u)
+		{
+			if(!empty($u))
+			{
+				if($u == $adminKey)
+				{
+					zbase_in_back();
+					return;
+				}
+			}
+		}
+	}
+}
 
 /**
  * Return the Request Object
@@ -243,6 +275,14 @@ function zbase_is_json()
 	{
 		return true;
 	}
+	if(zbase_request_query_input('json', false))
+	{
+		return true;
+	}
+	if(zbase_is_post() && zbase_request_input('json', false))
+	{
+		return true;
+	}
 	return \Request::wantsJson();
 }
 
@@ -271,6 +311,16 @@ function zbase_request_is_ajax()
 function zbase_request_is_post()
 {
 	return strtolower(zbase_request_method()) == 'post';
+}
+
+/**
+ * Check if we are uploading a file
+ *
+ * @return boolean
+ */
+function zbase_request_is_upload()
+{
+	return !empty($_FILES) ? true : false;
 }
 
 /**

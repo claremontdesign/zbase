@@ -16,6 +16,25 @@
  */
 
 /**
+ *
+ * @param type $senderIndex The Sender Index
+ * @return array
+ */
+function zbase_messenger_sender($senderIndex)
+{
+	if(!preg_match('/@/', $senderIndex))
+	{
+		$toEmail = zbase_config_get('email.' . $senderIndex . '.email');
+		$toName = zbase_config_get('email.' . $senderIndex . '.name');
+		return [
+			$toEmail,
+			$toName
+		];
+	}
+	return false;
+}
+
+/**
  * Send an email
  * @param string|array $to The recipient email address or if array, [email => name]
  * @param string|array $from The sender email address or if array [email => name] | account-noreply|robot-noreply|admin|admin-noreply
@@ -27,42 +46,79 @@
  */
 function zbase_messenger_email($to, $from, $subject, $view, $data, $options = [])
 {
-	Mail::send($view, $data, function ($message) use ($to, $from, $subject) {
-		if(!is_array($to))
-		{
-			$toEmail = $to;
-			$toName = $to;
-			if(!preg_match('/@/', $to))
-			{
-				$toEmail = zbase_config_get('email.' . $to . '.email');
-				$toName = zbase_config_get('email.' . $to . '.name');
-			}
-		}
-		if(!is_array($from))
-		{
-			$fromEmail = $from;
-			$fromName = $from;
-			if(!preg_match('/@/', $from))
-			{
-				$fromEmail = zbase_config_get('email.' . $from . '.email');
-				$fromName = zbase_config_get('email.' . $from . '.name');
-			}
-		}
-		$message->from($fromEmail, $fromName);
-		$message->to($toEmail, $toName);
-		//$message->from($from, $name = null);
-		//$message->sender($address, $name = null);
-		//$message->to($address, $name = null);
-		//$message->cc($address, $name = null);
-		//$message->bcc($address, $name = null);
-		//$message->replyTo($address, $name = null);
-		$message->subject($subject);
-		// $message->priority($level);
-		// $message->attach($pathToFile,$options = []);
-		// $message->attachData($data, $name, array $options = []);
-		return $message->getSwiftMessage();
-	});
+	if(!zbase_config_get('email.enable', false))
+	{
+		return;
+	}
 
+	if(!is_array($to))
+	{
+		$toEmail = $to;
+		$toName = $to;
+		if(!preg_match('/@/', $to))
+		{
+			$toEmail = zbase_config_get('email.' . $to . '.email');
+			$toName = zbase_config_get('email.' . $to . '.name');
+		}
+	}
+	if(!is_array($from))
+	{
+		$fromEmail = $from;
+		$fromName = $from;
+		if(!preg_match('/@/', $from))
+		{
+			$fromEmail = zbase_config_get('email.' . $from . '.email');
+			$fromName = zbase_config_get('email.' . $from . '.name');
+		}
+	}
+
+	if(!zbase_is_dev())
+	{
+		$message = zbase_view_render($view, $data)->render();
+		$headers = "From: " . $fromName . " <$fromEmail>\r\n";
+		$headers .= "Reply-To: " . $fromName . " <$fromEmail>\r\n";
+		$headers .= "MIME-Version: 1.0\r\n";
+		$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+		return mail($to, $subject, $message, $headers);
+	}
+
+//
+	$to = 'dennes.b.abing@gmail.com';
+	return Mail::send($view, $data, function ($msg) use ($to, $from, $subject) {
+				if(!is_array($to))
+				{
+					$toEmail = $to;
+					$toName = $to;
+					if(!preg_match('/@/', $to))
+					{
+						$toEmail = zbase_config_get('email.' . $to . '.email');
+						$toName = zbase_config_get('email.' . $to . '.name');
+					}
+				}
+				if(!is_array($from))
+				{
+					$fromEmail = $from;
+					$fromName = $from;
+					if(!preg_match('/@/', $from))
+					{
+						$fromEmail = zbase_config_get('email.' . $from . '.email');
+						$fromName = zbase_config_get('email.' . $from . '.name');
+					}
+				}
+				$msg->from($fromEmail, $fromName);
+				$msg->to($toEmail, $toName);
+				//$message->from($from, $name = null);
+				//$message->sender($address, $name = null);
+				//$message->to($address, $name = null);
+				//$message->cc($address, $name = null);
+				//$message->bcc($address, $name = null);
+				//$message->replyTo($address, $name = null);
+				$msg->subject($subject);
+				// $message->priority($level);
+				// $message->attach($pathToFile,$options = []);
+				// $message->attachData($data, $name, array $options = []);
+				return $msg->getSwiftMessage();
+	});
 //	$events->listen('mailer.sending', function ($message) {
 //
 //	});

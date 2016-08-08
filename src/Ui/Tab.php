@@ -23,7 +23,7 @@ use Zbase\Traits;
 use Zbase\Interfaces;
 use Zbase\Ui as UIs;
 
-class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
+class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface, \Zbase\Widgets\Type\FormInterface
 {
 
 	use Traits\Attribute,
@@ -67,6 +67,7 @@ class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	 */
 	protected $_form = null;
 
+
 	/**
 	 * REturn the Id
 	 * @return type
@@ -98,7 +99,7 @@ class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	 */
 	public function label()
 	{
-		return $this->_label;
+		return zbase_data_get($this->_label, null, ucfirst($this->id()), $this);
 	}
 
 	/**
@@ -207,6 +208,16 @@ class Tab extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 			return $this;
 		}
 		return $this->_form;
+	}
+
+	/**
+	 * Set/Get the parent Form
+	 * @param \Zbase\Widgets\Type\FormInterface $form
+	 * @return \Zbase\Ui\Form\Element
+	 */
+	public function form(\Zbase\Widgets\Type\FormInterface $form = null)
+	{
+		return $this->setForm($form);
 	}
 
 	public function getForm()

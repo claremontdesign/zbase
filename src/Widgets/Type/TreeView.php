@@ -378,19 +378,22 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 		}
 		else
 		{
-			foreach ($selected as $sel)
+			if(!empty($selected))
 			{
-				if($sel == $row->id())
+				foreach ($selected as $sel)
 				{
-					if($jsTree)
+					if($sel == $row->id())
 					{
-						$newRow['state']['selected'] = true;
-						$newRow['state']['opened'] = true;
-					}
-					else
-					{
-						$newRow['state']['selected'] = true;
-						$newRow['state']['expanded'] = true;
+						if($jsTree)
+						{
+							$newRow['state']['selected'] = true;
+							$newRow['state']['opened'] = true;
+						}
+						else
+						{
+							$newRow['state']['selected'] = true;
+							$newRow['state']['expanded'] = true;
+						}
 					}
 				}
 			}

@@ -15,7 +15,7 @@
  */
 return [
 	'type' => 'form',
-	'enable' => true,
+	'enable' => false,
 	'config' => [
 		'nested' => true,
 		'elements' => [
@@ -35,11 +35,31 @@ return [
 				],
 				'validations' => [
 					'required' => [
-						'enable' => true,
+						'enable' => function(){
+							if(zbase_request_is_post())
+							{
+								$tab = zbase_request_input('tab');
+								if($tab == 'email' || $tab == 'password')
+								{
+									return true;
+								}
+							}
+							return false;
+						},
 						'message' => 'Please enter your account password.'
 					],
 					'accountPassword' => [
-						'enable' => true,
+						'enable' => function(){
+							if(zbase_request_is_post())
+							{
+								$tab = zbase_request_input('tab');
+								if($tab == 'email' || $tab == 'password')
+								{
+									return true;
+								}
+							}
+							return false;
+						},
 						'message' => 'Account password don\'t match.'
 					],
 				],

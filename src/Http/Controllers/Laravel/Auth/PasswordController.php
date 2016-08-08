@@ -38,6 +38,11 @@ class PasswordController extends Controller
 
 	public function index()
 	{
+		$token = zbase_route_input('token');
+		if(!empty($token))
+		{
+			return $this->reset();
+		}
 		if(!$this->authEnabled())
 		{
 			return $this->notfound('User authentication is disabled.');
@@ -113,6 +118,9 @@ class PasswordController extends Controller
 				{
 					zbase_alert(\Zbase\Zbase::ALERT_SUCCESS, 'You successfully updated your password. You can login now.');
 				}
+
+				zbase()->json()->setVariable('_redirect', $this->redirectPath());
+				zbase()->json()->setVariable('password_reset_success', 1);
 				return redirect($this->redirectPath())->with('status', trans($response));
 			case 'passwords.token':
 				zbase_alert(\Zbase\Zbase::ALERT_ERROR, 'Token doesn\'t match, expired or not found. Kindly check again.');
@@ -133,6 +141,20 @@ class PasswordController extends Controller
 		return $this->view(zbase_view_file('auth.password.email'));
 	}
 
+    /**
+     * Get the Closure which is used to build the password reset email message.
+     *
+     * @return \Closure
+     */
+    protected function resetEmailBuilder()
+    {
+        return function (Message $message) {
+            $message->subject($this->getEmailSubject());
+			$noReply = zbase_messenger_sender('noreply');
+			$message->from($noReply[0], $noReply[1]);
+        };
+    }
+
 	/**
 	 * Send a reset link to the given user.
 	 *
@@ -141,32 +163,24 @@ class PasswordController extends Controller
 	 */
 	public function postEmail(Request $request)
 	{
-		$this->validate($request, ['email' => 'required|email|exists:' . zbase_config_get('entity.user.table.name') . ',email']);
+		// $this->validate($request, ['email' => 'required|email|exists:' . zbase_config_get('entity.user.table.name') . ',email']);
 		$entity = zbase()->entity('user', [], true);
-		$user = $entity->repo()->by('email', $username)->first();
+		$user = $entity->repo()->by('email', zbase_request_input('email'))->first();
 		if(!empty($user))
 		{
-			$response = $user->lostPassword();
-			if(!empty($response))
-			{
-				return redirect()->back()->with('status', trans(\Password::RESET_LINK_SENT));
-			}
+			$broker = $this->getBroker();
+			$response = \Password::broker($broker)->sendResetLink(
+				$this->getSendResetLinkEmailCredentials($request),
+				$this->resetEmailBuilder()
+			);
+			$user->lostPassword();
 		}
-		return redirect()->back()->withErrors(['email' => trans(\Password::INVALID_USER)]);
-//		$response = \Password::sendResetLink($request->only('email'), function (Message $message) {
-//					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
-//					$message->subject($this->getEmailSubject());
-//		});
-//
-//		switch ($response)
-//		{
-//			case \Password::RESET_LINK_SENT:
-//				zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
-//				return redirect()->back()->with('status', trans($response));
-//
-//			case \Password::INVALID_USER:
-//				return redirect()->back()->withErrors(['email' => trans($response)]);
-//		}
+		zbase()->json()->setVariable('password_success', 1);
+		zbase()->json()->setVariable('_redirect', zbase_url_previous());
+		if(!zbase_is_json())
+		{
+			return redirect()->back()->with('status', trans(\Password::RESET_LINK_SENT));
+		}
 	}
 
 	/**

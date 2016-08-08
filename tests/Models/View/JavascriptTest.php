@@ -25,7 +25,7 @@ class JavascriptTest extends TestCase
 		$view = new Zbase\Models\View\Javascript($config);
 		$this->assertEquals('script', $view->id());
 		$this->assertEquals('script.js', $view->getSrc());
-		$this->assertEquals('javascript-script', $view->getHtmlId());
+		$this->assertEquals('javascriptScript', $view->getHtmlId());
 	}
 
 	/**
@@ -44,7 +44,7 @@ class JavascriptTest extends TestCase
 			]
 		];
 		$view = new Zbase\Models\View\Javascript($config);
-		$this->assertEquals($view->__toString(), '<script id="javascript-script" type="text/javascript" src="script.js"></script>');
+		$this->assertEquals($view->__toString(), '<script id="javascriptScript" type="text/javascript" src="script.js"></script>');
 	}
 
 	/**
@@ -65,7 +65,7 @@ class JavascriptTest extends TestCase
 			]
 		];
 		$view = new Zbase\Models\View\Javascript($config);
-		$this->assertEquals($view->__toString(), '<!--[lte IE 8]><script id="javascript-script" type="text/javascript" src="script.js"></script><![endif]-->');
+		$this->assertEquals($view->__toString(), '<!--[lte IE 8]><script id="javascriptScript" type="text/javascript" src="script.js"></script><![endif]-->');
 	}
 
 	/**

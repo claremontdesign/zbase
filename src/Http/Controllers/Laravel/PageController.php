@@ -56,22 +56,30 @@ class PageController extends Controller
 			$validatorMessages = [
 				'email.required' => _zt('Email Address is required.'),
 				'email.email' => _zt('Invalid email address.'),
-				'message.required' => _zt('Message is required.'),
+				'comment.required' => _zt('Message is required.'),
 				'name.required' => _zt('Name is required.'),
 			];
 			$rules = [
 				'email' => 'required|email',
-				'message' => 'required',
+				'comment' => 'required',
 				'name' => 'required',
 			];
 			$valid = $this->validateInputs(zbase_request_inputs(), $rules, $validatorMessages);
 			if(!empty($valid))
 			{
-				$success = zbase_messenger_email('contactus', zbase_request_input('email'), _zt(zbase_site_name() . ' - Contact Us Form - ' . zbase_request_input('name')), zbase_view_file_contents('email.contactus'), zbase_request_inputs());
+				$success = zbase_messenger_email(
+						'contactus',
+						zbase_request_input('email'),
+						_zt(zbase_site_name() . ' - Contact Us Form - ' . zbase_request_input('name')),
+						zbase_view_file_contents('email.contactus'), zbase_request_inputs());
 				if(!empty($success))
 				{
 					zbase_alert('success', _zt('Message sent!'));
-					return redirect(zbase_url_previous());
+					zbase()->json()->setVariable('contact_success', 1);
+					if(!zbase_is_json())
+					{
+						return redirect(zbase_url_previous());
+					}
 				}
 				else
 				{

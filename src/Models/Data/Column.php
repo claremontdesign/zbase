@@ -50,18 +50,48 @@ class Column extends Data implements Interfaces\IdInterface
 	}
 
 	/**
+	 * Check if enabled
+	 */
+	public function enable()
+	{
+		if($this->json() && !zbase_is_json())
+		{
+			return false;
+		}
+		return zbase_value_get($this->getAttributes(), 'enable', false);
+	}
+
+	/**
+	 * Check if enabled by request
+	 * If true, this column is only for JSON request
+	 *
+	 * @return boolean
+	 */
+	public function json()
+	{
+		return zbase_value_get($this->getAttributes(), 'json', false);
+	}
+
+	/**
 	 * Render the Value
 	 * @param string $tag The HTML Tag
 	 * @return string
 	 */
-	public function renderValue($tag = null)
+	public function renderValue($tag = null, $template = false)
 	{
 		$this->prepare();
 		if(!empty($tag))
 		{
 			$str = [];
 			$str[] = '<' . $tag . '>';
-			$str[] = $this->_value;
+			if(!empty($template))
+			{
+				$str[] = '__' . $this->id() . '__';
+			}
+			else
+			{
+				$str[] = $this->_value;
+			}
 			$str[] = '</' . $tag . '>';
 			return implode("\n", $str);
 		}
@@ -103,38 +133,35 @@ class Column extends Data implements Interfaces\IdInterface
 	protected function _value()
 	{
 		$noUiDataTypes = ['integer', 'string'];
+		/**
+		 * Classname and will call className::columnValue
+		 */
+		$dataCallback = zbase_data_get($this->data, 'callback', null);
 		$dataType = $this->getDataType();
 		$valueIndex = $this->getValueIndex();
-		$value = zbase_data_get($this->getRow(), $valueIndex);
+		if(!empty($dataCallback))
+		{
+			$value = $dataCallback::entityDataValue($this->getRow(), $this);
+		}
+		else
+		{
+			$value = zbase_data_get($this->getRow(), $valueIndex);
+		}
 		if(in_array($dataType, $noUiDataTypes))
 		{
 			$this->_value = $value;
 		}
 		else
 		{
-			if(zbase_is_json())
-			{
-				if(strtolower($dataType) == 'timestamp')
-				{
-					$this->_value = $value->format(DATE_ISO8601);
-				}
-				else if(strtolower($dataType) == 'displaystatus')
-				{
-					$this->_value = (bool) $value;
-				}
-			}
-			else
-			{
-				$dataTypeConfiguration = [
-					'id' => $dataType,
-					'type' => 'data.' . $dataType,
-					'enable' => true,
-					'value' => $value,
-					'hasAccess' => true,
-					'options' => $this->getAttribute('options'),
-				];
-				$this->_value = \Zbase\Ui\Ui::factory($dataTypeConfiguration);
-			}
+			$dataTypeConfiguration = [
+				'id' => $dataType,
+				'type' => 'data.' . $dataType,
+				'enable' => true,
+				'value' => $value,
+				'hasAccess' => true,
+				'options' => $this->getAttribute('options'),
+			];
+			$this->_value = \Zbase\Ui\Ui::factory($dataTypeConfiguration);
 		}
 	}
 

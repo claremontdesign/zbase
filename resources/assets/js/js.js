@@ -1,4 +1,54 @@
-// PHP JS START
+//<editor-fold defaultstate="collapsed" desc="PHPJS">
+function str_replace(search, replace, subject, countObj) { // eslint-disable-line camelcase
+	var i = 0
+	var j = 0
+	var temp = ''
+	var repl = ''
+	var sl = 0
+	var fl = 0
+	var f = [].concat(search)
+	var r = [].concat(replace)
+	var s = subject
+	var ra = Object.prototype.toString.call(r) === '[object Array]'
+	var sa = Object.prototype.toString.call(s) === '[object Array]'
+	s = [].concat(s)
+
+	var $global = (typeof window !== 'undefined' ? window : GLOBAL)
+	$global.$locutus = $global.$locutus || {}
+	var $locutus = $global.$locutus
+	$locutus.php = $locutus.php || {}
+
+	if (typeof (search) === 'object' && typeof (replace) === 'string') {
+		temp = replace
+		replace = []
+		for (i = 0; i < search.length; i += 1) {
+			replace[i] = temp
+		}
+		temp = ''
+		r = [].concat(replace)
+		ra = Object.prototype.toString.call(r) === '[object Array]'
+	}
+
+	if (typeof countObj !== 'undefined') {
+		countObj.value = 0
+	}
+
+	for (i = 0, sl = s.length; i < sl; i++) {
+		if (s[i] === '') {
+			continue
+		}
+		for (j = 0, fl = f.length; j < fl; j++) {
+			temp = s[i] + ''
+			repl = ra ? (r[j] !== undefined ? r[j] : '') : r[0]
+			s[i] = (temp).split(f[j]).join(repl)
+			if (typeof countObj !== 'undefined') {
+				countObj.value += ((temp.split(f[j])).length - 1)
+			}
+		}
+	}
+	return sa ? s : s[0]
+}
+
 function explode(delimiter, string, limit) {
 	if (arguments.length < 2 || typeof delimiter === 'undefined' || typeof string === 'undefined')
 	{
@@ -87,7 +137,9 @@ jQuery.fn.outerHtml = function (s) {
 	return s ? this.before(s).remove() : jQuery("<p>").append(this.eq(0).clone()).html();
 };
 //
-// ZBASE COMMONS START
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="ZBASE COMMONS START">
+
 /**
  * Laravel dd type. I'm used of using dd
  * @param {string} v
@@ -278,6 +330,33 @@ function zbase_alert(type, msg, selector, opt)
 }
 
 /**
+ * Alert a form element
+ * @param {type} name
+ * @param {type} msg
+ * @returns {undefined}
+ */
+function zbase_alert_form_element(name, msg)
+{
+	if (jQuery('input[name="' + name + '"]').length > 0)
+	{
+		jQuery('input[name="' + name + '"]').closest('.form-group').addClass('has-error');
+		jQuery('input[name="' + name + '"]').addClass('error');
+		jQuery('input[name="' + name + '"]').after('<span class="help-block help-block-error">' + msg + '</span>');
+	}
+}
+
+/**
+ * Alert form errors
+ * @returns {undefined}
+ */
+function zbase_alert_form_reset(formObj)
+{
+	jQuery('.form-group.has-error').removeClass('has-error');
+	jQuery('.form-group input').removeClass('error');
+	jQuery('.form-group .help-block-error').remove();
+}
+
+/**
  * Insert an HTMl to a given selector by Mode
  * @param {string} html The HTML to insert
  * @param {object|string} selector The selector to insert the HTML
@@ -330,6 +409,52 @@ function zbase_dom_insert_html(html, selector, mode)
 		}
 	}
 }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="LOCALStorage">
+/**
+ * Save to LocalStorage
+ * @param {type} k
+ * @param {type} v
+ * @returns {undefined}
+ */
+function saveToLocalStorage(k,v)
+{
+	localStorage.setItem(k, v);
+}
+/**
+ * Retrieve Ite3m from LocalStorage
+ * @param {type} k
+ * @returns {DOMString}
+ */
+function getFromLocalStorage(k)
+{
+	return localStorage.getItem(k);
+}
+/**
+ * Remove item from LocalStorage
+ * @param {type} k
+ * @returns {undefined}
+ */
+function removeFromLocalStorage(k)
+{
+	localStorage.removeItem(k);
+}
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="AJAX">
+/**
+ * Send to another resource/logcation
+ * @param string|object url
+ * @returns void
+ */
+function zbase_to_url(url)
+{
+	if(jQuery(url).length > 0 && jQuery(url).attr('data-href') !== undefined)
+	{
+		window.location = jQuery(url).attr('data-href');
+		return;
+	}
+	window.location = url;
+}
 
 /**
  * Post
@@ -345,6 +470,32 @@ function zbase_ajax_post(url, data, successCb, opt)
 		type: 'POST',
 		url: url,
 		data: data,
+		beforeSend: function ()
+		{
+			if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+			{
+				App.blockUI({
+					target: opt.loaderTarget,
+					cenrerY: true,
+					boxed: true
+				});
+			} else {
+				App.blockUI({
+					target: jQuery('.page-content-inner'),
+					cenrerY: true,
+					boxed: true
+				});
+			}
+		},
+		complete: function ()
+		{
+			if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+			{
+				App.unblockUI(opt.loaderTarget);
+			} else {
+				App.unblockUI(jQuery('.page-content-inner'));
+			}
+		},
 		success: successCb
 	});
 }
@@ -365,28 +516,121 @@ function zbase_ajax_get(url, data, successCb, opt)
 		data: data,
 		beforeSend: function ()
 		{
-			if (opt.loaderTarget !== undefined)
+			if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
 			{
 				App.blockUI({
 					target: opt.loaderTarget
+				});
+			} else {
+				App.blockUI({
+					target: jQuery('.page-content-inner')
 				});
 			}
 		},
 		complete: function ()
 		{
-			if (opt.loaderTarget !== undefined)
+			if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
 			{
 				App.unblockUI(opt.loaderTarget);
+			} else {
+				App.unblockUI(jQuery('.page-content-inner'));
 			}
 		},
 		success: successCb
 	});
 }
 
+/**
+ * Dynamic Ajax Call
+ * @param {type} ele
+ * @returns {undefined}
+ */
+function zbase_ajax(dataConfig)
+{
+	var url = dataConfig.url !== undefined ? dataConfig.url : null;
+	if (url === null || url === undefined)
+	{
+		return;
+	}
+	var method = dataConfig.method !== undefined ? dataConfig.method : 'get';
+	var form = dataConfig.form !== undefined ? dataConfig.form : false;
+	var elements = dataConfig.elements !== undefined ? dataConfig.elements : [];
+	var callback = dataConfig.callback !== undefined ? dataConfig.callback : null;
+	var loaderTarget = dataConfig.loaderTarget !== undefined ? dataConfig.loaderTarget : null;
+	var beforeSendCheck = dataConfig.beforeSendCheck !== undefined ? dataConfig.beforeSendCheck : null;
+	if (beforeSendCheck !== undefined)
+	{
+		beforeSendCheck;
+	}
+	if (!empty(form) && !empty(elements))
+	{
+		var data = {json: 1};
+		jQuery.each(elements, function (i, ele) {
+			var name = null;
+			if (ele.indexOf('inputByName') >= 0)
+			{
+				ele = 'input[name="' + explode('=', ele)[1] + '"]:checked';
+				name = jQuery(ele).attr('data-name');
+			} else {
+				name = jQuery(ele).attr('name');
+			}
+			var val = zbase_get_form_element_value(jQuery(ele));
+			eval('data.' + name + ' = \'' + val + '\';');
+		});
+		zbase_ajax_post(url, data, callback, {loaderTarget: loaderTarget});
+	} else {
+		if (method === 'get')
+		{
+			zbase_ajax_get(url, {}, callback, {loaderTarget: loaderTarget});
+		} else {
+			zbase_ajax_post(url, {}, callback, {loaderTarget: loaderTarget});
+		}
+	}
+}
 
-// ZBASE COMMONS END
+/**
+ * Preloader
+ * @returns {undefined}
+ */
+function zbase_ajax_preloader()
+{
+	if (jQuery('.zbase-loader-wrapper').length > 0)
+	{
+		jQuery('.zbase-loader-wrapper').delay(100).fadeIn(100);
+	}
+}
+
+/**
+ * PreLoader
+ * @returns {undefined}
+ */
+function zbase_ajax_preloader_hide()
+{
+	if (jQuery('.zbase-loader-wrapper').length > 0)
+	{
+		jQuery('.zbase-loader-wrapper').delay(100).fadeOut(100);
+	}
+}
+//</editor-fold>
+
+/**
+ * CAll a dynamic function
+ * @param {type} f
+ * @returns {undefined}
+ */
+function zbase_call_function(f)
+{
+	var fcb = f.replace('-', '').replace('.', '_');
+	var fcbc = eval("typeof " + fcb + " == 'function'");
+	if (fcbc)
+	{
+		eval(fcb + '(arguments);');
+	}
+}
+//<editor-fold defaultstate="collapsed" desc="REQUEST">
+
 jQuery.ajaxSetup({
-	headers: {'X-CSRF-TOKEN': jQuery('meta[name=_token]').length > 0 ? jQuery('meta[name=_token]').attr('content') : (jQuery('input[name="_token"]').length > 0 ? jQuery('input[name="_token"]').val() : null), 'angular' : 1}
+	headers: {'X-CSRF-TOKEN': jQuery('meta[name=_token]').length > 0 ? jQuery('meta[name=_token]').attr('content') : (jQuery('input[name="_token"]').length > 0 ? jQuery('input[name="_token"]').val() : null), 'angular': 1}
 });
 jQuery(document).ajaxComplete(function (event, request, settings) {
 	if (request === undefined)
@@ -397,6 +641,7 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	{
 		return;
 	}
+	var statusCode = request.status !== undefined ? request.status : 200;
 	var responseJSON = request.responseJSON;
 	if (responseJSON._token !== undefined)
 	{
@@ -413,6 +658,15 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	{
 		window.location = responseJSON.redirect;
 	}
+	if (statusCode == 422)
+	{
+		jQuery.each(responseJSON, function (idx, content) {
+			jQuery.each(content, function (cIdx, cContent) {
+				zbase_alert('error', cContent, jQuery('.page-content-inner'), {manipulation: 'prepend'});
+				zbase_alert_form_element(idx, cContent);
+			});
+		});
+	}
 	if (responseJSON.success !== undefined)
 	{
 		zbase_alert('success', responseJSON.success, jQuery('.page-content-inner'), {manipulation: 'prepend'});
@@ -425,22 +679,47 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	{
 		zbase_alert('warning', responseJSON.warning, jQuery('.page-content-inner'), {manipulation: 'prepend'});
 	}
+	if (responseJSON._package !== undefined && responseJSON._route !== undefined)
+	{
+		var packageRouteCallback = responseJSON._package + "_" + responseJSON._route.replace('-', '').replace('.', '_');
+		var packageRouteCallbackCheck = eval("typeof " + packageRouteCallback + " == 'function'");
+		if (packageRouteCallbackCheck)
+		{
+			eval(packageRouteCallback + '(responseJSON);');
+		}
+	}
+	if (responseJSON._widget !== undefined && responseJSON._widget !== undefined)
+	{
+		var packageRouteCallback = responseJSON._widget.replace('-', '').replace('.', '_');
+		var packageRouteCallbackCheck = eval("typeof " + packageRouteCallback + " == 'function'");
+		if (packageRouteCallbackCheck)
+		{
+			eval(packageRouteCallback + '(responseJSON);');
+		}
+	}
+	zbase_ajax_preloader_hide();
 });
 jQuery(document).ajaxError(function (event, request, settings) {
+	zbase_ajax_preloader_hide
 });
 jQuery(document).ajaxSend(function (event, request, settings) {
+	zbase_alert_form_reset();
+	zbase_ajax_preloader();
 });
 jQuery(document).ajaxStart(function () {
 });
 jQuery(document).ajaxStop(function () {
+	zbase_ajax_preloader_hide
 });
 jQuery(document).ajaxSuccess(function (event, request, settings) {
 });
-
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="Zbase">
 var Zbase = function () {
 	_this = this;
 	_this.prefix = 'zbase';
+
+	var initFormControls = function(){}
 
 	/**
 	 * Confirmation buttons
@@ -530,38 +809,9 @@ var Zbase = function () {
 	{
 		if (jQuery('.zbase-ajax-url').length > 0)
 		{
-			jQuery('.zbase-ajax-url').click(function () {
-				var ele = jQuery(this);
-				var dataConfig = zbase_get_element_config(ele);
-				var url = dataConfig.url !== undefined ? dataConfig.url : ele.attr('href');
-				var method = dataConfig.method !== undefined ? dataConfig.method : 'get';
-				var form = dataConfig.form !== undefined ? dataConfig.form : false;
-				var elements = dataConfig.elements !== undefined ? dataConfig.elements : [];
-				var callback = dataConfig.callback !== undefined ? dataConfig.callback : null;
-				if (!empty(form) && !empty(elements))
-				{
-					var data = {};
-					jQuery.each(elements, function (i, ele) {
-						var name = null;
-						if (ele.indexOf('inputByName') >= 0)
-						{
-							ele = 'input[name="' + explode('=', ele)[1] + '"]:checked';
-							name = jQuery(ele).attr('data-name');
-						} else {
-							name = jQuery(ele).attr('name');
-						}
-						var val = zbase_get_form_element_value(jQuery(ele));
-						eval('data.' + name + ' = \'' + val + '\';');
-					});
-					zbase_ajax_post(url, data, callback, {});
-				} else {
-					if (method === 'get')
-					{
-						zbase_ajax_get(url, {}, callback, {});
-					} else {
-						zbase_ajax_post(url, {}, callback, {});
-					}
-				}
+			jQuery('.zbase-ajax-url').click(function (e) {
+				e.preventDefault();
+				zbase_ajax(zbase_get_element_config(jQuery(this)));
 			});
 		}
 	};
@@ -591,17 +841,39 @@ var Zbase = function () {
 	{
 		if (jQuery().tab) {
 			jQuery('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-				localStorage.setItem(_this.prefix + 'lastTab', jQuery(this).attr('href'));
+				/**
+				 * Nested Tabs
+				 */
+				localStorage.removeItem(_this.prefix + 'firstTab');
+				localStorage.removeItem(_this.prefix + 'secondTab');
+				if (jQuery(this).closest('form').find('.nav-tabs li.active').length > 1)
+				{
+					jQuery('.nav-tabs li.active a').each(function (i, e) {
+						if (i == 0)
+						{
+							localStorage.setItem(_this.prefix + 'firstTab', jQuery(e).attr('href'));
+						} else {
+							localStorage.setItem(_this.prefix + 'secondTab', jQuery(e).attr('href'));
+						}
+					});
+				} else {
+					localStorage.setItem(_this.prefix + 'firstTab', jQuery(this).attr('href'));
+				}
 			});
-			var lastTab = localStorage.getItem(_this.prefix + 'lastTab');
-			if (lastTab) {
-				jQuery('[href="' + lastTab + '"]').tab('show');
+			var firstTab = localStorage.getItem(_this.prefix + 'firstTab');
+			var secondTab = localStorage.getItem(_this.prefix + 'secondTab');
+			if (firstTab) {
+				jQuery('[href="' + firstTab + '"]').tab('show');
+				if (secondTab) {
+					jQuery('[href="' + secondTab + '"]').tab('show');
+				}
 			}
 		}
 	};
 	return {
 		init: function () {
 			initTabs();
+			initFormControls();
 			initBtnActionConfirm();
 			initContentFromUrl();
 			initAjaxFromUrls();

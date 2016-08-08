@@ -26,7 +26,7 @@ class StylesheetTest extends TestCase
 		$this->assertEquals('style', $view->id());
 		$this->assertEquals('stylesheet', $view->getRel());
 		$this->assertEquals('style.css', $view->getHref());
-		$this->assertEquals('stylesheet-style', $view->getHtmlId());
+		$this->assertEquals('stylesheetStyle', $view->getHtmlId());
 	}
 
 	/**
@@ -45,7 +45,7 @@ class StylesheetTest extends TestCase
 			]
 		];
 		$view = new Zbase\Models\View\Stylesheet($config);
-		$this->assertEquals($view->__toString(), '<link id="stylesheet-style" href="style.css" rel="stylesheet" type="text/css" />');
+		$this->assertEquals($view->__toString(), '<link id="stylesheetStyle" href="style.css" rel="stylesheet" type="text/css" />');
 	}
 
 	/**
@@ -66,7 +66,7 @@ class StylesheetTest extends TestCase
 			]
 		];
 		$view = new Zbase\Models\View\Stylesheet($config);
-		$this->assertEquals($view->__toString(), '<!--[lte IE 8]><link id="stylesheet-style" href="style.css" rel="stylesheet" type="text/css" /><![endif]-->');
+		$this->assertEquals($view->__toString(), '<!--[lte IE 8]><link id="stylesheetStyle" href="style.css" rel="stylesheet" type="text/css" /><![endif]-->');
 	}
 
 	/**

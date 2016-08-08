@@ -69,7 +69,7 @@ class View extends Widgets\Widget implements Widgets\WidgetInterface, Widgets\Co
 	{
 		if(!empty($view['file']))
 		{
-			$this->_widgetView = $view['file'];
+			$this->_widgetView = zbase_value_get($view, 'file');
 			$this->setViewFile($this->_widgetView);
 		}
 		if(!empty($view['layout']))
@@ -135,5 +135,4 @@ class View extends Widgets\Widget implements Widgets\WidgetInterface, Widgets\Co
 		$attr['id'] = 'zbase-widget-wrapper-' . $this->id();
 		return $attr;
 	}
-
 }

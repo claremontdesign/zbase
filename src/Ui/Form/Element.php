@@ -178,6 +178,10 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	public function setValue($value)
 	{
 		$this->_value = $value;
+		if($this->getType() == 'hidden')
+		{
+			$this->_value = $this->_v('forceValue', $value);
+		}
 		return $this;
 	}
 
@@ -249,27 +253,27 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		}
 		if($this->hasValidations())
 		{
-			$angularPrefix = $this->_form->getHtmlId() . '.' . $this->name();
-			$attr['ng-class'] = [];
-			$attr['ng-class']['has-error'] = [];
 			if(zbase_is_angular_template())
 			{
+				$angularPrefix = $this->_form->getHtmlId() . '.' . $this->name();
+				$attr['ng-class'] = [];
+				$attr['ng-class']['has-error'] = [];
 				$attr['ng-class']['has-error'][] = $angularPrefix . '.$dirty';
-			}
-			if($this->hasValidation('required'))
-			{
-				$attr['ng-class']['has-error'][] = $angularPrefix . '.$error.required';
-			}
-			if(!empty($attr['ng-class']) && is_array($attr['ng-class']))
-			{
-				foreach ($attr['ng-class'] as $v => $k)
+				if($this->hasValidation('required'))
 				{
-					if(is_array($k))
-					{
-						$attr['ng-class'][$v] = implode(' && ', $k);
-					}
+					$attr['ng-class']['has-error'][] = $angularPrefix . '.$error.required';
 				}
-				$attr['ng-class'] = str_replace(array('{"', '":"', '"}'), array('{\'', '\': ', ' }'), json_encode($attr['ng-class']));
+				if(!empty($attr['ng-class']) && is_array($attr['ng-class']))
+				{
+					foreach ($attr['ng-class'] as $v => $k)
+					{
+						if(is_array($k))
+						{
+							$attr['ng-class'][$v] = implode(' && ', $k);
+						}
+					}
+					$attr['ng-class'] = str_replace(array('{"', '":"', '"}'), array('{\'', '\': ', ' }'), json_encode($attr['ng-class']));
+				}
 			}
 		}
 		return $attr;
@@ -287,6 +291,15 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 	}
 
 	/**
+	 * The Input name
+	 * @return string
+	 */
+	public function inputName()
+	{
+		return $this->name();
+	}
+
+	/**
 	 * Return the Input Attributes
 	 * @return array
 	 */
@@ -295,9 +308,13 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		$attr = $this->_v('html.attributes.input', []);
 		$attr['type'] = $this->getType();
 		$attr['id'] = $this->getHtmlId();
-		$attr['name'] = $this->name();
-		$attr['value'] = $this->getValue();
+		$attr['name'] = $this->inputName();
+		$attr['value'] = trim($this->getValue());
 		$attr['class'][] = 'form-control';
+		if(!isset($attr['placeholder']))
+		{
+			$attr['placeholder'] = $this->getLabel();
+		}
 		if(zbase_is_angular_template())
 		{
 			$ngModel = $this->_v('angular.ngModel', null);
@@ -374,12 +391,13 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		{
 			if(!empty($configuration['validations']))
 			{
-				return zbase()->widget($configuration['widget'], [], true)->setAttribute('validations', $configuration['validations']);
+				$widget = zbase()->widget($configuration['widget'], [], true)->setAttribute('validations', $configuration['validations']);
 			}
 			else
 			{
-				return zbase()->widget($configuration['widget'], [], true);
+				$widget = zbase()->widget($configuration['widget'], [], true);
 			}
+			return $widget;
 		}
 		if(!empty($configuration['ui']))
 		{
@@ -433,6 +451,18 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 					if(!$this->wasPosted())
 					{
 						$this->setValue($this->_entity->getAttribute($entityProperty));
+					}
+				}
+				$entityOptionsProperty = $this->_v('entity.dataoptions', null);
+				if(!is_null($entityOptionsProperty))
+				{
+					if(!$this->wasPosted())
+					{
+						$options = $this->_entity->getDataOptions();
+						if(isset($options[$entityOptionsProperty]))
+						{
+							$this->setValue($options[$entityOptionsProperty]);
+						}
 					}
 				}
 			}

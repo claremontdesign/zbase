@@ -59,8 +59,8 @@ class Clear extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\ClearCommandInterface)
 				{
-					echo "\n -- clear.pre - " . $packageName;
-					$zbase->clearCommand($phpCommand, ['clear.pre' => true]);
+					$this->info($this->signature . '.pre - ' . $packageName);
+					$zbase->clearCommand($phpCommand, ['clear.pre' => true, 'command' => $this]);
 				}
 			}
 		}
@@ -91,8 +91,8 @@ class Clear extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\ClearCommandInterface)
 				{
-					echo "\n -- clear.post - " . $packageName;
-					$zbase->clearCommand($phpCommand, ['clear.post' => true]);
+					$this->info($this->signature . '.post - ' . $packageName);
+					$zbase->clearCommand($phpCommand, ['clear.post' => true, 'command' => $this]);
 				}
 			}
 		}
@@ -116,6 +116,18 @@ class Clear extends Command
 	protected function getOptions()
 	{
 		return array();
+	}
+
+	/**
+	 * Write a string as information output.
+	 *
+	 * @param  string  $string
+	 * @param  null|int|string  $verbosity
+	 * @return void
+	 */
+	public function info($string, $verbosity = null)
+	{
+		parent::info(' --- ' . $string, $verbosity);
 	}
 
 }

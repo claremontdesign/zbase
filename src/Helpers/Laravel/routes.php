@@ -21,7 +21,16 @@
  */
 function zbase_route_name_is($name)
 {
-	return \Request::route()->getName() == $name;
+	return zbase_route_name() == $name;
+}
+
+/**
+ * Return the RouteName
+ * @return string
+ */
+function zbase_route_name()
+{
+	return \Request::route()->getName();
 }
 
 /**
@@ -67,7 +76,7 @@ function zbase_routes_init($routes = null)
 		 * Add dynamic routes
 		 * for modules
 		 */
-		$adminKey = zbase_config_get('routes.adminkey.key', 'admin');
+		$adminKey = zbase_admin_key();
 		$modules = zbase()->modules();
 		if(!empty($modules))
 		{
@@ -76,13 +85,13 @@ function zbase_routes_init($routes = null)
 				$module = zbase()->module($moduleName);
 				if($module instanceof \Zbase\Module\ModuleInterface)
 				{
-					$routes = array_merge($routes, $module->getRoutes());
 					if(empty($routes[$adminKey]['children']))
 					{
 						$routes[$adminKey]['children'] = [];
 					}
 					if($module->isEnable())
 					{
+						$routes = array_merge($routes, $module->getRoutes());
 						if($module->hasBackend())
 						{
 							$adminRoute = [
@@ -180,6 +189,11 @@ function zbase_routes_init($routes = null)
 								}
 							}
 						}
+
+						/**
+						 * Module Defined Routes
+						 */
+						// $routes = array_merge($routes, $module->getRoutes());
 					}
 				}
 			}
@@ -187,11 +201,7 @@ function zbase_routes_init($routes = null)
 	}
 	if(!empty($routes))
 	{
-		$usernameRoute = false;
-		if(!empty($routes['usernameroute']))
-		{
-			$usernameRoute = true;
-		}
+		$usernameRoute = zbase_route_username();
 		foreach ($routes as $name => $route)
 		{
 			if(!empty($route['url']))
@@ -233,14 +243,19 @@ function zbase_routes_init($routes = null)
 				if(!empty($route['url']))
 				{
 					$route['url'] = str_replace('//', '/', $usernameRoutePrefix . '/' . $route['url']);
-					zbase_route_init($routeParameterName . $name, $route);
+					$route['url'] = str_replace('{usernameroute?}/{usernameroute?}', '{usernameroute?}', $route['url']);
+					$routeName = $routeParameterName . $name;
+					$routeName = str_replace($routeParameterName . $routeParameterName, $routeParameterName, $routeName);
+					zbase_route_init($routeName, $route);
 					if(!empty($route['children']))
 					{
-						$uCRoutes = [];
+						$cRoutes = [];
 						foreach ($route['children'] as $cName => $cRoute)
 						{
 							$cRoute['url'] = $route['url'] . '/' . (!empty($cRoute['url']) ? $cRoute['url'] : $cName);
-							$cRoutes[$routeParameterName . $name . '.' . $cName] = $cRoute;
+							$cRoute['url'] = str_replace('{usernameroute?}/{usernameroute?}', '{usernameroute?}', $cRoute['url']);
+							$cRouteName = $routeParameterName . $name . '.' . $cName;
+							$cRoutes[$cRouteName] = $cRoute;
 						}
 						zbase_routes_init($cRoutes);
 					}
@@ -248,6 +263,27 @@ function zbase_routes_init($routes = null)
 			}
 		}
 	}
+}
+
+/**
+ * Check if we are using a slash-username URL
+ * eg. http://domain.com/{username?}/../../
+ * @return boolean
+ */
+function zbase_route_username()
+{
+	return zbase_config_get('routes.' . zbase_route_username_prefix(), false);
+}
+
+/**
+ * The minimum role/access
+ * when UsernameRoute is enabled in Admin
+ *
+ * @return string
+ */
+function zbase_route_username_minimum_access()
+{
+	return 'user';
 }
 
 /**
@@ -275,7 +311,7 @@ function zbase_route_username_get()
 		 * Check if valid username
 		 */
 		$user = zbase()->entity('user')->repo()->by('username', $username, ['username'])->first();
-		if($user instanceof \Zbase\Interfaces\EntityInterface)
+		if($user instanceof \Zbase\Entity\Laravel\User\User)
 		{
 			return $username;
 		}
@@ -343,7 +379,107 @@ function zbase_route_response($name, $route)
 	{
 		return zbase_response(view(zbase_view_file('maintenance')));
 	}
+	$redirect = zbase_value_get($route, 'redirect', false);
+	if(!empty($redirect))
+	{
+		return redirect()->to($redirect);
+	}
+	/**
+	 * If we are using username in routes,
+	 * 	we have to check if the username exists in DB.
+	 * 	This is checked in zbase_route_username_get()
+	 * 	if the zbase_route_username_get() returns false, means
+	 * 	that the route is not a username or username didn't exists.
+	 * 	Here we check against all other Routes  if the prefix is in our
+	 * 	list of routes, if not found, throw NotFoundHttpException
+	 */
+	$useUsernameRoute = zbase_route_username();
 	$usernameRoute = zbase_route_username_get();
+	$usernameRouteCheck = zbase_data_get($route, 'usernameRouteCheck', true);
+	if(empty($usernameRouteCheck))
+	{
+		/**
+		 * Will not check for username route
+		 */
+		$useUsernameRoute = false;
+	}
+	if($usernameRoute == false && !empty($useUsernameRoute))
+	{
+		$uri = zbase_url_uri();
+		$adminKey = zbase_admin_key();
+		if(!empty($uri))
+		{
+			$uriEx = explode('/', $uri);
+			if(!empty($uriEx))
+			{
+				foreach ($uriEx as $uriV)
+				{
+					if(!empty($uriV))
+					{
+						/**
+						 * If it isn't an admin key, check it agains given Routes
+						 */
+						if($uriV !== $adminKey)
+						{
+							$routes = zbase_config_get('routes', []);
+							if(!empty($routes))
+							{
+								foreach ($routes as $route)
+								{
+									if(!empty($route['enable']) && !empty($route['url']))
+									{
+										$urlEx = explode('/', $route['url']);
+										if(!empty($urlEx))
+										{
+											foreach ($urlEx as $urlExV)
+											{
+												if(!empty($urlExV))
+												{
+													if($uriV == $urlExV)
+													{
+														/**
+														 * Found it, valid URL
+														 */
+														$validUrlPrefix = true;
+													}
+													/**
+													 * Will deal only with the first not empty value so break it.
+													 */
+													break;
+												}
+											}
+										}
+									}
+									if(!empty($validUrlPrefix))
+									{
+										/**
+										 * Found it, break it
+										 */
+										break;
+									}
+								}
+							}
+						}
+						/**
+						 * Will deal only with the first not empty value so break it.
+						 */
+						break;
+					}
+				}
+				if(empty($validUrlPrefix))
+				{
+					/**
+					 * Only if routeName is not the index
+					 */
+					if($name != 'index')
+					{
+						$response = new \Zbase\Exceptions\NotFoundHttpException();
+						return $response->render(zbase_request(), $response);
+					}
+				}
+			}
+		}
+	}
 	$usernameRoutePrefix = zbase_route_username_prefix();
 	zbase()->setCurrentRouteName($name);
 	$guest = true;
@@ -353,7 +489,7 @@ function zbase_route_response($name, $route)
 	$backend = !empty($route['backend']) ? $route['backend'] : false;
 	if(!empty($backend))
 	{
-		zbase_in_back();
+//		zbase_in_back();
 	}
 	if(!empty($middleware))
 	{
@@ -390,7 +526,16 @@ function zbase_route_response($name, $route)
 		{
 			if(!empty($usernameRoute))
 			{
-				if((empty(zbase_auth_has()) || !zbase_auth_is('admin')) && $name != $usernameRoutePrefix . 'admin.login')
+				/**
+				 * If user is loggedIn and this is admin side and this is not logIn page,
+				 * redirect to users dashboard.
+				 * User can only access his own dashboard via /{usernameroute?}/admin
+				 */
+				if(zbase_auth_has() && zbase_auth_is(zbase_route_username_minimum_access()) && zbase_is_back() && $usernameRoute != zbase_auth_user()->username())
+				{
+					return redirect(zbase_url_from_route('admin', [$usernameRoutePrefix => zbase_auth_user()->username]));
+				}
+				if((empty(zbase_auth_has()) || !zbase_auth_is('user')) && $name != $usernameRoutePrefix . 'admin.login')
 				{
 					return redirect(zbase_url_from_route('admin.login'));
 				}

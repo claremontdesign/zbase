@@ -48,12 +48,41 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	 */
 	public static $nodeNamePrefix = 'node';
 
+	/**
+	 * Node has only a single image
+	 * Single Image Mode: Node Image will be saved with this alphaId
+	 * Multiple Image: with image property in table. with primary images
+	 * @var boolean
+	 */
+	protected $singleImage = true;
+
 	protected static function boot()
 	{
 		parent::boot();
 		static::saved(function($node) {
 			$node->_updateAlphaId();
 		});
+	}
+
+	/**
+	 * Return the Collection
+	 *
+	 * @return Collection
+	 */
+	public function childrenFiles()
+	{
+		return zbase_entity(static::$nodeNamePrefix . '_files')->repo()->by('node_id', $this->node_id);
+	}
+
+	/**
+	 * Return order status text
+	 * @return string
+	 */
+	public function statusText()
+	{
+		$status = \Zbase\Ui\Data\DisplayStatus::class;
+		$status = new $status(['value' => $this->status, 'id' => 'nodestatus' . $this->id()]);
+		return $status->render();
 	}
 
 	/**
@@ -69,6 +98,19 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		return zbase_url_from_route($this->routeName, ['action' => 'view', 'id' => $this->alphaId()]);
 	}
 
+	/**
+	 * Node Alpha URL
+	 * @return string
+	 */
+	public function slugUrl()
+	{
+		if($this->getBrowseCategory() instanceof Category)
+		{
+			return zbase_url_from_route($this->routeName, ['action' => $this->getBrowseCategory()->slug(), 'id' => $this->slug()]);
+		}
+		return zbase_url_from_route($this->routeName, ['action' => 'view', 'id' => $this->slug()]);
+	}
+
 	public function title()
 	{
 		if(!empty($this->title))
@@ -76,6 +118,15 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			return $this->title;
 		}
 		return;
+	}
+
+	/**
+	 * Return the Slug
+	 * @return string
+	 */
+	public function slug()
+	{
+		return $this->slug;
 	}
 
 	/**
@@ -120,6 +171,14 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		return zbase_auth_has() && zbase_auth_user()->id() == $this->user_id;
 	}
 
+	/**
+	 * return the image/file URL route name
+	 * @return string
+	 */
+	public function routeName()
+	{
+		return static::$nodeNamePrefix . '_node';
+	}
 
 	/**
 	 * Return this URL for Action
@@ -130,11 +189,63 @@ class Node extends BaseEntity implements WidgetEntityInterface
 		$params['id'] = $this->alphaId();
 		if(zbase_is_back())
 		{
-			return zbase_url_from_route('admin.' . $this->routeName . '_node', $params);
+			return zbase_url_from_route('admin.' . $this->routeName(), $params);
 		}
-		return zbase_url_from_route(static::$nodeNamePrefix . '_node', $params);
+		return zbase_url_from_route($this->routeName(), $params);
 	}
 
+	/**
+	 * Return the URl
+	 * @param type $name
+	 * @param type $params
+	 */
+	public function url($name, $params = [])
+	{
+		return zbase_url_from_route($name, $params);
+	}
+
+	/**
+	 * REturn the Image ID
+	 * @return type
+	 */
+	public function imageId()
+	{
+		return $this->image;
+	}
+
+	/**
+	 * Return the image url
+	 *
+	 * @return string
+	 */
+	public function imageUrl($options = [])
+	{
+		$fullImage = false;
+		$params = ['node' => static::$nodeNamePrefix];
+		if($this->singleImage)
+		{
+			$params['id'] = $this->alphaId();
+		}
+		else
+		{
+			$params['id'] = $this->imageId();
+		}
+		if(empty($options) || !empty($options['full']))
+		{
+			$fullImage = true;
+		}
+		$params['w'] = !empty($options['w']) ? $options['w'] : 150;
+		$params['h'] = !empty($options['h']) ? $options['h'] : 0;
+		$params['q'] = !empty($options['q']) ? $options['q'] : 80;
+		if(!empty($options['thumbnail']))
+		{
+			$params['w'] = !empty($options['w']) ? $options['w'] : 200;
+			$params['h'] = !empty($options['h']) ? $options['h'] : 0;
+			$params['q'] = !empty($options['q']) ? $options['q'] : 80;
+		}
+		$params['ext'] = zbase_config_get('node.files.image.format', 'png');
+		return zbase_url_from_route('nodeImage', $params);
+	}
 
 	/**
 	 * Widget entity interface.
@@ -148,6 +259,34 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
 	{
 		return $this->nodeWidgetController($method, $action, $data, $widget);
+	}
+
+	/**
+	 * Update this object
+	 * @param type $data
+	 * @return \Zbase\Entity\Laravel\Node\Node
+	 */
+	public function updateNode($data)
+	{
+		$this->fill($data);
+		$this->nodeAttributes($data);
+		$this->save();
+		$this->setNodeCategories($data);
+		if(!empty($data['file_url']))
+		{
+			$this->uploadNodeFile($data['file_url']);
+		}
+		else if(!empty($data['files_url']))
+		{
+			foreach ($data['files_url'] as $fUrl)
+			{
+				$this->uploadNodeFile($fUrl);
+			}
+		}
+		else
+		{
+			$this->uploadNodeFile();
+		}
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="Messages">
@@ -253,6 +392,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 					$nodeFileObject->size = null;
 					$nodeFileObject->filename = null;
 					$nodeFileObject->url = $index;
+					$nodeFileObject->node_id = $this->id();
 					$nodeFileObject->save();
 					$this->files()->save($nodeFileObject);
 					return $nodeFileObject;
@@ -275,6 +415,7 @@ class Node extends BaseEntity implements WidgetEntityInterface
 				$nodeFileObject->mimetype = zbase_file_mime_type($uploadedFile);
 				$nodeFileObject->size = zbase_file_size($uploadedFile);
 				$nodeFileObject->filename = basename($uploadedFile);
+				$nodeFileObject->node_id = $this->id();
 				$nodeFileObject->save();
 				$this->files()->save($nodeFileObject);
 				return $nodeFileObject;
@@ -357,33 +498,6 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	}
 
 	// </editor-fold>
-	/**
-	 * Update this object
-	 * @param type $data
-	 * @return \Zbase\Entity\Laravel\Node\Node
-	 */
-	public function updateNode($data)
-	{
-		$this->nodeAttributes($data);
-		$this->save();
-		$this->setNodeCategories($data);
-		if(!empty($data['file_url']))
-		{
-			$this->uploadNodeFile($data['file_url']);
-		}
-		else if(!empty($data['files_url']))
-		{
-			foreach ($data['files_url'] as $fUrl)
-			{
-				$this->uploadNodeFile($fUrl);
-			}
-		}
-		else
-		{
-			$this->uploadNodeFile();
-		}
-	}
-
 	// <editor-fold defaultstate="collapsed" desc="DataTable Widget Query Interface/Methods">
 
 	/**
@@ -424,6 +538,28 @@ class Node extends BaseEntity implements WidgetEntityInterface
 	}
 
 	/**
+	 * Join Query
+	 * @param array $filters Array of Filters
+	 * @param array $sorting Array of Sorting
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function querySearchFilters($filters, $options = [])
+	{
+		$keyword = $options['widget']->getSearchKeyword();
+		if(!empty($keyword))
+		{
+			$filters['search'] = [
+				'like' => [
+					'field' => 'title',
+					'value' => '%' . $keyword . '%'
+				]
+			];
+		}
+		return $filters;
+	}
+
+	/**
 	 * Filter Query
 	 * @param array $filters Array of Filters
 	 * @param array $sorting Array of Sorting
@@ -440,9 +576,9 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			 */
 			if(!empty($filters))
 			{
-				foreach($filters as $fK => $fV)
+				foreach ($filters as $fK => $fV)
 				{
-					if(!empty($fV['eq']) && !empty($fV['eq']['field'])  && !empty($fV['eq']['value']))
+					if(!empty($fV['eq']) && !empty($fV['eq']['field']) && !empty($fV['eq']['value']))
 					{
 						if(!preg_match('/' . static::$nodeNamePrefix . '\./', $fV['eq']['field']))
 						{
@@ -789,6 +925,27 @@ class Node extends BaseEntity implements WidgetEntityInterface
 			'excerpt' => $faker->text(200),
 			'status' => rand(0, 2),
 		];
+	}
+
+	/**
+	 * FAke images by Tags
+	 * @param type $fileEntityName
+	 * @param type $node
+	 * @param type $name
+	 * @param type $min
+	 * @param type $max
+	 */
+	public static function fakeImagesByTags($fileEntityName, $node, $name, $min = 1, $max = 4)
+	{
+		$fileEntity = zbase_entity($fileEntityName);
+		$files = $fileEntity::fakeImages(rand(1, 4), ['tags' => explode(' ', $name)]);
+		if(!empty($files))
+		{
+			foreach ($files as $fUrl)
+			{
+				$node->uploadNodeFile($fUrl);
+			}
+		}
 	}
 
 	/**

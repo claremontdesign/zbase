@@ -103,10 +103,28 @@ use AuthenticatesAndRegistersUsers,
 					$request, $validator
 			);
 		}
-
-		\Auth::login($this->userCreate($request->all()));
-
-		return redirect($this->redirectPath());
+		$user = $this->userCreate($request->all());
+		if($user instanceof \Zbase\Entity\Laravel\User\User)
+		{
+			zbase()->json()->setVariable('_redirect', $this->redirectPath());
+			zbase()->json()->setVariable('register_success', 1);
+			if(!zbase_is_json())
+			{
+				if($user->loginAfterRegister())
+				{
+					\Auth::login($user);
+					return zbase_response(redirect($this->redirectPath()));
+				}
+			}
+		}
+		else
+		{
+			zbase()->json()->setVariable('register_success', 0);
+			if(!zbase_is_json())
+			{
+				return zbase_response(redirect(zbase_url_from_route('register')));
+			}
+		}
 	}
 
 	/**
@@ -155,8 +173,28 @@ use AuthenticatesAndRegistersUsers,
 				$messages['role.in'] = 'Kindly select a role in the given list.';
 			}
 		}
+		$moreValidations = $this->getRegistrationValidation();
+		if(!empty($moreValidations['rules']))
+		{
+			$rules = array_merge($rules, $moreValidations['rules']);
+		}
+		if(!empty($moreValidations['messages']))
+		{
+			$messages = array_merge($messages, $moreValidations['messages']);
+		}
 		return Validator::make($data, $rules, $messages);
 	}
+
+	/**
+	 * Return more validation
+	 *
+	 * @return []
+	 */
+	public function getRegistrationValidation()
+	{
+		return [];
+	}
+
 
 	/**
 	 * Login
@@ -198,6 +236,10 @@ use AuthenticatesAndRegistersUsers,
 
 		if($throttles && $this->hasTooManyLoginAttempts($request))
 		{
+			if(zbase_is_json())
+			{
+				zbase()->json()->setVariable('login_lock', 1);
+			}
 			return $this->sendLockoutResponse($request);
 		}
 
@@ -205,22 +247,29 @@ use AuthenticatesAndRegistersUsers,
 
 		if(\Auth::attempt($credentials, $request->has('remember')))
 		{
+			zbase()->json()->setVariable('_redirect', $this->redirectTo);
+			zbase()->json()->setVariable('login_success', 1);
 			if(zbase_is_back())
 			{
 				if(\Auth::guard($this->getGuard())->user()->isAdmin())
 				{
+					if(zbase_is_json())
+					{
+						zbase()->json()->setVariable('_redirect', zbase_url_from_route('admin'));
+					}
 					return $this->handleUserWasAuthenticated($request, $throttles);
 				}
 			}
+			$redirect = zbase_request_input('redirect', null);
+			if(!empty($redirect))
+			{
+				$this->redirectTo = $redirect;
+			}
 			else
 			{
-				$redirect = zbase_request_input('redirect', null);
-				if(!empty($redirect))
-				{
-					$this->redirectTo = $redirect;
-				}
-				return $this->handleUserWasAuthenticated($request, $throttles);
+				$this->redirectTo = zbase_url_from_route('home');
 			}
+			return $this->handleUserWasAuthenticated($request, $throttles);
 		}
 
 		// If the login attempt was unsuccessful we will increment the number of attempts
@@ -248,6 +297,7 @@ use AuthenticatesAndRegistersUsers,
 		{
 			\Auth::logout();
 		}
+		$user->log('user::authenticated');
 		$user->authenticated();
 		return redirect()->intended($this->redirectPath());
 	}

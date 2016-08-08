@@ -1,4 +1,5 @@
 <?php
+
 ini_set('memory_limit', '1024M');
 /**
  * Zbase
@@ -198,6 +199,10 @@ class CreateTable extends Migration
 							{
 								$col = $table->tinyInteger($columnName);
 							}
+							elseif($type == 'ipAddress')
+							{
+								$col = $table->ipAddress($columnName);
+							}
 							elseif($type == 'enum')
 							{
 								$enums = zbase_data_get($column, 'enum', []);
@@ -269,6 +274,18 @@ class CreateTable extends Migration
 					{
 						$table->integer('position')->unsigned()->comment('Row Order/Position');
 					}
+					$userable = zbase_data_get($entity, 'table.userable', false);
+					if(!empty($userable))
+					{
+						$table->integer('user_id')->unsigned()->comment('User Id')->nullable(true);
+						$table->index('user_id');
+					}
+					$statusable = zbase_data_get($entity, 'table.statusable', false);
+					if(!empty($statusable))
+					{
+						$table->integer('status')->unsigned()->comment('Status')->nullable(true);
+						$table->index('status');
+					}
 					$optionable = zbase_data_get($entity, 'table.optionable', false);
 					if(!empty($optionable))
 					{
@@ -295,6 +312,7 @@ class CreateTable extends Migration
 					if(!empty($rememberToken))
 					{
 						$table->rememberToken();
+						$table->index('remember_token');
 					}
 					$ipAddressable = zbase_data_get($entity, 'table.ipAddress', false);
 					if(!empty($ipAddressable))

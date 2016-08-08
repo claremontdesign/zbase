@@ -1,4 +1,5 @@
 <?php
+
 namespace Zbase\Entity\Laravel\Message;
 
 /**
@@ -34,4 +35,17 @@ class File extends \Zbase\Entity\Laravel\Node\File
 	 * @var string
 	 */
 	public static $nodeNamePrefix = 'messages';
+
+	/**
+	 * Return table minimum columns requirement
+	 * @param array $columns Some columns
+	 * @param array $entity Entity Configuration
+	 * @return array
+	 */
+	public static function tableColumns($columns = [], $entity = [])
+	{
+		$columns['node_id']['foreign']['column'] = 'message_id';
+		return $columns;
+	}
+
 }

@@ -24,10 +24,10 @@ class HeadLinkTest extends TestCase
 			]
 		];
 		$view = new Zbase\Models\View\HeadLink($config);
-		$this->assertEquals('style', $view->id());
-		$this->assertEquals('stylesheet', $view->getRel());
-		$this->assertEquals('style.css', $view->getHref());
-		$this->assertEquals('headlink-style', $view->getHtmlId());
+		$this->assertEquals(zbase_string_camel_case('style'), $view->id());
+		$this->assertEquals(zbase_string_camel_case('stylesheet'), $view->getRel());
+		$this->assertEquals(zbase_string_camel_case('style.css'), $view->getHref());
+		$this->assertEquals(zbase_string_camel_case('headlink-style'), $view->getHtmlId());
 	}
 
 	/**
@@ -47,7 +47,7 @@ class HeadLinkTest extends TestCase
 			]
 		];
 		$view = new Zbase\Models\View\HeadLink($config);
-		$this->assertEquals($view->__toString(), '<link id="headlink-style" href="style.css" rel="stylesheet" type="text/css" />');
+		$this->assertEquals($view->__toString(), '<link id="' . zbase_string_camel_case('headlink-style') . '" href="style.css" rel="stylesheet" type="text/css" />');
 	}
 
 	/**
@@ -69,7 +69,7 @@ class HeadLinkTest extends TestCase
 			]
 		];
 		$view = new Zbase\Models\View\HeadLink($config);
-		$this->assertEquals($view->__toString(), '<!--[lte IE 8]><link id="headlink-style" href="style.css" rel="stylesheet" type="text/css" /><![endif]-->');
+		$this->assertEquals($view->__toString(), '<!--[lte IE 8]><link id="' . zbase_string_camel_case('headlink-style') . '" href="style.css" rel="stylesheet" type="text/css" /><![endif]-->');
 	}
 
 	/**

@@ -33,6 +33,7 @@ function zbase_auth_check_access($access, $resource = null)
 	}
 	return false;
 }
+
 /**
  * Return the Minimum Access for the section
  * @return string
@@ -41,6 +42,10 @@ function zbase_auth_minimum()
 {
 	if(zbase_is_back())
 	{
+		if(zbase_route_username())
+		{
+			return zbase_route_username_minimum_access();
+		}
 		return zbase_config_get('auth.access.minimum.back', 'admin');
 	}
 	return zbase_config_get('auth.access.minimum.front', 'guest');

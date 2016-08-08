@@ -87,5 +87,4 @@ class Placeholder extends Widgets\Widget implements Widgets\WidgetInterface, Wid
 		$attr['id'] = 'zbase-widget-wrapper-' . $this->id();
 		return $attr;
 	}
-
 }

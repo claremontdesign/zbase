@@ -76,19 +76,19 @@ return [
 				],
 			],
 		],
-		'event' => [
-			'front' => [
-				'index' => [
-					'post' => [
-						'post' => [
-							'route' => [
-								'name' => 'account',
-							]
-						]
-					],
-				],
-			],
-		],
+//		'event' => [
+//			'front' => [
+//				'index' => [
+//					'post' => [
+//						'post' => [
+//							'route' => [
+//								'name' => 'account',
+//							]
+//						]
+//					],
+//				],
+//			],
+//		],
 		'tabs' => [
 			'account' => [
 				'type' => 'tab',
@@ -199,9 +199,10 @@ return [
 							],
 						],
 					],
-					'account_password' => [
-						'widget' => 'accountConfirm',
-					],
+//					'account_password' => [
+//						'prefix' => 'email_',
+//						'widget' => 'accountConfirm',
+//					],
 				],
 			],
 			'password' => [
@@ -258,9 +259,10 @@ return [
 							],
 						],
 					],
-					'account_password' => [
-						'widget' => 'accountConfirm',
-					],
+//					'account_password' => [
+//						'prefix' => 'password_',
+//						'widget' => 'accountConfirm',
+//					],
 				],
 			],
 			'images' => [

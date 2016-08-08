@@ -20,7 +20,7 @@
  */
 function zbase_path()
 {
-	return __DIR__ . '/../../../';
+	return zbase()->path();
 }
 
 /**
@@ -36,9 +36,9 @@ function zbase_path_library($path)
  * Return the Asset base path
  * @return string
  */
-function zbase_path_asset($path = null)
+function zbase_path_asset($path = null, $absolute = false)
 {
-	return '/' . zbase_tag() . '/assets/' . $path;
+	return (!empty($absolute) ? zbase_url_root() : null) . '/' . zbase_tag() . '/assets/' . $path;
 }
 
 /**

@@ -86,13 +86,8 @@ return [
 			],
 			'pageTitle' => [
 				'label' => 'Page Title',
-				'enable' => function(){
-					if(zbase_is_json())
-					{
-						return true;
-					}
-					return false;
-				},
+				'json' => true,
+				'enable' => true,
 				'data' => [
 					'type' => 'string',
 					'index' => 'User: $$profile.first_name $$profile.last_name'
@@ -100,13 +95,8 @@ return [
 			],
 			'viewTitle' => [
 				'label' => 'Title',
-				'enable' => function(){
-					if(zbase_is_json())
-					{
-						return true;
-					}
-					return false;
-				},
+				'enable' => true,
+				'json' => true,
 				'data' => [
 					'type' => 'string',
 					'index' => 'User: $$profile.first_name $$profile.last_name'

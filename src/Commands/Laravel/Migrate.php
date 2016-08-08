@@ -60,15 +60,18 @@ class Migrate extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\MigrateCommandInterface)
 				{
-					echo "\n -- migrate.pre - " . $packageName;
-					$zbase->migrateCommand($phpCommand, ['migrate.pre' => true]);
+					$this->info($this->signature . '.pre - ' . $packageName);
+					$zbase->migrateCommand($phpCommand, ['migrate.pre' => true, 'command' => $this]);
 				}
 			}
 		}
-		echo "\n";
 		\File::cleanDirectory(database_path() . '/migrations');
 		\File::cleanDirectory(database_path() . '/seeds');
 		\File::cleanDirectory(database_path() . '/factories');
+		\File::cleanDirectory(storage_path() . '/zbase');
+		\File::cleanDirectory(storage_path() . '/framework/cache');
+		\File::cleanDirectory(storage_path() . '/framework/views');
+		\File::cleanDirectory(storage_path() . '/logs');
 		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=migrations --force');
 		echo shell_exec($phpCommand . ' artisan optimize');
 		echo shell_exec($phpCommand . ' artisan migrate:refresh --seed --force');
@@ -94,8 +97,8 @@ class Migrate extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\MigrateCommandInterface)
 				{
-					echo "\n -- migrate.post - " . $packageName;
-					$zbase->migrateCommand($phpCommand, ['migrate.post' => true]);
+					$this->info($this->signature . '.post - ' . $packageName);
+					$zbase->migrateCommand($phpCommand, ['migrate.post' => true, 'command' => $this]);
 				}
 			}
 		}
@@ -125,4 +128,16 @@ class Migrate extends Command
 		return array();
 	}
 
+
+    /**
+     * Write a string as information output.
+     *
+     * @param  string  $string
+     * @param  null|int|string  $verbosity
+     * @return void
+     */
+    public function info($string, $verbosity = null)
+    {
+        parent::info(' --- ' . $string, $verbosity);
+    }
 }

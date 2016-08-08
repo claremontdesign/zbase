@@ -59,8 +59,8 @@ class Install extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\InstallCommandInterface)
 				{
-					echo "\n -- install.pre - " . $packageName;
-					$zbase->installCommand($phpCommand, ['install.pre' => true]);
+					$this->info($this->signature . '.pre - ' . $packageName);
+					$zbase->installCommand($phpCommand, ['install.pre' => true, 'command' => $this]);
 				}
 			}
 		}
@@ -83,8 +83,8 @@ class Install extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\InstallCommandInterface)
 				{
-					echo "\n -- install.post - " . $packageName;
-					$zbase->installCommand($phpCommand, ['install.post' => true]);
+					$this->info($this->signature . '.post - ' . $packageName);
+					$zbase->installCommand($phpCommand, ['install.post' => true, 'command' => $this]);
 				}
 			}
 		}
@@ -110,4 +110,16 @@ class Install extends Command
 		return array();
 	}
 
+
+    /**
+     * Write a string as information output.
+     *
+     * @param  string  $string
+     * @param  null|int|string  $verbosity
+     * @return void
+     */
+    public function info($string, $verbosity = null)
+    {
+        parent::info(' --- ' . $string, $verbosity);
+    }
 }

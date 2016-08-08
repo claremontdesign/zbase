@@ -95,7 +95,7 @@ class TabTest extends TestCase
 			'enable' => true
 		];
 		zbase_route_init('uiTest', $elementRoute);
-		$this->visit('/test/ui-tab')->see('<a data-toggle="tab" href="#ExampleTab-tabOne">Tab One</a>');
+		$this->visit('/test/ui-tab')->see('<a data-toggle="tab" href="#ExampleTabtabOne">Tab One</a>');
 
 	}
 

@@ -19,9 +19,9 @@
  * @param string $widgetName The widget index name
  * @return \Zbase\Widgets\WidgetInterface
  */
-function zbase_widget($widgetName)
+function zbase_widget($widgetName, $config = [], $clone = false, $overrideConfig = [])
 {
-	return zbase()->widget($widgetName);
+	return zbase()->widget($widgetName, $config, $clone, $overrideConfig);
 }
 
 /**
@@ -45,7 +45,10 @@ function zbase_ui_tabs($tabs)
 	{
 		foreach ($tabs as $tab)
 		{
-			$tab = zbase_ui($tab);
+			if(is_array($tab))
+			{
+				$tab = zbase_ui($tab);
+			}
 		}
 		return $tab->group();
 	}

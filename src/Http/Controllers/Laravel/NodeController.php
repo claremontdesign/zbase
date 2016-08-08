@@ -30,17 +30,16 @@ class NodeController extends Controller
 		if(!empty($node) && !empty($id))
 		{
 			$entity = zbase_entity($node . '_files', [], true);
-			if(!empty($entity))
+			$entityFile = $entity->repository()->byAlphaId($id);
+			if(!empty($entityFile))
 			{
-				$entity = $entity->repository()->byAlphaId($id);
-				if(!empty($entity))
-				{
-					return $entity->serveImage(zbase_route_input('w'), zbase_route_input('h'), zbase_route_input('q'));
-				}
+				return $entityFile->serveImage(zbase_route_input('w'), zbase_route_input('h'), zbase_route_input('q'));
 			}
+			return $entity->serveImage(zbase_route_input('w'), zbase_route_input('h'), zbase_route_input('q'), false, true);
 		}
 		return $this->notfound();
 	}
+
 	/**
 	 * Serve a Node Image
 	 * @return Response

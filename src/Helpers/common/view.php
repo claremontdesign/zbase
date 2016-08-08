@@ -393,7 +393,7 @@ function zbase_view_javascript_add($id, $href, $cond = null, $attributes = [])
 {
 	return zbase()->view()->add(\Zbase\Models\View::JAVASCRIPT, [
 				'id' => $id,
-				'href' => $href,
+				'src' => $href,
 				'html' => [
 					'condition' => $cond,
 					'attributes' => $attributes
@@ -968,8 +968,9 @@ function zbase_view_render_body()
 	zbase()->view()->prepare();
 	$onloadScripts = zbase_view_placeholder_render('body_scripts_onload');
 	$str .= zbase_view_placeholder_render('body_javascripts');
+	$str .= zbase_view_placeholder_render('body_footer_html');
 	$str .= EOF . '<script type="text/javascript">';
-	$str .= EOF . zbase_view_placeholder_render('body_scripts');
+	$str .= EOF . zbase_view_compile(zbase_view_placeholder_render('body_scripts'));
 	if(!empty($onloadScripts))
 	{
 		$str .= EOF . 'jQuery(document).ready(function(){'
@@ -1016,5 +1017,9 @@ function zbase_text_footer()
  */
 function zbase_view_compile($html)
 {
+	/**
+	 * Remove javascript comments
+	 */
+	$html = preg_replace( "/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:)\/\/.*))/", "", $html );
 	return zbase_remove_whitespaces($html);
 }

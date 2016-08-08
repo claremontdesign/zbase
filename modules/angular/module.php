@@ -16,10 +16,10 @@
  */
 return [
 	'id' => 'angular',
-	'enable' => true,
+	'enable' => false,
 	'access' => 'admin',
 	'class' => null,
-	'backend' => true,
+	'backend' => false,
 	'frontend' => false,
 	'url' => [
 		'backend' => 'a-{action?}'

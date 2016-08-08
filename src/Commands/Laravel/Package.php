@@ -103,4 +103,17 @@ class Package extends Command
 		return array();
 	}
 
+
+
+    /**
+     * Write a string as information output.
+     *
+     * @param  string  $string
+     * @param  null|int|string  $verbosity
+     * @return void
+     */
+    public function info($string, $verbosity = null)
+    {
+        parent::info(' --- ' . $string, $verbosity);
+    }
 }

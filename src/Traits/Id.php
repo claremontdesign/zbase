@@ -42,13 +42,29 @@ trait Id
 	 */
 	protected $description;
 
+
+	protected $idPrefix = null;
+
 	/**
 	 * Retrieve the attribute::id
 	 * @return string
 	 */
 	public function id()
 	{
-		return $this->id;
+		return $this->idPrefix() . $this->id;
+	}
+
+	/**
+	 * Set the ID Prefix
+	 */
+	public function setIdPrefix($idPrefix)
+	{
+		$this->idPrefix = $idPrefix;
+	}
+
+	public function idPrefix()
+	{
+		return $this->idPrefix;
 	}
 
 	/**
@@ -70,7 +86,7 @@ trait Id
 		{
 			return $this->id();
 		}
-		return $this->name;
+		return $this->idPrefix() . $this->name;
 	}
 
 	/**

@@ -53,6 +53,16 @@ function zbase_framework()
 }
 
 /**
+ * Return the Admin key
+ * @return type
+ */
+function zbase_admin_key()
+{
+	return 'admin';
+//	return env('ZBASE_ADMIN_KEY', 'admin');
+}
+
+/**
  * Localized to current framework the Class name
  * @param string $className
  * @return string
@@ -144,7 +154,7 @@ function zbase_is_maintenance()
  */
 function zbase_maintenance_file()
 {
-	return zbase_storage_path() . 'maintenance';
+	return zbase_storage_path() . '/maintenance';
 }
 
 /**
@@ -165,6 +175,15 @@ function zbase_is_dev()
 }
 
 /**
+ * Check if we are in the console
+ * @return boolean
+ */
+function zbase_is_console()
+{
+	return \App::runningInConsole();
+}
+
+/**
  * Get an item from an array or object using "dot" notation.
  * 	If the value retrieved is an array, it will check for "merge" index
  * 		and will get the value of the merge and array_replace_recursive it with the
@@ -180,19 +199,19 @@ function zbase_is_dev()
  * @param  array  $target
  * @param  string  $key
  * @param  mixed   $default
+ * @param object $object
  * @return mixed
  */
-function zbase_data_get($target, $key = null, $default = null)
+function zbase_data_get($target, $key = null, $default = null, $object = null)
 {
-
-
 	if(is_string($target) && empty($key))
 	{
 		return $target;
 	}
 	if($target instanceof \Closure)
 	{
-		return value($target);
+		return $target($object);
+		// return value($target);
 	}
 	if($target instanceof Interfaces\EntityInterface)
 	{
@@ -310,7 +329,8 @@ function zbase_data_get($target, $key = null, $default = null)
 	}
 	if(!empty($value) && $value instanceof \Closure)
 	{
-		return value($value);
+		return $value($object);
+		// return value($value);
 	}
 	if(isset($value) && $value === null)
 	{
@@ -649,6 +669,10 @@ function zbase_is_mobileTablet()
  */
 function zbase_log($msg, $type = null, $logFile = null, $entity = null)
 {
+	if(!empty($msg) && is_array($msg))
+	{
+		$msg = implode(PHP_EOL, $msg);
+	}
 	if(!empty($entity))
 	{
 		if(!$entity instanceof \Zbase\Interfaces\EntityInterface)
@@ -672,4 +696,23 @@ function zbase_log($msg, $type = null, $logFile = null, $entity = null)
 	}
 	$msg = date('Y-m-d H:i:s') . ' : ' . zbase_ip() . PHP_EOL . $msg . PHP_EOL . "--------------------" . PHP_EOL;
 	file_put_contents($folder . $file, $msg . PHP_EOL, FILE_APPEND);
+}
+
+/**
+ * Recaptcha
+ *
+ * @return recaptcha
+ */
+function zbase_captcha_render()
+{
+	/**
+	 * SiteKey: 6LcF7iYTAAAAAFNFEC9twUQSwQIfkr7XFt0E0Kkt
+	 * SecretKey: 6LcF7iYTAAAAAMfSI42BiekUi0UjhJUZj3NPnXPx
+	 */
+	$siteKey = zbase_config_get('recaptcha.sitekey', false);
+	if(!empty($siteKey))
+	{
+		//zbase_view_javascript_add('catcha', 'https://www.google.com/recaptcha/api.js');
+		//return '<div class="g-recaptcha" data-sitekey="' . $siteKey . '"></div>';
+	}
 }

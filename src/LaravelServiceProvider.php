@@ -28,6 +28,7 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 			$zbase->setAuth(app('auth'));
 			return $zbase;
 		});
+		zbase_url_parse_admin();
 		zbase()->loadModuleFrom(__DIR__ . '/../modules');
 	}
 
@@ -47,6 +48,27 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 				foreach ($packages as $packageName)
 				{
 					$configFiles = zbase_package($packageName)->config();
+					$packagePath = zbase_package($packageName)->path();
+					//var_dump($packageName, $packagePath);
+					//dd(file_exists($packagePath . 'modules'));
+					//dd($packagePath . 'modules', file_exists($packagePath . 'modules'));
+					$this->loadViewsFrom($packagePath . 'modules', $packageName . 'modules');
+
+					if(zbase_file_exists($packagePath . 'resources/views'))
+					{
+						$this->loadViewsFrom($packagePath . 'resources/views', $packageName);
+					}
+					if(zbase_file_exists($packagePath . 'resources/assets'))
+					{
+						$this->publishes([
+							$packagePath . 'resources/assets' => zbase_public_path(zbase_path_asset($packageName)),
+								], 'public');
+					}
+					if(zbase_file_exists($packagePath . '/Http/Controllers/Laravel/routes.php'))
+					{
+						require $packagePath . '/Http/Controllers/Laravel/routes.php';
+					}
+
 					if(is_array($configFiles))
 					{
 						foreach ($configFiles as $configFile)
@@ -73,7 +95,6 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 					__DIR__ . '/../tests/config/config.php', zbase_tag()
 			);
 		}
-
 		$this->publishes([
 			__DIR__ . '/../resources/assets' => zbase_public_path(zbase_path_asset()),
 				], 'public');
@@ -83,16 +104,12 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 			__DIR__ . '/../database/seeds' => base_path('database/seeds'),
 			__DIR__ . '/../database/factories' => base_path('database/factories')
 				], 'migrations');
-
 		$this->app['config']['database.connections.mysql.prefix'] = zbase_db_prefix();
 		$this->app['config']['auth.providers.users.model'] = get_class(zbase_entity('user'));
 		$this->app['config']['auth.passwords.users.table'] = zbase_config_get('entity.user_tokens.table.name');
 		$this->app['config']['auth.passwords.users.email'] = zbase_view_file_contents('auth.password.email.password');
 		require __DIR__ . '/Http/Controllers/Laravel/routes.php';
-
-
-//		\View::composer('*', function($view){
-//		});
+		zbase()->prepareWidgets();
 
 		/**
 		 * Validator to check for account password

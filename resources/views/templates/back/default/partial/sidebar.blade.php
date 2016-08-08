@@ -19,12 +19,23 @@
 			</li>
 			<?php
 			$modules = zbase()->modules();
+			$navs = [];
 			foreach ($modules as $module)
 			{
 				if($module->hasNavigation(zbase_section()))
 				{
-					$navigation = $module->getNavigation(zbase_section());
-					echo $navigation;
+					$navs[] = $module;
+				}
+			}
+			$navs = zbase_collection($navs)->sortByDesc(function ($itm) {
+						return $itm->getNavigationOrder();
+					})->toArray();
+
+			if(!empty($navs))
+			{
+				foreach ($navs as $navigation)
+				{
+					echo $navigation->getNavigation(zbase_section());
 				}
 			}
 			?>

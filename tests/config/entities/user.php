@@ -48,12 +48,28 @@ return [
 				'description' => 'User Profiles'
 			]
 		],
+		'user_address' => [
+			'enable' => true,
+			'model' => Zbase\Entity\__FRAMEWORK__\User\UserAddress::class,
+			'table' => [
+				'name' => 'users_address',
+				'description' => 'User Addresses'
+			]
+		],
 		'user_logs' => [
 			'enable' => true,
 			'model' => Zbase\Entity\__FRAMEWORK__\User\Log::class,
 			'table' => [
 				'name' => 'users_logs',
 				'description' => 'User Logs'
+			]
+		],
+		'user_notifications' => [
+			'enable' => true,
+			'model' => Zbase\Entity\__FRAMEWORK__\User\Notifications::class,
+			'table' => [
+				'name' => 'users_notification',
+				'description' => 'User Notifications'
 			]
 		],
 		'user_roles' => [

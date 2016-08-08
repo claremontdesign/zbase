@@ -195,6 +195,17 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	}
 
 	/**
+	 * Url
+	 * @param string $routeName
+	 * @param array $params
+	 * @return string
+	 */
+	public function url($routeName, $params = [])
+	{
+		return zbase_url_from_route($routeName, $params);
+	}
+
+	/**
 	 *
 	 * @return boolean
 	 */

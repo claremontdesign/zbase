@@ -20,7 +20,7 @@ use Zbase\Models;
 use Zbase\Interfaces;
 use Zbase\Exceptions;
 
-class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInterface, Interfaces\AssetsCommandInterface, Interfaces\ClearCommandInterface
+class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInterface, Interfaces\AssetsCommandInterface, Interfaces\ClearCommandInterface, Interfaces\TestCommandInterface
 {
 
 	const ALERT_INFO = 'info';
@@ -275,21 +275,27 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			{
 				if(empty($this->modules[$name]))
 				{
+					$config['path'] = $path;
 					$this->modules[$name] = $config;
 				}
 				return $this;
 			}
 		}
-		throw new Exceptions\ConfigNotFoundException('Module ' . $path . ' folder or ' . zbase_directory_separator_fix($path . '/module.ph') . ' not found.');
+		// throw new Exceptions\ConfigNotFoundException('Module ' . $path . ' folder or ' . zbase_directory_separator_fix($path . '/module.ph') . ' not found.');
 	}
 
 	/**
 	 * Return Module
 	 * @param string $name
+	 * @param Module|array $config
 	 * @return null|\Zbase\Module\ModuleInterface
 	 */
-	public function module($name)
+	public function module($name, $config = null)
 	{
+		if($config instanceof \Zbase\Module\ModuleInterface)
+		{
+			return $config;
+		}
 		if(!empty($this->modules[$name]))
 		{
 			if(!$this->modules[$name] instanceof \Zbase\Module\ModuleInterface)
@@ -322,10 +328,6 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 				foreach ($folders as $folder)
 				{
 					$this->addModule(basename($folder), $folder);
-					if(zbase_directory_check($folder . '/widgets'))
-					{
-						$this->loadWidgetFrom($folder . '/widgets');
-					}
 				}
 			}
 		}
@@ -338,6 +340,23 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	public function modules()
 	{
 		return $this->modules;
+	}
+
+	/**
+	 * Prepare Widgets
+	 *
+	 * @return void
+	 */
+	public function prepareWidgets()
+	{
+		foreach ($this->modules as $name => $m)
+		{
+			$m = $this->module($name, $m);
+			if(zbase_directory_check($m->getPath() . '/widgets'))
+			{
+				$this->loadWidgetFrom($m->getPath() . '/widgets');
+			}
+		}
 	}
 
 	/**
@@ -366,7 +385,6 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 					{
 						$this->widgets[$name] = $widget;
 					}
-					// $this->widget($widget);
 				}
 			}
 		}
@@ -375,10 +393,13 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	/**
 	 * Return/Create a Widget
 	 * @param string|array $widget
+	 * @param array $config Configuration
 	 * @param boolean $clone Will clone if widget was already created
+	 * @param array $overrideConfig Confiuration will be overriden
+	 *
 	 * @return \Zbase\Widgets\WidgetInterface[] | null
 	 */
-	public function widget($widget, $config = [], $clone = null)
+	public function widget($widget, $config = [], $clone = null, $overrideConfig = [])
 	{
 		if(is_array($widget))
 		{
@@ -409,6 +430,10 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			}
 			if(!empty($config))
 			{
+				if(!empty($overrideConfig))
+				{
+					$config = array_replace_recursive($config, $overrideConfig);
+				}
 				$name = !empty($config['id']) ? $config['id'] : null;
 				$type = !empty($config['type']) ? $config['type'] : [];
 				$config = !empty($config['config']) ? $config['config'] : [];
@@ -593,6 +618,11 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	}
 
 	public function clearCommand($phpCommand, $options = [])
+	{
+
+	}
+
+	public function testCommand($phpCommand, $options = [])
 	{
 
 	}

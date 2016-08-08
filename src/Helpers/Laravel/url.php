@@ -22,12 +22,25 @@
 function zbase_url_from_route($name, $params = [], $relative = false)
 {
 	$prefix = '';
-	$usernameRouteParameterName = zbase_route_username_prefix();
-	$usernameRoute = zbase_route_username_get();
-	if(!empty($usernameRoute))
+	$name = str_replace('admin.', zbase_admin_key().'.', $name);
+	$name = str_replace('admin', zbase_admin_key(), $name);
+	$usernameRouteEnabled = zbase_route_username();
+	if(!empty($usernameRouteEnabled))
 	{
-		$prefix = $usernameRouteParameterName;
-		$params[$usernameRouteParameterName] = $usernameRoute;
+		$usernameRouteParameterName = zbase_route_username_prefix();
+		$usernameRoute = zbase_route_username_get();
+		if(empty($usernameRoute) && zbase_auth_has() && zbase_is_back())
+		{
+			$usernameRoute = zbase_auth_user()->username();
+		}
+		if(!empty($usernameRoute))
+		{
+			$prefix = $usernameRouteParameterName;
+			if(empty($params[$usernameRouteParameterName]))
+			{
+				$params[$usernameRouteParameterName] = $usernameRoute;
+			}
+		}
 	}
 	$name = $prefix . $name;
 	if(!empty($relative))

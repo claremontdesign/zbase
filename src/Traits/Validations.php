@@ -99,7 +99,8 @@ trait Validations
 		{
 			foreach ($validations as $type => $config)
 			{
-				$enable = !empty($config['enable']) ? true : false;
+				$enable = zbase_data_get($config, 'enable');
+				// $enable = $enable ? true : false;
 				if(!empty($enable))
 				{
 					if(!empty($config['text']))

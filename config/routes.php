@@ -42,9 +42,9 @@ return [
 	'routes' => [
 		'adminkey' => [
 			'enable' => false,
-			'key' => 'admin'
+			'key' => zbase_admin_key()
 		],
-		'admin' => [
+		zbase_admin_key() => [
 			'controller' => [
 				'name' => 'backend',
 				'method' => 'index',
@@ -55,7 +55,7 @@ return [
 					return zbase_site_name();
 				},
 			],
-			'url' => '/admin',
+			'url' => '/' . zbase_admin_key(),
 			'middleware' => [
 				'admin' => true,
 			],

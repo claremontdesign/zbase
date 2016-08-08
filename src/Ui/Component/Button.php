@@ -131,6 +131,7 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 	public function wrapperAttributes()
 	{
 		$attr = $this->_v('html.attributes.wrapper', []);
+		$attr['id'] = $this->id();
 		$attr['class'][] = 'zbase-ui-button';
 		if($this->tag == 'a')
 		{
@@ -193,5 +194,4 @@ class Button extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInterface
 		}
 		return null;
 	}
-
 }

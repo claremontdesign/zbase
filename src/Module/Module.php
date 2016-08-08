@@ -80,6 +80,15 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	}
 
 	/**
+	 * Return the Path to the Module
+	 * @return type
+	 */
+	public function getPath()
+	{
+		return $this->_v('path', []);
+	}
+
+	/**
 	 * Return the Module Navigation
 	 */
 	public function getNavigation($section = 'back')
@@ -93,12 +102,24 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	}
 
 	/**
+	 * Return the Module Navigation
+	 */
+	public function getNavigationOrder($section = 'back')
+	{
+		return $this->_v('navigation.' . $section . '.nav.order', 1);
+	}
+
+	/**
 	 * Check if there is a navigation entry for admin
 	 * @return boolean
 	 */
 	public function hasNavigation($section = 'back')
 	{
-		return (bool) $this->_v('navigation.' . $section . '.enable', false);
+		if($this->isEnable() && $this->hasAccess())
+		{
+			return (bool) $this->_v('navigation.' . $section . '.enable', false);
+		}
+		return false;
 	}
 
 	/**
@@ -120,9 +141,6 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	{
 		return (bool) $this->_v('frontend', false);
 	}
-
-
-
 
 	/**
 	 * The URL Key per section
@@ -178,7 +196,7 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	{
 		if(is_null($this->hasAccess))
 		{
-			$this->hasAccess = zbase_auth_check_access($this->_v('access'));
+			$this->hasAccess = zbase_auth_check_access($this->_v('access', zbase_auth_minimum()));
 		}
 		return $this->hasAccess;
 	}
@@ -390,5 +408,6 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	{
 		return zbase_data_get($this->getConfiguration(), $key, $default);
 	}
+
 	// </editor-fold>
 }

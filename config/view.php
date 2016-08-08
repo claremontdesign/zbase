@@ -44,7 +44,14 @@ return [
 						'type' => \Zbase\Models\View::SCRIPT,
 						'enable' => true,
 						'script' => 'Zbase.init();',
-						'onLoad' => false,
+						'onLoad' => true,
+					],
+					[
+						'id' => 'zbase-style',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('css/style.css'),
+						'position' => 1000,
+						'enable' => true,
 					],
 				]
 			],
@@ -192,6 +199,72 @@ return [
 						'id' => 'jstree-css',
 						'type' => \Zbase\Models\View::STYLESHEET,
 						'href' => zbase_path_asset('metronic/plugins/jstree/dist/themes/default/style.min.css'),
+						'enable' => true,
+					],
+				]
+			],
+			// http://ashleydw.github.io/lightbox/
+			'bslightbox' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => '//cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/4.0.1/ekko-lightbox.min.js',
+				'enable' => true,
+				'dependents' => [
+					[
+						'id' => 'bslightbox-css',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => '//cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/4.0.1/ekko-lightbox.min.css',
+						'enable' => true,
+					],
+				]
+			],
+			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="Bootstrap Select">
+			'bootstrap-select' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('metronic/plugins/bootstrap-select/bootstrap-select.min.js'),
+				'enable' => true,
+				'dependents' => [
+					[
+						'id' => 'bootstrap-select-init',
+						'type' => \Zbase\Models\View::SCRIPT,
+						'enable' => false,
+						'script' => '',
+						'onLoad' => true,
+					],
+					[
+						'id' => 'bootstrap-select2',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/select2/select2.min.js'),
+						'enable' => true,
+					],
+					[
+						'id' => 'bootstrap-select2-jquery-multi',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-multi-select/js/jquery.multi-select.js'),
+						'enable' => true,
+					],
+					[
+						'id' => 'bootstrap-select-style',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/bootstrap-select/bootstrap-select.min.css'),
+						'enable' => true,
+					],
+					[
+						'id' => 'bootstrap-select2-style',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/select2/select2.css'),
+						'enable' => true,
+					],
+					[
+						'id' => 'bootstrap-select2-metronic-style',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/select2/select2-metronic.css'),
+						'enable' => true,
+					],
+					[
+						'id' => 'bootstrap-select2-jquery-multi',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/jquery-multi-select/css/multi-select.css'),
 						'enable' => true,
 					],
 				]

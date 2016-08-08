@@ -20,7 +20,7 @@ class StyleTest extends TestCase
 		];
 		$view = new Zbase\Models\View\Style($config);
 		$this->assertEquals('style', $view->id());
-		$this->assertEquals('style-style', $view->getHtmlId());
+		$this->assertEquals('styleStyle', $view->getHtmlId());
 	}
 
 	/**
@@ -35,7 +35,7 @@ class StyleTest extends TestCase
 			'style' => '#selector{display:block;}'
 		];
 		$view = new Zbase\Models\View\Style($config);
-		$this->assertEquals($view->__toString(), EOF . '<style type="text/css" id="style-style">' . EOF . '#selector{display:block;}' . EOF . '</style>' . EOF);
+		$this->assertEquals($view->__toString(), EOF . '<style type="text/css" id="styleStyle">' . EOF . '#selector{display:block;}' . EOF . '</style>' . EOF);
 	}
 
 	/**

@@ -92,6 +92,17 @@ trait Module
 			$htmls = [];
 		}
 		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($widgetsAction);
+		zbase()->json()->addVariable('_widget', $this->getModule()->id() . '_' . str_replace('-','',$action));
+		if(zbase_is_dev())
+		{
+			zbase()->json()->addVariable(__METHOD__, $widgetsAction);
+			if(zbase_request_is_post())
+			{
+				zbase()->json()->addVariable('_POST_PARAMETERS', zbase_request_inputs());
+			}
+			zbase()->json()->addVariable('_ROUTE_PARAMETERS', zbase_route_inputs());
+			zbase()->json()->addVariable('_GET_PARAMETERS', zbase_request_query_inputs());
+		}
 		// dd($this->getModule(), $widgetsAction, $widgets);
 		if(empty($widgets))
 		{
@@ -144,25 +155,35 @@ trait Module
 						return $ret;
 					}
 				}
-				if($isAjax)
-				{
-					$htmls[str_replace('-', '_', $widget->id())] = $widget->render();
-				}
 				if(zbase_is_json())
 				{
 					zbase_response_format_set('json');
-					$jsonIndexName = $widget->id();
-					if(zbase_is_json() && $widget instanceof \Zbase\Widgets\Type\Datatable)
+					$jsonIndexName = $widget->getWidgetPrefix();
+					if(zbase_is_angular())
 					{
-						$angularTemplate = zbase_angular_widget_datatable($this->getModule(), $widget);
-						$jsonIndexName = $angularTemplate['serviceName'];
+						if($widget instanceof \Zbase\Widgets\Type\Datatable)
+						{
+							$angularTemplate = zbase_angular_widget_datatable($this->getModule(), $widget);
+							$jsonIndexName = $angularTemplate['serviceName'];
+						}
+					}
+					if(zbase_is_dev())
+					{
+						zbase()->json()->addVariable('$jsonIndexName', $jsonIndexName);
 					}
 					zbase()->json()->addVariable($jsonIndexName, $widget->toArray());
+				} else {
+					if($isAjax)
+					{
+						$htmls[str_replace('-', '_', $widget->id())] = $widget->render();
+					}
 				}
+				$widget->pageProperties($widgetsAction);
 			}
 		}
 		if(!empty($isAjax))
 		{
+			zbase()->json()->addVariable('_widgets', 1);
 			zbase()->json()->addVariable('html', $htmls);
 		}
 		else

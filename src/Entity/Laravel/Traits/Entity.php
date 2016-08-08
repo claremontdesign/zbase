@@ -98,7 +98,6 @@ trait Entity
 	 */
 	protected $repository = null;
 
-
 	/**
 	 * Create zbase like entity
 	 */
@@ -120,6 +119,18 @@ trait Entity
 		$this->sluggable = zbase_data_get($this->entityAttributes, 'table.sluggable', false);
 		$this->alphable = zbase_data_get($this->entityAttributes, 'table.alphaId', false);
 		$this->softDelete = zbase_data_get($this->entityAttributes, 'table.softDelete', false);
+		if(property_exists($this, 'forceDeleting'))
+		{
+			if(!empty($this->softDelete))
+			{
+				$this->forceDeleting = false;
+			}
+			else
+			{
+				$this->forceDeleting = true;
+			}
+		}
+
 		if(!empty($this->softDelete))
 		{
 			$this->dates[] = 'deleted_at';
@@ -148,6 +159,7 @@ trait Entity
 		{
 			foreach ($this->dbColumns as $columnName => $column)
 			{
+				$this->$columnName = null;
 				$type = $column['type'];
 				$filterable = zbase_data_get($column, 'filterable.enable', false);
 				if(!empty($filterable))

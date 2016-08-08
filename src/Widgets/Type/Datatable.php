@@ -67,6 +67,12 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	protected $_columnsPrepared = false;
 
 	/**
+	 * Empty message to display
+	 * @var string
+	 */
+	protected $_emptyViewFile = '';
+
+	/**
 	 * 	Rows
 	 * @var \Zbase\Entity\EntityInterface
 	 */
@@ -97,6 +103,384 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 */
 	protected $_rowsPrepared = false;
 	protected $_htmlWrapperAttributes = ['class' => ['table-responsive']];
+
+	// <editor-fold defaultstate="collapsed" desc="Rows">
+
+	/**
+	 * Return the Categories
+	 * Some nodes has categories,
+	 * 	so let's return their subCategories
+	 *
+	 * @return null|\Zbase\Entity\Laravel\Node\Nested[]
+	 */
+	public function categoryDescendants()
+	{
+		if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+		{
+			return $this->_entity->getDescendants();
+		}
+		if($this->isNodeCategory())
+		{
+			$entity = $this->_entity;
+			if(!$entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+			{
+				$entity = zbase_entity($entity::$nodeNamePrefix . '_category');
+				return $entity->getRoot()->getDescendants()->toHierarchy();
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Prepare Repository
+	 */
+	protected function _repo()
+	{
+		if(!empty($this->_entity))
+		{
+			$entityObject = $this->entityObject();
+			$repo = $entityObject->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
+			$filters = [];
+			$sorting = [];
+			$joins = [];
+			$selects = ['*'];
+			if($this->isNode())
+			{
+				$urlFilters = $this->getRequestFilters();
+				if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+				{
+					/**
+					 * We are getting the nodes on each category
+					 *  switch to node entityObject
+					 */
+					$entityObject = zbase_entity($entityObject::$nodeNamePrefix, [], true);
+					$repo = $entityObject->setPerPage(zbase_request_query_input('pp', $this->_v('rows.perpage', $this->_entity->getPerPage())))->repository();
+					$categories = $this->_entity->getDescendantsAndSelf();
+					if(!empty($categories))
+					{
+						foreach ($categories as $category)
+						{
+							$urlFilters['category'][] = $category;
+						}
+					}
+				}
+				if($this->isPublic())
+				{
+					$urlFilters['public'] = true;
+				}
+				if($this->isCurrentUser())
+				{
+					$urlFilters['currentUser'] = true;
+				}
+				if(!empty($urlFilters))
+				{
+					if(method_exists($entityObject, 'queryFilters'))
+					{
+						$filters = $entityObject->queryFilters($urlFilters, $this->getRequestSorting(), ['widget' => $this]);
+					}
+					else
+					{
+						if(!empty($urlFilters['public']))
+						{
+							$filters['status'] = 2;
+						}
+						if(!empty($urlFilters['currentUser']))
+						{
+							$filters['user_id'] = zbase_auth_user()->id();
+						}
+					}
+				}
+				else
+				{
+					if(method_exists($entityObject, 'queryFilters'))
+					{
+						$filters = $entityObject->queryFilters($urlFilters, $this->getRequestSorting(), ['widget' => $this]);
+					}
+				}
+				if(method_exists($entityObject, 'querySelects'))
+				{
+					$selects = $entityObject->querySelects($urlFilters, ['widget' => $this]);
+				}
+				if(method_exists($entityObject, 'queryJoins'))
+				{
+					$joins = $entityObject->queryJoins($urlFilters, $this->getRequestSorting(), ['widget' => $this]);
+				}
+				if(method_exists($entityObject, 'querySorting'))
+				{
+					$sorting = $entityObject->querySorting($this->getRequestSorting(), $urlFilters, ['widget' => $this]);
+				}
+				/**
+				 * Merge filters from widget configuration
+				 * entity.filter.query
+				 */
+				$filters = array_merge($filters, $this->_v('entity.filter.query', []));
+				if($this->isSearchable() && $this->isSearching())
+				{
+					if(method_exists($entityObject, 'querySearchFilters'))
+					{
+						$filters = $entityObject->querySearchFilters($filters, ['widget' => $this]);
+					}
+				}
+				// dd($joins, $sorting, $filters);
+			}
+			$this->_repoSelects = $selects;
+			$this->_repoJoins = $joins;
+			$this->_repoSorts = $sorting;
+			$this->_repoFilters = $filters;
+			$debug = zbase_request_query_input($this->id() . '__debug', false);
+			$repo->setDebug($debug);
+			$repo->setQueryName($this->getWidgetPrefix('Repo'));
+			$this->_repo = $repo;
+		}
+		return $this->_repo;
+	}
+
+	/**
+	 * Prepare and fetch all rows
+	 */
+	protected function _rows()
+	{
+		if(empty($this->_rowsPrepared))
+		{
+			try
+			{
+				if(!empty($this->_entity))
+				{
+					if($this->isQueryOnLoad())
+					{
+						$repo = $this->_repo();
+						$entityObject = $this->entityObject();
+						if($entityObject->hasSoftDelete() && $this->nodeIncludeTrashed())
+						{
+							$this->_rows = $repo->withTrashed()->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, true);
+						}
+						else
+						{
+							$this->_rows = $repo->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, true);
+						}
+					}
+				}
+				$this->_rowsPrepared = true;
+			} catch (\Zbase\Exceptions\RuntimeException $e)
+			{
+				if(zbase_in_dev($e))
+				{
+					dd($e);
+				}
+				else
+				{
+					zbase_abort(500);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Return the fetch rows
+	 * @var \Zbase\Entity\EntityInterface[]
+	 */
+	public function getRows()
+	{
+		//$rows = $this->_v('rows', null);
+		if(!empty($this->_rows))
+		{
+			return $this->_rows;
+		}
+		$this->_rows();
+		return $this->_rows;
+	}
+
+	/**
+	 * Set the Rows
+	 *
+	 * @return $this
+	 */
+	public function setRows($rows)
+	{
+		$this->_rows = $rows;
+		return $this;
+	}
+
+	// </editor-fold>
+
+	public function __construct($widgetId, $configuration)
+	{
+		$this->_emptyViewFile = zbase_view_file_contents('ui.datatable.empty');
+		parent::__construct($widgetId, $configuration);
+	}
+
+	/**
+	 * Return the Search Text Placeholder
+	 *
+	 * @return string
+	 */
+	public function searchTextPlaceholder()
+	{
+		return $this->_v('searchable.input.placeholder', 'Search Data');
+	}
+
+	/**
+	 * If table is inQueryOnLoad,
+	 * data will be loaded on default.
+	 * will query DB
+	 *
+	 * @return boolean
+	 */
+	public function isQueryOnLoad()
+	{
+		if($this->isSearching())
+		{
+			return true;
+		}
+		return $this->_v('queryOnLoad', true);
+	}
+
+	/**
+	 * Is Searchable?
+	 * @return boolean
+	 */
+	public function isSearchable()
+	{
+		return $this->_v('searchable.enable', $this->_v('searchable', false));
+	}
+
+	/**
+	 * Check if Data returned from search is a JSON object
+	 *
+	 * @return boolean
+	 */
+	public function isSearchResultJson()
+	{
+		return $this->_v('searchable.json', false);
+	}
+
+	/**
+	 * Check if we are searching
+	 *
+	 * @return boolean
+	 */
+	public function isSearching()
+	{
+		if(zbase_request_is_post() && zbase_is_json() && !empty(zbase_request_input($this->getWidgetPrefix('search_query'))))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Will search for the saved value on Load.
+	 * Default false
+	 *
+	 * @return boolean
+	 */
+	public function isSearchOnLoad()
+	{
+		return $this->_v('searchable.onload', false);
+	}
+
+	/**
+	 * Return search queries
+	 * @return string|array
+	 */
+	public function getSearchKeyword()
+	{
+		if(zbase_is_post())
+		{
+			return zbase_request_input($this->getWidgetPrefix('search_query'));
+		}
+	}
+
+	/**
+	 * Check if table rows can be selectable.
+	 * Presence of a checkbox
+	 *
+	 * @return boolean
+	 */
+	public function isRowSelectable()
+	{
+		return $this->_v('rows.selectable.enable', $this->_v('rows.selectable', false));
+	}
+
+	/**
+	 * Check if table rows can be clickable
+	 *
+	 * @return boolean
+	 */
+	public function isRowsClickable()
+	{
+		return $this->_v('rows.clickable.enable', $this->_v('rows.clickable', false));
+	}
+
+	/**
+	 * Return the Row clickable URL
+	 * @param EntityInterface $row
+	 * @param boolean $template If to generate a template
+	 * @return string
+	 */
+	public function getRowClickableUrl($row, $template = false)
+	{
+		$action = $this->_v('rows.clickable.action', null);
+		if(!empty($action) && is_array($action))
+		{
+			$actionConfig = $action;
+		}
+		else
+		{
+			/**
+			 * It's a string, a reference to actions.actionName indexes
+			 */
+			$actionConfig = $this->_v('actions.' . $action);
+		}
+		$btn = $this->createActionBtn('view', $row, $actionConfig, $template);
+		if($btn instanceof \Zbase\Ui\UiInterface)
+		{
+			return $btn->href();
+		}
+		return '#';
+	}
+
+	/**
+	 * Return Search URL
+	 * @return string
+	 */
+	public function getSearchUrl()
+	{
+		return $this->_v('searchable.url', zbase_url_from_current());
+	}
+
+	/**
+	 * The empty view file
+	 * @param type $emptyViewFile
+	 * @return \Zbase\Widgets\Type\Datatable
+	 */
+	public function setEmptyViewFile($emptyViewFile)
+	{
+		if(!empty($emptyViewFile))
+		{
+			$this->_emptyViewFile = $emptyViewFile;
+		}
+		return $this;
+	}
+
+	/**
+	 * Empty Message
+	 * @return string
+	 */
+	public function emptyViewFile()
+	{
+		return $this->_emptyViewFile;
+	}
+
+	/**
+	 * The Row Value Index
+	 *  Should be unique, like id or alpha_id
+	 * @return string
+	 */
+	public function rowValueIndex()
+	{
+		return $this->_v('value.index', 'alpha_id');
+	}
 
 	/**
 	 * Return the data filters
@@ -191,169 +575,6 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		return null;
 	}
 
-	// <editor-fold defaultstate="collapsed" desc="Rows">
-
-	/**
-	 * Return the Categories
-	 * Some nodes has categories,
-	 * 	so let's return their subCategories
-	 *
-	 * @return null|\Zbase\Entity\Laravel\Node\Nested[]
-	 */
-	public function categoryDescendants()
-	{
-		if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
-		{
-			return $this->_entity->getDescendants();
-		}
-		if($this->isNodeCategory())
-		{
-			$entity = $this->_entity;
-			if(!$entity instanceof \Zbase\Entity\Laravel\Node\Nested)
-			{
-				$entity = zbase_entity($entity::$nodeNamePrefix . '_category');
-				return $entity->getRoot()->getDescendants()->toHierarchy();
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Prepare Repository
-	 */
-	protected function _repo()
-	{
-		if(!empty($this->_entity))
-		{
-			$repo = $this->_entity->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
-			$filters = [];
-			$sorting = [];
-			$joins = [];
-			$selects = ['*'];
-			if($this->isNode())
-			{
-				$urlFilters = $this->getRequestFilters();
-				$entityObject = $this->entityObject();
-				if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
-				{
-					/**
-					 * We are getting the nodes on each category
-					 *  switch to node entityObject
-					 */
-					$entityObject = zbase_entity($entityObject::$nodeNamePrefix, [], true);
-					$repo = $entityObject->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
-					$categories = $this->_entity->getDescendantsAndSelf();
-					if(!empty($categories))
-					{
-						foreach ($categories as $category)
-						{
-							$urlFilters['category'][] = $category;
-						}
-					}
-				}
-				if($this->isPublic())
-				{
-					$urlFilters['public'] = true;
-				}
-				if($this->isCurrentUser())
-				{
-					$urlFilters['currentUser'] = true;
-				}
-				if(!empty($urlFilters))
-				{
-					if(method_exists($entityObject, 'queryFilters'))
-					{
-						$filters = $entityObject->queryFilters($urlFilters, $this->getRequestSorting());
-					}
-					else
-					{
-						if(empty($urlFilters['public']))
-						{
-							$filters['status'] = 2;
-						}
-						if(empty($urlFilters['currentUser']))
-						{
-							$filters['user_id'] = zbase_auth_user()->id();
-						}
-					}
-				}
-				if(method_exists($entityObject, 'querySelects'))
-				{
-					$selects = $entityObject->querySelects($urlFilters);
-				}
-				if(method_exists($entityObject, 'queryJoins'))
-				{
-					$joins = $entityObject->queryJoins($urlFilters, $this->getRequestSorting());
-				}
-				if(method_exists($entityObject, 'querySorting'))
-				{
-					$sorting = $entityObject->querySorting($this->getRequestSorting(), $urlFilters);
-				}
-				/**
-				 * Merge filters from widget configuration
-				 * entity.filter.query
-				 */
-				$filters = array_merge($filters, $this->_v('entity.filter.query', []));
-				// dd($joins, $sorting, $filters);
-			}
-			$this->_repoSelects = $selects;
-			$this->_repoJoins = $joins;
-			$this->_repoSorts = $sorting;
-			$this->_repoFilters = $filters;
-			$debug = zbase_request_query_input($this->id() . '__debug', false);
-			$repo->setDebug($debug);
-			$this->_repo = $repo;
-		}
-		return $this->_repo;
-	}
-
-	/**
-	 * Prepare and fetch all rows
-	 */
-	protected function _rows()
-	{
-		if(empty($this->_rowsPrepared))
-		{
-			try
-			{
-				if(!empty($this->_entity))
-				{
-					$repo = $this->_repo();
-					if($this->_entity->hasSoftDelete() && $this->nodeIncludeTrashed())
-					{
-						$this->_rows = $repo->withTrashed()->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, true);
-					}
-					else
-					{
-						$this->_rows = $repo->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, true);
-					}
-				}
-				$this->_rowsPrepared = true;
-			} catch (\Zbase\Exceptions\RuntimeException $e)
-			{
-				if(zbase_in_dev($e))
-				{
-					dd($e);
-				}
-				else
-				{
-					zbase_abort(500);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Return the fetch rows
-	 * @var \Zbase\Entity\EntityInterface[]
-	 */
-	public function getRows()
-	{
-		$this->_rows();
-		return $this->_rows;
-	}
-
-	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="COLUMNS">
 	/**
 	 * Prepare Columns
@@ -371,7 +592,10 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 						$config['id'] = $name;
 					}
 					$col = new \Zbase\Models\Data\Column($config);
-					$this->_processedColumns[$name] = $col;
+					if($col->enable())
+					{
+						$this->_processedColumns[$name] = $col;
+					}
 				}
 			}
 			$this->_columnsPrepared = true;
@@ -439,96 +663,133 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 
 	/**
 	 * Render the actions
+	 *
+	 * @param Entity $row
+	 * @param boolean $template
 	 */
-	public function renderRowActions($row)
+	public function renderRowActions($row, $template = false)
 	{
-		if(!$row instanceof \Zbase\Interfaces\EntityInterface)
-		{
-			return;
-		}
-		$rowTrashed = false;
-		if($this->_entity->hasSoftDelete())
-		{
-			$rowTrashed = $row->trashed();
-		}
 		if(!empty($this->_actions))
 		{
 			$this->_actionButtons = [];
-			foreach ($this->_actions as $actionName => $action)
+			foreach ($this->_actions as $actionName => $actionConfig)
 			{
-				if($actionName == 'delete' || $actionName == 'update')
+				$btn = $this->createActionBtn($actionName, $actionConfig, $row, $template);
+				if(!empty($btn))
 				{
-					if($rowTrashed)
-					{
-						continue;
-					}
+					$this->_actionButtons[] = $btn;
 				}
-				if($actionName == 'restore' || $actionName == 'ddelete')
-				{
-					if(empty($rowTrashed))
-					{
-						continue;
-					}
-				}
-				$label = !empty($action['label']) ? $action['label'] : ucfirst($actionName);
-				if(strtolower($label) == 'ddelete')
-				{
-					$label = _zt('Forever Delete');
-				}
-				$action['type'] = 'component.button';
-				$action['id'] = $this->id() . 'Action' . $actionName;
-				$action['size'] = 'extrasmall';
-				$action['label'] = _zt($label);
-				$action['tag'] = 'a';
-				if(!empty($action['route']['name']))
-				{
-					if(!empty($action['route']['params']))
-					{
-						foreach ($action['route']['params'] as $paramName => $paramValue)
-						{
-							if(preg_match('/row::/', $paramValue))
-							{
-								$rowIndex = str_replace('row::', '', $paramValue);
-								$action['route']['params'][$paramName] = zbase_data_get($row, $rowIndex);
-							}
-						}
-					}
-					$action['routeParams'] = $action['route']['params'];
-					$action['route'] = $action['route']['name'];
-				}
-				if($actionName == 'create')
-				{
-					$action['color'] = 'blue';
-				}
-				if($actionName == 'update')
-				{
-					$action['color'] = 'green';
-				}
-				if($actionName == 'delete')
-				{
-					$action['color'] = 'red';
-				}
-				if($actionName == 'restore')
-				{
-					$action['color'] = 'warning';
-				}
-				if($actionName == 'ddelete')
-				{
-					$action['color'] = 'red';
-				}
-				$btn = \Zbase\Ui\Ui::factory($action);
-				if($actionName == 'create')
-				{
-					if(!$this->_actionCreateButton instanceof \Zbase\Ui\UiInterface)
-					{
-						$this->_actionCreateButton = $btn;
-					}
-					continue;
-				}
-				$this->_actionButtons[] = $btn;
 			}
 			return implode("\n", $this->_actionButtons);
 		}
+	}
+
+	/**
+	 * Create an action button
+	 * @param string $actionName The Action index name update|create|delete|ddelete|restore
+	 * @param \Zbase\Interfaces\EntityInterface $row
+	 * @param array $actionConfig Action config
+	 * @param boolean $template If we will have to generate a template
+	 * @return \Zbase\Ui\UiInterface
+	 */
+	public function createActionBtn($actionName, $row, $actionConfig, $template = false)
+	{
+		if(!$row instanceof \Zbase\Interfaces\EntityInterface && !$template)
+		{
+			return null;
+		}
+		if(empty($actionConfig))
+		{
+			return null;
+		}
+		$rowTrashed = false;
+		if($this->_entity->hasSoftDelete() && !empty($row))
+		{
+			$rowTrashed = $row->trashed();
+		}
+		if($actionName == 'delete' || $actionName == 'update')
+		{
+			if($rowTrashed)
+			{
+				return null;
+			}
+		}
+		if($actionName == 'restore' || $actionName == 'ddelete')
+		{
+			if(empty($rowTrashed))
+			{
+				return null;
+			}
+		}
+		$label = !empty($actionConfig['label']) ? $actionConfig['label'] : ucfirst($actionName);
+		if(strtolower($label) == 'ddelete')
+		{
+			$label = _zt('Forever Delete');
+		}
+		$actionConfig['type'] = 'component.button';
+		$actionConfig['size'] = 'extrasmall';
+		$actionConfig['label'] = _zt($label);
+		$actionConfig['tag'] = 'a';
+		if(!empty($actionConfig['route']['name']))
+		{
+			if(!empty($actionConfig['route']['params']))
+			{
+				foreach ($actionConfig['route']['params'] as $paramName => $paramValue)
+				{
+					if(preg_match('/row::/', $paramValue))
+					{
+						$rowIndex = str_replace('row::', '', $paramValue);
+						if(!empty($row))
+						{
+							$id = $actionConfig['route']['params'][$paramName] = zbase_data_get($row, $rowIndex);
+						}
+						else
+						{
+							if(!empty($template))
+							{
+								$id = $actionConfig['route']['params'][$paramName] = '__' . $rowIndex . '__';
+							}
+						}
+					}
+				}
+			}
+			$actionConfig['routeParams'] = $actionConfig['route']['params'];
+			$actionConfig['route'] = $actionConfig['route']['name'];
+		}
+		$actionConfig['id'] = $this->getWidgetPrefix() . 'Action' . $actionName . (!empty($id) ? $id : null);
+		if($actionName == 'create')
+		{
+			$actionConfig['color'] = 'blue';
+		}
+		if($actionName == 'update')
+		{
+			$actionConfig['color'] = 'green';
+		}
+		if($actionName == 'view')
+		{
+			$actionConfig['color'] = 'blue';
+		}
+		if($actionName == 'delete')
+		{
+			$actionConfig['color'] = 'red';
+		}
+		if($actionName == 'restore')
+		{
+			$actionConfig['color'] = 'warning';
+		}
+		if($actionName == 'ddelete')
+		{
+			$actionConfig['color'] = 'red';
+		}
+		$btn = \Zbase\Ui\Ui::factory($actionConfig);
+		if($actionName == 'create')
+		{
+			if(!$this->_actionCreateButton instanceof \Zbase\Ui\UiInterface)
+			{
+				$this->_actionCreateButton = $btn;
+			}
+		}
+		return $btn;
 	}
 
 	/**
@@ -609,7 +870,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	public function wrapperAttributes()
 	{
 		$attr = parent::wrapperAttributes();
-		$attr['class'][] = 'zbase-widget-wrapper';
+		$attr['class'][] = 'zbase-widget-wrapper flip-scroll';
 		$attr['class'][] = 'zbase-widget-wrapper-' . $this->_type;
 		$attr['id'] = 'zbase-widget-wrapper-' . $this->id();
 		return $attr;
@@ -623,32 +884,39 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	public function toArray()
 	{
 		$rows = $this->getRows();
-		$datas = [
-			'page' => $rows->currentPage(),
-			'maxPage' => $rows->lastPage(),
-			// 'total' => $rows->total()
-		];
-		$columns = $this->getProcessedColumns();
 		if(!empty($rows))
 		{
-			foreach ($rows as $row)
+			$datas = [
+				'currentPage' => $rows->currentPage(),
+				'maxPage' => $rows->lastPage(),
+				'totalRows' => count($rows)
+			];
+			$columns = $this->getProcessedColumns();
+			if(!empty($rows))
 			{
-				$data = [];
-				foreach ($columns as $column)
+				foreach ($rows as $row)
 				{
-					$column->setRow($row)->prepare();
-					$value = $column->renderValue();
-					if($value instanceof \Zbase\Ui\UiInterface)
+					$data = [];
+					foreach ($columns as $column)
 					{
-						$data[$column->id()] = $column->renderValue()->__toString();
-					} else {
-						$data[$column->id()] = $column->renderValue();
+						$column->setRow($row)->prepare();
+						$value = $column->renderValue();
+						$columnName = $column->id();
+						if($value instanceof \Zbase\Ui\UiInterface)
+						{
+							$data[$columnName] = $column->renderValue()->__toString();
+						}
+						else
+						{
+							$data[$columnName] = $column->renderValue();
+						}
 					}
+					$datas['rows'][] = $data;
 				}
-				$datas['rows'][] = $data;
 			}
+			return $datas;
 		}
-		return $datas;
+		return [];
 	}
 
 }

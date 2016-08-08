@@ -44,6 +44,16 @@ function zbase_user_byid($userId)
 }
 
 /**
+ * Retur the system user
+ *
+ * @return null|false|Zbase\Entity\Laravel\User\User
+ */
+function zbase_user_system()
+{
+	return zbase_user_by('username', 'system');
+}
+
+/**
  * Search user by ATtribute
  * @param string $attr
  * @param string $value

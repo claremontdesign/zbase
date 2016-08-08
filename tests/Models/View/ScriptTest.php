@@ -22,7 +22,7 @@ class ScriptTest extends TestCase
 		$view = new Zbase\Models\View\Script($config);
 		$this->assertEquals('script', $view->id());
 		$this->assertTrue($view->getOnLoad());
-		$this->assertEquals('script-script', $view->getHtmlId());
+		$this->assertEquals('scriptScript', $view->getHtmlId());
 	}
 
 	/**

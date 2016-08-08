@@ -111,6 +111,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	 */
 	protected $_nodeSupport = false;
 	protected $_nodeName = null;
+	protected $_parentEntityObject = null;
 
 	/**
 	 * Constructor
@@ -121,6 +122,38 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	{
 		$this->_widgetId = $widgetId;
 		$this->setAttributes($configuration);
+		if(isset($configuration['_viewFileContent']) && is_bool($configuration['_viewFileContent']))
+		{
+			$this->_viewFileContent = $configuration['_viewFileContent'];
+		}
+		$this->setViewFile($this->_v('view.file', $this->_viewFile));
+	}
+
+	/**
+	 * Set Page Property
+	 * @param string $action The Controller Action
+	 * @param array $param some assoc array that can be replace to the string
+	 * @return void
+	 */
+	public function pageProperties($action)
+	{
+		$enable = $this->_v('page.' . $action . '.enable', false);
+		if(!empty($enable))
+		{
+			$title = $this->_v('page.' . $action . '.title', null);
+			$headTitle = $this->_v('page.' . $action . '.headTitle', $title);
+			$subTitle = $this->_v('page.' . $action . '.subTitle', null);
+			$breadcrumbs = $this->_v('page.' . $action . '.breadcrumbs', []);
+			if(!empty($title))
+			{
+				zbase_view_pagetitle_set($headTitle, $title, $subTitle);
+			}
+			if(!empty($breadcrumbs))
+			{
+				zbase_view_breadcrumb($breadcrumbs);
+			}
+		}
+		return $this;
 	}
 
 	/**
@@ -157,6 +190,16 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	public function id()
 	{
 		return $this->_widgetId;
+	}
+
+	/**
+	 * Return a usable clean Prefix
+	 *
+	 * @return string
+	 */
+	public function getWidgetPrefix($tag = null)
+	{
+		return zbase_string_camel_case(str_replace('_', '', $this->id()) . (!empty($tag) ? '_' . $tag : ''));
 	}
 
 	/**
@@ -228,7 +271,18 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	 */
 	protected function _entity()
 	{
-		return $this->entity();
+		$entity = $this->entity();
+		return $entity;
+	}
+
+	/**
+	 * Return the Child Entity
+	 * @return Node
+	 */
+	public function getChildEntity()
+	{
+		$entity = $this->_childEntity;
+		return $entity;
 	}
 
 	/**
@@ -348,21 +402,26 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
-	 * Return the Child Entity
-	 * @return Node
-	 */
-	public function getChildEntity()
-	{
-		return $this->_childEntity;
-	}
-
-	/**
 	 * Check if Entity is Needed
 	 * @return string
 	 */
 	public function isEntityNeeded()
 	{
 		return $this->_v('entity.name', false);
+	}
+
+	/**
+	 * REturn the Parent Entity Object
+	 *
+	 * @return Entity
+	 */
+	public function parentEntityObject()
+	{
+		if(is_null($this->_parentEntityObject))
+		{
+			$this->_parentEntityObject = $this->_v('entity.parent', $this->_v('entity.entity', $this->entity()));
+		}
+		return $this->_parentEntityObject;
 	}
 
 	/**
@@ -380,8 +439,16 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 			}
 			if(!is_null($entityName))
 			{
+				$entity = $this->_v('entity.entity', null);
+				if($entity instanceof \Zbase\Entity\Laravel\Entity)
+				{
+					$this->_entityObject = zbase()->entity($entityName, [], true);
+					$this->_entity = $entity;
+					return $this->_entity;
+				}
 				$this->_entityObject = $entity = zbase()->entity($entityName, [], true);
 				$repoById = $this->_v('entity.repo.byId', null);
+				$repoByFilter = $this->_v('entity.repo.byFilter', null);
 				if(is_null($repoById))
 				{
 					$repoById = $this->_v('entity.repo.byAlphaId', null);
@@ -406,13 +473,56 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 					}
 					if($this->isNodeCategoryBrowsing())
 					{
-						$childAlphaId = zbase_route_input('id');
-						if(!empty($childAlphaId))
+						$repoItemBySlug = $this->_v('entity.repo.item.bySlug', null);
+						$repoItemByAlpha = $this->_v('entity.repo.item.byAlpha', null);
+						$repoItemById = $this->_v('entity.repo.item.byId', null);
+						/**
+						 * Browse by category
+						 * /CategorySlug/ - should show all category items
+						 * /CategorySlug/ItemName - show item
+						 *
+						 * Module should have a "default" entry as the wildcard catchAll action
+						 */
+						if(!empty($repoItemByAlpha))
 						{
-							$this->_childEntity = zbase()->entity($this->nodePrefix(), [], true)->repository()->byAlphaId($childAlphaId);
-							if(!$this->_childEntity instanceof \Zbase\Entity\Laravel\Node\Node)
+							$itemRouteParameterName = $this->_v('entity.repo.item.byAlpha.route', null);
+							$childAlphaId = zbase_route_input($itemRouteParameterName);
+							if(!empty($childAlphaId))
 							{
-								return zbase_abort(404);
+								$this->_childEntity = zbase()->entity($this->nodePrefix(), [], true)->repository()->byAlphaId($childAlphaId);
+								if(!$this->_childEntity instanceof \Zbase\Entity\Laravel\Node\Node)
+								{
+									$this->setViewFile(zbase_view_file_contents('errors.404'));
+									return zbase_abort(404);
+								}
+							}
+						}
+						if(!empty($repoItemBySlug))
+						{
+							$itemRouteParameterName = $this->_v('entity.repo.item.bySlug.route', null);
+							$childAlphaId = zbase_route_input($itemRouteParameterName);
+							if(!empty($childAlphaId))
+							{
+								$this->_childEntity = zbase()->entity($this->nodePrefix(), [], true)->repository()->bySlug($childAlphaId);
+								if(!$this->_childEntity instanceof \Zbase\Entity\Laravel\Node\Node)
+								{
+									$this->setViewFile(zbase_view_file_contents('errors.404'));
+									return zbase_abort(404);
+								}
+							}
+						}
+						if(!empty($repoItemById))
+						{
+							$itemRouteParameterName = $this->_v('entity.repo.item.byId.route', null);
+							$childAlphaId = zbase_route_input($itemRouteParameterName);
+							if(!empty($childAlphaId))
+							{
+								$this->_childEntity = zbase()->entity($this->nodePrefix(), [], true)->repository()->byId($childAlphaId);
+								if(!$this->_childEntity instanceof \Zbase\Entity\Laravel\Node\Node)
+								{
+									$this->setViewFile(zbase_view_file_contents('errors.404'));
+									return zbase_abort(404);
+								}
 							}
 						}
 					}
@@ -423,12 +533,17 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 					if(!empty($id))
 					{
 						$filters = $this->_v('entity.filter.query', []);
+						$sorting = $this->_v('entity.sorting.query', []);
 						$selects = ['*'];
 						$joins = [];
 						$this->_urlHasRequest = true;
 						if($this->isNode())
 						{
 							zbase()->json()->addVariable('id', $id);
+							if(!empty($repoById) && !empty($id) && empty($byAlpha))
+							{
+								$filters['id'] = ['eq' => ['field' => $entity->getKey(), 'value' => $id]];
+							}
 							if($this->isCurrentUser())
 							{
 								$filters['user'] = ['eq' => ['field' => 'user_id', 'value' => zbase_auth_user()->id()]];
@@ -447,28 +562,33 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 							}
 							if(method_exists($entity, 'querySelects'))
 							{
-								$selects = $entity->querySelects($filters);
+								$selects = $entity->querySelects($filters, ['widget' => $this]);
 							}
 							if(method_exists($entity, 'queryJoins'))
 							{
-								$joins = $entity->queryJoins($filters, $this->getRequestSorting());
+								$joins = $entity->queryJoins($filters, $this->getRequestSorting(), ['widget' => $this]);
+							}
+							if(method_exists($entity, 'querySorting'))
+							{
+								$sorting = $entity->querySorting($sorting, $filters, ['widget' => $this]);
 							}
 							if(method_exists($entity, 'queryFilters'))
 							{
-								$filters = $entity->queryFilters($filters);
+								$filters = $entity->queryFilters($filters, $sorting, ['widget' => $this]);
 							}
 							/**
 							 * Merge filters from widget configuration
 							 * entity.filter.query
 							 */
 							$filters = array_merge($filters, $this->_v('entity.filter.query', []));
+							$sorting = array_merge($sorting, $this->_v('entity.sorting.query', []));
 							$action = $this->getAction();
 							$debug = zbase_request_query_input('__widgetEntityDebug', false);
 							if($this->isAdmin())
 							{
 								if($action == 'restore' || $action == 'ddelete')
 								{
-									return $this->_entity = $entity->repository()->onlyTrashed()->all($selects, $filters, [], $joins)->first();
+									return $this->_entity = $entity->repository()->onlyTrashed()->all($selects, $filters, $sorting, $joins)->first();
 								}
 							}
 							else
@@ -477,13 +597,34 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 								{
 									if($action == 'restore' || $action == 'ddelete')
 									{
-										return $this->_entity = $entity->repository()->onlyTrashed()->all($selects, $filters, [], $joins)->first();
+										return $this->_entity = $entity->repository()->onlyTrashed()->all($selects, $filters, $sorting, $joins)->first();
 									}
-									return $this->_entity = $entity->repository()->setDebug($debug)->withTrashed()->all($selects, $filters, [], $joins)->first();
+									return $this->_entity = $entity->repository()->setDebug($debug)->withTrashed()->all($selects, $filters, $sorting, $joins)->first();
 								}
 							}
-							return $this->_entity = $entity->repository()->setDebug($debug)->all($selects, $filters, [], $joins)->first();
+							return $this->_entity = $entity->repository()->setDebug($debug)->all($selects, $filters, $sorting, $joins)->first();
 						}
+					}
+				}
+				else
+				{
+					if(!empty($repoByFilter))
+					{
+						$filters = [];
+						$sorting = [];
+						$selects = ['*'];
+						$joins = [];
+						if($this->isCurrentUser())
+						{
+							$filters['user'] = ['eq' => ['field' => 'user_id', 'value' => zbase_auth_user()->id()]];
+						}
+						if($this->isPublic())
+						{
+							$filters['status'] = ['eq' => ['field' => 'status', 'value' => 2]];
+						}
+						$filters = array_merge($filters, $this->_v('entity.filter.query', []));
+						$sorting = array_merge($sorting, $this->_v('entity.sorting.query', []));
+						return $this->_entity = $entity->repository()->all($selects, $filters, $sorting, $joins)->first();
 					}
 				}
 				$repoMethod = $this->_v('entity.method', null);
@@ -523,4 +664,5 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 		}
 		return $content;
 	}
+
 }

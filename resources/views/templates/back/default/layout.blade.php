@@ -57,7 +57,7 @@ else
 				{!! zbase_alerts_render() !!}
 				@yield('content')
 			<?php endif; ?>
-			{!! zbase_view_render_body() !!}
+			<?php echo zbase_view_render_body(); ?>
 		</body>
 	</html>
 	<?php

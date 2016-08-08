@@ -64,6 +64,12 @@ abstract class Ui
 	protected $_viewFile = null;
 
 	/**
+	 * If true, will search for $_viewFile using: zbase_view_file_contents
+	 * @var boolean
+	 */
+	protected $_viewFileContent = true;
+
+	/**
 	 * Contents
 	 * @var string|Ui\UiInterface[]
 	 */
@@ -235,9 +241,9 @@ abstract class Ui
 	{
 		if(zbase_is_angular_template())
 		{
-			return zbase_data_get($this->getAttributes(), 'angular.' . $key, zbase_data_get($this->getAttributes(), $key, $default));
+			return zbase_data_get($this->getAttributes(), 'angular.' . $key, zbase_data_get($this->getAttributes(), $key, $default, $this), $this);
 		}
-		return zbase_data_get($this->getAttributes(), $key, $default);
+		return zbase_data_get($this->getAttributes(), $key, $default, $this);
 	}
 
 	/**
@@ -555,9 +561,20 @@ abstract class Ui
 		{
 			if(!is_null($this->_viewFile) && empty($this->_rendered))
 			{
+				if(!zbase_request_is_ajax())
+				{
+					zbase()->view()->multiAdd($this->_v('view.library', false));
+				}
 				$this->_viewParams['ui'] = $this;
 				$str = $this->htmlPreContent();
-				$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams())->__toString();
+				if(!empty($this->_viewFileContent))
+				{
+					$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams())->__toString();
+				}
+				else
+				{
+					$str .= zbase_view_render($this->_viewFile, $this->getViewParams())->__toString();
+				}
 				$str .= $this->htmlPostContent();
 				$this->_rendered = true;
 				return $str;
@@ -587,7 +604,15 @@ abstract class Ui
 	 */
 	public static function factory($configuration)
 	{
-
+		// $configuration = zbase_data_get($configuration);
+		if(!is_array($configuration))
+		{
+			$configuration = zbase_data_get($configuration);
+			if(empty($configuration))
+			{
+				return null;
+			}
+		}
 		$type = !empty($configuration['type']) ? $configuration['type'] : 'ui';
 		$prefix = '';
 		if(!empty(preg_match('/component./', $type)))

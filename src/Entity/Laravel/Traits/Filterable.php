@@ -91,6 +91,21 @@ trait Filterable
 
 				foreach ($filter as $k => $v)
 				{
+					$k = zbase_data_get($k);
+					if(is_array($v))
+					{
+						foreach ($v as $vK => $vV)
+						{
+							if($vV instanceof \Closure)
+							{
+								$v[$vK] = zbase_data_get($vV);
+							}
+							else
+							{
+								$v[$vK] = $vV;
+							}
+						}
+					}
 					switch (strtolower($k))
 					{
 						case 'between':

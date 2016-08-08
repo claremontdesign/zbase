@@ -37,6 +37,16 @@ class Log extends BaseEntity implements WidgetEntityInterface, Interfaces\Entity
 	 */
 	public static $nodeNamePrefix = 'node';
 
+	/**
+	 * return the log message
+	 *
+	 * @return string
+	 */
+	public function getMessage()
+	{
+		return $this->remarks;
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="DataTable Widget Query Interface/Methods">
 
 	/**
@@ -211,9 +221,10 @@ class Log extends BaseEntity implements WidgetEntityInterface, Interfaces\Entity
 	public static function entityConfiguration($entity = [])
 	{
 		$entity['table'] = [
-			'name' => static::$nodeNamePrefix . '_log',
+			'name' => static::$nodeNamePrefix . '_logs',
 			'primaryKey' => 'log_id',
 			'optionable' => true,
+			'ipAddress' => true,
 			'timestamp' => true
 		];
 		return $entity;
@@ -229,20 +240,24 @@ class Log extends BaseEntity implements WidgetEntityInterface, Interfaces\Entity
 	{
 		$columns['node_id'] = [
 			'filterable' => [
-				'name' => 'nodeid',
 				'enable' => true
 			],
 			'sortable' => [
-				'name' => 'nodeid',
 				'enable' => true
 			],
+			'length' => 16,
 			'hidden' => false,
-			'length' => 255,
-			'fillable' => false,
-			'nullable' => true,
+			'fillable' => true,
 			'type' => 'integer',
 			'index' => true,
-			'comment' => 'Node Id'
+			'unique' => true,
+			'unsigned' => true,
+			'comment' => 'Node Id',
+			'foreign' => [
+				'table' => static::$nodeNamePrefix,
+				'column' => 'node_id',
+				'onDelete' => 'cascade'
+			],
 		];
 		$columns['user_id'] = [
 			'filterable' => [
@@ -258,7 +273,7 @@ class Log extends BaseEntity implements WidgetEntityInterface, Interfaces\Entity
 			'fillable' => true,
 			'nullable' => true,
 			'type' => 'string',
-			'index' => false,
+			'index' => true,
 			'comment' => 'User Id'
 		];
 		$columns['remarks'] = [

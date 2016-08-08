@@ -64,7 +64,7 @@ class EntityTest extends TestCase
 	{
 		$model = zbase_entity('user');
 		$user = \DB::table('users');
-		$this->assertTrue(count($model->repository()->all()) == count($user->get()));
+		$this->assertTrue(count($model->repository()->withTrashed()->all()) == count($user->get()));
 
 		/**
 		 * Filters

@@ -38,3 +38,81 @@ function zbase_string_dot_to_array(&$arr, $path, $value)
 	}
 	$arr = $value;
 }
+
+/**
+ * Format address object to a proper string
+ *
+ * @param object $obj/array Address Object
+ * @param string prefix like shipping_ or billing_
+ * @param string $separator
+ * @return string|array
+ */
+function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
+{
+	if(is_object($obj))
+	{
+		$array = $obj->toArray();
+	}
+	if(!empty($array))
+	{
+		/**
+		 * 	CHRIS NISWANDEE
+		  SMALLSYS INC
+		  795 E DRAGRAM
+		  TUCSON AZ 85705
+		  USA
+		 */
+		$properties = ['address', 'address_two', 'city', 'state', 'zip', 'country'];
+		$strings = [];
+		$propName = $prefix . 'address';
+		if(!empty($array[$propName]))
+		{
+			$strings[] = $array[$propName];
+		}
+		$propName = $prefix . 'address_two';
+		if(!empty($array[$propName]))
+		{
+			$strings[] = $array[$propName];
+		}
+		$propName = $prefix . 'city';
+		if(!empty($array[$propName]))
+		{
+			$s = [];
+			$s[] = $array[$propName];
+			$propName = $prefix . 'state';
+			if(!empty($array[$propName]))
+			{
+				$s[] = $array[$propName];
+			}
+			$propName = $prefix . 'zip';
+			if(!empty($array[$propName]))
+			{
+				$s[] = $array[$propName];
+			}
+			$propName = $prefix . 'country';
+			if(!empty($array[$propName]))
+			{
+				$s[] = $array[$propName];
+			}
+			$strings[] = implode(', ', $s);
+		}
+
+
+
+		$propName = $prefix . 'phone';
+		if(!empty($array[$propName]))
+		{
+			$strings[] = 'T: ' . $array[$propName];
+		}
+		$propName = $prefix . 'F: ';
+		if(!empty($array[$propName]))
+		{
+			$strings[] = 'F: ' . $array[$propName];
+		}
+		if(!empty($strings) && !empty($separator))
+		{
+			return implode($separator, $strings);
+		}
+		return $strings;
+	}
+}

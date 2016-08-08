@@ -59,8 +59,8 @@ class Assets extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\AssetsCommandInterface)
 				{
-					echo "\n -- assets.pre - " . $packageName;
-					$zbase->assetsCommand($phpCommand, ['assets.pre' => true]);
+					$this->info($this->signature . '.pre - ' . $packageName);
+					$zbase->assetsCommand($phpCommand, ['assets.pre' => true, 'command' => $this]);
 				}
 			}
 		}
@@ -87,8 +87,8 @@ class Assets extends Command
 				$zbase = zbase_package($packageName);
 				if($zbase instanceof Interfaces\AssetsCommandInterface)
 				{
-					echo "\n -- assets.post - " . $packageName;
-					$zbase->assetsCommand($phpCommand, ['assets.post' => true]);
+					$this->info($this->signature . '.post - ' . $packageName);
+					$zbase->assetsCommand($phpCommand, ['assets.post' => true, 'command' => $this]);
 				}
 			}
 		}
@@ -114,4 +114,16 @@ class Assets extends Command
 		return array();
 	}
 
+
+    /**
+     * Write a string as information output.
+     *
+     * @param  string  $string
+     * @param  null|int|string  $verbosity
+     * @return void
+     */
+    public function info($string, $verbosity = null)
+    {
+        parent::info(' --- ' . $string, $verbosity);
+    }
 }

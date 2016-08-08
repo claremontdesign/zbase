@@ -1,54 +1,77 @@
-/**
-http://stephen.io/mediaqueries/#iPhone
-iPhone 6 in portrait & landscape
-**/
-@media only screen
-and (min-device-width : 375px)
-and (max-device-width : 667px) { /* STYLES GO HERE */}
+/* Responsive CSS Document */
 
-/*iPhone 6 in landscape*/
-@media only screen
-and (min-device-width : 375px)
-and (max-device-width : 667px)
-and (orientation : landscape) { /* STYLES GO HERE */}
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
 
-/*iPhone 6 in portrait*/
-@media only screen
-and (min-device-width : 375px)
-and (max-device-width : 667px)
-and (orientation : portrait) { /* STYLES GO HERE */ }
+}
 
-/*iPhone 6 Plus in portrait & landscape*/
-@media only screen
-and (min-device-width : 414px)
-and (max-device-width : 736px) { /* STYLES GO HERE */}
+/* 1280px */
+@media only screen and (max-width: 1189px) {
 
-/*iPhone 6 Plus in landscape*/
-@media only screen
-and (min-device-width : 414px)
-and (max-device-width : 736px)
-and (orientation : landscape) { /* STYLES GO HERE */}
+}
 
-/*iPhone 6 Plus in portrait*/
-@media only screen
-and (min-device-width : 414px)
-and (max-device-width : 736px)
-and (orientation : portrait) { /* STYLES GO HERE */ }
+/* 1024px */
+@media only screen and (max-width: 1024px) {
 
-/*iPhone 5 & 5S in portrait & landscape*/
-@media only screen
-and (min-device-width : 320px)
-and (max-device-width : 568px) { /* STYLES GO HERE */}
+}
 
-/*iPhone 5 & 5S in landscape*/
-@media only screen
-and (min-device-width : 320px)
-and (max-device-width : 568px)
-and (orientation : landscape) { /* STYLES GO HERE */}
 
-/*iPhone 5 & 5S in portrait*/
-@media only screen
-and (min-device-width : 320px)
-and (max-device-width : 568px)
-and (orientation : portrait) { /* STYLES GO HERE */ }
+/* 960px */
+@media only screen and (max-width: 960px) {
 
+}
+
+/* 800px */
+@media only screen and (max-width: 959px) {
+
+}
+
+/* 750px */
+@media only screen and (max-width: 799px) {
+
+}
+
+/* 720px */
+@media only screen and (max-width: 749px) {
+
+}
+
+/* 640px */
+@media only screen and (max-width: 719px) {
+
+
+}
+
+/* 540px */
+@media only screen and (max-width: 639px) {
+
+}
+
+/* 480px */
+@media only screen and (max-width: 539px) {
+
+}
+
+/* 320px */
+@media only screen and (max-width: 479px) {
+
+}
+
+/* 375px */
+@media only screen and (max-width: 375px) {
+
+}
+
+/* 320px */
+@media only screen and (max-width: 374px) {
+
+}
+
+.pointer{
+	cursor:pointer;
+}
+.zbase-widget-wrapper-datatable table > tbody tr:nth-child(even){
+	background: #D9EDF7;
+}
+.zbase-widget-wrapper-datatable table > tbody tr:hover{
+	background: #DFF0D8;
+}

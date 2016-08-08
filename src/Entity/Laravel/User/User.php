@@ -45,6 +45,13 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	protected $entityName = 'user';
 
 	/**
+	 * Return the Role Name
+	 * @var string
+	 */
+	protected $roleName = null;
+	protected $address = null;
+
+	/**
 	 * The Entity Id
 	 * @return integer
 	 */
@@ -62,6 +69,49 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		return $this->alpha_id;
 	}
 
+	public function title()
+	{
+		return $this->displayName();
+	}
+
+	/**
+	 * Return Default Address
+	 * @return UserAddress
+	 */
+	public function address()
+	{
+		if(is_null($this->address))
+		{
+			$this->address = false;
+			$filter = [
+				'is_default' => [
+					'eq' => [
+						'field' => 'is_default',
+						'value' => 1,
+					]
+				],
+				'is_active' => [
+					'eq' => [
+						'field' => 'is_active',
+						'value' => 1,
+					]
+				],
+				'user' => [
+					'eq' => [
+						'field' => 'user_id',
+						'value' => $this->id(),
+					]
+				],
+			];
+			$address = zbase_entity('user_address')->repo()->all(['*'], $filter);
+			if(!empty($address))
+			{
+				$this->address = $address->first();
+			}
+		}
+		return $this->address;
+	}
+
 	/**
 	 * The Username
 	 * @return string
@@ -69,6 +119,24 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	public function username()
 	{
 		return $this->username;
+	}
+
+	public function profile()
+	{
+		return zbase_entity('user_profile')->repo()->by('user_id', $this->id())->first();
+	}
+
+	/**
+	 * Current Role
+	 * @return type
+	 */
+	public function roleName()
+	{
+		if(is_null($this->roleName))
+		{
+			$this->roleName = $this->roles()->first()->name();
+		}
+		return $this->roleName;
 	}
 
 	/**
@@ -255,19 +323,22 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$logMsg = [];
 		if(empty($attributes['profile']))
 		{
+			$attributes['profile'] = [];
+			$attributesAddress = ['city' => ''];
 			$profileColumns = zbase_entity('user_profile')->getColumns();
-			if(!empty($profileColumns))
+			$addressColumns = zbase_entity('user_address')->getColumns();
+
+			foreach ($attributes as $attName => $attValue)
 			{
-				foreach ($profileColumns as $profileColumnKey => $profileColumnVal)
+				if(array_key_exists($attName, $profileColumns))
 				{
-					foreach ($attributes as $attName => $attValue)
-					{
-						if($attName == $profileColumnKey)
-						{
-							$attributes['profile'][$attName] = $attValue;
-							unset($attributes[$attName]);
-						}
-					}
+					$attributes['profile'][$attName] = $attValue;
+					unset($attributes[$attName]);
+				}
+				if(array_key_exists($attName, $addressColumns))
+				{
+					$attributesAddress[$attName] = $attValue;
+					unset($attributes[$attName]);
 				}
 			}
 		}
@@ -314,8 +385,23 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					'gender' => !empty($attributesProfile['gender']) ? $attributesProfile['gender'] : null,
 					'avatar' => !empty($attributesProfile['avatar']) ? $attributesProfile['avatar'] : 'http://api.adorable.io/avatars/285/' . $model->alpha_id . '.png'
 				];
-				$model->profile()->create(array_replace_recursive($attributesProfile, $profileAttributes));
+				$profileAttributes = array_replace_recursive($attributesProfile, $profileAttributes);
+				$profileAttributes['user_id'] = $model->id();
+				zbase_entity('user_profile')->fill($profileAttributes)->save();
+				// $model->profile()->create(array_replace_recursive($attributesProfile, $profileAttributes));
 				$logMsg[] = 'Profile saved!';
+			}
+			/**
+			 * Save Addresses
+			 */
+			if(!empty($attributesAddress))
+			{
+				$attributesAddress['is_active'] = 1;
+				$attributesAddress['is_default'] = 1;
+				$attributesAddress['type'] = 'home';
+				$attributesAddress['user_id'] = $model->id();
+				zbase_entity('user_address')->fill($attributesAddress)->save();
+				$logMsg[] = 'Address saved!';
 			}
 			$model->toggleRelationshipMode();
 			if($model->sendWelcomeMessage($attributes))
@@ -324,6 +410,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			}
 			zbase_db_transaction_commit();
 			$logMsg[] = 'User saved!';
+			$model->log('Register');
 			zbase_log(implode(PHP_EOL, $logMsg), null, __METHOD__);
 			return $model;
 		}
@@ -420,6 +507,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	/**
+	 * Check if to login user after successfull registration
+	 *
+	 * @return boolean
+	 */
+	public function loginAfterRegister()
+	{
+		return zbase_config_get('auth.register.login', true);
+	}
+
+	/**
 	 * If username is enabled
 	 * @return boolean
 	 */
@@ -444,9 +541,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 * @param type $task
 	 * @param type $msg
 	 */
-	public function log($task, $msg)
+	public function log($task, $msg = null, $options = null)
 	{
-
+		$data = [
+			'remarks' => !empty($msg) ? $msg : null,
+			'task' => $task,
+			'ip_address' => zbase_ip(),
+			'user_id' => $this->id(),
+			'type' => 1,
+		];
+		zbase_entity('user_logs')->fill($data)->save();
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="Image">
@@ -562,6 +666,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="WidgetController">
 	/**
 	 * Widget entity interface.
 	 * 	Data should be validated first before passing it here
@@ -597,6 +702,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		}
 	}
 
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="UPDATE PRofile">
 	/**
 	 * Update Profile
 	 * @param $data
@@ -633,6 +740,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				if(!empty($saved))
 				{
 					zbase_alert('success', _zt('Profile Updated.'));
+					$this->log('user::updateProfile');
 					return true;
 				}
 			}
@@ -640,21 +748,30 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		return false;
 	}
 
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="LOST Password">
 	public function lostPassword()
 	{
-		$response = \Password::sendResetLink(['email' => $this->email], function (\Illuminate\Mail\Message $message) {
-					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
-					$message->subject('Your Password Reset Link');
-		});
-
-		switch ($response)
-		{
-			case \Password::RESET_LINK_SENT:
+//		$response = \Password::sendResetLink(['email' => $this->email], function (\Illuminate\Mail\Message $message) {
+//					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
+//					$message->subject('Your Password Reset Link');
+//		});
+		// $codeEntity = zbase_entity('user_tokens')->repo()->by('email', $this->email())->first();
+//		$codeEntity = \DB::table('user_tokens')->where(['email' => $this->email()])->first();
+//		if(!empty($codeEntity))
+//		{
+//			zbase_messenger_email($this->email(), 'account-noreply', _zt('Your Password Reset Link'),
+//					zbase_view_file_contents('auth.password.email.password'), ['entity' => $this, 'token' => $codeEntity->token]);
+			$this->log('user::lostPassword');
+//		}
+//
+//		switch ($response)
+//		{
+//			case \Password::RESET_LINK_SENT:
 				zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
-				return true;
-		}
-		return false;
+//				return true;
+//		}
+//		return false;
 	}
 
 	// </editor-fold>
@@ -685,6 +802,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			{
 				zbase_alert('info', _zt('Password successfully updated.'));
 			}
+			$this->log('user::updatePassword');
 			zbase_db_transaction_commit();
 			return true;
 		} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -786,6 +904,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->username = $newUsername;
 			$this->save();
 			zbase_alert('success', _zt('Username updated!'));
+			$this->log('user::updateUsername');
 			zbase_messenger_email($this->email(), 'account-noreply', _zt('Username was changed'), zbase_view_file_contents('email.account.updateUsername'), ['entity' => $this, 'old' => $oldUsername, 'new' => $newUsername]);
 		}
 	}
@@ -817,6 +936,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				$this->save();
 				zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.', ['%email%' => $this->email()]));
 				zbase_messenger_email($this->email(), 'account-noreply', _zt('New Email address update request'), zbase_view_file_contents('email.account.newEmailAddressRequest'), ['entity' => $this, 'newEmailAddress' => $newEmailAddress, 'code' => $code]);
+				$this->log('user::updateRequestEmailAddress');
 				zbase_db_transaction_commit();
 				return true;
 			} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -890,6 +1010,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				$this->unsetDataOption('email_new');
 				$this->unsetDataOption('email_new_request_date');
 				$this->save();
+				$this->log('user::updateEmailAddress');
 				zbase_db_transaction_commit();
 				return true;
 			} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -930,10 +1051,65 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->unsetDataOption('email_verification_code');
 			$this->email_verified = 1;
 			$this->email_verified_at = zbase_date_now();
+			$this->log('user::verifyEmailAddress');
 			$this->save();
 			return true;
 		}
 		return false;
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="STATIC API">
+	/**
+	 * Static API
+	 */
+
+	/**
+	 * User By Id
+	 * @param string|integer|array $id
+	 * @return object|array
+	 */
+	public static function findUserById($id)
+	{
+		if(is_array($id) && !empty($id['userId']))
+		{
+			$id = $id['userId'];
+		}
+		if(!empty($id) && is_numeric($id))
+		{
+			$entity = zbase()->entity('user', [], true);
+			$user = $entity->repo()->byId($id);
+			return ['user' => $user, 'user_profile' => $user->profile()];
+		}
+	}
+
+	/**
+	 * User By Email
+	 * @param string $email
+	 * @return object|array
+	 */
+	public static function findUserByEmail($email)
+	{
+		if(is_array($email) && !empty($email['email']))
+		{
+			$email = $email['email'];
+		}
+		if(!empty($email))
+		{
+			$entity = zbase()->entity('user', [], true);
+			$user = $entity->repo()->by('email', $email)->first();
+			return ['user' => $user, 'user_profile' => $user->profile()];
+		}
+	}
+
+	/**
+	 * User By Username
+	 * @param string $username
+	 * @return object|array
+	 */
+	public static function findUserByUsername($username)
+	{
+
 	}
 
 	// </editor-fold>
@@ -968,6 +1144,20 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'password' => \Zbase\Models\Data\Column::f('string', 'password'),
+				'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+				'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
+				'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
+				'alpha_id' => zbase_generate_hash([rand(1, 1000), time(), rand(1, 1000)], 'admin'),
+				'deleted_at' => null
+			],
+			[
+				'status' => 'ok',
+				'username' => 'system',
+				'name' => 'system',
+				'email' => 'system@zbase.com',
+				'email_verified' => 1,
+				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
+				'password' => zbase_generate_code(),
 				'password_updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'created_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'updated_at' => \Zbase\Models\Data\Column::f('timestamp'),
@@ -1014,9 +1204,14 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$sudo = \DB::table('users')->where(['username' => 'sudo'])->first();
 		$sudoRole = \DB::table('user_roles')->where('role_name', 'sudo')->first();
 		\DB::table('users_roles')->where('user_id', $sudo->user_id)->update(['role_id' => $sudoRole->role_id]);
+
 		$admin = \DB::table('users')->where(['username' => 'admin'])->first();
 		$adminRole = \DB::table('user_roles')->where('role_name', 'admin')->first();
 		\DB::table('users_roles')->where('user_id', $admin->user_id)->update(['role_id' => $adminRole->role_id]);
+
+		$system = \DB::table('users')->where(['username' => 'system'])->first();
+		\DB::table('users_roles')->where('user_id', $system->user_id)->update(['role_id' => $adminRole->role_id]);
+
 		$user = \DB::table('users')->where(['username' => 'user'])->first();
 		$userRole = \DB::table('user_roles')->where('role_name', 'user')->first();
 		\DB::table('users_roles')->where('user_id', $user->user_id)->update(['role_id' => $userRole->role_id]);
@@ -1143,6 +1338,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				],
 				'hidden' => false,
 				'fillable' => false,
+				'nullable' => true,
 				'type' => 'boolean',
 				'subtype' => 'yesno',
 				'default' => 0,
@@ -1218,57 +1414,4 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	// </editor-fold>
-
-	/**
-	 * Static API
-	 */
-
-	/**
-	 * User By Id
-	 * @param string|integer|array $id
-	 * @return object|array
-	 */
-	public static function findUserById($id)
-	{
-		if(is_array($id) && !empty($id['userId']))
-		{
-			$id = $id['userId'];
-		}
-		if(!empty($id) && is_numeric($id))
-		{
-			$entity = zbase()->entity('user', [], true);
-			$user = $entity->repo()->byId($id);
-			return ['user' => $user, 'user_profile' => $user->profile()];
-		}
-	}
-
-	/**
-	 * User By Email
-	 * @param string $email
-	 * @return object|array
-	 */
-	public static function findUserByEmail($email)
-	{
-		if(is_array($email) && !empty($email['email']))
-		{
-			$email = $email['email'];
-		}
-		if(!empty($email))
-		{
-			$entity = zbase()->entity('user', [], true);
-			$user = $entity->repo()->by('email', $email)->first();
-			return ['user' => $user, 'user_profile' => $user->profile()];
-		}
-	}
-
-	/**
-	 * User By Username
-	 * @param string $username
-	 * @return object|array
-	 */
-	public static function findUserByUsername($username)
-	{
-
-	}
-
 }

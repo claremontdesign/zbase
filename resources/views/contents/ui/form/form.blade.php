@@ -32,8 +32,9 @@ $formTag = $ui->hasFormTag();
 		<?php endif; ?>
 
 		<?php if(!empty($submitButton) && !empty($formTag)): ?>
-			<hr />
+		<div class="form-group form-actions">
 			<?php echo $ui->renderSubmitButton(); ?>
+			</div>
 		<?php endif; ?>
 
 		<?php if(empty($ui->isNested())): ?>
@@ -48,6 +49,7 @@ $formTag = $ui->hasFormTag();
 		<?php if(empty($ui->isNested())): ?>
 			<?php if(!empty($formTag)): ?>
 				<?php echo $ui->startTag(); ?>
+				<input type="hidden" name="<?php echo $ui->getHtmlId()?>" value="1" />
 			<?php endif; ?>
 			<?php echo $ui->renderCSRFToken(); ?>
 		<?php endif; ?>
@@ -66,8 +68,9 @@ $formTag = $ui->hasFormTag();
 		<?php endif; ?>
 
 		<?php if(!empty($submitButton) && !empty($formTag)): ?>
-			<hr />
+			<div class="form-group form-actions">
 			<?php echo $ui->renderSubmitButton(); ?>
+			</div>
 		<?php endif; ?>
 
 		<?php if(empty($ui->isNested())): ?>

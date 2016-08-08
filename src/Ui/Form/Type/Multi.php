@@ -59,8 +59,26 @@ class Multi extends \Zbase\Ui\Form\Element
 			{
 				return $this->getCountryStates('us');
 			}
+			if(strtolower($this->_multiOptions) == 'userroles')
+			{
+				return $this->getUserRoles();
+			}
 		}
 		return $this->_multiOptions;
+	}
+
+	/**
+	 * Return User Role Group
+	 */
+	public function getUserRoles()
+	{
+		$roles = \Zbase\Entity\Laravel\User\Role::listAllRoles();
+		$options = [];
+		foreach ($roles as $role)
+		{
+			$options[$role] = ucfirst($role);
+		}
+		return $options;
 	}
 
 	/**

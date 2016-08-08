@@ -46,12 +46,41 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	protected $onlyTrashed = false;
 
 	/**
+	 * Query Name
+	 * @var type
+	 */
+	protected $queryName = null;
+
+	/**
 	 * Constructor
 	 * @param Interfaces\EntityInterface $model
 	 */
 	public function __construct(Interfaces\EntityInterface $model)
 	{
 		$this->setModel($model);
+	}
+
+	/**
+	 * Generate Cache Key
+	 * @param type $builder
+	 *
+	 * @TODO Generate cache key based on SQL Statement and Bindings
+	 * @return string
+	 */
+	public function cacheKey($builder)
+	{
+
+	}
+
+	public function setQueryName($queryName)
+	{
+		$this->queryName = $queryName;
+		return $this;
+	}
+
+	public function getQueryName()
+	{
+		return $this->queryName;
 	}
 
 	/**
@@ -79,8 +108,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 			$prefix .= '_onlytrashed';
 		}
 		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
-		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns, $withTrashed, $onlyTrashed){
+		return zbase_cache(zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns, $withTrashed, $onlyTrashed){
 			if(!empty($withTrashed))
 			{
 				return $this->getModel()->withTrashed()->find(intval($id), $columns);
@@ -183,7 +211,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		}
 		else
 		{
-			$filters = [$attribute => $value];
+			$filters = [$attribute => ['eq' => ['field' => $attribute, 'value' => $value]]];
 		}
 		return $this->all($columns, $filters, $sorting, $joins, $paginate, $unions, $group, $options);
 	}
@@ -242,24 +270,28 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
-
+		$logMsg = __METHOD__ . PHP_EOL;
+		$logMsg .= $this->getSqlStatement($builder) . PHP_EOL;
+		$logMsg .= json_encode($this->getSqlBindings($builder)) . PHP_EOL;
+		$prefix .= $this->getSqlStatement($builder) . json_encode($this->getSqlBindings($builder));
+		if(zbase_is_dev())
+		{
+			// zbase()->json()->addVariable(__METHOD__, [$this->getQueryName() => [$this->getSqlStatement($builder), $this->getSqlBindings($builder)]]);
+		}
 		if(!empty($paginate))
 		{
-			$logMsg = __METHOD__ . PHP_EOL;
-			$logMsg .= $builder->getQuery()->toSql() . PHP_EOL;
-			$logMsg .= json_encode($builder->getQuery()->getBindings()) . PHP_EOL;
 			return zbase_cache(
 					zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder, $paginate, $columns){
 				return $builder->paginate($paginate, $columns);
 				}, [$this->getModel()->getTable()], null, ['logFile' => 'Repo_' . $this->getModel()->getTable(), 'logMsg' => $logMsg]
 			);
 		}
-		$logMsg = __METHOD__ . PHP_EOL;
-		$logMsg .= $builder->getQuery()->toSql() . PHP_EOL;
-		$logMsg .= json_encode($builder->getQuery()->getBindings()) . PHP_EOL;
-		$prefix .= $builder->getQuery()->toSql() . json_encode($builder->getQuery()->getBindings());
 		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder){
+				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder, $filters){
+			if(empty($filters))
+			{
+				return $builder->get();
+			}
 			return $builder->get();
 				}, [$this->getModel()->getTable()], null, ['logFile' => 'Repo_' . $this->getModel()->getTable(), 'logMsg' => $logMsg]
 		);
@@ -277,13 +309,42 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	{
 		$builder = $this->_query(['COUNT(1)'], $filters, null, $joins, $unions, $group, $options);
 		$logMsg = __METHOD__ . PHP_EOL;
-		$logMsg .= $builder->getQuery()->toSql() . PHP_EOL;
-		$logMsg .= json_encode($builder->getQuery()->getBindings()) . PHP_EOL;
+		$logMsg .= $this->getSqlStatement($builder) . PHP_EOL;
+		$logMsg .= json_encode($this->getSqlBindings($builder)) . PHP_EOL;
 		return zbase_cache(
 				zbase_cache_key($this, __FUNCTION__, func_get_args(), $this->getModel()->getTable()), function() use ($builder){
 			return $builder->count();
 				}, [$this->getModel()->getTable()], null, ['logFile' => 'Repo_' . $this->getModel()->getTable(), 'logMsg' => $logMsg]
 		);
+	}
+
+	/**
+	 * Return the SQL statement
+	 * @param object $builder
+	 * @return string
+	 */
+	protected function getSqlStatement($builder)
+	{
+		if(method_exists($builder, 'getQuery'))
+		{
+			return $builder->getQuery()->toSql();
+		}
+		return $sqlStmt = $builder->toSql();
+	}
+
+	/**
+	 * Return the SQL Bindings
+	 *
+	 * @param object $builder
+	 * @return string
+	 */
+	protected function getSqlBindings($builder)
+	{
+		if(method_exists($builder, 'getQuery'))
+		{
+			return $builder->getQuery()->getBindings();
+		}
+		return $builder->getBindings();
 	}
 
 	/**
@@ -365,13 +426,16 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	protected function _query($columns, $filters, $sorting, $joins, $unions, $group)
 	{
 		$model = $this->getModel();
-		if(!empty($this->withTrashed))
+		if($model->hasSoftDelete())
 		{
-			$model = $model->withTrashed();
-		}
-		if(!empty($this->onlyTrashed))
-		{
-			$model = $model->onlyTrashed();
+			if(!empty($this->withTrashed))
+			{
+				$model = $model->withTrashed();
+			}
+			if(!empty($this->onlyTrashed))
+			{
+				$model = $model->onlyTrashed();
+			}
 		}
 		if(!empty($joins))
 		{

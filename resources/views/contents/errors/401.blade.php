@@ -1,4 +1,9 @@
-
+<?php
+$page = [];
+$page['title'] = 'Not enough access.';
+$page['headTitle'] = 'Not enough access';
+zbase_view_page_details(['page' => $page]);
+?>
 <div class="container text-center" id="error">
   <svg height="100" width="100">
     <polygon points="50,25 17,80 82,80" stroke-linejoin="round" style="fill:none;stroke:#ff8a00;stroke-width:8" />

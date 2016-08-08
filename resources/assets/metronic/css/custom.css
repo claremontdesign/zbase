@@ -2,3 +2,10 @@
 .zbase-ui-tab.tab-pane .treeview{
 	width:50%;
 }
+
+.zbase-ui-wrapper-pageHeader{
+	clear: both;
+    padding-top: 20px;
+    border-bottom: 1px solid gray;
+    margin-bottom: 20px;
+}

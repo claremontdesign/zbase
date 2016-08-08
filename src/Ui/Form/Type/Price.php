@@ -23,5 +23,19 @@ class Price extends \Zbase\Ui\Form\Element
 	 * @var string
 	 */
 	protected $_type = 'number';
+	//min="0.01" step="0.01"
 
+
+	/**
+	 * Return the Input Attributes
+	 * @return array
+	 */
+	public function inputAttributes()
+	{
+		$attr = parent::inputAttributes();
+		$attr['min'] = '0.01';
+		$attr['step'] = '0.01';
+		$attr['max'] = '999999999';
+		return $attr;
+	}
 }

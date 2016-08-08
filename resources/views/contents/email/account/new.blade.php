@@ -42,4 +42,4 @@ $passwordAutoGenerate = $entity->passwordAutoGenerate();
 	<?php endif; ?>
 <?php endif; ?>
 
-<?php echo zbase_view_render(zbase_view_file_contents('email.footer')); ?>
+	<?php echo zbase_view_render(zbase_view_file_contents('email.footer')); ?>

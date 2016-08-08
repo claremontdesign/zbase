@@ -19,20 +19,26 @@ if(empty($node) & !empty($ui))
 {
 	$node = $ui->form()->entity();
 }
+if(empty($node))
+{
+	$node = $ui->entity();
+}
 if(!empty($node))
 {
-	if($node instanceof Zbase\Entity\Laravel\Node\Node)
-	{
-		$isNode = true;
-		$images = $node->files()->get();
-	}
 	if($node instanceof Zbase\Entity\Laravel\Node\Category)
 	{
+		$isNode = false;
 		$isCategory = true;
 	}
-	if($node instanceof Zbase\Entity\Laravel\User\User)
+	elseif($node instanceof Zbase\Entity\Laravel\User\User)
 	{
+		$isNode = false;
 		$isUser = true;
+	}
+	else
+	{
+		$images = $node->childrenFiles();
+		$isNode = true;
 	}
 }
 ?>
@@ -48,11 +54,11 @@ if(!empty($node))
 		<div class="col-xs-12 col-md-12" style="margin-bottom: 20px;">
 			<img class="img-thumbnail" src="<?php echo $node->avatarUrl(['thumbnail => true']) ?>" alt="<?php echo $node->displayName() ?>" />
 		</div>
+		<?php endif; ?>
 	<?php endif; ?>
-<?php endif; ?>
 <?php if(!empty($images) && !empty($isNode)): ?>
 	<div class="row" id="node-files" style="margin: 20px;">
-		<?php foreach ($images as $img): ?>
+	<?php foreach ($images as $img): ?>
 			<div class="col-xs-12 col-md-6" data-id="<?php echo $img->alphaId() ?>" id="node-files-<?php echo $img->alphaId() ?>">
 				<div class="col-xs-4 col-md-2">
 					<img class="img-thumbnail" src="<?php echo $img->alphaUrl(['thumbnail' => true]) ?>" alt="<?php echo $img->title() ?>" />
@@ -82,7 +88,7 @@ if(!empty($node))
 								'#node-files-<?php echo $img->alphaId() ?>-title',
 								'inputByName=node-files-<?php echo $img->alphaId() ?>-status']
 								}">Update</button>
-								<?php if(!empty($enablePrimary)): ?>
+		<?php if(!empty($enablePrimary)): ?>
 							<button type="button" class="btn btn-info btn-sm zbase-ajax-url"
 									data-config="{
 									url: '<?php echo $img->actionUrl('primary') ?>',
@@ -90,7 +96,7 @@ if(!empty($node))
 									method: 'post',
 									callback: nodeFileAfterPrimary,
 									}">Set As Primary</button>
-								<?php endif; ?>
+		<?php endif; ?>
 						<button type="button" class="btn btn-danger btn-sm zbase-btn-action-confirm"
 								data-config="{url: '<?php echo $img->actionUrl('delete') ?>',
 								mode: 'yesno',
@@ -100,6 +106,6 @@ if(!empty($node))
 					</div>
 				</div>
 			</div>
-		<?php endforeach; ?>
+	<?php endforeach; ?>
 	</div>
 <?php endif; ?>

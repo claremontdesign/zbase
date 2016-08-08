@@ -12,6 +12,4 @@ if(array_key_exists($status, $statuses))
 	$text = $statuses[$status];
 }
 ?>
-<span <?php echo $wrapperAttributes ?>>
-	<?php echo $text ?>
-</span>
+<span <?php echo $wrapperAttributes ?>> <?php echo $text ?> </span>

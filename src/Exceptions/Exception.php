@@ -52,4 +52,11 @@ class Exception extends \RuntimeException
 		return response()->view(zbase_view_file('errors.' . $this->getStatusCode()), compact('request', 'e'));
 	}
 
+	public function renderException()
+	{
+		$request = zbase_request();
+		$e = $this;
+		return response()->view(zbase_view_file('errors.' . $this->getStatusCode()), compact('request', 'e'));
+	}
+
 }

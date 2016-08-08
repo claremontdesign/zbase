@@ -109,6 +109,7 @@ class Log extends BaseEntity implements Interfaces\IdInterface, Interfaces\Entit
 			'name' => 'user_log',
 			'primaryKey' => 'log_id',
 			'optionable' => true,
+			'ipAddress' => true,
 			'timestamp' => true
 		];
 		return $entity;
@@ -124,19 +125,16 @@ class Log extends BaseEntity implements Interfaces\IdInterface, Interfaces\Entit
 	{
 		$columns['user_id'] = [
 			'filterable' => [
-				'name' => 'user_id',
 				'enable' => true
 			],
 			'sortable' => [
-				'name' => 'user_id',
 				'enable' => true
 			],
 			'hidden' => false,
-			'length' => 255,
 			'fillable' => true,
 			'nullable' => true,
-			'type' => 'string',
-			'index' => false,
+			'type' => 'integer',
+			'index' => true,
 			'comment' => 'User Id'
 		];
 		$columns['remarks'] = [
@@ -160,6 +158,17 @@ class Log extends BaseEntity implements Interfaces\IdInterface, Interfaces\Entit
 			'nullable' => false,
 			'type' => 'string',
 			'comment' => 'Type of Log'
+		];
+		$columns['task'] = [
+			'filterable' => [
+				'name' => 'type',
+				'enable' => true
+			],
+			'hidden' => false,
+			'fillable' => true,
+			'nullable' => false,
+			'type' => 'string',
+			'comment' => 'Task'
 		];
 		return $columns;
 	}

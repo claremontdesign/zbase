@@ -38,6 +38,18 @@ class Select extends \Zbase\Ui\Form\Type\Multi
 	 * @var boolean|array
 	 */
 	protected $_emptyOption = null;
+	protected $_multipleValues = false;
+
+	/**
+	 * Multiple VAlues
+	 * @param type $multipleValues
+	 * @return \Zbase\Ui\Form\Type\Multi
+	 */
+	public function setMultipleValues($multipleValues)
+	{
+		$this->_multipleValues = $multipleValues;
+		return $this;
+	}
 
 	/**
 	 * SEt the Empty Option
@@ -48,6 +60,19 @@ class Select extends \Zbase\Ui\Form\Type\Multi
 	{
 		$this->_emptyOption = $emptyOption;
 		return $this;
+	}
+
+	/**
+	 * The Input name
+	 * @return string
+	 */
+	public function inputName()
+	{
+		if(!empty($this->_multipleValues))
+		{
+			return $this->name() . '[]';
+		}
+		return $this->name();
 	}
 
 	/**
@@ -81,9 +106,32 @@ class Select extends \Zbase\Ui\Form\Type\Multi
 					$options[] = '<option value="">Select...</option>';
 				}
 			}
+			if(!empty($this->_multipleValues))
+			{
+				if(!empty($this->getValue()))
+				{
+					if(is_array($this->getValue()))
+					{
+						$values = $this->getValue();
+					} else {
+						$values = explode(',', $this->getValue());
+					}
+				}
+			}
+			$selected = '';
 			foreach ($multiOptions as $k => $v)
 			{
-				$selected = $this->getValue() == $k ? ' selected="selected"' : '';
+				if(!empty($this->_multipleValues))
+				{
+					if(!empty($values))
+					{
+						$selected = in_array($k, $values) ? ' selected="selected"' : '';
+					}
+				}
+				else
+				{
+					$selected = $this->getValue() == $k ? ' selected="selected"' : '';
+				}
 				$options[] = '<option value="' . $k . '"' . $selected . '>' . $v . '</option>';
 			}
 			return implode('', $options);

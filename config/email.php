@@ -17,6 +17,7 @@
  */
 return [
 	'email' => [
+		'enable' => false,
 		'noreply' => [
 			'email' => 'no-reply@zbase.com',
 			'name' => 'No-Reply at Zbase.com',

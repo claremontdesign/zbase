@@ -247,6 +247,13 @@ trait Node
 			'index' => true,
 			'comment' => 'Status'
 		];
+		$columns['image'] = [
+			'hidden' => false,
+			'fillable' => false,
+			'nullable' => true,
+			'type' => 'string',
+			'comment' => 'Main image'
+		];
 		return $columns;
 	}
 

@@ -100,7 +100,7 @@ function zbase_view_template_package($tag = null)
 	$section = zbase_section();
 	if(zbase_is_mobile())
 	{
-		return zbase_config_get('view.templates.' . $tag . $section . '.mobile.package', 'zbase');
+		// return zbase_config_get('view.templates.' . $tag . $section . '.mobile.package', 'zbase');
 	}
 	return zbase_config_get('view.templates.' . $tag . $section . '.package', 'zbase');
 }
@@ -156,9 +156,13 @@ function zbase_view_file($name, $section = 'front')
 	{
 		return $viewFile;
 	}
-
 	// check default from templates
 	$viewFile = zbase_tag() . '::templates.' . $section . '.default.' . $name;
+	if(\View::exists($viewFile))
+	{
+		return $viewFile;
+	}
+	$viewFile = zbase_tag() . '::templates.' . $name;
 	if(\View::exists($viewFile))
 	{
 		return $viewFile;
@@ -169,12 +173,18 @@ function zbase_view_file($name, $section = 'front')
 /**
  * Module View
  * @param type $name
+ * @param type $module originalModule
  * @return string
  */
-function zbase_view_file_module($name)
+function zbase_view_file_module($name, $module = null, $package = null)
 {
-	$package = zbase_view_template_package();
+	$package = empty($package) ? zbase_view_template_package() : $package;
 	$viewFile = $package . 'modules::' . $name;
+	if(\View::exists($viewFile))
+	{
+		return $viewFile;
+	}
+	$viewFile = $module . 'modules::' . $name;
 	if(\View::exists($viewFile))
 	{
 		return $viewFile;
@@ -184,17 +194,17 @@ function zbase_view_file_module($name)
 /**
  * Search for a view file on the contents folder
  * @param string $name
- * @param string $section
+ * @param string $package
  * @return string
  */
-function zbase_view_file_contents($name)
+function zbase_view_file_contents($name, $package = null)
 {
 	if(preg_match('/\:\:/', $name))
 	{
 		return $name;
 	}
 
-	$package = zbase_view_template_package();
+	$package = !empty($package) ? $package : zbase_view_template_package();
 	// - check.contents.back.$name
 	if(zbase_is_back())
 	{
@@ -232,9 +242,9 @@ function zbase_view_file_contents($name)
  * @param string $tpl The template file to use
  * @return string
  */
-function zbase_view_template_layout($tag = null, $tpl = 'layout')
+function zbase_view_template_layout($tag = null, $tpl = 'layout', $section = null)
 {
-	$section = zbase_section();
+	$section = is_null($section) ? zbase_section() : $section;
 	$package = zbase_view_template_package($tag);
 	$theme = zbase_view_template_theme($tag);
 	$viewFile = $package . '::templates.' . $section . '.' . $theme . '.' . $tpl;

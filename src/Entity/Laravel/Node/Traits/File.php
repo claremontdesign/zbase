@@ -23,6 +23,9 @@ trait File
 	 * @var array
 	 */
 	protected $_actionMessages = [];
+	protected $joinUserTable = true;
+	protected $parentObject = null;
+	protected $parentObjectIndexId = 'node_id';
 
 	/**
 	 * Return a messages based on the Action made
@@ -40,6 +43,95 @@ trait File
 	}
 
 	/**
+	 * Update other primary to 0
+	 * before updating a new primary
+	 *
+	 * @return
+	 */
+	public function updatePrimary($selectedAlphaId)
+	{
+		zbase_entity($this->entityName)->repo()->update(['is_primary' => 0], ['node_id' => ['eq' => ['field' => 'node_id', 'value' => $this->parentObject()->id()]]]);
+		zbase_entity($this->entityName)->repo()->update(['is_primary' => 1], ['node_id' => ['eq' => ['field' => 'alpha_id', 'value' => $selectedAlphaId]]]);
+	}
+
+	/**
+	 * Receive the File/Image
+	 *
+	 * @param \Zbase\Entity\Laravel\Entity $parentObject The Parent
+	 */
+	public function receiveFile(\Zbase\Entity\Laravel\Entity $parentObject)
+	{
+		try
+		{
+			$index = 'file';
+			$entityName = $this->entityName;
+			$defaultImageFormat = zbase_config_get('node.files.image.format', 'png');
+			$folder = zbase_storage_path() . '/' . zbase_tag() . '/' . $this->actionUrlRouteName() . '/' . $parentObject->id() . '/';
+			zbase_directory_check($folder, true);
+			$nodeFileObject = zbase_entity($entityName, [], true);
+			$nodeFiles = $parentObject->childrenFiles();
+			if(preg_match('/http\:/', $index) || preg_match('/https\:/', $index))
+			{
+				// File given is a URL
+				if($nodeFileObject->isUrlToFile())
+				{
+					$filename = zbase_file_name_from_file(basename($index), time(), true);
+					$uploadedFile = zbase_file_download_from_url($index, $folder . $filename);
+				}
+				else
+				{
+					$this->is_primary = empty($nodeFiles) ? 1 : 0;
+					$this->status = 2;
+					$this->mimetype = null;
+					$this->size = null;
+					$this->filename = null;
+					$this->url = $index;
+					$this->{$this->parentObjectIndexId} = $parentObject->id();
+					$this->user_id = zbase_auth_has() ? zbase_auth_user()->id() : null;
+					$this->save();
+					return true;
+				}
+			}
+			if(zbase_file_exists($index))
+			{
+				$uploadedFile = $index;
+				$filename = basename($index);
+			}
+			if(!empty($_FILES[$index]['name']))
+			{
+				$filename = zbase_file_name_from_file($_FILES[$index]['name'], time(), true);
+				$uploadedFile = zbase_file_upload_image($index, $folder, $filename, $defaultImageFormat);
+			}
+			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
+			{
+				$this->is_primary = empty($nodeFiles) ? 1 : 0;
+				$this->status = 2;
+				$this->user_id = zbase_auth_has() ? zbase_auth_user()->id() : null;
+				$this->mimetype = zbase_file_mime_type($uploadedFile);
+				$this->size = zbase_file_size($uploadedFile);
+				$this->filename = basename($uploadedFile);
+				$this->{$this->parentObjectIndexId} = $parentObject->id();
+				if(empty($nodeFiles))
+				{
+					$parentObject->image = $this->filename;
+					$parentObject->save();
+				}
+				$this->save();
+				return true;
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			if(zbase_is_dev())
+			{
+				dd($e);
+			}
+			zbase_abort(500);
+		}
+		return false;
+	}
+
+	// <editor-fold defaultstate="collapsed" desc="nodeWidgetController">
+	/**
 	 * Widget entity interface.
 	 * 	Data should be validated first before passing it here
 	 * @param string $method post|get
@@ -53,6 +145,35 @@ trait File
 		zbase_db_transaction_start();
 		try
 		{
+			if(strtolower($method) == 'post')
+			{
+				if($action == 'file-update')
+				{
+					$action = 'update';
+				}
+			}
+			if(strtolower($method) == 'post' && zbase_request_is_upload())
+			{
+				$parentObject = $widget->parentEntityObject();
+				if(empty($parentObject))
+				{
+					return false;
+				}
+				$this->receiveFile($parentObject);
+				$action = 'create';
+			}
+			if(strtolower($method) == 'post')
+			{
+				if(!empty($data))
+				{
+					$newData = $data;
+					$data = [];
+					foreach ($newData as $dK => $dV)
+					{
+						$data[str_replace('nodefile', '', $dK)] = $dV;
+					}
+				}
+			}
 			if($action == 'create' && strtolower($method) == 'post')
 			{
 				if(isset($data['title']))
@@ -67,7 +188,7 @@ trait File
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
-				$this->_actionMessages[$action]['success'][] = _zt('Created!', ['%title%' => $this->title, '%id%' => $this->id()]);
+				$this->_actionMessages[$action]['success'][] = _zt('File Uploaded!', ['%title%' => $this->title, '%id%' => $this->id()]);
 				return true;
 			}
 			if($action == 'update' && strtolower($method) == 'post')
@@ -94,6 +215,16 @@ trait File
 				{
 					$this->excerpt = $data['excerpt'];
 				}
+				if(isset($data['primary']) && !empty($data['primary']))
+				{
+					$this->updatePrimary($data['primary']);
+					$this->parentObject()->image = $this->alphaId();
+				}
+				else
+				{
+					$this->parentObject()->image = null;
+				}
+				$this->parentObject()->save();
 				$this->save();
 				$this->log($action);
 				zbase_db_transaction_commit();
@@ -103,7 +234,6 @@ trait File
 			}
 			if($action == 'primary' && strtolower($method) == 'post')
 			{
-
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
@@ -201,6 +331,121 @@ trait File
 			zbase_db_transaction_rollback();
 		}
 		return false;
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Datatable Queries">
+
+	/**
+	 * Sorting Query
+	 * @param array $sorting Array of Sorting
+	 * @param array $filters Array of Filters
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function querySorting($sorting, $filters = [], $options = [])
+	{
+		$entityName = $this->entityName;
+		$sort = [$entityName . '.created_at' => 'ASC'];
+		return $sort;
+	}
+
+	/**
+	 * Join Query
+	 * @param array $filters Array of Filters
+	 * @param array $sorting Array of Sorting
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function queryJoins($filters, $sorting = [], $options = [])
+	{
+		$joins = [];
+		if(!empty($this->joinUserTable))
+		{
+			$entityName = $this->entityName;
+			$joins[] = [
+				'type' => 'join',
+				'model' => 'users as user',
+				'foreign_key' => $entityName . '.user_id',
+				'local_key' => 'user.user_id',
+			];
+			$joins[] = [
+				'type' => 'join',
+				'model' => 'users_profile as user_profile',
+				'foreign_key' => $entityName . '.user_id',
+				'local_key' => 'user_profile.user_id',
+			];
+		}
+		return $joins;
+	}
+
+	/**
+	 * REturn selects
+	 * @param array $filters
+	 * @return array
+	 */
+	public function querySelects($filters, $options = [])
+	{
+		$entityName = $this->entityName;
+		$selects = [];
+		$selects[] = $entityName . '.*';
+		if(!empty($this->joinUserTable))
+		{
+			$selects[] = 'user.email as user_email';
+			$selects[] = 'user.name as user_name';
+			$selects[] = 'user.username as user_username';
+			$selects[] = 'user_profile.avatar as user_avatar';
+		}
+		return $selects;
+	}
+
+	/**
+	 * Filter Query
+	 * @param array $filters Array of Filters
+	 * @param array $sorting Array of Sorting
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function queryFilters($filters, $sorting = [], $options = [])
+	{
+		if(!empty($filters))
+		{
+			$entityName = $this->entityName;
+			$queryFilters = [];
+			foreach ($filters as $fId => $fValue)
+			{
+				if(!empty($fValue))
+				{
+					foreach ($fValue as $fQ => $fV)
+					{
+						$field = $fV['field'];
+						if(preg_match('/\./', $field) == 0)
+						{
+							$field = $entityName . '.' . $field;
+						}
+						$queryFilters[$fId][$fQ]['field'] = $field;
+						$queryFilters[$fId][$fQ]['value'] = $fV['value'];
+					}
+				}
+			}
+		}
+		return $queryFilters;
+	}
+
+	// </editor-fold>
+
+	/**
+	 * Return the Parent Object
+	 *
+	 * @return Entity
+	 */
+	public function parentObject()
+	{
+		if(is_null($this->parentObject))
+		{
+			$this->parentObject = zbase_entity(static::$nodeNamePrefix . '_node')->repo()->byId($this->{$this->parentObjectIndexId});
+		}
+		return $this->parentObject;
 	}
 
 	/**
@@ -304,7 +549,7 @@ trait File
 			$params['q'] = !empty($options['q']) ? $options['q'] : $this->thQuality;
 		}
 		$params['ext'] = zbase_config_get('node.files.image.format', 'png');
-		return zbase_url_from_route('nodeImage', $params);
+		return zbase_url_from_route($this->urlRouteName(), $params);
 	}
 
 	/**
@@ -316,9 +561,27 @@ trait File
 		$params['id'] = $this->alphaId();
 		if(zbase_is_back())
 		{
-			return zbase_url_from_route('admin.node_' . static::$nodeNamePrefix . '_files', $params);
+			return zbase_url_from_route('admin.' . $this->actionUrlRouteName(), $params);
 		}
-		return zbase_url_from_route('node_' . static::$nodeNamePrefix . '_files', $params);
+		return zbase_url_from_route($this->actionUrlRouteName(), $params);
+	}
+
+	/**
+	 * The Action URL Route Name
+	 * @return string
+	 */
+	public function actionUrlRouteName()
+	{
+		return 'node_' . static::$nodeNamePrefix . '_files';
+	}
+
+	/**
+	 * return the image/file URL route name
+	 * @return string
+	 */
+	public function urlRouteName()
+	{
+		return 'nodeImage';
 	}
 
 	public function alphaId()
@@ -419,39 +682,16 @@ trait File
 	 * @param integer $height
 	 * @param integer $quality Image Quality
 	 * @param boolean $download If to download
+	 * @param boolean $notFound DisplayNot Found image
 	 * @return boolean
 	 */
-	public function serveImage($width, $height = null, $quality = null, $download = false)
+	public function serveImage($width, $height = null, $quality = null, $download = false, $notFound = false)
 	{
 		if($this->isUrl())
 		{
 			$defaultImageFormat = zbase_config_get('node.files.image.format', 'png');
 			$path = $this->url;
-			$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
-						if(empty($width))
-						{
-							$size = getimagesize($path);
-							$width = $size[0];
-							$height = $size[1];
-						}
-						if(!empty($width) && empty($height))
-						{
-							return $image->make($path)->resize($width, null, function($constraint)
-						{
-										$constraint->upsize();
-										$constraint->aspectRatio();
-						});
-						}
-						if(empty($width) && !empty($height))
-						{
-							return $image->make($path)->resize(null, $height, function($constraint)
-						{
-										$constraint->upsize();
-										$constraint->aspectRatio();
-						});
-						}
-						return $image->make($path)->resize($width, $height);
-				});
+			$cachedImage = $this->getImageByPath($path, $width, $height, $quality, $download);
 			return \Response::make($cachedImage, 200, array('Content-Type' => 'image/' . $defaultImageFormat));
 		}
 		else
@@ -459,35 +699,48 @@ trait File
 			$path = $this->getFilePath();
 			if(file_exists($path))
 			{
-				$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
-							if(empty($width))
-							{
-								$size = getimagesize($path);
-								$width = $size[0];
-								$height = $size[1];
-							}
-							if(!empty($width) && empty($height))
-							{
-								return $image->make($path)->resize($width, null, function($constraint)
-						{
-											$constraint->upsize();
-											$constraint->aspectRatio();
-						});
-							}
-							if(empty($width) && !empty($height))
-							{
-								return $image->make($path)->resize(null, $height, function($constraint)
-						{
-											$constraint->upsize();
-											$constraint->aspectRatio();
-						});
-							}
-							return $image->make($path)->resize($width, $height);
-				});
+				$cachedImage = $this->getImageByPath($path, $width, $height, $quality, $download);
 				return \Response::make($cachedImage, 200, array('Content-Type' => $this->mimetype));
 			}
+			$path = 'http://placehold.it/' . $width . 'x' . $height . '?textsize=25&text=ImageNotFound';
+			$image = $this->getImageByPath($path, $width, $height, $quality, $download);
+			return \Response::make($image, 200, array('Content-Type' => $this->mimetype));
 		}
 		return false;
+	}
+
+	/**
+	 * Return an Image By Path
+	 * @param type $path
+	 * @return type
+	 */
+	public function getImageByPath($path, $width, $height, $quality, $download)
+	{
+		return \Image::cache(function($image) use ($width, $height, $path){
+					if(empty($width))
+					{
+						$size = getimagesize($path);
+						$width = $size[0];
+						$height = $size[1];
+					}
+					if(!empty($width) && empty($height))
+					{
+						return $image->make($path)->resize($width, null, function($constraint)
+						{
+									$constraint->upsize();
+									$constraint->aspectRatio();
+						});
+					}
+					if(empty($width) && !empty($height))
+					{
+						return $image->make($path)->resize(null, $height, function($constraint)
+						{
+									$constraint->upsize();
+									$constraint->aspectRatio();
+						});
+					}
+					return $image->make($path)->resize($width, $height);
+				});
 	}
 
 	/**
@@ -598,20 +851,38 @@ trait File
 	{
 		$columns['node_id'] = [
 			'filterable' => [
-				'name' => 'nodeid',
 				'enable' => true
 			],
 			'sortable' => [
-				'name' => 'nodeid',
+				'enable' => true
+			],
+			'length' => 16,
+			'hidden' => false,
+			'fillable' => true,
+			'type' => 'integer',
+			'index' => true,
+			'unique' => true,
+			'unsigned' => true,
+			'comment' => 'Node Id',
+			'foreign' => [
+				'table' => static::$nodeNamePrefix,
+				'column' => 'node_id',
+				'onDelete' => 'cascade'
+			],
+		];
+		$columns['user_id'] = [
+			'filterable' => [
+				'enable' => true
+			],
+			'sortable' => [
 				'enable' => true
 			],
 			'hidden' => false,
-			'length' => 255,
 			'fillable' => false,
-			'nullable' => false,
+			'nullable' => true,
 			'type' => 'integer',
 			'index' => true,
-			'comment' => 'Node Id'
+			'comment' => 'User that add'
 		];
 		$columns['title'] = [
 			'filterable' => [

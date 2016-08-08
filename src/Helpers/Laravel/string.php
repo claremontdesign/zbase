@@ -36,6 +36,17 @@ function zbase_string_to_decimal($string)
 }
 
 /**
+ * Format a number to a currency format
+ *
+ * @return string
+ */
+function zbase_string_format_currency($number)
+{
+	return 'PHP ' . number_format($number, 2);
+}
+
+
+/**
  * Convert a string to snake case
  *
  * @param string $value

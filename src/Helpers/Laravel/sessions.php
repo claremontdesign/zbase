@@ -95,6 +95,7 @@ function zbase_session_pull($key, $default = null)
 
 /**
  * Get the value of a given key
+ * or Return all sesssion keys
  *
  * @param  string  $key
  * @param  string  $default
@@ -102,6 +103,10 @@ function zbase_session_pull($key, $default = null)
  */
 function zbase_session_get($key, $default = null)
 {
+	if(is_null($key))
+	{
+		return \Session::get(null);
+	}
 	return \Session::get(zbase_session_name($key), $default);
 }
 

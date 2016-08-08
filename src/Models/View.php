@@ -213,6 +213,38 @@ class View
 	}
 
 	/**
+	 * Add multiple view
+	 *
+	 * @param type $configs
+	 */
+	public function multiAdd($configs)
+	{
+		if(!empty($configs))
+		{
+			foreach ($configs as $id => $config)
+			{
+				foreach ($config as $k => $v)
+				{
+					$config[$k] = zbase_data_get($config, $k);
+				}
+				if(!empty($config['type']))
+				{
+					if($config['type'] == self::SCRIPT)
+					{
+						$config['script'] = str_replace(array('<script type="text/javascript">', '</script>', '<style type="text/css">', '</style>'), '', $config['script']);
+					}
+					if($config['type'] == self::STYLE)
+					{
+						$config['style'] = str_replace(array('<style type="text/css">', '</style>'), '', $config['style']);
+					}
+					$config['id'] = $id;
+					$this->add($config['type'], $config);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Add a new View element
 	 *
 	 * @param string $type
@@ -495,7 +527,6 @@ class View
 		$str = '';
 		if(!empty($this->placeholders[$placeholder]))
 		{
-
 //			$collection = $this->placeholders[$placeholder];
 //			$i = 0;
 //			foreach ($collection as $coll)

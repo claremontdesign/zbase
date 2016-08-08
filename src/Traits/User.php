@@ -24,7 +24,7 @@ trait User
 	 * @param  array  $data
 	 * @return User
 	 */
-	protected function userCreate(array $data)
+	public function userCreate(array $data)
 	{
 		$user = [
 			'status' => $this->defaultNewUserStatus(),

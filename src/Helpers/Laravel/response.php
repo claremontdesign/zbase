@@ -14,6 +14,7 @@
  * @package Zbase/Laravel/Helpers
  */
 
+
 /**
  * Return the Response
  * @param mixed $response
@@ -51,6 +52,8 @@ function zbase_response($response)
 	}
 	if(!empty($jsonResponse))
 	{
+		zbase()->json()->setVariable('_route', zbase_route_name());
+		zbase()->json()->setVariable('_package', zbase_view_template_package());
 		$code = 200;
 		if($response instanceof \RuntimeException)
 		{

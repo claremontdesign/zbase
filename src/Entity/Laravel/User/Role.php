@@ -90,8 +90,7 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 	 */
 	public static function listAllRoles()
 	{
-		$entity = zbase()->entity('user_roles', [], true);
-		$roles = $entity->repo()->all();
+		$roles = zbase_entity('user_roles')->all();
 		if(!empty($roles))
 		{
 			$lists = [];
