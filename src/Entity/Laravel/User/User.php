@@ -279,6 +279,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	/**
+	 * Return all User Roles in Descending
+	 * @return Role[]
+	 */
+	public function getUserHighestRole()
+	{
+		return zbase_cache(zbase_cache_key(zbase_entity($this->entityName), 'getUserRoles_' . $this->id()), function(){
+			return $this->roles()->orderBy('parent_id', 'DESC')->first();
+		}, [zbase_entity($this->entityName)->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+	}
+
+	/**
 	 * Check for access on the resource
 	 * @param string|array $access The Access needed
 	 * @param string $resource The resource
@@ -286,28 +297,181 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function hasAccess($access, $resource = null)
 	{
-		$role = $this->roles()->getModel()->repository()->by('role_name', $access)->first();
-		$roleClassname = get_class(zbase_entity('user_roles'));
-		if($role instanceof $roleClassname)
+		if(preg_match('/\,/', $access) > 0)
 		{
-			$userHighestRole = $this->roles()->orderBy('parent_id', 'DESC')->first();
-			if($userHighestRole->name() == $role->name())
+			$accesses = explode(',', $access);
+			if(!empty($accesses))
 			{
-				return true;
-			}
-			$roles = $userHighestRole->children();
-			if(!empty($roles))
-			{
-				foreach ($roles as $r)
+				foreach($accesses as $access)
 				{
-					if($r->name() == $role->name())
+					$check = $this->hasAccess($access);
+					if(!empty($check))
 					{
 						return true;
 					}
 				}
+				return false;
 			}
 		}
-		return false;
+
+		return zbase_cache(zbase_cache_key($this, 'hasAccess_' . $access . '_' . $this->id()), function() use ($access){
+			/**
+			 * only::sudo,user,moderator
+			 * comma separated values
+			 *
+			 * only::sudo,
+			 * will only be for rolename given access
+			 *
+			 * below::sudo
+			 * will only be for users with role below given access
+			 *
+			 * above::sudo
+			 * will only be for users with role above given access
+			 *
+			 * same::sudo
+			 * will only be for users with same level as the given access
+			 */
+			if(preg_match('/only\:\:/', $access) > 0)
+			{
+				$access = str_replace('only::', '', $access);
+				$role = zbase_entity('user_roles')->getRoleByName($access);
+				$roleClassname = get_class(zbase_entity('user_roles'));
+				if($role instanceof $roleClassname)
+				{
+					$userHighestRole = $this->getUserHighestRole();
+					if($userHighestRole->name() ==$role->name())
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+			if(preg_match('/below\:\:/', $access) > 0)
+			{
+				$access = str_replace('below::', '', $access);
+				$role = zbase_entity('user_roles')->getRoleByName($access);
+				$roleClassname = get_class(zbase_entity('user_roles'));
+				if($role instanceof $roleClassname)
+				{
+					$userHighestRole = $this->getUserHighestRole();
+					$roles = $role->below();
+					if(!empty($roles))
+					{
+						foreach ($roles as $r)
+						{
+							if($r->name() == $userHighestRole->name())
+							{
+								return true;
+							}
+						}
+					}
+				}
+				return false;
+			}
+			if(preg_match('/above\:\:/', $access) > 0)
+			{
+				$access = str_replace('above::', '', $access);
+				$role = zbase_entity('user_roles')->getRoleByName($access);
+				$roleClassname = get_class(zbase_entity('user_roles'));
+				if($role instanceof $roleClassname)
+				{
+					$userHighestRole = $this->getUserHighestRole();
+					$roles = $role->above();
+					if(!empty($roles))
+					{
+						foreach ($roles as $r)
+						{
+							if($r->name() == $userHighestRole->name())
+							{
+								return true;
+							}
+						}
+					}
+				}
+				return false;
+			}
+			if(preg_match('/same\:\:/', $access) > 0)
+			{
+				$access = str_replace('same::', '', $access);
+				$role = zbase_entity('user_roles')->getRoleByName($access);
+				$roleClassname = get_class(zbase_entity('user_roles'));
+				if($role instanceof $roleClassname)
+				{
+					$userHighestRole = $this->getUserHighestRole();
+					$roles = $role->same();
+					if(!empty($roles))
+					{
+						foreach ($roles as $r)
+						{
+							if($r->name() == $userHighestRole->name())
+							{
+								return true;
+							}
+						}
+					}
+				}
+				return false;
+			}
+			$role = zbase_entity('user_roles')->getRoleByName($access);
+			$roleClassname = get_class(zbase_entity('user_roles'));
+			if($role instanceof $roleClassname)
+			{
+				$userHighestRole = $this->getUserHighestRole();
+				if($userHighestRole->name() == $role->name())
+				{
+					return true;
+				}
+				$roles = $userHighestRole->same();
+				if(!empty($roles))
+				{
+					foreach ($roles as $r)
+					{
+						if($r->name() == $role->name())
+						{
+							return true;
+						}
+					}
+				}
+				$roles = $userHighestRole->below();
+				if(!empty($roles))
+				{
+					foreach ($roles as $r)
+					{
+						if($r->name() == $role->name())
+						{
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}, [$this->entityName], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+	}
+
+	/**
+	 * Return the current authed user
+	 * @return User
+	 */
+	public function currentUser()
+	{
+		return $this->repository()->byId(zbase_auth_user()->id());
+	}
+
+	/**
+	 *
+	 * @param type $task
+	 * @param type $msg
+	 */
+	public function log($task, $msg = null, $options = null)
+	{
+		$data = [
+			'remarks' => !empty($msg) ? $msg : null,
+			'task' => $task,
+			'ip_address' => zbase_ip(),
+			'user_id' => $this->id(),
+			'type' => 1,
+		];
+		zbase_entity('user_logs')->fill($data)->save();
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="CREATE">
@@ -526,33 +690,6 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	// </editor-fold>
-
-	/**
-	 * Return the current authed user
-	 * @return User
-	 */
-	public function currentUser()
-	{
-		return $this->repository()->byId(zbase_auth_user()->id());
-	}
-
-	/**
-	 *
-	 * @param type $task
-	 * @param type $msg
-	 */
-	public function log($task, $msg = null, $options = null)
-	{
-		$data = [
-			'remarks' => !empty($msg) ? $msg : null,
-			'task' => $task,
-			'ip_address' => zbase_ip(),
-			'user_id' => $this->id(),
-			'type' => 1,
-		];
-		zbase_entity('user_logs')->fill($data)->save();
-	}
-
 	// <editor-fold defaultstate="collapsed" desc="Image">
 
 	public function profileFolder()
@@ -752,23 +889,25 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	// <editor-fold defaultstate="collapsed" desc="LOST Password">
 	public function lostPassword()
 	{
+		$this->log('user::lostPassword');
+		zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
+//		$code = zbase_generate_code();
+//		zbase_entity('user_tokens')->fill(['token' => $code, 'email' => $this->email(), 'user_id' => $this->id()]);
+//
+//
 //		$response = \Password::sendResetLink(['email' => $this->email], function (\Illuminate\Mail\Message $message) {
 //					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
 //					$message->subject('Your Password Reset Link');
 //		});
-		// $codeEntity = zbase_entity('user_tokens')->repo()->by('email', $this->email())->first();
-//		$codeEntity = \DB::table('user_tokens')->where(['email' => $this->email()])->first();
-//		if(!empty($codeEntity))
-//		{
-//			zbase_messenger_email($this->email(), 'account-noreply', _zt('Your Password Reset Link'),
-//					zbase_view_file_contents('auth.password.email.password'), ['entity' => $this, 'token' => $codeEntity->token]);
-			$this->log('user::lostPassword');
-//		}
 //
+//		$code = zbase_generate_code();
+//		zbase_messenger_email($this->email(), 'account-noreply', _zt('Your Password Reset Link'), zbase_view_file_contents('auth.password.email.password'), ['entity' => $this, 'token' => $code]);
+//
+//		$this->log('user::lostPassword');
 //		switch ($response)
 //		{
 //			case \Password::RESET_LINK_SENT:
-				zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
+//				zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
 //				return true;
 //		}
 //		return false;

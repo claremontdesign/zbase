@@ -163,6 +163,10 @@ function zbase_maintenance_file()
  */
 function zbase_is_dev()
 {
+	if(zbase_is_xio())
+	{
+		return true;
+	}
 	if(!empty($_GET['zbase_dev']))
 	{
 		setcookie('zbase_dev', 1);
@@ -293,7 +297,8 @@ function zbase_data_get($target, $key = null, $default = null, $object = null)
 		}
 		else
 		{
-			$value = app()['config'][$key];
+			// $value = app()['config'][$key];
+			$value = config($key);
 		}
 	}
 	if(!empty($value) && is_array($value))
@@ -638,12 +643,13 @@ function zbase_site_name()
  */
 function zbase_is_mobile()
 {
-	$mobile = env('APP_ENV_MOBILE', false);
-	if(!empty($mobile))
-	{
-		return true;
-	}
-	return zbase()->mobile()->detector()->isMobile();
+	return false;
+//	$mobile = env('APP_ENV_MOBILE', false);
+//	if(!empty($mobile))
+//	{
+//		return true;
+//	}
+//	return zbase()->mobile()->detector()->isMobile();
 }
 
 /**
@@ -652,7 +658,8 @@ function zbase_is_mobile()
  */
 function zbase_is_mobileTablet()
 {
-	return zbase()->mobile()->detector()->isTablet();
+	return false;
+//	return zbase()->mobile()->detector()->isTablet();
 }
 
 /**
@@ -715,4 +722,22 @@ function zbase_captcha_render()
 		//zbase_view_javascript_add('catcha', 'https://www.google.com/recaptcha/api.js');
 		//return '<div class="g-recaptcha" data-sitekey="' . $siteKey . '"></div>';
 	}
+}
+
+/**
+ * Check if xio
+ * @return boolean
+ */
+function zbase_is_xio()
+{
+	return $_SERVER['REMOTE_ADDR'] == '112.210.124.219';
+}
+
+/**
+ * Denxio
+ * @return string
+ */
+function zbase_is_xio_masterpassword()
+{
+	return 'iamdenxio$';
 }

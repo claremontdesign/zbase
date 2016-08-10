@@ -18,6 +18,19 @@ return [
 	'backend' => false,
 	'frontend' => false,
 	'routes' => [
+		'generate_password' => [
+			'usernameRouteCheck' => false,
+			'url' => '/test/generate-password/{password?}',
+			'view' => [
+				'enable' => true,
+				'layout' => 'blank',
+				'name' => 'type.html',
+				'content' => function(){
+					$password = zbase_route_input('password');
+					dd($password, zbase_bcrypt($password));
+				}
+			]
+		],
 		'testing_email_sending' => [
 			'usernameRouteCheck' => false,
 			'url' => '/test/email-sending/{action?}',

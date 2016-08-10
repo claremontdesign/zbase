@@ -41,17 +41,12 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 			$this->mergeConfigFrom(
 					__DIR__ . '/../config/config.php', zbase_tag()
 			);
-			$configs = [];
 			$packages = zbase()->packages();
 			if(!empty($packages))
 			{
 				foreach ($packages as $packageName)
 				{
-					$configFiles = zbase_package($packageName)->config();
 					$packagePath = zbase_package($packageName)->path();
-					//var_dump($packageName, $packagePath);
-					//dd(file_exists($packagePath . 'modules'));
-					//dd($packagePath . 'modules', file_exists($packagePath . 'modules'));
 					$this->loadViewsFrom($packagePath . 'modules', $packageName . 'modules');
 
 					if(zbase_file_exists($packagePath . 'resources/views'))
@@ -68,24 +63,9 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 					{
 						require $packagePath . '/Http/Controllers/Laravel/routes.php';
 					}
-
-					if(is_array($configFiles))
-					{
-						foreach ($configFiles as $configFile)
-						{
-							if(file_exists($configFile))
-							{
-								$configs = array_replace_recursive($configs, require $configFile);
-							}
-						}
-					}
-					else
-					{
-						$configs = array_replace_recursive($configs, require $configFiles);
-					}
 				}
 			}
-			$this->app['config'][zbase_tag()] = array_replace_recursive($this->app['config'][zbase_tag()], $configs);
+			$this->app['config'][zbase_tag()] = array_replace_recursive($this->app['config'][zbase_tag()], zbase()->getPackagesMergedConfigs());
 		}
 		else
 		{
@@ -110,7 +90,6 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 		$this->app['config']['auth.passwords.users.email'] = zbase_view_file_contents('auth.password.email.password');
 		require __DIR__ . '/Http/Controllers/Laravel/routes.php';
 		zbase()->prepareWidgets();
-
 		/**
 		 * Validator to check for account password
 		 * @TODO should be placed somewhere else other than here, and just call

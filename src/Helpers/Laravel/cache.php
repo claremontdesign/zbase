@@ -56,9 +56,13 @@ function zbase_cache_support_tags()
  * Return the current cache driver
  * @return string
  */
-function zbase_cache_driver()
+function zbase_cache_driver($store = null)
 {
-	return \Cache::driver();
+	if(is_null($store))
+	{
+		return \Cache::driver();
+	}
+	return \Cache::store($store);
 }
 
 /**
@@ -77,23 +81,30 @@ function zbase_cache($key, \Closure $callback, array $tags = null, $minutes = 60
 	}
 	$logFile = !empty($options['logFile']) ? $options['logFile'] : __FUNCTION__;
 	$logMsg = !empty($options['logMsg']) ? $options['logMsg'] : __FUNCTION__;
-	if(zbase_cache_has($key, $tags))
+	if(zbase_cache_has($key, $tags, $options))
 	{
 		zbase_log($key . ' -- CACHE HIT' . PHP_EOL . $logMsg, null, $logFile);
-		return zbase_cache_get($key, $tags);
+		return zbase_cache_get($key, $tags, $options);
 	}
 	zbase_log($key . ' -- CACHE MISS' . PHP_EOL . $logMsg, null, $logFile);
+
+	/**
+	 * Force Cache Entity Level
+	 */
+	if(!empty($options['forceCache']))
+	{
+		$value = $callback();
+		zbase_cache_save($key, $value, $minutes, $tags, $options);
+		return $value;
+	}
 	if(!zbase_cache_enable())
 	{
 		return $callback();
 	}
-	if(zbase_cache_support_tags() && !empty($tags))
-	{
-		$value = $callback();
-		zbase_cache_save($key, $value, $minutes, $tags);
-		return $value;
-	}
-	return \Cache::remember($key, $minutes, $callback);
+	$value = $callback();
+	zbase_cache_save($key, $value, $minutes, $tags, $options);
+	return $value;
+	// return \Cache::remember($key, $minutes, $callback);
 }
 
 /**
@@ -103,8 +114,12 @@ function zbase_cache($key, \Closure $callback, array $tags = null, $minutes = 60
  * @param array $tags Tags
  * @return boolean
  */
-function zbase_cache_has($key, array $tags = null)
+function zbase_cache_has($key, array $tags = null, $options = [])
 {
+	if(!empty($options['driver']))
+	{
+		return zbase_cache_driver($options['driver'])->has($key);
+	}
 	if(!zbase_cache_enable())
 	{
 		return false;
@@ -125,11 +140,11 @@ function zbase_cache_has($key, array $tags = null)
  * @param array $tags Tags
  * @return mixed
  */
-function zbase_cache_save($key, $value, $minutes = 60, array $tags = null)
+function zbase_cache_save($key, $value, $minutes = 60, array $tags = null, $options = [])
 {
-	if(!zbase_cache_enable())
+	if(!empty($options['driver']))
 	{
-		return false;
+		return zbase_cache_driver($options['driver'])->put($key, $value, $minutes);
 	}
 	if(zbase_cache_support_tags() && !empty($tags))
 	{
@@ -144,8 +159,12 @@ function zbase_cache_save($key, $value, $minutes = 60, array $tags = null)
  * @param array $tags Tags
  * @return mixed
  */
-function zbase_cache_get($key, array $tags = null)
+function zbase_cache_get($key, array $tags = null, $options = [])
 {
+	if(!empty($options['driver']))
+	{
+		return zbase_cache_driver($options['driver'])->get($key);
+	}
 	if(!zbase_cache_enable())
 	{
 		return false;
@@ -164,8 +183,12 @@ function zbase_cache_get($key, array $tags = null)
  * @param array $tags Tags
  * @return boolean
  */
-function zbase_cache_remove($key, array $tags = null)
+function zbase_cache_remove($key, array $tags = null, $options = [])
 {
+	if(!empty($options['driver']))
+	{
+		return zbase_cache_driver($options['driver'])->forget($key);
+	}
 	if(!zbase_cache_enable())
 	{
 		return false;
@@ -183,13 +206,18 @@ function zbase_cache_remove($key, array $tags = null)
  * @param array $tags
  * @return boolean
  */
-function zbase_cache_flush(array $tags = null)
+function zbase_cache_flush(array $tags = null, $options = [])
 {
+	if(!empty($options['driver']))
+	{
+		zbase_cache_driver($options['driver'])->flush();
+	}
 	if(zbase_cache_support_tags() && !empty($tags))
 	{
-		return \Cache::tags($tags)->flush();
+		\Cache::tags($tags)->flush();
 	}
-	return \Cache::flush();
+	\Cache::flush();
+	zbase_cache_driver('file')->flush();
 }
 
 /**

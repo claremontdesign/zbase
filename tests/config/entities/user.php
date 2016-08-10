@@ -50,7 +50,7 @@ return [
 		],
 		'user_address' => [
 			'enable' => true,
-			'model' => Zbase\Entity\__FRAMEWORK__\User\UserAddress::class,
+			'model' => Zbase\Entity\__FRAMEWORK__\User\Address::class,
 			'table' => [
 				'name' => 'users_address',
 				'description' => 'User Addresses'

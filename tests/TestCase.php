@@ -3,6 +3,16 @@
 class TestCase extends \Orchestra\Testbench\TestCase
 {
 
+	/**
+	 * return the Zbase App
+	 * @param type $app
+	 * @return type
+	 */
+	protected function getZbase($app)
+	{
+		return ['\Zbase\LaravelServiceProvider'];
+	}
+
 	public function setUp()
 	{
 		parent::setUp();
@@ -16,7 +26,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
 	private function prepareDbForTests()
 	{
-		Artisan::call('migrate');
+		Artisan::call('zbase:migrate');
 		Mail::pretend(true);
 	}
 

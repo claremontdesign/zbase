@@ -162,6 +162,12 @@ trait Filterable
 								$query->where($v['field'], '=', $v['value']);
 							}
 							break;
+						case 'neq':
+							if(!empty($v['field']) && isset($v['value']))
+							{
+								$query->where($v['field'], '!=', $v['value']);
+							}
+							break;
 						case 'json':
 							if(!empty($v['field']) && isset($v['value']) && isset($v['keyName']))
 							{

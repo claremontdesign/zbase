@@ -64,25 +64,54 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 	}
 
 	/**
-	 * Return all parent roles
+	 * Return all roles above the Current Role
 	 *
 	 * @return Collection
 	 */
-	public function children()
+	public function above()
 	{
-		return $this->where('parent_id', '<', $this->parent_id)->where($this->getKeyName(), '!=', $this->id())->orderBy('parent_id')->get();
+		return zbase_cache(zbase_cache_key(zbase_entity($this->entityName), 'above_' . $this->parent_id . '_' . $this->id()), function(){
+			return $this->where('parent_id', '>', $this->parent_id)->orderBy('parent_id')->get();
+		}, [$this->entityName], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}
 
 	/**
-	 * Return all child roles
+	 * Return all roles below the current role
 	 *
 	 * @return Collection
 	 */
-	public function parents()
+	public function below()
 	{
-		return $this->where('parent_id', '>', $this->parent_id)->orderBy('parent_id')->get();
+		return zbase_cache(zbase_cache_key(zbase_entity($this->entityName), 'below_' . $this->parent_id), function(){
+			return $this->where('parent_id', '<', $this->parent_id)->where($this->getKeyName(), '!=', $this->id())->orderBy('parent_id')->get();
+		}, [$this->entityName], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}
 
+	/**
+	 * Return all same level Roles
+	 *
+	 * @return Collection
+	 */
+	public function same()
+	{
+		return zbase_cache(zbase_cache_key(zbase_entity($this->entityName), 'same_' . $this->parent_id), function(){
+			return $this->where('parent_id', '=', $this->parent_id)->where($this->getKeyName(), '!=', $this->id())->orderBy('parent_id')->get();
+		}, [$this->entityName], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+	}
+
+	/**
+	 * Return a Role by Rolename
+	 * @param type $name
+	 * @return type
+	 */
+	public function getRoleByName($name)
+	{
+		return zbase_cache(zbase_cache_key(zbase_entity($this->entityName), 'getRoleByName_' . $name), function() use ($name){
+			return $this->repo()->by('role_name', $name)->first();
+		}, [$this->entityName], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+	}
+
+	// <editor-fold defaultstate="collapsed" desc="ListAllRoles">
 	/**
 	 * Return all Roles
 	 *
@@ -90,19 +119,23 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 	 */
 	public static function listAllRoles()
 	{
-		$roles = zbase_entity('user_roles')->all();
-		if(!empty($roles))
-		{
-			$lists = [];
-			foreach ($roles as $role)
+		return zbase_cache(zbase_cache_key(zbase_entity('user_roles'), 'listAllRoles'), function(){
+			$roles = zbase_entity('user_roles')->all();
+			if(!empty($roles))
 			{
-				$lists[] = $role->name();
+				$lists = [];
+				foreach ($roles as $role)
+				{
+					$lists[] = $role->name();
+				}
+				return $lists;
 			}
-			return $lists;
-		}
-		return null;
+			return null;
+		}, [zbase_entity('user_roles')->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}
 
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Table Definitions">
 	/**
 	 * Default Data
 	 * @param array $defaultData Configuration default data
@@ -118,6 +151,14 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 			[
 				'parent_id' => 1,
 				'role_name' => 'moderator'
+			],
+			[
+				'parent_id' => 1,
+				'role_name' => 'manager'
+			],
+			[
+				'parent_id' => 1,
+				'role_name' => 'editor'
 			],
 			[
 				'parent_id' => 2,
@@ -190,4 +231,5 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 		return $columns;
 	}
 
+	// </editor-fold>
 }

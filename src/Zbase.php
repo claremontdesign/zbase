@@ -252,6 +252,8 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			}
 			throw new Exceptions\ConfigNotFoundException('Entity "model" configuration for "' . $entityName . '" not found in ' . __CLASS__);
 		}
+		//$value = app()['config']['entity'];
+		//dd($value, zbase_config_get('entity'), $entityName, $entityConfig);
 		throw new Exceptions\ConfigNotFoundException('Entity configuration for "' . $entityName . '" not found in ' . __CLASS__);
 	}
 
@@ -506,6 +508,40 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	public function packages()
 	{
 		return $this->packages;
+	}
+
+	/**
+	 * Return the merged configuration of packages
+	 *
+	 * @return array
+	 */
+	public function getPackagesMergedConfigs()
+	{
+		$packages = $this->packages();
+		$configs = [];
+		if(!empty($packages))
+		{
+			foreach ($packages as $packageName)
+			{
+				$configFiles = zbase_package($packageName)->config();
+				$packagePath = zbase_package($packageName)->path();
+				if(is_array($configFiles))
+				{
+					foreach ($configFiles as $configFile)
+					{
+						if(file_exists($configFile))
+						{
+							$configs = array_replace_recursive($configs, require $configFile);
+						}
+					}
+				}
+				else
+				{
+					$configs = array_replace_recursive($configs, require $configFiles);
+				}
+			}
+		}
+		return $configs;
 	}
 
 	// </editor-fold>
