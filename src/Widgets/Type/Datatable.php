@@ -896,6 +896,14 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 			{
 				foreach ($rows as $row)
 				{
+					if(method_exists($row, 'cast'))
+					{
+						$row = $row->cast();
+					}
+					if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+					{
+						$row->setBrowseCategory($this->entity());
+					}
 					$data = [];
 					foreach ($columns as $column)
 					{

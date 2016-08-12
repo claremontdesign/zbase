@@ -6,14 +6,15 @@ $searchUrl = $ui->getSearchUrl();
 $queryJson = $ui->isSearchResultJson();
 $queryOnLoad = $ui->isQueryOnLoad();
 $searchOnLoad = $ui->isSearchOnLoad();
-if($queryOnLoad)
-{
-	return;
-}
+$tableTemplate = !empty($dataTableTemplate) ? $dataTableTemplate : zbase_view_file_contents('ui.datatable.table');
+//if($queryOnLoad)
+//{
+//	return;
+//}
 ?>
 <?php ob_start(); ?>
 <script type="text/javascript">
-	<?php echo zbase_view_compile(zbase_view_render(zbase_view_file_contents('ui.datatable.table'), ['ui' => $ui, 'template' => true, 'prefix' => $prefix])); ?>
+	<?php echo zbase_view_compile(zbase_view_render($tableTemplate, ['ui' => $ui, 'template' => true, 'prefix' => $prefix])); ?>
 	function <?php echo $prefix?>DatatableRow(i, row)
 	{
 		var rowString = <?php echo $prefix?>TemplateTableRow;
@@ -21,7 +22,12 @@ if($queryOnLoad)
 		jQuery.each(row, function(index, value){
 			rowString = str_replace('__' + index + '__', <?php echo $prefix?>DatatableRowCast(index, value), rowString);
 		});
-		jQuery(rowString).appendTo(jQuery('#<?php echo $prefix?>Table tbody'));
+		if(jQuery('#<?php echo $prefix?>Table tbody') > 0)
+		{
+			jQuery(rowString).appendTo(jQuery('#<?php echo $prefix?>Table tbody'));
+		} else {
+			jQuery(rowString).appendTo(jQuery('#<?php echo $prefix?>Table'));
+		}
 		zbase_call_function('<?php echo $prefix?>TableRowCallback', row, jQuery(rowString));
 	}
 	function <?php echo $prefix?>DatatableRowCast(index, value)
@@ -30,6 +36,10 @@ if($queryOnLoad)
 	}
 	function <?php echo $prefix?>(r)
 	{
+		if(jQuery('#<?php echo $prefix?>Wrapper').length > 1)
+		{
+			jQuery('#<?php echo $prefix?>Wrapper .btn-toolbar').remove();
+		}
 		jQuery('#<?php echo $prefix?>Table').remove();
 		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.datatable-empty-message').eq(0).remove();
 		if(r.<?php echo $dataPrefix?> !== undefined && r.<?php echo $dataPrefix?>.totalRows > 0)
