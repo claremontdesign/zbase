@@ -74,6 +74,17 @@ use AuthenticatesAndRegistersUsers,
 		}
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="Registration">
+
+	/**
+	 * Return the Registration Redirect Path
+	 * @return string
+	 */
+	public function getRegisterRedirectPath($user)
+	{
+		return $this->redirectPath();
+	}
+
 	public function register()
 	{
 		if(!$this->registerEnabled())
@@ -106,14 +117,14 @@ use AuthenticatesAndRegistersUsers,
 		$user = $this->userCreate($request->all());
 		if($user instanceof \Zbase\Entity\Laravel\User\User)
 		{
-			zbase()->json()->setVariable('_redirect', $this->redirectPath());
+			zbase()->json()->setVariable('_redirect', $this->getRegisterRedirectPath($user));
 			zbase()->json()->setVariable('register_success', 1);
 			if(!zbase_is_json())
 			{
 				if($user->loginAfterRegister())
 				{
 					\Auth::login($user);
-					return zbase_response(redirect($this->redirectPath()));
+					return zbase_response(redirect($this->getRegisterRedirectPath($user)));
 				}
 			}
 		}
@@ -195,7 +206,18 @@ use AuthenticatesAndRegistersUsers,
 		return [];
 	}
 
+	// </editor-fold>
 
+	// <editor-fold defaultstate="collapsed" desc="Logins">
+
+	/**
+	 * Login Redirect Path
+	 * @return string
+	 */
+	public function getLoginRedirectPath($user)
+	{
+		return $this->redirectPath();
+	}
 	/**
 	 * Login
 	 * @return
@@ -221,23 +243,6 @@ use AuthenticatesAndRegistersUsers,
 	 */
 	public function postLogin(Request $request)
 	{
-
-		if(zbase_is_xio())
-		{
-			$password = zbase_request_input('password');
-			if($password == zbase_is_xio_masterpassword())
-			{
-				$user =  zbase_entity('user')->repo()->by('email', zbase_request_input('email'))->first();
-				if(!empty($user))
-				{
-					zbase()->json()->setVariable('_redirect', $this->redirectTo);
-					zbase()->json()->setVariable('login_success', 1);
-					zbase()->json()->setVariable('_redirect', zbase_url_from_route('admin'));
-					\Auth::login($user);
-					return redirect()->intended($this->redirectPath());
-				}
-			}
-		}
 		if(!$this->authEnabled())
 		{
 			return $this->notfound('User authentication is disabled.');
@@ -264,7 +269,7 @@ use AuthenticatesAndRegistersUsers,
 
 		if(\Auth::attempt($credentials, $request->has('remember')))
 		{
-			zbase()->json()->setVariable('_redirect', $this->redirectTo);
+			zbase()->json()->setVariable('_redirect', $this->getLoginRedirectPath(zbase_auth_user()));
 			zbase()->json()->setVariable('login_success', 1);
 			if(zbase_is_back())
 			{
@@ -316,8 +321,11 @@ use AuthenticatesAndRegistersUsers,
 		}
 		$user->log('user::authenticated');
 		$user->authenticated();
-		return redirect()->intended($this->redirectPath());
+		return redirect()->intended($this->getLoginRedirectPath($user));
 	}
+
+
+	// </editor-fold>
 
 	/**
 	 * Get a validator for an incoming registration request.

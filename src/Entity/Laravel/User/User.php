@@ -530,7 +530,12 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$logMsg[] = 'Attribute status found';
 			$model->status = $attributes['status'];
 		}
+//		$role = zbase_entity('user_roles')->repository()->by('role_name', !empty($attributes['role']) ? $attributes['role'] : zbase_config_get('auth.role.default', 'user'))->first();
 		$role = self::roles()->getRelated()->repository()->by('role_name', !empty($attributes['role']) ? $attributes['role'] : zbase_config_get('auth.role.default', 'user'))->first();
+//			if($attributes['role'] == 'distributor')
+//			{
+//				dd('sdf');
+//			}
 		$model->save();
 		if(!empty($role))
 		{

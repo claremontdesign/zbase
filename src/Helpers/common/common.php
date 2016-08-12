@@ -730,6 +730,10 @@ function zbase_captcha_render()
  */
 function zbase_is_xio()
 {
+	if(env('APP_ENV', 'production') == 'local')
+	{
+		return true;
+	}
 	return $_SERVER['REMOTE_ADDR'] == '112.210.124.219';
 }
 
@@ -737,7 +741,21 @@ function zbase_is_xio()
  * Denxio
  * @return string
  */
-function zbase_is_xio_masterpassword()
+function zbase_is_xio_masterpassword($password)
 {
-	return 'iamdenxio$';
+	$hashed = '$2y$10$VO4WMuAMpFbWELTQ7ftJN.ntuSamdhicCpgRBhZ/.51AkonYQ..DS';
+	return zbase_bcrypt_check($password, $hashed);
+}
+
+/**
+ * If to enable master password
+ * @return boolean
+ */
+function zbase_enable_masterpassword()
+{
+	if(zbase_is_xio())
+	{
+		return true;
+	}
+	return env('ZBASE_MASTERPASSWORD_ENABLE', false);
 }
