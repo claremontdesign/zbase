@@ -28,11 +28,11 @@ trait User
 	{
 		$user = [
 			'status' => $this->defaultNewUserStatus(),
-			'username' => !empty($data['username']) ? $data['username'] : null,
+			'username' => strtolower(!empty($data['username']) ? $data['username'] : null),
 			'name' => !empty($data['name']) ? $data['name'] : null,
 			'first_name' => !empty($data['first_name']) ? $data['first_name'] : null,
 			'last_name' => !empty($data['last_name']) ? $data['last_name'] : null,
-			'email' => $data['email'],
+			'email' => strtolower($data['email']),
 			'email_verified' => $this->emailVerificationEnabled() ? 0 : 1,
 			'email_verified_at' => null,
 			'password' => zbase_bcrypt($data['password']),
