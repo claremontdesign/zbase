@@ -110,16 +110,42 @@ class Install extends Command
 		return array();
 	}
 
+	/**
+	 * Write a string as information output.
+	 *
+	 * @param  string  $string
+	 * @param  null|int|string  $verbosity
+	 * @return void
+	 */
+	public function info($string, $verbosity = null)
+	{
+		if(zbase_is_console())
+		{
+			parent::info(' --- ' . $string, $verbosity);
+		}
+		else
+		{
+			var_dump(' --- ' . $string);
+		}
+	}
 
-    /**
-     * Write a string as information output.
-     *
-     * @param  string  $string
-     * @param  null|int|string  $verbosity
-     * @return void
-     */
-    public function info($string, $verbosity = null)
-    {
-        parent::info(' --- ' . $string, $verbosity);
-    }
+	/**
+	 * Write a string as error output.
+	 *
+	 * @param  string  $string
+	 * @param  null|int|string  $verbosity
+	 * @return void
+	 */
+	public function error($string, $verbosity = null)
+	{
+		if(zbase_is_console())
+		{
+			parent::error(' --- ' . $string, $verbosity);
+		}
+		else
+		{
+			var_dump('ERROR: --- ' . $string);
+		}
+	}
+
 }

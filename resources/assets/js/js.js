@@ -351,11 +351,12 @@ function zbase_alert(type, msg, selector, opt)
  */
 function zbase_alert_form_element(name, msg)
 {
-	if (jQuery('input[name="' + name + '"]').length > 0)
+	var element = jQuery('[name="' + name + '"]');
+	if (element.length > 0)
 	{
-		jQuery('input[name="' + name + '"]').closest('.form-group').addClass('has-error');
-		jQuery('input[name="' + name + '"]').addClass('error');
-		jQuery('input[name="' + name + '"]').after('<span class="help-block help-block-error">' + msg + '</span>');
+		element.closest('.form-group').addClass('has-error');
+		element.addClass('error');
+		element.after('<span class="help-block help-block-error">' + msg + '</span>');
 	}
 }
 
@@ -486,28 +487,34 @@ function zbase_ajax_post(url, data, successCb, opt)
 		data: data,
 		beforeSend: function ()
 		{
-			if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+			if (typeof App != "undefined")
 			{
-				App.blockUI({
-					target: opt.loaderTarget,
-					cenrerY: true,
-					boxed: true
-				});
-			} else {
-				App.blockUI({
-					target: jQuery('.page-content-inner'),
-					cenrerY: true,
-					boxed: true
-				});
+				if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+				{
+					App.blockUI({
+						target: opt.loaderTarget,
+						cenrerY: true,
+						boxed: true
+					});
+				} else {
+					App.blockUI({
+						target: jQuery('.page-content-inner'),
+						cenrerY: true,
+						boxed: true
+					});
+				}
 			}
 		},
 		complete: function ()
 		{
-			if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+			if (typeof App != "undefined")
 			{
-				App.unblockUI(opt.loaderTarget);
-			} else {
-				App.unblockUI(jQuery('.page-content-inner'));
+				if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+				{
+					App.unblockUI(opt.loaderTarget);
+				} else {
+					App.unblockUI(jQuery('.page-content-inner'));
+				}
 			}
 		},
 		success: successCb
@@ -714,7 +721,7 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	zbase_ajax_preloader_hide();
 });
 jQuery(document).ajaxError(function (event, request, settings) {
-	zbase_ajax_preloader_hide
+	zbase_ajax_preloader_hide();
 });
 jQuery(document).ajaxSend(function (event, request, settings) {
 	zbase_alert_form_reset();
@@ -723,7 +730,7 @@ jQuery(document).ajaxSend(function (event, request, settings) {
 jQuery(document).ajaxStart(function () {
 });
 jQuery(document).ajaxStop(function () {
-	zbase_ajax_preloader_hide
+	zbase_ajax_preloader_hide();
 });
 jQuery(document).ajaxSuccess(function (event, request, settings) {
 });

@@ -41,7 +41,6 @@ trait User
 			'updated_at' => zbase_date_now(),
 			'deleted_at' => null,
 		];
-		$user['raw_password'] = $data['password'];
 		if(empty($user['name']) && !empty($data['first_name']))
 		{
 			$user['name'] = $data['first_name'];

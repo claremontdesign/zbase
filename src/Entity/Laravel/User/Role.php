@@ -64,6 +64,15 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 	}
 
 	/**
+	 * Return all users of the same role
+	 * @return Collection
+	 */
+	public function users()
+	{
+		return $this->belongsToMany('\Zbase\Entity\Laravel\User\User', 'users_roles')->get();
+	}
+
+	/**
 	 * Return all roles above the Current Role
 	 *
 	 * @return Collection

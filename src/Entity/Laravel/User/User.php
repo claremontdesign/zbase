@@ -487,10 +487,12 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$logMsg = [];
 		if(empty($attributes['profile']))
 		{
+			$userAttributes = [];
 			$attributes['profile'] = [];
 			$attributesAddress = ['city' => ''];
 			$profileColumns = zbase_entity('user_profile')->getColumns();
 			$addressColumns = zbase_entity('user_address')->getColumns();
+			$userColumns = zbase_entity('user')->getColumns();
 
 			foreach ($attributes as $attName => $attValue)
 			{
@@ -503,6 +505,10 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				{
 					$attributesAddress[$attName] = $attValue;
 					unset($attributes[$attName]);
+				}
+				if(array_key_exists($attName, $userColumns))
+				{
+					$userAttributes[$attName] = $attValue;
 				}
 			}
 		}
@@ -518,7 +524,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			unset($attributes['profile']);
 		}
 		$model = zbase_entity('user');
-		$model->fill($attributes);
+		$model->fill($userAttributes);
 		$model->toggleRelationshipMode();
 		if(!empty($attributes['password']))
 		{
@@ -530,12 +536,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$logMsg[] = 'Attribute status found';
 			$model->status = $attributes['status'];
 		}
-//		$role = zbase_entity('user_roles')->repository()->by('role_name', !empty($attributes['role']) ? $attributes['role'] : zbase_config_get('auth.role.default', 'user'))->first();
 		$role = self::roles()->getRelated()->repository()->by('role_name', !empty($attributes['role']) ? $attributes['role'] : zbase_config_get('auth.role.default', 'user'))->first();
-//			if($attributes['role'] == 'distributor')
-//			{
-//				dd('sdf');
-//			}
 		$model->save();
 		if(!empty($role))
 		{
@@ -557,7 +558,6 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				$profileAttributes = array_replace_recursive($attributesProfile, $profileAttributes);
 				$profileAttributes['user_id'] = $model->id();
 				zbase_entity('user_profile')->fill($profileAttributes)->save();
-				// $model->profile()->create(array_replace_recursive($attributesProfile, $profileAttributes));
 				$logMsg[] = 'Profile saved!';
 			}
 			/**
@@ -577,10 +577,10 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			{
 				$logMsg[] = 'Welcome message sent!';
 			}
-			zbase_db_transaction_commit();
 			$logMsg[] = 'User saved!';
 			$model->log('Register');
 			zbase_log(implode(PHP_EOL, $logMsg), null, __METHOD__);
+			zbase_db_transaction_commit();
 			return $model;
 		}
 		else
