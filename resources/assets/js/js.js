@@ -9,7 +9,18 @@
  *
  * @version 1.5.1
  */
-!function(a){a.fn.equalHeights=function(){var b=0,c=a(this);return c.each(function(){var c=a(this).innerHeight();c>b&&(b=c)}),c.css("height",b)},a("[data-equal]").each(function(){var b=a(this),c=b.data("equal");b.find(c).equalHeights()})}(jQuery);
+!function (a) {
+	a.fn.equalHeights = function () {
+		var b = 0, c = a(this);
+		return c.each(function () {
+			var c = a(this).innerHeight();
+			c > b && (b = c)
+		}), c.css("height", b)
+	}, a("[data-equal]").each(function () {
+		var b = a(this), c = b.data("equal");
+		b.find(c).equalHeights()
+	})
+}(jQuery);
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="PHPJS">
@@ -318,6 +329,31 @@ function zbase_event_checkbox(selector, event, cb)
 {
 	jQuery(selector).on(event, cb);
 }
+
+/**
+ *
+ * @param {type} type
+ * @param {type} msg
+ * @param {type} selector
+ * @param {type} opt
+ * @returns {undefined}
+ */
+function zbase_toast(type, msg, position) {
+	if (typeof toastr != 'undefined')
+	{
+		if (type == 'error')
+		{
+			toastr.error(msg);
+		}
+	} else
+	{
+		if (type == 'error')
+		{
+			zbase_alert(msg);
+		}
+	}
+}
+
 /**
  *
  * @param {string} type Type of alert
@@ -432,7 +468,7 @@ function zbase_dom_insert_html(html, selector, mode)
  * @param {type} v
  * @returns {undefined}
  */
-function saveToLocalStorage(k,v)
+function saveToLocalStorage(k, v)
 {
 	localStorage.setItem(k, v);
 }
@@ -463,7 +499,7 @@ function removeFromLocalStorage(k)
  */
 function zbase_to_url(url)
 {
-	if(jQuery(url).length > 0 && jQuery(url).attr('data-href') !== undefined)
+	if (jQuery(url).length > 0 && jQuery(url).attr('data-href') !== undefined)
 	{
 		window.location = jQuery(url).attr('data-href');
 		return;
@@ -722,6 +758,7 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 });
 jQuery(document).ajaxError(function (event, request, settings) {
 	zbase_ajax_preloader_hide();
+	zbase_toast('error', 'There was an error processing your request. Kindly try again later.');
 });
 jQuery(document).ajaxSend(function (event, request, settings) {
 	zbase_alert_form_reset();
@@ -740,7 +777,7 @@ var Zbase = function () {
 	_this = this;
 	_this.prefix = 'zbase';
 
-	var initFormControls = function(){}
+	var initFormControls = function () {}
 
 	/**
 	 * Confirmation buttons
