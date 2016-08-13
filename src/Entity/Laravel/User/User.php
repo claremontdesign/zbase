@@ -50,6 +50,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	protected $roleName = null;
 	protected $address = null;
+	protected $userProfile = null;
 
 	/**
 	 * The Entity Id
@@ -302,7 +303,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$accesses = explode(',', $access);
 			if(!empty($accesses))
 			{
-				foreach($accesses as $access)
+				foreach ($accesses as $access)
 				{
 					$check = $this->hasAccess($access);
 					if(!empty($check))
@@ -339,7 +340,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				if($role instanceof $roleClassname)
 				{
 					$userHighestRole = $this->getUserHighestRole();
-					if($userHighestRole->name() ==$role->name())
+					if($userHighestRole->name() == $role->name())
 					{
 						return true;
 					}
@@ -852,42 +853,52 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function updateProfile($data)
 	{
-		$fillables = $this->profile()->getFillable();
-		if(!empty($fillables))
+		zbase_db_transaction_start();
+		try
 		{
-			$newData = [];
-			if(!empty($data['avatar']))
+			$fillables = $this->profile()->getFillable();
+			if(!empty($fillables))
 			{
-				$newData['avatar'] = $data['avatar'];
-			}
-			else
-			{
-				$profileImage = $this->uploadProfileImage();
-				if(!empty($profileImage))
+				$newData = [];
+				if(!empty($data['avatar']))
 				{
-					$newData['avatar'] = $profileImage;
+					$newData['avatar'] = $data['avatar'];
+				}
+				else
+				{
+					$profileImage = $this->uploadProfileImage();
+					if(!empty($profileImage))
+					{
+						$newData['avatar'] = $profileImage;
+					}
+				}
+				$userProfile = zbase_entity('user_profile')->where('user_id', $this->id());
+				foreach ($data as $key => $val)
+				{
+					if(in_array($key, $fillables))
+					{
+						$newData[$key] = $val;
+					}
+				}
+				if(!empty($newData))
+				{
+					$this->name = $newData['first_name'] . ' ' . $newData['last_name'];
+					$this->save();
+					$saved = $userProfile->update($newData);
+					if(!empty($saved))
+					{
+						zbase_alert('success', _zt('Profile Updated.'));
+						$this->log('user::updateProfile');
+						return true;
+					}
 				}
 			}
-			$userProfile = zbase_entity('user_profile')->where('user_id', $this->id());
-			foreach ($data as $key => $val)
-			{
-				if(in_array($key, $fillables))
-				{
-					$newData[$key] = $val;
-				}
-			}
-			if(!empty($newData))
-			{
-				$saved = $userProfile->update($newData);
-				if(!empty($saved))
-				{
-					zbase_alert('success', _zt('Profile Updated.'));
-					$this->log('user::updateProfile');
-					return true;
-				}
-			}
+			zbase_db_transaction_commit();
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_db_transaction_rollbak();
+			return false;
 		}
-		return false;
 	}
 
 	// </editor-fold>
@@ -1055,6 +1066,20 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="UPDATE Email Address">
+
+	public function resendEmailVerificationCode()
+	{
+		if($this->emailVerificationEnabled())
+		{
+			$code = zbase_generate_code();
+			$this->setDataOption('email_verification_code', $code);
+			$this->save();
+			zbase_alert('info', _zt('We sent an email to %email% to verify your new email address.', ['%email%' => $this->email()]));
+			zbase_messenger_email($this->email(), 'account-noreply', _zt('Email address verification code'), zbase_view_file_contents('email.account.newEmailAddressVerification'), ['entity' => $this, 'code' => $code, 'newEmailAddress' => false]);
+			return true;
+		}
+		return false;
+	}
 
 	/**
 	 * First step in updating email address.

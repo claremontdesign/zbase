@@ -302,19 +302,6 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
-	 * SEt the View Confioguration
-	 * @param type $view
-	 */
-	public function setView($view)
-	{
-		if(!empty($view['file']))
-		{
-			$this->_viewFile = $view['file'];
-		}
-		return $this;
-	}
-
-	/**
 	 * Check if we are filtering for publico
 	 * @return boolean
 	 */

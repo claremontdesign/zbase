@@ -116,3 +116,28 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 		return $strings;
 	}
 }
+
+/**
+ * Split a string for City and State
+ * @param string $cityState combination of City, State
+ *
+ * @return array
+ */
+function zbase_string_split_city_state($cityState)
+{
+	if(!empty($cityState))
+	{
+		$ret = [];
+		$cityEx = explode(',', $cityState);
+		if(!empty($cityEx[0]))
+		{
+			$ret['city'] = trim($cityEx[0]);
+		}
+		if(!empty($cityEx[1]))
+		{
+			$ret['state'] = trim($cityEx[1]);
+		}
+		return $ret;
+	}
+	return null;
+}

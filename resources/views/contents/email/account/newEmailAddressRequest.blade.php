@@ -15,10 +15,12 @@
 
 <h1>Email Update Request</h1>
 <p>You requested to update your email address.
+<?php if(!empty($newEmailAddress)):?>
 <br />
 Current Email Address: <?php echo $entity->email()?>
 <br />
 New Email Address: <?php echo $newEmailAddress?>
+<?php endif;?>
 Code: <strong><?php echo $code?></strong>
 <br />
 <br />

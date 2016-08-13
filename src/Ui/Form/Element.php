@@ -450,7 +450,8 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 				{
 					if(!$this->wasPosted())
 					{
-						$this->setValue($this->_entity->getAttribute($entityProperty));
+						// $this->setValue($this->_entity->getAttribute($entityProperty));
+						$this->setValue(zbase_data_get($this->_entity, $entityProperty));
 					}
 				}
 				$entityOptionsProperty = $this->_v('entity.dataoptions', null);

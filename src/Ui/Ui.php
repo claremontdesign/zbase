@@ -94,6 +94,20 @@ abstract class Ui
 		}
 	}
 
+
+	/**
+	 * SEt the View Confioguration
+	 * @param type $view
+	 */
+	public function setView($view)
+	{
+		if(!empty($view['file']))
+		{
+			$this->_viewFile = $view['file'];
+		}
+		return $this;
+	}
+
 	/**
 	 * Set the Configuration
 	 * @param array $configuration

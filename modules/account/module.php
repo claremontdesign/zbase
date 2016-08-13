@@ -352,6 +352,10 @@ return [
 		'controller' => [
 			'index' => function(){
 						return zbase_config_get('modules.account.widgets.controller.index', ['account' => null]);
+					},
+			'resend-email-verification' => function(){
+						zbase_auth_user()->resendEmailVerificationCode();
+						return zbase_redirect()->to(zbase_url_previous());
 					}
 				],
 			],

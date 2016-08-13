@@ -92,6 +92,10 @@ trait Module
 			$htmls = [];
 		}
 		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($widgetsAction);
+		if(!is_array($widgets) && $widgets instanceof \Illuminate\Http\RedirectResponse)
+		{
+			return $widgets;
+		}
 		zbase()->json()->addVariable('_widget', $this->getModule()->id() . '_' . str_replace('-','',$action));
 		if(zbase_is_dev())
 		{

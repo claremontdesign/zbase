@@ -32,7 +32,7 @@ $formTag = $ui->hasFormTag();
 		<?php endif; ?>
 
 		<?php if(!empty($submitButton) && !empty($formTag)): ?>
-		<div class="form-group form-actions">
+		<div class="zbase-ui-wrapper zbase-ui-wrapper-form-actions">
 			<?php echo $ui->renderSubmitButton(); ?>
 			</div>
 		<?php endif; ?>
@@ -68,7 +68,7 @@ $formTag = $ui->hasFormTag();
 		<?php endif; ?>
 
 		<?php if(!empty($submitButton) && !empty($formTag)): ?>
-			<div class="form-group form-actions">
+			<div class="zbase-ui-wrapper zbase-ui-wrapper-form-actions">
 			<?php echo $ui->renderSubmitButton(); ?>
 			</div>
 		<?php endif; ?>

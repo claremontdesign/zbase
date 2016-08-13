@@ -7,10 +7,10 @@ $queryJson = $ui->isSearchResultJson();
 $queryOnLoad = $ui->isQueryOnLoad();
 $searchOnLoad = $ui->isSearchOnLoad();
 $tableTemplate = !empty($dataTableTemplate) ? $dataTableTemplate : zbase_view_file_contents('ui.datatable.table');
-//if($queryOnLoad)
-//{
-//	return;
-//}
+if(empty($isSearchable))
+{
+	return;
+}
 ?>
 <?php ob_start(); ?>
 <script type="text/javascript">

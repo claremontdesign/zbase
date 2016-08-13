@@ -343,7 +343,7 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 			}
 			return $widgets;
 		}
-		return null;
+		return $widgets;
 	}
 
 	/**

@@ -28,6 +28,12 @@ class UserProfile extends BaseEntity
 
 	protected $hidden = ['user_id'];
 
+
+	public function getKeyName()
+	{
+		return 'user_id';
+	}
+
 	/**
 	 * Check if avatar is a url
 	 * @return type
