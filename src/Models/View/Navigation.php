@@ -28,6 +28,24 @@ class Navigation
 	protected $htmlPrefix = 'nav-';
 
 	/**
+	 * If Enabled
+	 * @var boolean
+	 */
+	protected $enable = null;
+
+	/**
+	 * If has access
+	 * @var boolean
+	 */
+	protected $access = null;
+
+	/**
+	 * Order of Arrangement
+	 * @var integer
+	 */
+	protected $order = 0;
+
+	/**
 	 * Label
 	 * @var string
 	 */
@@ -74,8 +92,8 @@ class Navigation
 	 * @var string|HTML
 	 */
 	protected $format = '<li class="{CLASS_ISACTIVE}">'
-				. '{A_PRE}<a href="{URL}" title="{TITLE}" {A_ATTRIBUTES}>{LABEL}</a>{A_POST}'
-				. '</li>';
+			. '{A_PRE}<a href="{URL}" title="{TITLE}" {A_ATTRIBUTES}>{LABEL}</a>{A_POST}'
+			. '</li>';
 
 	/**
 	 * Constructor
@@ -91,6 +109,44 @@ class Navigation
 				$this->active = true;
 			}
 		}
+	}
+
+	/**
+	 * Return the Order of Arrangement
+	 * @return integer
+	 */
+	public function getOrder()
+	{
+		return $this->order;
+	}
+
+	/**
+	 * Check if ui is enabled or disable
+	 * 	based on the configuration index:enable
+	 * 	default: true
+	 * @return boolean
+	 */
+	public function isEnabled()
+	{
+		if(is_null($this->enable))
+		{
+			$this->enable = $this->_v('enable', true);
+		}
+		return $this->enable;
+	}
+
+	/**
+	 * Process access
+	 * 	Redirect if needed to
+	 *  Else will display a message to the user when rendering the UI
+	 */
+	public function hasAccess()
+	{
+		if(is_null($this->access))
+		{
+			$this->access = zbase_auth_check_access($this->_v('access', zbase_auth_minimum()));
+		}
+		return $this->access;
 	}
 
 	/**
@@ -132,6 +188,7 @@ class Navigation
 			}
 			return zbase_url_from_config(['route' => $this->route]);
 		}
+		return '#';
 	}
 
 	/**
@@ -174,9 +231,7 @@ class Navigation
 
 
 		$str = str_replace(
-				array('{CLASS_ISACTIVE}','{A_PRE}','{A_POST}','{URL}','{TITLE}','{A_ATTRIBUTES}','{LABEL}'),
-				array($classIsActive,$aPre,$aPost,$url,$title,$aAttributes,$label),
-				$this->format);
+				array('{CLASS_ISACTIVE}', '{A_PRE}', '{A_POST}', '{URL}', '{TITLE}', '{A_ATTRIBUTES}', '{LABEL}'), array($classIsActive, $aPre, $aPost, $url, $title, $aAttributes, $label), $this->format);
 		return $str;
 	}
 
@@ -197,6 +252,17 @@ class Navigation
 			$str .= '</ul>' . EOF;
 			return $str;
 		}
+	}
+
+	/**
+	 * Retrieves a value from the configuration
+	 * @param string $key
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function _v($key, $default = null)
+	{
+		return zbase_data_get($this->getAttributes(), $key, $default);
 	}
 
 }

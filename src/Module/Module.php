@@ -69,6 +69,12 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	protected $hasAccess = null;
 
 	/**
+	 * ARray of notifications
+	 * @var array
+	 */
+	protected $notifications = [];
+
+	/**
 	 * Disable/Enable
 	 * @var booleaan
 	 */
@@ -88,6 +94,35 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 		return $this->_v('path', []);
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="Notifications">
+	/**
+	 * Return the Module Notification
+	 */
+	public function getNotifications($section = 'back')
+	{
+		$notifs = $this->_v('notification.' . $section, []);
+		if(!empty($notifs))
+		{
+			$i = 0;
+			foreach ($notifs as $notif)
+			{
+				if(empty($notif['id']))
+				{
+					$notif['id'] = $this->id() . '_' . $i;
+				}
+				$notification = new \Zbase\Models\View\Notification($notif);
+				if($notification->isEnabled() && $notification->hasAccess())
+				{
+					$this->notifications[] = $notification;
+				}
+				$i++;
+			}
+		}
+		return $this->notifications;
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Navigation">
 	/**
 	 * Return the Module Navigation
 	 */
@@ -121,6 +156,8 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 		}
 		return false;
 	}
+
+	// </editor-fold>
 
 	/**
 	 * This module has a backend interface

@@ -17,6 +17,14 @@
 		<!-- END RESPONSIVE MENU TOGGLER -->
 		<!-- BEGIN TOP NAVIGATION MENU -->
 		<ul class="nav navbar-nav pull-right">
+
+
+
+			<?php echo zbase_view_render(zbase_view_file('partial.notification-bar'))?>
+
+
+
+
 			<!-- BEGIN USER LOGIN DROPDOWN -->
 			<li class="dropdown user">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
