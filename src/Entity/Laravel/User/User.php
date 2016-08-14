@@ -135,7 +135,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		if(is_null($this->roleName))
 		{
-			$this->roleName = $this->roles()->first()->name();
+			$this->roleName = $this->roles()->first()->role_name;
 		}
 		return $this->roleName;
 	}
@@ -742,7 +742,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		if($this->profile()->isAvatarUrl())
 		{
-			return $this->profile->avatar;
+			return str_replace('http://','//',$this->profile->avatar);
 		}
 		$fullImage = false;
 		$params['id'] = $this->alphaId();

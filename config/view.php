@@ -3,7 +3,7 @@
 /**
  * View configuration
  *
- * @link http://zbase.dennesabing.com
+ * @link //zbase.dennesabing.com
  * @author Dennes B Abing <dennes.b.abing@gmail.com>
  * @license proprietary
  * @copyright Copyright (c) 2016 ClaremontDesign/MadLabs-Dx
@@ -203,7 +203,7 @@ return [
 					],
 				]
 			],
-			// http://ashleydw.github.io/lightbox/
+			// //ashleydw.github.io/lightbox/
 			'bslightbox' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
 				'src' => '//cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/4.0.1/ekko-lightbox.min.js',
@@ -321,7 +321,7 @@ return [
 					[
 						'id' => 'metronic-admin-font',
 						'type' => \Zbase\Models\View::STYLESHEET,
-						'href' => 'http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all',
+						'href' => '//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700&subset=all',
 						'enable' => true,
 						'position' => 499,
 					],
@@ -381,7 +381,7 @@ return [
 			'mobileangular' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
 				'src' => zbase_path_asset('mobile/angular/dist/js/angular-1.3.0.min.js'),
-				'cdn' => 'http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular.min.js',
+				'cdn' => '//cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.0/angular.min.js',
 				'enable' => true,
 				'position' => 500,
 				'dependents' => [
