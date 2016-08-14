@@ -953,7 +953,8 @@ function zbase_view_render_head()
 	$str .= zbase_view_head_links_render();
 	$str .= zbase_view_placeholder_render('head_javascripts');
 	$str .= zbase_view_placeholder_render('head_scripts');
-	$str .= zbase_view_styles_render();
+	$str .= EOF . zbase_view_render(zbase_view_file_contents('google.analytics'));
+	$str .= EOF . zbase_view_styles_render();
 	return $str;
 }
 
