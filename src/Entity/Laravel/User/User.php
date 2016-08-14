@@ -882,18 +882,21 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				}
 				if(!empty($newData))
 				{
-					$this->name = $newData['first_name'] . ' ' . $newData['last_name'];
-					$this->save();
+					if(!empty($newData['first_name']))
+					{
+						$this->name = $newData['first_name'] . ' ' . $newData['last_name'];
+						$this->save();
+					}
 					$saved = $userProfile->update($newData);
 					if(!empty($saved))
 					{
 						zbase_alert('success', _zt('Profile Updated.'));
 						$this->log('user::updateProfile');
+						zbase_db_transaction_commit();
 						return true;
 					}
 				}
 			}
-			zbase_db_transaction_commit();
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
 			zbase_db_transaction_rollbak();
