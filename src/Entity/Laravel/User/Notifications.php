@@ -158,14 +158,43 @@ class Notifications extends BaseEntity implements Interfaces\IdInterface
 		];
 		$columns['is_read'] = [
 			'filterable' => [
-				'name' => 'type',
 				'enable' => true
 			],
 			'hidden' => false,
 			'fillable' => true,
-			'nullable' => false,
-			'type' => 'string',
-			'comment' => 'Viewed?'
+			'nullable' => true,
+			'type' => 'boolean',
+			'comment' => 'Read?'
+		];
+		$columns['is_new'] = [
+			'filterable' => [
+				'enable' => true
+			],
+			'hidden' => false,
+			'fillable' => true,
+			'nullable' => true,
+			'type' => 'boolean',
+			'comment' => 'New?'
+		];
+		$columns['is_seen'] = [
+			'filterable' => [
+				'enable' => true
+			],
+			'hidden' => false,
+			'fillable' => true,
+			'nullable' => true,
+			'type' => 'boolean',
+			'comment' => 'Seen?'
+		];
+		$columns['is_notified'] = [
+			'filterable' => [
+				'enable' => true
+			],
+			'hidden' => false,
+			'fillable' => true,
+			'nullable' => true,
+			'type' => 'boolean',
+			'comment' => 'Notified?'
 		];
 		return $columns;
 	}

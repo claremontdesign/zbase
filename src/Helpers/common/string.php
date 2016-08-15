@@ -49,6 +49,10 @@ function zbase_string_dot_to_array(&$arr, $path, $value)
  */
 function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 {
+	if(empty($obj))
+	{
+		return null;
+	}
 	if(is_object($obj))
 	{
 		$array = $obj->toArray();
