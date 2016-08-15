@@ -356,6 +356,17 @@ return [
 			'resend-email-verification' => function(){
 						zbase_auth_user()->resendEmailVerificationCode();
 						return zbase_redirect()->to(zbase_url_previous());
+					},
+			'email-verify' => function(){
+						$emailAddress = zbase_route_input('task');
+						$code = zbase_request_input('c');
+						$user = zbase_user_by('email', $emailAddress);
+						if(!empty($user))
+						{
+							$user->verifyEmailAddress($code);
+							return zbase_redirect(zbase_url_from_route('home'));
+						}
+						return zbase_abort(404);
 					}
 				],
 			],

@@ -56,6 +56,8 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 	if(is_object($obj))
 	{
 		$array = $obj->toArray();
+	} else {
+		$array = $obj;
 	}
 	if(!empty($array))
 	{

@@ -1204,7 +1204,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->setDataOption('email_verification_code', $code);
 			$this->save();
 			zbase_alert('info', _zt('We sent an email to %email% to verify your new email address.', ['%email%' => $this->email()]));
-			zbase_messenger_email($this->email(), 'account-noreply', _zt('Email address verification code'), zbase_view_file_contents('email.account.newEmailAddressVerification'), ['entity' => $this, 'code' => $code, 'newEmailAddress' => false]);
+			zbase_messenger_email($this->email(), 'account-noreply', _zt('Email address verification code'), zbase_view_file_contents('email.account.newEmailAddressVerification'), ['entity' => $this, 'code' => $code, 'newEmailAddress' => $this->email()]);
 			return true;
 		}
 		return false;
@@ -1345,12 +1345,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					$i++;
 				}
 			}
-			$this->setDataOption('email_old', $oldEmails);
+			if(!empty($oldEmails))
+			{
+				$this->setDataOption('email_old', $oldEmails);
+			}
 			$this->unsetDataOption('email_verification_code');
 			$this->email_verified = 1;
 			$this->email_verified_at = zbase_date_now();
 			$this->log('user::verifyEmailAddress');
 			$this->save();
+			zbase_alert('info', _zt('Your email address is now verified.', ['%email%' => $this->email()]));
 			return true;
 		}
 		return false;
