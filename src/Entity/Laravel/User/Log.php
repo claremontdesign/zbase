@@ -35,6 +35,15 @@ class Log extends BaseEntity implements Interfaces\IdInterface, Interfaces\Entit
 		return $this->log_id;
 	}
 
+	/**
+	 * Owner of this entityr
+	 * @return integer
+	 */
+	public function ownerId()
+	{
+		return $this->user_id;
+	}
+
 	public function description()
 	{
 		return $this->remarks;

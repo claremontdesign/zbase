@@ -21,7 +21,7 @@
  */
 function zbase_auth_user()
 {
-	return \Auth::user();
+	return zbase_user_byid(\Auth::user()->id());
 }
 
 /**
@@ -40,7 +40,7 @@ function zbase_auth_has()
  */
 function zbase_user_byid($userId)
 {
-	return zbase_entity('user')->repository()->byId($userId);
+	return zbase_entity('user')->byId($userId);
 }
 
 /**
@@ -50,7 +50,7 @@ function zbase_user_byid($userId)
  */
 function zbase_user_system()
 {
-	return zbase_user_by('username', 'system');
+	return zbase_user_byid(3);
 }
 
 /**
@@ -61,5 +61,5 @@ function zbase_user_system()
  */
 function zbase_user_by($attr, $value)
 {
-	return zbase_entity('user')->repository()->by($attr, $value)->first();
+	return zbase_entity('user')->by($attr, $value);
 }

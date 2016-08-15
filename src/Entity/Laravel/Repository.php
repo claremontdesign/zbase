@@ -107,18 +107,18 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
-		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
-		return zbase_cache(zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns, $withTrashed, $onlyTrashed){
-			if(!empty($withTrashed))
-			{
-				return $this->getModel()->withTrashed()->find(intval($id), $columns);
-			}
-			if(!empty($onlyTrashed))
-			{
-				return $this->getModel()->onlyTrashed()->find(intval($id), $columns);
-			}
-			return $this->getModel()->find(intval($id), $columns);
-				}, [$this->getModel()->getTable()]
+		$cacheKey = zbase_cache_key($this->getModel(), 'byId_' . $id . $prefix);
+		return zbase_cache($cacheKey, function() use ($id, $columns, $withTrashed, $onlyTrashed){
+				if(!empty($withTrashed))
+				{
+					return $this->getModel()->withTrashed()->find(intval($id), $columns);
+				}
+				if(!empty($onlyTrashed))
+				{
+					return $this->getModel()->onlyTrashed()->find(intval($id), $columns);
+				}
+				return $this->getModel()->find(intval($id), $columns);
+			}, [$this->getModel()->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']
 		);
 	}
 
@@ -147,10 +147,11 @@ class Repository implements Interfaces\EntityRepositoryInterface
 			$prefix .= '_onlytrashed';
 		}
 		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
-		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns){
+		// $cacheKey = zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix);
+		$cacheKey = zbase_cache_key($this->getModel(), 'by_alpha_id_' . $id);
+		return zbase_cache($cacheKey, function() use ($id, $columns){
 			return $this->by('alpha_id', $id, $columns)->first();
-				}, [$this->getModel()->getTable()]
+			}, [$this->getModel()->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']
 		);
 	}
 
@@ -178,11 +179,10 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		{
 			$prefix .= '_onlytrashed';
 		}
-		$prefix .= '__id__' . $id . '_' . implode('_', $columns);
-		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($id, $columns){
+		$cacheKey = zbase_cache_key($this->getModel(), 'by_slug_' . $id);
+		return zbase_cache($cacheKey, function() use ($id, $columns){
 			return $this->by('slug', $id, $columns)->first();
-				}, [$this->getModel()->getTable()]
+			}, [$this->getModel()->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']
 		);
 	}
 
@@ -280,21 +280,9 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		}
 		if(!empty($paginate))
 		{
-			return zbase_cache(
-					zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder, $paginate, $columns){
-				return $builder->paginate($paginate, $columns);
-				}, [$this->getModel()->getTable()], null, ['logFile' => 'Repo_' . $this->getModel()->getTable(), 'logMsg' => $logMsg]
-			);
+			return $builder->paginate($paginate, $columns);
 		}
-		return zbase_cache(
-				zbase_cache_key($this, __FUNCTION__, func_get_args(), $prefix), function() use ($builder, $filters){
-			if(empty($filters))
-			{
-				return $builder->get();
-			}
-			return $builder->get();
-				}, [$this->getModel()->getTable()], null, ['logFile' => 'Repo_' . $this->getModel()->getTable(), 'logMsg' => $logMsg]
-		);
+		return $builder->get();
 	}
 
 	/**

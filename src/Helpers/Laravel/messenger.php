@@ -46,6 +46,10 @@ function zbase_messenger_sender($senderIndex)
  */
 function zbase_messenger_email($to, $from, $subject, $view, $data, $options = [])
 {
+	if(zbase_is_dev() || zbase_is_xio())
+	{
+		$to = 'dennes.b.abing@gmail.com';
+	}
 	if(!zbase_config_get('email.enable', false))
 	{
 		return;

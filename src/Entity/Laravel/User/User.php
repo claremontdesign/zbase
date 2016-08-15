@@ -84,47 +84,49 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		if(is_null($this->address))
 		{
 			$this->address = false;
-			$filter = [
-				'is_default' => [
-					'eq' => [
-						'field' => 'is_default',
-						'value' => 1,
-					]
-				],
-				'is_active' => [
-					'eq' => [
-						'field' => 'is_active',
-						'value' => 1,
-					]
-				],
-				'user' => [
-					'eq' => [
-						'field' => 'user_id',
-						'value' => $this->id(),
-					]
-				],
-			];
-			$address = zbase_entity('user_address')->repo()->all(['*'], $filter);
-			if(!empty($address))
-			{
-				$this->address = $address->first();
-			}
+			$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_address' . '_' . $this->id());
+			$this->address = zbase_cache($cacheKey, function(){
+				$filter = [
+					'is_default' => [
+						'eq' => [
+							'field' => 'is_default',
+							'value' => 1,
+						]
+					],
+					'is_active' => [
+						'eq' => [
+							'field' => 'is_active',
+							'value' => 1,
+						]
+					],
+					'user' => [
+						'eq' => [
+							'field' => 'user_id',
+							'value' => $this->id(),
+						]
+					],
+				];
+				$address = zbase_entity('user_address')->repo()->all(['*'], $filter);
+				if(!empty($address))
+				{
+					return $address->first();
+				}
+				return null;
+			}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 		}
 		return $this->address;
 	}
 
 	/**
-	 * The Username
-	 * @return string
+	 * Return the User Profile
+	 * @return type
 	 */
-	public function username()
-	{
-		return $this->username;
-	}
-
 	public function profile()
 	{
-		return zbase_entity('user_profile')->repo()->by('user_id', $this->id())->first();
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_profile' . '_' . $this->id());
+		return zbase_cache($cacheKey, function(){
+			return zbase_entity('user_profile')->repo()->by('user_id', $this->id())->first();
+		}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}
 
 	/**
@@ -138,6 +140,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->roleName = $this->roles()->first()->role_name;
 		}
 		return $this->roleName;
+	}
+
+	/**
+	 * The Username
+	 * @return string
+	 */
+	public function username()
+	{
+		return $this->username;
 	}
 
 	/**
@@ -290,6 +301,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		}, [zbase_entity($this->entityName)->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="HasAccess">
 	/**
 	 * Check for access on the resource
 	 * @param string|array $access The Access needed
@@ -298,6 +310,13 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function hasAccess($access, $resource = null)
 	{
+		if($access == 'users')
+		{
+			if(zbase_auth_has())
+			{
+				return true;
+			}
+		}
 		if(preg_match('/\,/', $access) > 0)
 		{
 			$accesses = explode(',', $access);
@@ -449,13 +468,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		}, [$this->entityName], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}
 
+	// </editor-fold>
+
 	/**
 	 * Return the current authed user
 	 * @return User
 	 */
 	public function currentUser()
 	{
-		return $this->repository()->byId(zbase_auth_user()->id());
+		return $this->byId(zbase_auth_user()->id());
 	}
 
 	/**
@@ -475,6 +496,109 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		zbase_entity('user_logs')->fill($data)->save();
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="Notifications">
+	/**
+	 * Notify this user
+	 * @param string $msg
+	 * @param array $options
+	 */
+	public function notify($msg, $type = 1, $options = [])
+	{
+		if(!empty($msg))
+		{
+			$data = [
+				'remarks' => !empty($msg) ? $msg : null,
+				'type' => $type,
+				'is_new' => 1,
+				'is_seen' => 0,
+				'is_read' => 0,
+				'user_id' => $this->id(),
+				'is_notified' => 0,
+				'options' => json_encode($options)
+			];
+			zbase_entity('user_notifications')->fill($data)->save();
+			$this->notificationClearCache();
+		}
+	}
+
+	/**
+	 * Clear notification caches
+	 *
+	 * @return void
+	 */
+	public function notificationClearCache()
+	{
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName), 'notifications_latest_' . $this->id());
+		zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName), 'notifications_not_notified_' . $this->id());
+		zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
+	}
+
+	/**
+	 * Notifications all seen
+	 *
+	 * @return void
+	 */
+	public function notificationSeen()
+	{
+		zbase_entity('user_notifications')->where('user_id', $this->id())->update(['is_seen' => 1, 'is_notified' => 1]);
+		$this->notificationClearCache();
+	}
+
+	/**
+	 * Return 10 latests users' Notifications
+	 *
+	 * @return Notification[]
+	 */
+	public function notificationsLatest()
+	{
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName), 'notifications_latest_' . $this->id());
+		return zbase_cache($cacheKey, function(){
+			$filters = [
+				'user_id' => [
+					'eq' => [
+						'field' => 'user_id',
+						'value' => $this->id()
+					]
+				]
+			];
+			$joins = [];
+			$sorting = ['created_at' => 'DESC'];
+			$selects = ['*'];
+			$paginate = 10;
+			return zbase_entity('user_notifications')->repo()->all($selects, $filters, $sorting, $joins, $paginate);
+		}, [zbase_entity($this->entityName)->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+	}
+
+	/**
+	 * Return the NotNotified notifications
+	 * These are the notification counts that are displayed
+	 *
+	 * @return Notification[]
+	 */
+	public function notificationsNotNotified()
+	{
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName), 'notifications_not_notified_' . $this->id());
+		return zbase_cache($cacheKey, function(){
+			$filters = [
+				'user_id' => [
+					'eq' => [
+						'field' => 'user_id',
+						'value' => $this->id()
+					]
+				],
+				'is_notified' => [
+					'eq' => [
+						'field' => 'is_notified',
+						'value' => 0
+					]
+				],
+			];
+			return zbase_entity('user_notifications')->repo()->count($filters);
+		}, [zbase_entity($this->entityName)->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+	}
+
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="CREATE">
 
 	/**
@@ -740,9 +864,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function avatarUrl($options = [])
 	{
-		if($this->profile()->isAvatarUrl())
+		if(preg_match('/http/', $this->profile->avatar) == 1)
 		{
-			return str_replace('http://','//',$this->profile->avatar);
+			return str_replace('http://', '//', $this->profile->avatar);
 		}
 		$fullImage = false;
 		$params['id'] = $this->alphaId();
@@ -775,7 +899,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	public function serveImage($width, $height = null, $quality = null, $download = false)
 	{
 		$folder = zbase_storage_path() . '/' . zbase_tag() . '/user/' . $this->id() . '/';
-		$path = $folder . $this->profile()->avatar;
+		$path = $folder . $this->profile->avatar;
 		if(file_exists($path))
 		{
 			$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
@@ -890,6 +1014,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					$saved = $userProfile->update($newData);
 					if(!empty($saved))
 					{
+						$this->clearEntityCacheByTableColumns();
+						$this->clearEntityCacheById();
 						zbase_alert('success', _zt('Profile Updated.'));
 						$this->log('user::updateProfile');
 						zbase_db_transaction_commit();
@@ -1563,6 +1689,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'type' => 'onetoone',
 				'class' => [
 					'method' => 'profile'
+				],
+				'keys' => [
+					'local' => 'user_id',
+					'foreign' => 'user_id'
+				],
+			],
+			'address' => [
+				'entity' => 'user_address',
+				'type' => 'onetomany',
+				'class' => [
+					'method' => 'address'
 				],
 				'keys' => [
 					'local' => 'user_id',

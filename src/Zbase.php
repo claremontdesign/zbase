@@ -275,7 +275,8 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			}
 			if(!empty($name))
 			{
-				if(empty($this->modules[$name]))
+				$enable = zbase_data_get($config, 'enable');
+				if(empty($this->modules[$name]) && $enable)
 				{
 					$config['path'] = $path;
 					$this->modules[$name] = $config;

@@ -22,6 +22,12 @@ use Zbase\Traits;
 class Notifications extends BaseEntity implements Interfaces\IdInterface
 {
 
+	const TYPE_IMPORTANT = 4;
+	const TYPE_ALERT = 2;
+	const TYPE_SUCCESS = 1;
+	const TYPE_WARNING = 3;
+	const TYPE_INFO = 5;
+
 	/**
 	 * The Entity Name
 	 * @var string
@@ -31,6 +37,15 @@ class Notifications extends BaseEntity implements Interfaces\IdInterface
 	public function id()
 	{
 		return $this->notification_id;
+	}
+
+	/**
+	 * Owner of this entityr
+	 * @return integer
+	 */
+	public function ownerId()
+	{
+		return $this->user_id;
 	}
 
 	public function description()
@@ -46,6 +61,91 @@ class Notifications extends BaseEntity implements Interfaces\IdInterface
 	public function title()
 	{
 		return $this->type;
+	}
+
+	public function hasSeen()
+	{
+		return (bool) $this->is_seen;
+	}
+
+	public function hasNotified()
+	{
+		return (bool) $this->is_notified;
+	}
+
+	public function hasRead()
+	{
+		return (bool) $this->is_read;
+	}
+
+	public function isNew()
+	{
+		return (bool) $this->is_new;
+	}
+
+	//fa-bolt vimportant 4
+	//fa fa-bullhorn alert 2
+	//fa fa-plus success 1
+	//fa fa-bell-o warning 3
+	/**
+	 * The Display ICon depending on type
+	 */
+	public function displayIcon()
+	{
+		if($this->type == self::TYPE_ALERT)
+		{
+			return 'fa-bolt';
+		}
+		elseif($this->type == self::TYPE_INFO)
+		{
+			return 'fa-bullhorn';
+		}
+		elseif($this->type == self::TYPE_IMPORTANT)
+		{
+			return 'fa-bolt';
+		}
+		elseif($this->type == self::TYPE_SUCCESS)
+		{
+			return 'fa-plus';
+		}
+		elseif($this->type == self::TYPE_WARNING)
+		{
+			return 'fa-bell-o';
+		}
+	}
+
+	public function displayColor()
+	{
+		if($this->type == self::TYPE_ALERT)
+		{
+			return 'danger';
+		}
+		elseif($this->type == self::TYPE_INFO)
+		{
+			return 'info';
+		}
+		elseif($this->type == self::TYPE_IMPORTANT)
+		{
+			return 'danger';
+		}
+		elseif($this->type == self::TYPE_SUCCESS)
+		{
+			return 'success';
+		}
+		elseif($this->type == self::TYPE_WARNING)
+		{
+			return 'warning';
+		}
+	}
+
+	public function displayTime()
+	{
+		return zbase_date_human($this->created_at);
+	}
+
+	public function displayMessage()
+	{
+		return $this->remarks;
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="SEEDING / Table Configuration">

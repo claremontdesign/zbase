@@ -112,4 +112,112 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 		return $this;
 	}
 
+	/**
+	 * Return a User byID -- using cached data
+	 *
+	 * @return User
+	 */
+	public function byId($id)
+	{
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byId_' . $id);
+		return zbase_cache($cacheKey, function() use ($id){
+			return $this->repo()->byId($id);
+		}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+	}
+
+	/**
+	 * Return a User By attribute
+	 * @param type $attribute
+	 * @param type $value
+	 */
+	public function by($attribute, $value)
+	{
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'by_' . $attribute . '_' . $value);
+		return zbase_cache($cacheKey, function() use ($attribute, $value){
+			return $this->repo()->by($attribute, $value)->first();
+		}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+	}
+
+	// <editor-fold defaultstate="collapsed" desc="CLEAR CACHES">
+	public function fill(array $attributes)
+	{
+		$this->clearEntityCacheByTableColumns();
+		return parent::fill($attributes);
+	}
+
+	public function update(array $attributes = [], array $options = [])
+	{
+		$this->clearEntityCacheByTableColumns();
+		$this->clearEntityCacheById();
+		return parent::update($attributes, $options);
+	}
+
+	public function save(array $options = [])
+	{
+		$this->clearEntityCacheByTableColumns();
+		$this->clearEntityCacheById();
+		return parent::save($options);
+	}
+
+	public function delete()
+	{
+		$this->clearEntityCacheByTableColumns();
+		$this->clearEntityCacheById();
+		return parent::delete();
+	}
+
+	/**
+	 * Clear entity cache by Attributes/Value
+	 *
+	 * @return void
+	 */
+	public function clearEntityCacheByTableColumns()
+	{
+		foreach ($this->getColumns() as $columnName => $columnConfig)
+		{
+			$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'by_' . $columnName . '_' . $this->{$columnName});
+			if($columnName == $this->getKeyName())
+			{
+				$idValue = $this->{$columnName};
+			}
+			zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
+		}
+		if(!empty($idValue))
+		{
+			$relations = static::tableRelations();
+			if(!empty($relations))
+			{
+				foreach ($relations as $relationName => $relationConfig)
+				{
+					$cacheKey = zbase_cache_key($this, 'byrelation_' . $relationName . '_' . $idValue);
+					zbase_cache_remove($cacheKey, [$this->entityName], ['driver' => 'file']);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Clear entity cache by Id
+	 *
+	 * @return void
+	 */
+	public function clearEntityCacheById()
+	{
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byId_' . $this->id());
+		zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byId_' . $this->id() . '_withtrashed');
+		zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byId_' . $this->id() . '_onlytrashed');
+		zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
+	}
+
+	protected static function boot()
+	{
+		parent::boot();
+		static::saved(function($entity) {
+			$entity->clearEntityCacheById();
+		});
+	}
+
+	// </editor-fold>
 }

@@ -27,6 +27,24 @@ class Address extends BaseEntity
 	protected $entityName = 'user_address';
 	protected $hidden = ['user_id'];
 
+	/**
+	 * Return the value of the Primary Key
+	 * @return integer
+	 */
+	public function id()
+	{
+		return $this->address_id;
+	}
+
+	/**
+	 * Owner of this entityr
+	 * @return integer
+	 */
+	public function ownerId()
+	{
+		return $this->user_id;
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="TableDefinitions">
 
 	/**

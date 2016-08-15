@@ -523,6 +523,10 @@ function zbase_ajax_post(url, data, successCb, opt)
 		data: data,
 		beforeSend: function ()
 		{
+			if(data.loader !== undefined && !data.loader)
+			{
+				return;
+			}
 			if (typeof App != "undefined")
 			{
 				if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
@@ -762,7 +766,12 @@ jQuery(document).ajaxError(function (event, request, settings) {
 });
 jQuery(document).ajaxSend(function (event, request, settings) {
 	zbase_alert_form_reset();
-	zbase_ajax_preloader();
+	if(settings.data !== undefined && settings.data.indexOf('loader=false') == 0)
+	{
+		zbase_ajax_preloader_hide();
+	} else {
+		zbase_ajax_preloader();
+	}
 });
 jQuery(document).ajaxStart(function () {
 });

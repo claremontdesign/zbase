@@ -43,10 +43,16 @@ class Notification extends Navigation
 	<ul class="dropdown-menu extended" id="{ID}-dropdown-menu">
 		{DEFAULT_MESSAGE}
 		<li>
-			<ul class="dropdown-menu-list scroller"  id="{ID}-dropdown-menu-list">{DEFAULT_CONTENT}</ul>
+			<ul class="dropdown-menu-list scroller"  id="{ID}-dropdown-menu-list" style="height:{DROPDOWN_HEIGHT}">{DEFAULT_CONTENT}</ul>
 		</li>
 		{VIEW_ALL_TEXT}
 	</ul>';
+
+	/**
+	 * Height of Dropdown list
+	 * @var integer
+	 */
+	protected $height = 0;
 
 	/**
 	 * Render
@@ -64,7 +70,7 @@ class Notification extends Navigation
 		$defaultContent = $this->_v('defaultContent', null);
 		if(!empty($defaultMessage))
 		{
-			$defaultMessage = '<li id="{ID}-default-message"><p>' . $defaultMessage . '</p></li>';
+			$defaultMessage = '<li id="'.$id.'-default-message"><p>' . $defaultMessage . '</p></li>';
 		}
 		$viewAllText = $this->_v('viewAllText', null);
 		if(!empty($viewAllText))
@@ -77,8 +83,8 @@ class Notification extends Navigation
 		}
 		$label = !empty($this->label) ? $this->label : $this->title;
 		$str = str_replace(
-				array('{ID}', '{URL}', '{ICON}', '{TITLE}', '{LABEL}', '{DEFAULT_MESSAGE}', '{BADGE_COUNT}', '{DEFAULT_CONTENT}', '{VIEW_ALL_TEXT}'),
-				array($id, $url, $icon, $title, $label, $defaultMessage, $badgeCount, $defaultContent, $viewAllText), $this->format);
+				array('{ID}', '{URL}', '{ICON}', '{TITLE}', '{LABEL}', '{DEFAULT_MESSAGE}', '{BADGE_COUNT}', '{DEFAULT_CONTENT}', '{VIEW_ALL_TEXT}', '{DROPDOWN_HEIGHT}'),
+				array($id, $url, $icon, $title, $label, $defaultMessage, $badgeCount, $defaultContent, $viewAllText, $this->height), $this->format);
 		return $str;
 	}
 

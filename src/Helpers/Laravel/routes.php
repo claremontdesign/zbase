@@ -232,7 +232,7 @@ function zbase_routes_init($routes = null)
 				'controller' => [
 					'name' => 'user',
 					'method' => 'username',
-					'enable' => true
+					'enable' => true,
 				],
 				'url' => $usernameRoutePrefix,
 				'enable' => true
@@ -243,7 +243,8 @@ function zbase_routes_init($routes = null)
 				if(!empty($route['url']))
 				{
 					$route['url'] = str_replace('//', '/', $usernameRoutePrefix . '/' . $route['url']);
-					$route['url'] = str_replace('{usernameroute?}/{usernameroute?}', '{usernameroute?}', $route['url']);
+					$route['url'] = str_replace('{' . $routeParameterName . '?}/{' . $routeParameterName . '?}', '{' . $routeParameterName . '?}', $route['url']);
+					$route['controller']['params'][$routeParameterName] = null;
 					$routeName = $routeParameterName . $name;
 					$routeName = str_replace($routeParameterName . $routeParameterName, $routeParameterName, $routeName);
 					zbase_route_init($routeName, $route);
@@ -253,7 +254,8 @@ function zbase_routes_init($routes = null)
 						foreach ($route['children'] as $cName => $cRoute)
 						{
 							$cRoute['url'] = $route['url'] . '/' . (!empty($cRoute['url']) ? $cRoute['url'] : $cName);
-							$cRoute['url'] = str_replace('{usernameroute?}/{usernameroute?}', '{usernameroute?}', $cRoute['url']);
+							$cRoute['url'] = str_replace('{' . $routeParameterName . '?}/{' . $routeParameterName . '?}', '{' . $routeParameterName . '?}', $cRoute['url']);
+							$cRoute['controller']['params'][$routeParameterName] = null;
 							$cRouteName = $routeParameterName . $name . '.' . $cName;
 							$cRoutes[$cRouteName] = $cRoute;
 						}
@@ -307,10 +309,15 @@ function zbase_route_username_get()
 	if(!empty($username))
 	{
 		$username = strtolower($username);
+		$notAllowedUsernames = (array) require_once zbase_path_library('notallowedusernames.php');
+		if(in_array($username, $notAllowedUsernames))
+		{
+			return false;
+		}
 		/**
 		 * Check if valid username
 		 */
-		$user = zbase()->entity('user')->repo()->by('username', $username, ['username'])->first();
+		$user = zbase_user_by('username', $username);
 		if($user instanceof \Zbase\Entity\Laravel\User\User)
 		{
 			return $username;
@@ -459,6 +466,10 @@ function zbase_route_response($name, $route)
 									}
 								}
 							}
+						}
+						else
+						{
+							return redirect(zbase_url_from_route('home'));
 						}
 						/**
 						 * Will deal only with the first not empty value so break it.

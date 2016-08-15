@@ -39,7 +39,7 @@ return [
 				'layout' => 'blank',
 				'name' => 'type.html',
 				'content' => function(){
-					$user = zbase_entity('user')->repo()->by('username', 'dennesabing')->first();
+					$user = zbase_entity('user')->by('username', 'dennesabing');
 					$params = [];
 					$params['token'] = zbase_generate_code();
 					$to = 'dennes.b.abing@gmail.com';
@@ -71,7 +71,7 @@ return [
 					 */
 					if($type == 'forgot-password')
 					{
-						$user = zbase_entity('user')->repo()->by('username', 'dennesabing')->first();
+						$user = zbase_entity('user')->by('username', 'dennesabing');
 						$params = [];
 						$params['token'] = zbase_generate_code();
 						return zbase_view_render(zbase_view_file_contents('auth.password.email.password'), $params);
@@ -81,7 +81,7 @@ return [
 					 */
 					if($type == 'account-email-verification')
 					{
-						$user = zbase_entity('user')->repo()->by('username', 'dennesabing')->first();
+						$user = zbase_entity('user')->by('username', 'dennesabing');
 						$params = [];
 						$params['entity'] = $user;
 						$params['code'] = zbase_generate_code();
@@ -92,7 +92,7 @@ return [
 					 */
 					if($type == 'account-email-update-request')
 					{
-						$user = zbase_entity('user')->repo()->by('username', 'dennesabing')->first();
+						$user = zbase_entity('user')->by('username', 'dennesabing');
 						$params = [];
 						$params['entity'] = $user;
 						$params['code'] = zbase_generate_code();
@@ -104,7 +104,7 @@ return [
 					 */
 					if($type == 'account-email-update-verify')
 					{
-						$user = zbase_entity('user')->repo()->by('username', 'dennesabing')->first();
+						$user = zbase_entity('user')->by('username', 'dennesabing');
 						$params = [];
 						$params['entity'] = $user;
 						$params['code'] = zbase_generate_code();
@@ -116,7 +116,7 @@ return [
 					 */
 					if($type == 'account-password-request')
 					{
-						$user = zbase_entity('user')->repo()->by('username', 'dennesabing')->first();
+						$user = zbase_entity('user')->by('username', 'dennesabing');
 						$params = [];
 						$params['entity'] = $user;
 						$params['code'] = zbase_generate_code();
@@ -127,7 +127,7 @@ return [
 					 */
 					if($type == 'account-password-update')
 					{
-						$user = zbase_entity('user')->repo()->by('username', 'dennesabing')->first();
+						$user = zbase_entity('user')->by('username', 'dennesabing');
 						$params = [];
 						$params['entity'] = $user;
 						$params['code'] = zbase_generate_code();

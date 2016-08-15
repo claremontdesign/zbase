@@ -91,7 +91,8 @@ function zbase_cache($key, \Closure $callback, array $tags = null, $minutes = 60
 	/**
 	 * Force Cache Entity Level
 	 */
-	if(!empty($options['forceCache']))
+	$forceCaching = zbase_config_get('db.cache.force', true);
+	if(!empty($options['forceCache']) && !empty($forceCaching))
 	{
 		$value = $callback();
 		zbase_cache_save($key, $value, $minutes, $tags, $options);
@@ -187,7 +188,7 @@ function zbase_cache_remove($key, array $tags = null, $options = [])
 {
 	if(!empty($options['driver']))
 	{
-		return zbase_cache_driver($options['driver'])->forget($key);
+		zbase_cache_driver($options['driver'])->forget($key);
 	}
 	if(!zbase_cache_enable())
 	{

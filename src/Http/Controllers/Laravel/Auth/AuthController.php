@@ -160,9 +160,11 @@ use AuthenticatesAndRegistersUsers,
 		$messages['email.unique'] = 'Email address used already.';
 		if($userEntity->usernameEnabled())
 		{
-			$rules['username'] = 'required|min:3|max:20|regex:/^[a-z][a-z0-9]{5,31}$/|unique:' . zbase_config_get('entity.user.table.name');
+			$notAllowedUsernames = require_once zbase_path_library('notallowedusernames.php');
+			$rules['username'] = 'required|min:3|max:20|regex:/^[a-z][a-z0-9]{5,31}$/|unique:' . zbase_config_get('entity.user.table.name') . '|not_in:' . implode(',', $notAllowedUsernames);
 			$messages['username.unique'] = 'Username already exists.';
 			$messages['username.regex'] = 'Username should be of alphanumeric in small letters';
+			$messages['username.not_in'] = 'Username already exists.';
 		}
 		if($userEntity->passwordAutoGenerate())
 		{

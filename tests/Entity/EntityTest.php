@@ -9,6 +9,55 @@ class EntityTest extends TestCase
 
 	/**
 	 * @group entity
+	 * @group caching
+	 */
+	public function testEntityByIdCached()
+	{
+		$id = 1;
+		$entityName = 'user';
+		$cacheKey = zbase_cache_key(zbase_entity($entityName), 'byId_' . $id);
+		$entity = zbase_entity($entityName)->byId($id);
+		$this->assertTrue($entity->id() == $id);
+		$this->assertTrue(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
+		$data = [
+			'username' => 'cacheusernameupdate'
+		];
+		$entity->fill($data)->save();
+		$this->assertFalse(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
+		$data = [
+			'username' => 'sudo'
+		];
+		$entity->fill($data)->save();
+		$this->assertFalse(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
+	}
+	/**
+	 * @group entity
+	 * @group caching
+	 */
+	public function testEntityByAttributeCached()
+	{
+		$entityName = 'user';
+		$attribute = 'username';
+		$value = 'admin';
+		$cacheKey = zbase_cache_key(zbase_entity($entityName), 'by_' . $attribute . '_' . $value);
+		$this->assertFalse(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
+		$entity = zbase_entity($entityName)->by($attribute, $value);
+		$this->assertTrue($entity->{$attribute} == $value);
+		$this->assertTrue(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
+		$data = [
+			'username' => 'cacheusernameupdatebyattribute'
+		];
+		$entity->fill($data)->save();
+		$this->assertFalse(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
+		$data = [
+			'username' => $value
+		];
+		$entity->fill($data)->save();
+		$this->assertFalse(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
+	}
+
+	/**
+	 * @group entity
 	 */
 	public function testEntityInstance()
 	{
@@ -69,18 +118,18 @@ class EntityTest extends TestCase
 		/**
 		 * Filters
 		 */
-		$userFilter = \DB::table('users')->where('user_id', 5)->first();
+		$userFilter = \DB::table('users')->where('user_id', 1)->first();
 		$filter = [
-			'user_id' => 5
+			'user_id' => 1
 		];
 		$this->assertTrue($model->repository()->all(['*'], $filter)->first()->password == $userFilter->password);
 
-		$userFilter = \DB::table('users')->where('user_id', 6)->first();
+		$userFilter = \DB::table('users')->where('user_id', 2)->first();
 		$filter = [
 			'user_id' => [
 				'eq' => [
 					'field' => 'user_id',
-					'value' => 6
+					'value' => 2
 				],
 			],
 			'email' => [
@@ -95,7 +144,7 @@ class EntityTest extends TestCase
 		/**
 		 * Sorting
 		 */
-		$userFilter = \DB::table('users')->where('email_verified', 1)->orderBy('user_id', 'desc')->get();
+		$userFilter = \DB::table('users')->where('email_verified', 1)->orderBy('user_id', 'desc')->first();
 		$filter = [
 			'email_verified' => [
 				'eq' => [
@@ -105,7 +154,7 @@ class EntityTest extends TestCase
 			],
 		];
 		$sort = ['user_id' => 'desc'];
-		$this->assertTrue($model->repository()->all(['*'], $filter, $sort)->first()->password == $userFilter[0]->password);
+		$this->assertTrue($model->repository()->all(['*'], $filter, $sort)->first()->password == $userFilter->password);
 
 		/**
 		 * Joins

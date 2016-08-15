@@ -158,6 +158,25 @@ function zbase_maintenance_file()
 }
 
 /**
+ * SEt in maintenance mode
+ */
+function zbase_maintenance_set()
+{
+	file_put_contents(zbase_maintenance_file(), 1);
+}
+
+/**
+ * SEt in maintenance mode
+ */
+function zbase_maintenance_unset()
+{
+	if(file_exists(zbase_maintenance_file()))
+	{
+		unlink(zbase_maintenance_file());
+	}
+}
+
+/**
  * Check if zbase is on DEV
  * @return boolean
  */
@@ -734,7 +753,11 @@ function zbase_is_xio()
 	{
 		return true;
 	}
-	return $_SERVER['REMOTE_ADDR'] == '112.210.124.219';
+	if(!empty($_SERVER['REMOTE_ADDR']))
+	{
+		return $_SERVER['REMOTE_ADDR'] == '112.210.124.219';
+	}
+	return zbase_ip() == '112.210.124.219';
 }
 
 /**

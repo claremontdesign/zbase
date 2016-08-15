@@ -221,7 +221,7 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	{
 		if(is_null($this->isEnable))
 		{
-			$this->isEnable = (bool) $this->_v('enable');
+			$this->isEnable = (bool) $this->_v('enable', false);
 		}
 		return $this->isEnable;
 	}
@@ -356,6 +356,11 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 		{
 			foreach ($widgets as $name => $path)
 			{
+				if($path instanceof \Closure)
+				{
+					$path();
+					continue;
+				}
 				if(is_string($path) && zbase_file_exists($path))
 				{
 					$config = require $path;

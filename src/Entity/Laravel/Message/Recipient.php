@@ -26,7 +26,6 @@ class Recipient extends BaseEntity
 	 */
 	protected $entityName = 'messages_recipient';
 
-
 	protected static function boot()
 	{
 		parent::boot();
@@ -35,7 +34,19 @@ class Recipient extends BaseEntity
 		});
 	}
 
+	/**
+	 * Owner of this entityr
+	 * @return integer
+	 */
+	public function ownerId()
+	{
+		return $this->message_id;
+	}
 
+	public function id()
+	{
+		return $this->message_recipient_id;
+	}
 
 	/**
 	 * Generate and Update Row Alpha ID

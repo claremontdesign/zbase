@@ -100,9 +100,6 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 			}
 			$strings[] = implode(', ', $s);
 		}
-
-
-
 		$propName = $prefix . 'phone';
 		if(!empty($array[$propName]))
 		{
@@ -117,7 +114,10 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 		{
 			return implode($separator, $strings);
 		}
-		return $strings;
+		if(is_array($strings))
+		{
+			return implode($separator, $strings);
+		}
 	}
 }
 

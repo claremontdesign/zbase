@@ -47,6 +47,24 @@ class Log extends BaseEntity implements WidgetEntityInterface, Interfaces\Entity
 		return $this->remarks;
 	}
 
+	/**
+	 * Return the value of the Primary Key
+	 * @return integer
+	 */
+	public function id()
+	{
+		return $this->log_id;
+	}
+
+	/**
+	 * Owner of this entityr
+	 * @return integer
+	 */
+	public function ownerId()
+	{
+		return $this->node_id;
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="DataTable Widget Query Interface/Methods">
 
 	/**

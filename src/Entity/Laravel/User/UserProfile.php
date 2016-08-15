@@ -35,12 +35,30 @@ class UserProfile extends BaseEntity
 	}
 
 	/**
+	 * Return the value of the Primary Key
+	 * @return integer
+	 */
+	public function id()
+	{
+		return $this->user_id;
+	}
+
+	/**
+	 * Owner of this entityr
+	 * @return integer
+	 */
+	public function ownerId()
+	{
+		return $this->user_id;
+	}
+
+	/**
 	 * Check if avatar is a url
 	 * @return type
 	 */
 	public function isAvatarUrl()
 	{
-		return preg_match('/http/', $this->avatar);
+		return (bool) preg_match('/http/', $this->avatar);
 	}
 
 	public function avatarUrl($options = [])
