@@ -42,6 +42,7 @@ if(empty($isSearchable))
 		}
 		jQuery('#<?php echo $prefix?>Table').remove();
 		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.datatable-empty-message').eq(0).remove();
+		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('table').eq(0).remove();
 		if(r.<?php echo $dataPrefix?> !== undefined && r.<?php echo $dataPrefix?>.totalRows > 0)
 		{
 			jQuery(<?php echo $prefix?>TemplateTable).insertAfter('#<?php echo $prefix?>SearchWrapper');
@@ -119,4 +120,5 @@ zbase_view_script_add($prefix . 'searchinit', $prefix . 'init();', true);
 			<button id="<?php echo $prefix?>submitbutton" type="button" class="btn btn-default">Search</button>
 		</div>
 	</div>
+<hr />
 <?php endif; ?>

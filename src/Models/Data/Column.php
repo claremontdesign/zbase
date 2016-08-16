@@ -40,6 +40,12 @@ class Column extends Data implements Interfaces\IdInterface
 	protected $_prepared = false;
 
 	/**
+	 * If Template Mode
+	 * @var integer
+	 */
+	protected $_templateMode = false;
+
+	/**
 	 * Constructor
 	 * @param string $name ID/Name
 	 * @param array $attributes array of attributes/configuration
@@ -47,6 +53,16 @@ class Column extends Data implements Interfaces\IdInterface
 	public function __construct(array $attributes = null)
 	{
 		parent::__construct($attributes);
+	}
+
+	/**
+	 * Template Mode
+	 * @param boolean $flag
+	 */
+	public function setTemplateMode($flag)
+	{
+		$this->_templateMode = $flag;
+		return $this;
 	}
 
 	/**
@@ -77,14 +93,14 @@ class Column extends Data implements Interfaces\IdInterface
 	 * @param string $tag The HTML Tag
 	 * @return string
 	 */
-	public function renderValue($tag = null, $template = false)
+	public function renderValue($tag = null)
 	{
 		$this->prepare();
 		if(!empty($tag))
 		{
 			$str = [];
 			$str[] = '<' . $tag . '>';
-			if(!empty($template))
+			if(!empty($this->_templateMode))
 			{
 				$str[] = '__' . $this->id() . '__';
 			}
@@ -132,6 +148,10 @@ class Column extends Data implements Interfaces\IdInterface
 	 */
 	protected function _value()
 	{
+		if(!empty($this->_templateMode))
+		{
+			return;
+		}
 		$noUiDataTypes = ['integer', 'string'];
 		/**
 		 * Classname and will call className::columnValue

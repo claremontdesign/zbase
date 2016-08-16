@@ -31,9 +31,10 @@ if(!empty($columns))
 		$tBodys[] = '<tr id="' . $prefix . 'RowId__' . $ui->rowValueIndex() . '__"' . $clickableRow . '>';
 		foreach ($columns as $column)
 		{
-			$column->prepare();
+			$column->setTemplateMode(true)->prepare();
 			$columnConfig[$column->id()] = $column->getDataType();
-			$tBodys[] = $column->renderValue('td', true);
+			$tBodys[] = $column->renderValue('td');
+			$column->setTemplateMode(false);
 		}
 		if(!empty($hasActions))
 		{
