@@ -172,8 +172,9 @@ function zbase_view_file($name, $section = 'front')
 
 /**
  * Module View
- * @param type $name
- * @param type $module originalModule
+ * @param string $name
+ * @param string $module originalModule
+ * @param string $package package
  * @return string
  */
 function zbase_view_file_module($name, $module = null, $package = null)

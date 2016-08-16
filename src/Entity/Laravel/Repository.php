@@ -51,6 +51,9 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	 */
 	protected $queryName = null;
 
+
+	protected $perPage = null;
+
 	/**
 	 * Constructor
 	 * @param Interfaces\EntityInterface $model
@@ -58,6 +61,18 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	public function __construct(Interfaces\EntityInterface $model)
 	{
 		$this->setModel($model);
+		$this->perPage = $model->getPerPage();
+	}
+
+	/**
+	 *
+	 * @param type $perPage
+	 * @return \Zbase\Entity\Laravel\Repository
+	 */
+	public function perPage($perPage)
+	{
+		$this->perPage = $perPage;
+		return $this;
 	}
 
 	/**
@@ -257,7 +272,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		}
 		if(is_bool($paginate))
 		{
-			$paginate = $this->getModel()->getPerPage();
+			$paginate = $this->perPage;
 		}
 		$withTrashed = $this->withTrashed;
 		$onlyTrashed = $this->onlyTrashed;

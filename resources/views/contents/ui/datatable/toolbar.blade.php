@@ -1,4 +1,9 @@
 <?php
+$toolbar = $ui->getAttribute('toolbar.enable', true);
+if(empty($toolbar))
+{
+	return;
+}
 $rows = $ui->getRows();
 $actionCreateButton = $ui->getActionCreateButton();
 if(zbase_is_mobile())

@@ -139,7 +139,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		if(!empty($this->_entity))
 		{
 			$entityObject = $this->entityObject();
-			$repo = $entityObject->setPerPage(zbase_request_query_input('pp', $this->_entity->getPerPage()))->repository();
+			$repo = $entityObject->repository()->perPage(zbase_request_query_input('pp', $this->_v('row.perpage', $this->_entity->getPerPage())));
 			$filters = [];
 			$sorting = [];
 			$joins = [];
@@ -154,7 +154,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 					 *  switch to node entityObject
 					 */
 					$entityObject = zbase_entity($entityObject::$nodeNamePrefix, [], true);
-					$repo = $entityObject->setPerPage(zbase_request_query_input('pp', $this->_v('rows.perpage', $this->_entity->getPerPage())))->repository();
+					$repo = $entityObject->repository()->perPage(zbase_request_query_input('pp', $this->_v('row.perpage', $this->_entity->getPerPage())));
 					$categories = $this->_entity->getDescendantsAndSelf();
 					if(!empty($categories))
 					{
@@ -399,7 +399,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 */
 	public function isRowSelectable()
 	{
-		return $this->_v('rows.selectable.enable', $this->_v('rows.selectable', false));
+		return $this->_v('row.selectable.enable', $this->_v('rows.selectable', false));
 	}
 
 	/**
@@ -409,7 +409,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 */
 	public function isRowsClickable()
 	{
-		return $this->_v('rows.clickable.enable', $this->_v('rows.clickable', false));
+		return $this->_v('row.clickable.enable', $this->_v('rows.clickable', false));
 	}
 
 	/**
@@ -420,7 +420,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 */
 	public function getRowClickableUrl($row, $template = false)
 	{
-		$action = $this->_v('rows.clickable.action', null);
+		$action = $this->_v('row.clickable.action', null);
 		if(!empty($action) && is_array($action))
 		{
 			$actionConfig = $action;
