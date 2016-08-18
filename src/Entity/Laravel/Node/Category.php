@@ -68,6 +68,15 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	}
 
 	/**
+	 * Return the AlphaID
+	 * @return string
+	 */
+	public function alphaId()
+	{
+		return $this->alpha_id;
+	}
+
+	/**
 	 * Return Slug
 	 * @return string
 	 */
@@ -206,6 +215,17 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	}
 
 	/**
+	 * Return order status text
+	 * @return string
+	 */
+	public function statusText()
+	{
+		$status = \Zbase\Ui\Data\DisplayStatus::class;
+		$status = new $status(['value' => $this->status, 'id' => 'nodestatus' . $this->id()]);
+		return $status->render();
+	}
+
+	/**
 	 *
 	 * @return boolean
 	 */
@@ -256,6 +276,34 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 		return null;
 	}
 
+	/**
+	 * Set the Node Attributes
+	 * @param array $data
+	 */
+	public function nodeAttributes($data)
+	{
+		if(isset($data['status']))
+		{
+			$this->status = $data['status'];
+		}
+		if(isset($data['content']))
+		{
+			$this->content = $data['content'];
+		}
+		if(isset($data['excerpt']))
+		{
+			$this->excerpt = $data['excerpt'];
+		}
+		if(!empty($data['title']))
+		{
+			$this->title = $data['title'];
+		}
+		if(!empty($data['slug']))
+		{
+			$this->slug = $data['slug'];
+		}
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="Image Upload">
 	/**
 	 * Upload a file for this node
@@ -270,7 +318,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			zbase_directory_check($folder, true);
 			if(!empty($_FILES[$index]['name']))
 			{
-				$filename = $this->alphaId();//zbase_file_name_from_file($_FILES[$index]['name'], time(), true);
+				$filename = $this->alphaId(); //zbase_file_name_from_file($_FILES[$index]['name'], time(), true);
 				$uploadedFile = zbase_file_upload_image($index, $folder, $filename, zbase_config_get('node.files.image.format', 'png'));
 			}
 			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
@@ -301,6 +349,18 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 	 */
 	public function widgetController($method, $action, $data, \Zbase\Widgets\Widget $widget)
 	{
+		if(preg_match('/-update/', $action))
+		{
+			$action = 'update';
+		}
+		if(preg_match('/-create/', $action))
+		{
+			$action = 'create';
+		}
+		if(preg_match('/-delete/', $action))
+		{
+			$action = 'delete';
+		}
 		if(($action == 'update' && strtolower($method) == 'post') || ($action == 'create' && strtolower($method) == 'post'))
 		{
 			$this->nodeAttributes($data);
@@ -334,25 +394,25 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 						}
 						else
 						{
-							$this->_actionMessages[$action]['error'][] = _zt('There was a problem performing your request.');
+							zbase_alert('error', _zt('There was a problem performing your request.'));
 							return false;
 						}
 					}
 				}
 			}
+			if(empty($parentNodes))
+			{
+				$parentNodes[] = self::root();
+			}
 			if($action == 'create' && strtolower($method) == 'post')
 			{
-				if(empty($parentNodes))
-				{
-					$parentNodes[] = self::root();
-				}
 				$this->save();
 				$this->_setParentNodes($parentNodes);
 				$this->uploadNodeFile();
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
-				$this->_actionMessages[$action]['success'][] = _zt('Created "%title%"!', ['%title%' => $this->title, '%id%' => $this->id()]);
+				zbase_alert('success', _zt('Created "%title%"!', ['%title%' => $this->title, '%id%' => $this->id()]));
 				return true;
 			}
 			if($action == 'update' && strtolower($method) == 'post')
@@ -363,7 +423,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 				$this->log($action);
 				zbase_db_transaction_commit();
 				zbase_cache_flush([$this->getTable()]);
-				$this->_actionMessages[$action]['success'][] = _zt('Saved "%title%"!', ['%title%' => $this->title, '%id%' => $this->id()]);
+				zbase_alert('success', _zt('Saved "%title%"!', ['%title%' => $this->title, '%id%' => $this->id()]));
 				return true;
 			}
 			if($action == 'delete' && strtolower($method) == 'post')
@@ -378,7 +438,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 					$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->id()]) . '" title="Undo Delete" class="undodelete">Undo</a>.';
 					$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->id()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
 				}
-				$this->_actionMessages[$action]['success'][] = _zt('Deleted "%title%"! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
+				zbase_alert('success', _zt('Deleted "%title%"! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]));
 				return true;
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -397,7 +457,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			{
 				$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->id()]) . '" title="Restore" class="undodelete">Restore</a>';
 				$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->id()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
-				$this->_actionMessages[$action]['warning'][] = _zt('Row "%title%" was trashed! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
+				zbase_alert('warning', _zt('Row "%title%" was trashed! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]));
 				return false;
 			}
 		}
@@ -407,7 +467,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 			{
 				$undoText = '<a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'restore', 'id' => $this->id()]) . '" title="Restore" class="undodelete">Restore</a>';
 				$undoText .= ' | <a href="' . $widget->getModule()->url(zbase_section(), ['action' => 'ddelete', 'id' => $this->id()]) . '" title="Delete Forever " class="ddeleteforever">Delete Forever</a>';
-				$this->_actionMessages[$action]['warning'][] = _zt('Row "%title%" was trashed! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]);
+				zbase_alert('warning', _zt('Row "%title%" was trashed! %undo%', ['%title%' => $this->title, '%id%' => $this->id(), '%undo%' => $undoText]));
 				return false;
 			}
 		}
@@ -428,7 +488,7 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 					$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was restored!', ['%title%' => $this->title, '%id%' => $this->id()]);
 					return true;
 				}
-				$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
+				zbase_alert('error', _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]));
 				return false;
 			}
 			if($action == 'ddelete')
@@ -439,15 +499,15 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 					$this->log($action);
 					zbase_db_transaction_commit();
 					zbase_cache_flush([$this->getTable()]);
-					$this->_actionMessages[$action]['success'][] = _zt('Row "%title%" was removed from database!', ['%title%' => $this->title, '%id%' => $this->id()]);
+					zbase_alert('success', _zt('Row "%title%" was removed from database!', ['%title%' => $this->title, '%id%' => $this->id()]));
 					return true;
 				}
-				$this->_actionMessages[$action]['error'][] = _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]);
+				zbase_alert('error', _zt('Error restoring "%title%". Row was not trashed.!', ['%title%' => $this->title, '%id%' => $this->id()]));
 				return false;
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
-			$this->_actionMessages[$action]['error'][] = _zt('There was a problem performing the request for "%title%".', ['%title%' => $this->title, '%id%' => $this->id()]);
+			zbase_alert('error', _zt('There was a problem performing the request for "%title%".', ['%title%' => $this->title, '%id%' => $this->id()]));
 			zbase_db_transaction_rollback();
 		}
 		return false;
@@ -490,6 +550,16 @@ class Category extends Nested implements WidgetEntityInterface, Interfaces\Entit
 				$this->makeChildOf($p);
 			}
 		}
+	}
+
+	/**
+	 * Log the Action
+	 * @TODO
+	 * @param string $msg
+	 */
+	public function log($msg)
+	{
+
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="Seeding/TableConfiguration">

@@ -14,7 +14,6 @@
  * @package Zbase/Laravel/Helpers
  */
 
-
 /**
  * Return the Response
  * @param mixed $response
@@ -157,10 +156,32 @@ function zbase_response_file($filepath, $filename, $headers)
 /**
  * Throw an exception
  */
-function zbase_exception_throw()
+function zbase_exception_throw(\Exception $e)
 {
-
+	if(zbase_is_dev())
+	{
+		dd($e);
+	}
+	zbase_abort(500);
 }
+
+//try
+//{
+//} catch (\Zbase\Exceptions\RuntimeException $e)
+//{
+//	zbase_exception_throw($e);
+//}
+
+//try
+//{
+//	zbase_db_transaction_start();
+//
+//	zbase_db_transaction_commit();
+//} catch (\Zbase\Exceptions\RuntimeException $e)
+//{
+//	zbase_db_transaction_rollback();
+//	zbase_exception_throw($e);
+//}
 
 /**
  * Redirect with message

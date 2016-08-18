@@ -87,15 +87,22 @@ use AuthenticatesAndRegistersUsers,
 
 	public function register()
 	{
-		if(!$this->registerEnabled())
+		try
 		{
-			return $this->notfound('User registration is disabled.');
-		}
-		if($this->isPost())
+			if(!$this->registerEnabled())
+			{
+				return $this->notfound('User registration is disabled.');
+			}
+			if($this->isPost())
+			{
+				return $this->postRegister(zbase_request());
+			}
+			return $this->view(zbase_view_file('auth.register'));
+		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
-			return $this->postRegister(zbase_request());
+			zbase_exception_throw($e);
+			return $this->error();
 		}
-		return $this->view(zbase_view_file('auth.register'));
 	}
 
 	/**
@@ -106,35 +113,42 @@ use AuthenticatesAndRegistersUsers,
 	 */
 	public function postRegister(Request $request)
 	{
-		$validator = $this->registerValidator($request->all());
+		try
+		{
+			$validator = $this->registerValidator($request->all());
 
-		if($validator->fails())
-		{
-			$this->throwValidationException(
-					$request, $validator
-			);
-		}
-		$user = $this->userCreate($request->all());
-		if($user instanceof \Zbase\Entity\Laravel\User\User)
-		{
-			zbase()->json()->setVariable('_redirect', $this->getRegisterRedirectPath($user));
-			zbase()->json()->setVariable('register_success', 1);
-			if(!zbase_is_json())
+			if($validator->fails())
 			{
-				if($user->loginAfterRegister())
+				$this->throwValidationException(
+						$request, $validator
+				);
+			}
+			$user = $this->userCreate($request->all());
+			if($user instanceof \Zbase\Entity\Laravel\User\User)
+			{
+				zbase()->json()->setVariable('_redirect', $this->getRegisterRedirectPath($user));
+				zbase()->json()->setVariable('register_success', 1);
+				if(!zbase_is_json())
 				{
-					\Auth::login($user);
-					return zbase_response(redirect($this->getRegisterRedirectPath($user)));
+					if($user->loginAfterRegister())
+					{
+						\Auth::login($user);
+						return zbase_response(redirect($this->getRegisterRedirectPath($user)));
+					}
 				}
 			}
-		}
-		else
-		{
-			zbase()->json()->setVariable('register_success', 0);
-			if(!zbase_is_json())
+			else
 			{
-				return zbase_response(redirect(zbase_url_from_route('register')));
+				zbase()->json()->setVariable('register_success', 0);
+				if(!zbase_is_json())
+				{
+					return zbase_response(redirect(zbase_url_from_route('register')));
+				}
 			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_exception_throw($e);
+			return $this->error();
 		}
 	}
 
@@ -210,7 +224,6 @@ use AuthenticatesAndRegistersUsers,
 	}
 
 	// </editor-fold>
-
 	// <editor-fold defaultstate="collapsed" desc="Logins">
 
 	/**
@@ -221,6 +234,7 @@ use AuthenticatesAndRegistersUsers,
 	{
 		return $this->redirectPath();
 	}
+
 	/**
 	 * Login
 	 * @return
@@ -246,70 +260,73 @@ use AuthenticatesAndRegistersUsers,
 	 */
 	public function postLogin(Request $request)
 	{
-		if(!$this->authEnabled())
+		try
 		{
-			return $this->notfound('User authentication is disabled.');
-		}
-		$this->validate($request, [
-			$this->loginUsername() => 'required', 'password' => 'required',
-		]);
-
-		// If the class is using the ThrottlesLogins trait, we can automatically throttle
-		// the login attempts for this application. We'll key this by the username and
-		// the IP address of the client making these requests into this application.
-		$throttles = $this->isUsingThrottlesLoginsTrait();
-
-		if($throttles && $this->hasTooManyLoginAttempts($request))
-		{
-			if(zbase_is_json())
+			if(!$this->authEnabled())
 			{
-				zbase()->json()->setVariable('login_lock', 1);
+				return $this->notfound('User authentication is disabled.');
 			}
-			return $this->sendLockoutResponse($request);
-		}
+			$this->validate($request, [
+				$this->loginUsername() => 'required', 'password' => 'required',
+			]);
 
-		$credentials = $this->getCredentials($request);
+			// If the class is using the ThrottlesLogins trait, we can automatically throttle
+			// the login attempts for this application. We'll key this by the username and
+			// the IP address of the client making these requests into this application.
+			$throttles = $this->isUsingThrottlesLoginsTrait();
 
-		if(\Auth::attempt($credentials, $request->has('remember')))
-		{
-			zbase()->json()->setVariable('_redirect', $this->getLoginRedirectPath(zbase_auth_user()));
-			zbase()->json()->setVariable('login_success', 1);
-			if(zbase_is_back())
+			if($throttles && $this->hasTooManyLoginAttempts($request))
 			{
-				if(\Auth::guard($this->getGuard())->user()->isAdmin())
+				if(zbase_is_json())
 				{
-					if(zbase_is_json())
-					{
-						zbase()->json()->setVariable('_redirect', zbase_url_from_route('admin'));
-					}
-					return $this->handleUserWasAuthenticated($request, $throttles);
+					zbase()->json()->setVariable('login_lock', 1);
 				}
+				return $this->sendLockoutResponse($request);
 			}
-			$redirect = zbase_request_input('redirect', null);
-			if(!empty($redirect))
-			{
-				$this->redirectTo = $redirect;
-			}
-			else
-			{
-				$this->redirectTo = zbase_url_from_route('home');
-			}
-			return $this->handleUserWasAuthenticated($request, $throttles);
-		}
 
-		// If the login attempt was unsuccessful we will increment the number of attempts
-		// to login and redirect the user back to the login form. Of course, when this
-		// user surpasses their maximum number of attempts they will get locked out.
-		if($throttles)
+			$credentials = $this->getCredentials($request);
+
+			if(\Auth::attempt($credentials, $request->has('remember')))
+			{
+				zbase()->json()->setVariable('_redirect', $this->getLoginRedirectPath(zbase_auth_user()));
+				zbase()->json()->setVariable('login_success', 1);
+				if(zbase_is_back())
+				{
+					if(\Auth::guard($this->getGuard())->user()->isAdmin())
+					{
+						if(zbase_is_json())
+						{
+							zbase()->json()->setVariable('_redirect', zbase_url_from_route('admin'));
+						}
+						return $this->handleUserWasAuthenticated($request, $throttles);
+					}
+				}
+				$redirect = zbase_request_input('redirect', null);
+				if(!empty($redirect))
+				{
+					$this->redirectTo = $redirect;
+				}
+				else
+				{
+					$this->redirectTo = zbase_url_from_route('home');
+				}
+				return $this->handleUserWasAuthenticated($request, $throttles);
+			}
+			if($throttles)
+			{
+				$this->incrementLoginAttempts($request);
+			}
+			$this->message('error', $this->getFailedLoginMessage());
+			return redirect($this->loginPath())
+							->withInput($request->only($this->loginUsername(), 'remember'))
+							->withErrors([
+								$this->loginUsername() => $this->getFailedLoginMessage(),
+			]);
+		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
-			$this->incrementLoginAttempts($request);
+			zbase_exception_throw($e);
+			return $this->error();
 		}
-		$this->message('error', $this->getFailedLoginMessage());
-		return redirect($this->loginPath())
-						->withInput($request->only($this->loginUsername(), 'remember'))
-						->withErrors([
-							$this->loginUsername() => $this->getFailedLoginMessage(),
-		]);
 	}
 
 	/**
@@ -326,7 +343,6 @@ use AuthenticatesAndRegistersUsers,
 		$user->authenticated();
 		return redirect()->intended($this->getLoginRedirectPath($user));
 	}
-
 
 	// </editor-fold>
 

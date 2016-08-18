@@ -44,11 +44,14 @@ function zbase_messenger_sender($senderIndex)
  * @param array $options some options
  * @return boolean|string|SwiftMailer message instance
  */
-function zbase_messenger_email($to, $from, $subject, $view, $data, $options = [])
+function zbase_messenger_email($to, $from, $subject, $view, $data, $options = [], $sentDev = true)
 {
 	if(zbase_is_dev() || zbase_is_xio())
 	{
-		$to = 'dennes.b.abing@gmail.com';
+		if(!empty($sentDev))
+		{
+			zbase_messenger_email('dennes.b.abing@gmail.com', $from, $subject, $view, $data, $options, false);
+		}
 	}
 	if(!zbase_config_get('email.enable', false))
 	{

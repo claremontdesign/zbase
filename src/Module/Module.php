@@ -132,7 +132,11 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 		if(!empty($nav))
 		{
 			$nav['id'] = $this->id();
-			return new \Zbase\Models\View\Navigation($nav);
+			$navx = new \Zbase\Models\View\Navigation($nav);
+			if($navx->isEnabled() && $navx->hasAccess())
+			{
+				return $navx;
+			}
 		}
 	}
 

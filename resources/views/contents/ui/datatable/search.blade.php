@@ -41,6 +41,7 @@ if(empty($isSearchable))
 			jQuery('#<?php echo $prefix?>Wrapper .btn-toolbar').remove();
 		}
 		jQuery('#<?php echo $prefix?>Table').remove();
+		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.btn-toolbar').eq(0).remove();
 		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.datatable-empty-message').eq(0).remove();
 		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('table').eq(0).remove();
 		if(r.<?php echo $dataPrefix?> !== undefined && r.<?php echo $dataPrefix?>.totalRows > 0)
@@ -97,6 +98,7 @@ if(empty($isSearchable))
 			}
 		<?php endif;?>
 		jQuery('#<?php echo $prefix?>submitbutton').click(function(){<?php echo $prefix?>GoSearch();});
+		jQuery('#<?php echo $prefix?>resetbutton').click(function(){jQuery('#<?php echo $prefix?>query').val('');<?php echo $prefix?>GoSearch();});
 		jQuery('#<?php echo $prefix?>query').on('keypress', function (event) {
 			 if(event.which === 13){
 				<?php echo $prefix?>GoSearch();
@@ -117,7 +119,8 @@ zbase_view_script_add($prefix . 'searchinit', $prefix . 'init();', true);
 			<input id="<?php echo $prefix?>query" type="text" class="form-control datatable-search-query" name="<?php echo $prefix?>Query" value="" placeholder="<?php echo $ui->searchTextPlaceholder()?>"/>
 		</div>
 		<div class="form-group">
-			<button id="<?php echo $prefix?>submitbutton" type="button" class="btn btn-default">Search</button>
+			<button id="<?php echo $prefix?>submitbutton" type="button" class="btn btn-success">Search</button>
+			<button id="<?php echo $prefix?>resetbutton" type="button" class="btn btn-default">Reset</button>
 		</div>
 	</div>
 <hr />

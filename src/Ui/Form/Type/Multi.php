@@ -94,8 +94,8 @@ class Multi extends \Zbase\Ui\Form\Element
 		];
 		if($this->_mode == 'display')
 		{
-			$options[0] = 'Hidden';
-			$options[3] = 'Published';
+			$options[0] = '<span class="label label-danger">Hidden</span>';
+			$options[3] = '<span class="label label-success">Published</span>';
 		}
 		return $options;
 	}

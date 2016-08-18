@@ -23,6 +23,7 @@ class Nested extends \Baum\Node
 
 	use LaravelTraits\Filterable,
 	 LaravelTraits\Joinable,
+	 \Illuminate\Database\Eloquent\SoftDeletes,
 	 LaravelTraits\Sortable,
 	 LaravelTraits\Entity,
 	 \Zbase\Entity\Laravel\Node\Traits\Node,
@@ -87,4 +88,5 @@ class Nested extends \Baum\Node
 		];
 		return $columns;
 	}
+
 }

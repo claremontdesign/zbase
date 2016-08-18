@@ -78,6 +78,7 @@ class File extends BaseEntity implements WidgetEntityInterface
 		zbase_entity($this->entityName)->repo()->update(['is_primary' => 1], ['node_id' => ['eq' => ['field' => 'alpha_id', 'value' => $selectedAlphaId]]]);
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="ReceiveAFile">
 	/**
 	 * Receive the File/Image
 	 *
@@ -154,6 +155,7 @@ class File extends BaseEntity implements WidgetEntityInterface
 		return false;
 	}
 
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="nodeWidgetController">
 	/**
 	 * Widget entity interface.
@@ -174,6 +176,10 @@ class File extends BaseEntity implements WidgetEntityInterface
 				if($action == 'file-update')
 				{
 					$action = 'update';
+				}
+				if($action == 'file-delete')
+				{
+					$action = 'delete';
 				}
 			}
 			if(strtolower($method) == 'post' && zbase_request_is_upload())

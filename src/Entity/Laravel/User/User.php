@@ -609,111 +609,118 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public static function create(array $attributes = [])
 	{
-		$logMsg = [];
-		if(empty($attributes['profile']))
-		{
-			$userAttributes = [];
-			$attributes['profile'] = [];
-			$attributesAddress = ['city' => ''];
-			$profileColumns = zbase_entity('user_profile')->getColumns();
-			$addressColumns = zbase_entity('user_address')->getColumns();
-			$userColumns = zbase_entity('user')->getColumns();
 
-			foreach ($attributes as $attName => $attValue)
+		try
+		{
+			$logMsg = [];
+			if(empty($attributes['profile']))
 			{
-				if(array_key_exists($attName, $profileColumns))
+				$userAttributes = [];
+				$attributes['profile'] = [];
+				$attributesAddress = ['city' => ''];
+				$profileColumns = zbase_entity('user_profile')->getColumns();
+				$addressColumns = zbase_entity('user_address')->getColumns();
+				$userColumns = zbase_entity('user')->getColumns();
+
+				foreach ($attributes as $attName => $attValue)
 				{
-					$attributes['profile'][$attName] = $attValue;
-					unset($attributes[$attName]);
-				}
-				if(array_key_exists($attName, $addressColumns))
-				{
-					$attributesAddress[$attName] = $attValue;
-					unset($attributes[$attName]);
-				}
-				if(array_key_exists($attName, $userColumns))
-				{
-					$userAttributes[$attName] = $attValue;
+					if(array_key_exists($attName, $profileColumns))
+					{
+						$attributes['profile'][$attName] = $attValue;
+						unset($attributes[$attName]);
+					}
+					if(array_key_exists($attName, $addressColumns))
+					{
+						$attributesAddress[$attName] = $attValue;
+						unset($attributes[$attName]);
+					}
+					if(array_key_exists($attName, $userColumns))
+					{
+						$userAttributes[$attName] = $attValue;
+					}
 				}
 			}
-		}
-		if(!empty($attributes['email']))
-		{
-			$logMsg[] = 'Email: ' . $attributes['email'];
-		}
-		zbase_db_transaction_start();
-		if(!empty($attributes['profile']))
-		{
-			$logMsg[] = 'Attribute profile found';
-			$attributesProfile = $attributes['profile'];
-			unset($attributes['profile']);
-		}
-		$model = zbase_entity('user');
-		$model->fill($userAttributes);
-		$model->toggleRelationshipMode();
-		if(!empty($attributes['password']))
-		{
-			$logMsg[] = 'Attribute password found';
-			$model->password = $attributes['password'];
-		}
-		if(!empty($attributes['status']))
-		{
-			$logMsg[] = 'Attribute status found';
-			$model->status = $attributes['status'];
-		}
-		$role = self::roles()->getRelated()->repository()->by('role_name', !empty($attributes['role']) ? $attributes['role'] : zbase_config_get('auth.role.default', 'user'))->first();
-		$model->save();
-		if(!empty($role))
-		{
-			$model->roles()->save($role);
-			$logMsg[] = 'Role: ' . $role->name() . ' saved!';
-			$model->alpha_id = zbase_generate_hash([$model->user_id, rand(1, 1000), time()], $model->getTable());
-			$model->save();
-			if(!empty($attributesProfile))
+			if(!empty($attributes['email']))
 			{
-				\Eloquent::unguard();
-				$profileAttributes = [
-					'first_name' => !empty($attributesProfile['first_name']) ? $attributesProfile['first_name'] : null,
-					'last_name' => !empty($attributesProfile['last_name']) ? $attributesProfile['last_name'] : null,
-					'middle_name' => !empty($attributesProfile['middle_name']) ? $attributesProfile['middle_name'] : null,
-					'dob' => !empty($attributesProfile['dob']) ? $attributesProfile['dob'] : null,
-					'gender' => !empty($attributesProfile['gender']) ? $attributesProfile['gender'] : null,
-					'avatar' => !empty($attributesProfile['avatar']) ? $attributesProfile['avatar'] : 'http://api.adorable.io/avatars/285/' . $model->alpha_id . '.png'
-				];
-				$profileAttributes = array_replace_recursive($attributesProfile, $profileAttributes);
-				$profileAttributes['user_id'] = $model->id();
-				zbase_entity('user_profile')->fill($profileAttributes)->save();
-				$logMsg[] = 'Profile saved!';
+				$logMsg[] = 'Email: ' . $attributes['email'];
 			}
-			/**
-			 * Save Addresses
-			 */
-			if(!empty($attributesAddress))
+			zbase_db_transaction_start();
+			if(!empty($attributes['profile']))
 			{
-				$attributesAddress['is_active'] = 1;
-				$attributesAddress['is_default'] = 1;
-				$attributesAddress['type'] = 'home';
-				$attributesAddress['user_id'] = $model->id();
-				zbase_entity('user_address')->fill($attributesAddress)->save();
-				$logMsg[] = 'Address saved!';
+				$logMsg[] = 'Attribute profile found';
+				$attributesProfile = $attributes['profile'];
+				unset($attributes['profile']);
 			}
+			$model = zbase_entity('user');
+			$model->fill($userAttributes);
 			$model->toggleRelationshipMode();
-			if($model->sendWelcomeMessage($attributes))
+			if(!empty($attributes['password']))
 			{
-				$logMsg[] = 'Welcome message sent!';
+				$logMsg[] = 'Attribute password found';
+				$model->password = $attributes['password'];
 			}
-			$logMsg[] = 'User saved!';
-			$model->log('Register');
-			zbase_log(implode(PHP_EOL, $logMsg), null, __METHOD__);
-			zbase_db_transaction_commit();
-			return $model;
-		}
-		else
+			if(!empty($attributes['status']))
+			{
+				$logMsg[] = 'Attribute status found';
+				$model->status = $attributes['status'];
+			}
+			$role = self::roles()->getRelated()->repository()->by('role_name', !empty($attributes['role']) ? $attributes['role'] : zbase_config_get('auth.role.default', 'user'))->first();
+			$model->save();
+			if(!empty($role))
+			{
+				$model->roles()->save($role);
+				$logMsg[] = 'Role: ' . $role->name() . ' saved!';
+				$model->alpha_id = zbase_generate_hash([$model->user_id, rand(1, 1000), time()], $model->getTable());
+				$model->save();
+				if(!empty($attributesProfile))
+				{
+					\Eloquent::unguard();
+					$profileAttributes = [
+						'first_name' => !empty($attributesProfile['first_name']) ? $attributesProfile['first_name'] : null,
+						'last_name' => !empty($attributesProfile['last_name']) ? $attributesProfile['last_name'] : null,
+						'middle_name' => !empty($attributesProfile['middle_name']) ? $attributesProfile['middle_name'] : null,
+						'dob' => !empty($attributesProfile['dob']) ? $attributesProfile['dob'] : null,
+						'gender' => !empty($attributesProfile['gender']) ? $attributesProfile['gender'] : null,
+						'avatar' => !empty($attributesProfile['avatar']) ? $attributesProfile['avatar'] : 'http://api.adorable.io/avatars/285/' . $model->alpha_id . '.png'
+					];
+					$profileAttributes = array_replace_recursive($attributesProfile, $profileAttributes);
+					$profileAttributes['user_id'] = $model->id();
+					zbase_entity('user_profile')->fill($profileAttributes)->save();
+					$logMsg[] = 'Profile saved!';
+				}
+				/**
+				 * Save Addresses
+				 */
+				if(!empty($attributesAddress))
+				{
+					$attributesAddress['is_active'] = 1;
+					$attributesAddress['is_default'] = 1;
+					$attributesAddress['type'] = 'home';
+					$attributesAddress['user_id'] = $model->id();
+					zbase_entity('user_address')->fill($attributesAddress)->save();
+					$logMsg[] = 'Address saved!';
+				}
+				$model->toggleRelationshipMode();
+				if($model->sendWelcomeMessage($attributes))
+				{
+					$logMsg[] = 'Welcome message sent!';
+				}
+				$logMsg[] = 'User saved!';
+				$model->log('Register');
+				zbase_log(implode(PHP_EOL, $logMsg), null, __METHOD__);
+				zbase_db_transaction_commit();
+				return $model;
+			}
+			else
+			{
+				$logMsg[] = 'Role is empty. zbase_db_transaction_rollback()';
+				zbase_log(implode(PHP_EOL, $logMsg), null, __METHOD__);
+				zbase_db_transaction_rollback();
+				throw new \Zbase\Exceptions\RuntimeException(_zt('User Role given not found.'));
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
-			$logMsg[] = 'Role is empty. zbase_db_transaction_rollback()';
-			zbase_log(implode(PHP_EOL, $logMsg), null, __METHOD__);
-			zbase_db_transaction_rollback();
-			throw new \Zbase\Exceptions\RuntimeException(_zt('User Role given not found.'));
+			zbase_exception_throw($e);
 		}
 		return false;
 	}
@@ -850,11 +857,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
-			if(zbase_is_dev())
-			{
-				dd($e);
-			}
-			zbase_abort(500);
+			zbase_exception_throw($e);
 		}
 	}
 
@@ -1426,8 +1429,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$defaultData = [
 			[
 				'status' => 'ok',
-				'username' => 'sudo',
-				'name' => 'sudo',
+				'username' => 'sudox',
+				'name' => 'Super User',
 				'email' => 'sudo@zbase.com',
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
@@ -1440,8 +1443,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			],
 			[
 				'status' => 'ok',
-				'username' => 'admin',
-				'name' => 'admin',
+				'username' => 'adminx',
+				'name' => 'Administrator',
 				'email' => 'admin@zbase.com',
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
@@ -1454,8 +1457,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			],
 			[
 				'status' => 'ok',
-				'username' => 'system',
-				'name' => 'system',
+				'username' => 'systemx',
+				'name' => 'Mr. System',
 				'email' => 'system@zbase.com',
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
@@ -1468,8 +1471,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			],
 			[
 				'status' => 'ok',
-				'username' => 'user',
-				'name' => 'user',
+				'username' => 'userx',
+				'name' => 'Normal User',
 				'email' => 'user@zbase.com',
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
@@ -1482,8 +1485,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			],
 			[
 				'status' => 'ok',
-				'username' => 'moderator',
-				'name' => 'moderator',
+				'username' => 'moderatorx',
+				'name' => 'Moody Moderator',
 				'email' => 'moderator@zbase.com',
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
@@ -1503,21 +1506,21 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public static function seedingEventPost($entity)
 	{
-		$sudo = \DB::table('users')->where(['username' => 'sudo'])->first();
+		$sudo = \DB::table('users')->where(['username' => 'sudox'])->first();
 		$sudoRole = \DB::table('user_roles')->where('role_name', 'sudo')->first();
 		\DB::table('users_roles')->where('user_id', $sudo->user_id)->update(['role_id' => $sudoRole->role_id]);
 
-		$admin = \DB::table('users')->where(['username' => 'admin'])->first();
+		$admin = \DB::table('users')->where(['username' => 'adminx'])->first();
 		$adminRole = \DB::table('user_roles')->where('role_name', 'admin')->first();
 		\DB::table('users_roles')->where('user_id', $admin->user_id)->update(['role_id' => $adminRole->role_id]);
 
-		$system = \DB::table('users')->where(['username' => 'system'])->first();
+		$system = \DB::table('users')->where(['username' => 'systemx'])->first();
 		\DB::table('users_roles')->where('user_id', $system->user_id)->update(['role_id' => $adminRole->role_id]);
 
-		$user = \DB::table('users')->where(['username' => 'user'])->first();
+		$user = \DB::table('users')->where(['username' => 'userx'])->first();
 		$userRole = \DB::table('user_roles')->where('role_name', 'user')->first();
 		\DB::table('users_roles')->where('user_id', $user->user_id)->update(['role_id' => $userRole->role_id]);
-		$moderator = \DB::table('users')->where(['username' => 'moderator'])->first();
+		$moderator = \DB::table('users')->where(['username' => 'moderatorx'])->first();
 		$moderatorRole = \DB::table('user_roles')->where('role_name', 'moderator')->first();
 		\DB::table('users_roles')->where('user_id', $moderator->user_id)->update(['role_id' => $moderatorRole->role_id]);
 	}

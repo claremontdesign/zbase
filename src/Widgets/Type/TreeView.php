@@ -102,7 +102,7 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 			return;
 		}
 		$rowTrashed = false;
-		if($this->_entity->hasSoftDelete())
+		if($row->hasSoftDelete())
 		{
 			$rowTrashed = $row->trashed();
 		}
@@ -283,8 +283,20 @@ class TreeView extends Widgets\Widget implements Widgets\WidgetInterface, Widget
 			$rows = $this->getRows();
 			if(!empty($rows))
 			{
+				$form = $this->form();
+				if($form instanceof Form && $form->entity() instanceof \Zbase\Entity\Laravel\Node\Nested)
+				{
+					$selectedCategory = $form->entity();
+				}
 				foreach ($rows as $row)
 				{
+					/**
+					 * Will not included current selected category when selecting a Parent Category
+					 */
+					if(!empty($selectedCategory) && $selectedCategory->id() == $row->id())
+					{
+						continue;
+					}
 					$this->_tree[] = $this->_treeRow($row, $options);
 				}
 			}

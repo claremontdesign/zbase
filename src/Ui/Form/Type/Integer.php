@@ -22,6 +22,6 @@ class Integer extends \Zbase\Ui\Form\Element
 	 * Widget Type
 	 * @var string
 	 */
-	protected $_type = 'integer';
+	protected $_type = 'number';
 
 }

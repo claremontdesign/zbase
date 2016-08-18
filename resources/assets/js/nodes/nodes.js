@@ -12,11 +12,16 @@
  */
 function nodeFileAfterDelete(data)
 {
-	if (data.node !== undefined && data.id !== undefined)
+	if (data.id !== undefined)
 	{
 		var id = data.id;
-		var name = data.node.name;
-		var prefix = data.node.prefix;
+		var name = '';
+		var prefix = '';
+		if (data.node !== undefined)
+		{
+			var name = data.node.name;
+			var prefix = data.node.prefix;
+		}
 		if (jQuery('#' + prefix + '-' + name + '-' + id).length > 0)
 		{
 			jQuery('#' + prefix + '-' + name + '-' + id).remove();
@@ -24,6 +29,16 @@ function nodeFileAfterDelete(data)
 		if (jQuery('#node-' + name + '-' + id).length > 0)
 		{
 			jQuery('#node-' + name + '-' + id).remove();
+		}
+		if (jQuery('#node-files-' + id).length > 0)
+		{
+			jQuery('#node-files-' + id).remove();
+			name = 'files';
+		}
+		if (!jQuery.trim(jQuery('#node-' + name).html()).length)
+		{
+			jQuery('#node-' + name).empty();
+			zbase_alert('warning', 'No images.', jQuery('#node-' + name), {manipulation: 'append'});
 		}
 	}
 }
@@ -55,8 +70,8 @@ function nodeCategoryJstreeOnClicked(evt, node)
 		var infopane = dataConfig.infopane !== undefined ? dataConfig.infopane : null;
 		var singleNode = dataConfig.node !== undefined ? dataConfig.node : null;
 		url = url.replace('ACTION', 'view').replace('ID', node.node.id);
-		zbase_ajax_get(url, {}, function(data){
-			if(singleNode !== undefined)
+		zbase_ajax_get(url, {}, function (data) {
+			if (singleNode !== undefined)
 			{
 				jQuery(infopane).html(eval('data.html.' + singleNode));
 			}

@@ -168,8 +168,6 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			$page['title'] = $this->entity()->title();
 			$page['headTitle'] = $this->entity()->title();
 			zbase_view_page_details(['page' => $page]);
-
-
 			if($this->entity()->hasSoftDelete())
 			{
 				if($this->entity()->trashed())

@@ -10,6 +10,7 @@ else
 	ob_start('zbase_view_compile');
 	zbase_view_plugin_load('bootstrap');
 	zbase_view_plugin_load('jquery');
+	zbase_view_plugin_load('zbase');
 	?>
 	<!DOCTYPE html>
 	<html lang="en">

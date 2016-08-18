@@ -345,11 +345,13 @@ function zbase_toast(type, msg, position) {
 		{
 			toastr.error(msg);
 		}
+		if (type == 'warning')
+		{
+			toastr.warning(msg);
+		}
 	} else
 	{
-		if (type == 'error')
-		{
-			zbase_alert(msg);
+			zbase_alert(type, msg);
 		}
 	}
 }
@@ -523,7 +525,7 @@ function zbase_ajax_post(url, data, successCb, opt)
 		data: data,
 		beforeSend: function ()
 		{
-			if(data.loader !== undefined && !data.loader)
+			if (data.loader !== undefined && !data.loader)
 			{
 				return;
 			}
@@ -762,11 +764,17 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 });
 jQuery(document).ajaxError(function (event, request, settings) {
 	zbase_ajax_preloader_hide();
-	zbase_toast('error', 'There was an error processing your request. Kindly try again later.');
+	var statusCode = request.status !== undefined ? request.status : 200;
+	if (statusCode == 422)
+	{
+		zbase_toast('warning', 'There was an error in the information you submitted. Kindly check.');
+	} else {
+		zbase_toast('error', 'There was an error processing your request. Kindly try again later.');
+	}
 });
 jQuery(document).ajaxSend(function (event, request, settings) {
 	zbase_alert_form_reset();
-	if(settings.data !== undefined && settings.data.indexOf('loader=false') == 0)
+	if (settings.data !== undefined && settings.data.indexOf('loader=false') == 0)
 	{
 		zbase_ajax_preloader_hide();
 	} else {

@@ -150,12 +150,9 @@ return [
 				'type' => 'text',
 				'id' => 'country',
 				'label' => 'Country',
-				'value' => 'PH',
+				'value' => '',
 				'html' => [
 					'attributes' => [
-						'input' => [
-							'readonly' => 'true',
-						],
 						'wrapper' => [
 							'class' => ['col-md-6', 'col-sm-12']
 						],

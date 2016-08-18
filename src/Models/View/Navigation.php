@@ -142,7 +142,7 @@ class Navigation
 	 */
 	public function hasAccess()
 	{
-		if(is_null($this->access))
+		if(!is_bool($this->access))
 		{
 			$this->access = zbase_auth_check_access($this->_v('access', zbase_auth_minimum()));
 		}

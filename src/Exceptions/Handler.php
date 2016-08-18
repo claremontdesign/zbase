@@ -39,16 +39,16 @@ class Handler extends ExceptionHandler
 			$error = $e->getMessage();
 			if(preg_match('/failed to pass validation/', $error) == 0)
 			{
-				$error .= "\n";
-				$error .= 'Date: ' . zbase_date_now()->format('Y-m-d h:i:s A') . "\n";
-				$error .= 'URL: ' . zbase_url_uri() . "\n";
-				$error .= 'Data: ' . json_encode(zbase_request_inputs()) . "\n";
-				$error .= 'Routes: ' . json_encode(zbase_route_inputs()) . "\n";
-				$error .= 'IP Address: ' . zbase_ip() . "\n";
+				$error .=  "<br />";
+				$error .= 'Date: ' . zbase_date_now()->format('Y-m-d h:i:s A') . "<br />";
+				$error .= 'URL: ' . zbase_url_uri() .  "<br />";
+				$error .= 'Data: ' . json_encode(zbase_request_inputs()) .  "<br />";
+				$error .= 'Routes: ' . json_encode(zbase_route_inputs()) .  "<br />";
+				$error .= 'IP Address: ' . zbase_ip() .  "<br />";
 				if(zbase_auth_has())
 				{
 					$user = zbase_auth_user();
-					$error .= 'User: ' . $user->email() . ' ' . $user->username() . '[' . $user->id() . ']' . "\n";
+					$error .= 'User: ' . $user->email() . ' ' . $user->username() . '[' . $user->id() . ']' .  "<br />";
 				}
 				zbase_messenger_email('dennes.b.abing@gmail.com', 'noreply', 'DermaSecrets.Biz Error', zbase_view_file_contents('email.exceptions'), ['error' => $error]);
 			}
