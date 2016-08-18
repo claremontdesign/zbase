@@ -21,7 +21,11 @@
  */
 function zbase_auth_user()
 {
-	return zbase_user_byid(\Auth::user()->id());
+	if(!empty(\Auth::user()))
+	{
+		return zbase_user_byid(\Auth::user()->id());
+	}
+	return false;
 }
 
 /**

@@ -2,7 +2,6 @@
 
 namespace Zbase\Exceptions;
 
-use Exception;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -63,7 +62,7 @@ class Handler extends ExceptionHandler
 	 * @param  \Exception  $e
 	 * @return \Illuminate\Http\Response
 	 */
-	public function render($request, Exception $e)
+	public function render($request, \Exception $e)
 	{
 		// return response()->view(zbase_view_file('errors.' . $e->getStatusCode()), compact('request', 'e'));
 		return parent::render($request, $e);

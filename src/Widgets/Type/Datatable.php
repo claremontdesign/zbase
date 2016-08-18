@@ -139,7 +139,17 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		if(!empty($this->_entity))
 		{
 			$entityObject = $this->entityObject();
-			$repo = $entityObject->repository()->perPage(zbase_request_query_input('pp', $this->_v('row.perpage', $this->_entity->getPerPage())));
+			$entity = $this->_entity;
+			$perPage = 10;
+			if($entity instanceof \Illuminate\Database\Eloquent\Collection)
+			{
+				$entity = $this->_entity->first();
+				if($entity instanceof \Zbase\Interfaces\EntityInterface)
+				{
+					$perPage = $entity->getPerPage();
+				}
+			}
+			$repo = $entityObject->repository()->perPage(zbase_request_query_input('pp', $this->_v('row.perpage', $perPage)));
 			$filters = [];
 			$sorting = [];
 			$joins = [];
@@ -147,14 +157,14 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 			if($this->isNode())
 			{
 				$urlFilters = $this->getRequestFilters();
-				if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+				if($this->isNodeCategory() && $entity instanceof \Zbase\Entity\Laravel\Node\Nested)
 				{
 					/**
 					 * We are getting the nodes on each category
 					 *  switch to node entityObject
 					 */
 					$entityObject = zbase_entity($entityObject::$nodeNamePrefix, [], true);
-					$repo = $entityObject->repository()->perPage(zbase_request_query_input('pp', $this->_v('row.perpage', $this->_entity->getPerPage())));
+					$repo = $entityObject->repository()->perPage(zbase_request_query_input('pp', $this->_v('row.perpage', $perPage)));
 					$categories = $this->_entity->getDescendantsAndSelf();
 					if(!empty($categories))
 					{

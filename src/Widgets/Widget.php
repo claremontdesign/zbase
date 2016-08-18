@@ -601,6 +601,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 						$sorting = [];
 						$selects = ['*'];
 						$joins = [];
+						$singleRow = $this->_v('entity.singlerow', true);
 						if($this->isCurrentUser())
 						{
 							$filters['user'] = ['eq' => ['field' => 'user_id', 'value' => zbase_auth_user()->id()]];
@@ -611,7 +612,14 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 						}
 						$filters = array_merge($filters, $this->_v('entity.filter.query', []));
 						$sorting = array_merge($sorting, $this->_v('entity.sorting.query', []));
-						return $this->_entity = $entity->repository()->all($selects, $filters, $sorting, $joins)->first();
+						if(!empty($singleRow))
+						{
+							return $this->_entity = $entity->repository()->all($selects, $filters, $sorting, $joins)->first();
+						}
+						else
+						{
+							return $this->_entity = $entity->repository()->all($selects, $filters, $sorting, $joins);
+						}
 					}
 				}
 				$repoMethod = $this->_v('entity.method', null);

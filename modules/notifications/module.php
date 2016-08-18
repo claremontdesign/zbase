@@ -61,7 +61,7 @@ return [
 						foreach($notifications as $notification)
 						{
 							$string .= '<li data-id="' . $notification->id() . '" id="notifications-list-'.$notification->id().'">
-								<a href="#">
+								<a href="'. $notification->url() . '">
 									<span class="label label-sm label-icon label-'.$notification->displayColor().'">
 										<i class="fa '. $notification->displayIcon() . '"></i>
 									</span>

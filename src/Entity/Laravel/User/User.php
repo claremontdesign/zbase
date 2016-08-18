@@ -118,6 +118,20 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	/**
+	 * REturn this User City State
+	 * @return string
+	 */
+	public function cityState()
+	{
+		$address = $this->address();
+		if(!empty($address))
+		{
+			return $address->city . ', ' . $address->state;
+		}
+		return null;
+	}
+
+	/**
 	 * Return the User Profile
 	 * @return type
 	 */
@@ -140,6 +154,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->roleName = $this->roles()->first()->role_name;
 		}
 		return $this->roleName;
+	}
+
+	/**
+	 * Current Role Title
+	 * @return type
+	 */
+	public function roleTitle()
+	{
+		return ucfirst($this->roleName());
 	}
 
 	/**
@@ -504,20 +527,31 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function notify($msg, $type = 1, $options = [])
 	{
-		if(!empty($msg))
+		try
 		{
-			$data = [
-				'remarks' => !empty($msg) ? $msg : null,
-				'type' => $type,
-				'is_new' => 1,
-				'is_seen' => 0,
-				'is_read' => 0,
-				'user_id' => $this->id(),
-				'is_notified' => 0,
-				'options' => json_encode($options)
-			];
-			zbase_entity('user_notifications')->fill($data)->save();
-			$this->notificationClearCache();
+			if(!empty($msg))
+			{
+				zbase_db_transaction_start();
+				$data = [
+					'remarks' => !empty($msg) ? $msg : null,
+					'type' => $type,
+					'is_new' => 1,
+					'is_seen' => 0,
+					'is_read' => 0,
+					'user_id' => $this->id(),
+					'is_notified' => 0,
+					'created_at' => zbase_date_now(),
+					'updated_at' => zbase_date_now(),
+					'options' => json_encode($options)
+				];
+				zbase_entity('user_notifications')->insert($data);
+				$this->notificationClearCache();
+				zbase_db_transaction_commit();
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_db_transaction_rollback();
+			zbase_exception_throw($e);
 		}
 	}
 

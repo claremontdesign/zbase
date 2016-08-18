@@ -145,7 +145,12 @@ class Notifications extends BaseEntity implements Interfaces\IdInterface
 
 	public function displayMessage()
 	{
-		return $this->remarks;
+		return $this->remarks;;
+	}
+
+	public function url()
+	{
+		return '#';
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="SEEDING / Table Configuration">
