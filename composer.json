@@ -1,8 +1,8 @@
 {
 	"name": "claremontdesign/zbase",
-	"description": "The Zbase NoFramework.",
+	"description": "The Zbase-Laravel Framework.",
 	"keywords": ["framework", "laravel", "zbase", "dennesabing"],
-	"license": "MIT",
+	"license": "Proprietary/ClaremontDesign",
 	"type": "project",
 	"require": {
 		"php": ">=5.5.9",
