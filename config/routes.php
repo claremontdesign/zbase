@@ -204,6 +204,7 @@ return [
 			'enable' => true
 		],
 		'password-reset' => [
+			'usernameroute' => false,
 			'controller' => [
 				'name' => 'password',
 				'method' => 'reset',
@@ -224,6 +225,50 @@ return [
 			'middleware' => [
 				'guestOnly' => true,
 			],
+			'enable' => true
+		],
+		'email-verify' => [
+			'usernameroute' => false,
+			'controller' => [
+				'name' => 'auth',
+				'method' => 'emailVerify',
+				'enable' => true,
+				'params' => [
+					'email' => null,
+					'token' => null
+				]
+			],
+			'page' => [
+				'title' => 'Verify Email Address',
+				'headTitle' => 'Verify Email Address',
+				'subTitle' => null,
+				'breadcrumbs' => [
+					['label' => 'Verify Email Address', 'link' => '#'],
+				],
+			],
+			'url' => '/email-address/verify/{email?}/{token?}',
+			'enable' => true
+		],
+		'update-email-request' => [
+			'usernameroute' => false,
+			'controller' => [
+				'name' => 'auth',
+				'method' => 'emailUpdateRequestVerify',
+				'enable' => true,
+				'params' => [
+					'email' => null,
+					'token' => null
+				]
+			],
+			'page' => [
+				'title' => 'Email Update Request',
+				'headTitle' => 'Email Update Request',
+				'subTitle' => null,
+				'breadcrumbs' => [
+					['label' => 'Email Update Request', 'link' => '#'],
+				],
+			],
+			'url' => '/email-addres-update/request/{email?}/{token?}',
 			'enable' => true
 		],
 		'phpinfo' => [

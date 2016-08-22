@@ -23,7 +23,7 @@ return [
 				'ui' => [
 					'type' => 'component.pageHeader',
 					'id' => 'header',
-					'text' => 'Confirm Account'
+					'text' => 'Request to change password, enter your current password.'
 				],
 			],
 			'password' => [

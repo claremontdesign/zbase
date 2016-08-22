@@ -43,7 +43,7 @@ if(!empty($columns))
 		$tBodys[] = '</tr>';
 		foreach ($columns as $column)
 		{
-			$tHeads[] = '<th>' . $column->getLabel() . '</th>';
+			$tHeads[] = '<th ' . $column->renderTagAttribute('th') . '>' . $column->getLabel() . '</th>';
 		}
 	}
 	else
@@ -57,7 +57,7 @@ if(!empty($columns))
 				{
 					$clickableRow = ' class="pointer" onclick="zbase_to_url(this);" data-href="' . $ui->getRowClickableUrl($row) . '"';
 				}
-				$tBodys[] = '<tr' . $clickableRow .'>';
+				$tBodys[] = '<tr' . $clickableRow . '>';
 				foreach ($columns as $column)
 				{
 					$column->setRow($row)->prepare();
@@ -72,7 +72,7 @@ if(!empty($columns))
 		}
 		foreach ($columns as $column)
 		{
-			$tHeads[] = '<th class="' . $column->getDataType() . '">' . $column->getLabel() . '</th>';
+			$tHeads[] = '<th ' . $column->renderTagAttribute('th') . '>' . $column->getLabel() . '</th>';
 		}
 	}
 }

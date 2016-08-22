@@ -13,7 +13,7 @@ class UserEntityTest extends TestCase
 	 */
 	public function testHasAccess()
 	{
-		$user = zbase_entity('user')->repository()->by('username', 'admin')->first();
+		$user = zbase_entity('user')->repository()->by('username', 'adminx')->first();
 		$this->assertTrue($user->hasAccess('admin'));
 		$this->assertTrue($user->hasAccess('user'));
 		$this->assertFalse($user->hasAccess('sudo'));
@@ -25,7 +25,7 @@ class UserEntityTest extends TestCase
 	 */
 	public function testUpdateEmailAddress()
 	{
-		$user = zbase_entity('user')->repository()->by('username', 'admin')->first();
+		$user = zbase_entity('user')->repository()->by('username', 'adminx')->first();
 		$user->email = 'admin@zbase.com';
 		$user->unsetAllOptions();
 		$user->save();
@@ -52,7 +52,7 @@ class UserEntityTest extends TestCase
 	 */
 	public function testUpdatePassword()
 	{
-		$user = zbase_entity('user')->repository()->by('username', 'admin')->first();
+		$user = zbase_entity('user')->repository()->by('username', 'adminx')->first();
 		$user->password = zbase_bcrypt('password');
 		$user->unsetAllOptions();
 		$user->save();

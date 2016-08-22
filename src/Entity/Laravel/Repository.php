@@ -50,8 +50,6 @@ class Repository implements Interfaces\EntityRepositoryInterface
 	 * @var type
 	 */
 	protected $queryName = null;
-
-
 	protected $perPage = null;
 
 	/**
@@ -113,7 +111,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		}
 		$withTrashed = $this->withTrashed;
 		$onlyTrashed = $this->onlyTrashed;
-		$prefix = $this->getModel()->getTable();
+		$prefix = null;
 		if(!empty($withTrashed))
 		{
 			$prefix .= '_withtrashed';
@@ -124,15 +122,15 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		}
 		$cacheKey = zbase_cache_key($this->getModel(), 'byId_' . $id . $prefix);
 		return zbase_cache($cacheKey, function() use ($id, $columns, $withTrashed, $onlyTrashed){
-				if(!empty($withTrashed))
-				{
-					return $this->getModel()->withTrashed()->find(intval($id), $columns);
-				}
-				if(!empty($onlyTrashed))
-				{
-					return $this->getModel()->onlyTrashed()->find(intval($id), $columns);
-				}
-				return $this->getModel()->find(intval($id), $columns);
+			if(!empty($withTrashed))
+			{
+				return $this->getModel()->withTrashed()->find(intval($id), $columns);
+			}
+			if(!empty($onlyTrashed))
+			{
+				return $this->getModel()->onlyTrashed()->find(intval($id), $columns);
+			}
+			return $this->getModel()->find(intval($id), $columns);
 			}, [$this->getModel()->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']
 		);
 	}
@@ -152,7 +150,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		}
 		$withTrashed = $this->withTrashed;
 		$onlyTrashed = $this->onlyTrashed;
-		$prefix = $this->getModel()->getTable();
+		$prefix = null;
 		if(!empty($withTrashed))
 		{
 			$prefix .= '_withtrashed';
@@ -185,7 +183,7 @@ class Repository implements Interfaces\EntityRepositoryInterface
 		}
 		$withTrashed = $this->withTrashed;
 		$onlyTrashed = $this->onlyTrashed;
-		$prefix = $this->getModel()->getTable();
+		$prefix = null;
 		if(!empty($withTrashed))
 		{
 			$prefix .= '_withtrashed';
@@ -229,6 +227,29 @@ class Repository implements Interfaces\EntityRepositoryInterface
 			$filters = [$attribute => ['eq' => ['field' => $attribute, 'value' => $value]]];
 		}
 		return $this->all($columns, $filters, $sorting, $joins, $paginate, $unions, $group, $options);
+	}
+
+	/**
+	 * return the First Row
+	 * @param type $filters
+	 * @param type $columns
+	 * @param type $sorting
+	 * @param type $joins
+	 * @param type $options
+	 * @return type
+	 * @throws InvalidArgumentException
+	 */
+	public function first($filters, $columns = ['*'], $sorting = null, $joins = null, $options = null)
+	{
+		$unions = [];
+		$group = [];
+		$paginate = null;
+		$row = $this->all($columns, $filters, $sorting, $joins, $paginate, $unions, $group, $options);
+		if($row instanceof \Illuminate\Database\Eloquent\Collection && count($row) > 0)
+		{
+			return $row->first();
+		}
+		return null;
 	}
 
 	/**

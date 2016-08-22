@@ -450,7 +450,7 @@ function zbase_db_prefix()
  *
  * @return Zbase\Entity\Entity
  */
-function zbase_entity($entityName, $entityConfig = [], $newInstance = false)
+function zbase_entity($entityName, $entityConfig = [], $newInstance = true)
 {
 	return zbase()->entity($entityName, $entityConfig, $newInstance);
 	// return zbase()->entity($entityName, $newInstance);

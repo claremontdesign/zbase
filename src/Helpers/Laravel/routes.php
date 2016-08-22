@@ -201,7 +201,6 @@ function zbase_routes_init($routes = null)
 	}
 	if(!empty($routes))
 	{
-		$usernameRoute = zbase_route_username();
 		foreach ($routes as $name => $route)
 		{
 			if(!empty($route['url']))
@@ -221,6 +220,7 @@ function zbase_routes_init($routes = null)
 			}
 		}
 
+		$usernameRoute = zbase_route_username();
 		/**
 		 * Using Username Route
 		 */
@@ -240,7 +240,8 @@ function zbase_routes_init($routes = null)
 			zbase_route_init($routeParameterName, $usernameroute);
 			foreach ($routes as $name => $route)
 			{
-				if(!empty($route['url']))
+				$usernameRouteEnable = isset($route['usernameroute']) ? $route['usernameroute'] : true;
+				if(!empty($route['url']) && !empty($usernameRouteEnable))
 				{
 					$route['url'] = str_replace('//', '/', $usernameRoutePrefix . '/' . $route['url']);
 					$route['url'] = str_replace('{' . $routeParameterName . '?}/{' . $routeParameterName . '?}', '{' . $routeParameterName . '?}', $route['url']);
@@ -498,6 +499,11 @@ function zbase_route_response($name, $route)
 	$guestOnly = false;
 	$middleware = !empty($route['middleware']) ? $route['middleware'] : false;
 	$backend = !empty($route['backend']) ? $route['backend'] : false;
+	if($name == 'password-reset' && zbase_auth_has())
+	{
+		\Auth::guard()->logout();
+		return redirect(zbase_url_from_current());
+	}
 	if(!empty($backend))
 	{
 //		zbase_in_back();
@@ -511,6 +517,7 @@ function zbase_route_response($name, $route)
 			{
 				if(!zbase_auth_has())
 				{
+					zbase_session_set('__loginRedirect', zbase_url_from_current());
 					return redirect(zbase_url_from_route('login'));
 				}
 				if(zbase_auth_has() && !zbase_auth_is($access))
@@ -548,6 +555,7 @@ function zbase_route_response($name, $route)
 				}
 				if((empty(zbase_auth_has()) || !zbase_auth_is('user')) && $name != $usernameRoutePrefix . 'admin.login')
 				{
+					zbase_session_set('__loginRedirect', zbase_url_from_current());
 					return redirect(zbase_url_from_route('admin.login'));
 				}
 			}
@@ -555,6 +563,7 @@ function zbase_route_response($name, $route)
 			{
 				if((empty(zbase_auth_has()) || !zbase_auth_is('admin')) && $name != 'admin.login')
 				{
+					zbase_session_set('__loginRedirect', zbase_url_from_current());
 					return redirect(zbase_url_from_route('admin.login'));
 				}
 			}
@@ -569,6 +578,7 @@ function zbase_route_response($name, $route)
 			{
 				if(!empty($authed) && !zbase_auth_has() && $name != $usernameRoutePrefix . 'login')
 				{
+					zbase_session_set('__loginRedirect', zbase_url_from_current());
 					return redirect(zbase_url_from_route('login'));
 				}
 			}
@@ -576,6 +586,7 @@ function zbase_route_response($name, $route)
 			{
 				if(!empty($authed) && !zbase_auth_has() && $name != 'login')
 				{
+					zbase_session_set('__loginRedirect', zbase_url_from_current());
 					return redirect(zbase_url_from_route('login'));
 				}
 			}

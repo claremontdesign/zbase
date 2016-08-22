@@ -18,7 +18,7 @@ use Zbase\Traits;
 class Navigation
 {
 
-	use Traits\Attribute;
+	use Traits\Attribute, Traits\Html;
 
 	/**
 	 * The HTML Prefix

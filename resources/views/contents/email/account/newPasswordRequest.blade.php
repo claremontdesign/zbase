@@ -9,7 +9,6 @@
  * zbase_url_from_route('account', ['action' => 'password','task' => 'update-request','e' => $entity->email(),'c' => $code])
  *
  */
-$url = zbase_url_from_route('account', ['action' => 'password','task' => 'update-request','e' => $entity->email(),'c' => $code]);
 ?>
 
 <?php echo zbase_view_render(zbase_view_file_contents('email.header')); ?>

@@ -123,6 +123,7 @@ use AuthenticatesAndRegistersUsers,
 						$request, $validator
 				);
 			}
+			zbase_alerts_reset();
 			$user = $this->userCreate($request->all());
 			if($user instanceof \Zbase\Entity\Laravel\User\User)
 			{
@@ -175,7 +176,7 @@ use AuthenticatesAndRegistersUsers,
 		if($userEntity->usernameEnabled())
 		{
 			$notAllowedUsernames = require_once zbase_path_library('notallowedusernames.php');
-			$rules['username'] = 'required|min:3|max:20|regex:/^[a-z][a-z0-9]{5,31}$/|unique:' . zbase_config_get('entity.user.table.name') . '|not_in:' . implode(',', $notAllowedUsernames);
+			$rules['username'] = 'required|min:5|max:32|regex:/^[a-z][a-z0-9]{5,32}$/|unique:' . zbase_config_get('entity.user.table.name') . '|not_in:' . implode(',', $notAllowedUsernames);
 			$messages['username.unique'] = 'Username already exists.';
 			$messages['username.regex'] = 'Username should be of alphanumeric in small letters';
 			$messages['username.not_in'] = 'Username already exists.';
@@ -266,9 +267,11 @@ use AuthenticatesAndRegistersUsers,
 			{
 				return $this->notfound('User authentication is disabled.');
 			}
-			$this->validate($request, [
+			$rules = [
 				$this->loginUsername() => 'required', 'password' => 'required',
-			]);
+			];
+			$messages = [];
+			$this->validate($request, $rules, $messages);
 
 			// If the class is using the ThrottlesLogins trait, we can automatically throttle
 			// the login attempts for this application. We'll key this by the username and
@@ -288,7 +291,8 @@ use AuthenticatesAndRegistersUsers,
 
 			if(\Auth::attempt($credentials, $request->has('remember')))
 			{
-				zbase()->json()->setVariable('_redirect', $this->getLoginRedirectPath(zbase_auth_user()));
+				$redirect = zbase_request_input('redirect', zbase_session_get('__loginRedirect', $this->getLoginRedirectPath(zbase_auth_user())));
+				zbase()->json()->setVariable('_redirect', $redirect);
 				zbase()->json()->setVariable('login_success', 1);
 				if(zbase_is_back())
 				{
@@ -301,7 +305,6 @@ use AuthenticatesAndRegistersUsers,
 						return $this->handleUserWasAuthenticated($request, $throttles);
 					}
 				}
-				$redirect = zbase_request_input('redirect', null);
 				if(!empty($redirect))
 				{
 					$this->redirectTo = $redirect;
@@ -342,6 +345,80 @@ use AuthenticatesAndRegistersUsers,
 		$user->log('user::authenticated');
 		$user->authenticated();
 		return redirect()->intended($this->getLoginRedirectPath($user));
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="EmailVerification">
+	/**
+	 * routename: email-verify, expect: email and token
+	 * Verify Email Address
+	 */
+	public function emailVerify()
+	{
+		$email = $this->getRouteParameter('email', false);
+		$token = $this->getRouteParameter('token', false);
+		if(!empty($email) && !empty($token))
+		{
+			$user = zbase_user_by('email', $email);
+			if($user instanceof \Zbase\Entity\Laravel\User\User)
+			{
+				if(zbase_auth_has())
+				{
+					$verified = $user->verifyEmailAddress($token);
+					if(empty($verified))
+					{
+						zbase_alert('error', 'There was an error verifying your email address. Kindly try again.');
+					}
+					return redirect()->to(zbase_url_from_route('home'));
+				}
+				else
+				{
+					zbase_session_set('__loginRedirect', zbase_url_from_current());
+					return redirect()->to(zbase_url_from_route('login'));
+				}
+			}
+		}
+		return $this->notfound();
+	}
+
+	/**
+	 * Update email Address Request
+	 * Process the link that was sent into the email when
+	 * a user wanted to update his email address to a new email address
+	 *
+	 * routename: update-email-request, expect: email and token
+	 * @return
+	 */
+	public function emailUpdateRequestVerify()
+	{
+		$email = $this->getRouteParameter('email', false);
+		$token = $this->getRouteParameter('token', false);
+		if(!empty($email) && !empty($token))
+		{
+			$user = zbase_user_by('email', $email);
+			if($user instanceof \Zbase\Entity\Laravel\User\User)
+			{
+				if(zbase_auth_has())
+				{
+					$updated = $user->checkEmailRequestUpdate($token);
+					if(!empty($updated))
+					{
+						zbase_session_set('update-email-address', true);
+						return redirect()->to(zbase_url_from_route('home'));
+					}
+					else
+					{
+						zbase_alert('error', 'There was an error updating your email address. Kindly try again.');
+					}
+				}
+				else
+				{
+					zbase_session_set('__loginRedirect', zbase_url_from_current());
+					return redirect()->to(zbase_url_from_route('login'));
+				}
+			}
+		}
+		return $this->notfound();
 	}
 
 	// </editor-fold>

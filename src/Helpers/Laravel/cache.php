@@ -188,7 +188,7 @@ function zbase_cache_remove($key, array $tags = null, $options = [])
 {
 	if(!empty($options['driver']))
 	{
-		zbase_cache_driver($options['driver'])->forget($key);
+		return zbase_cache_driver($options['driver'])->forget($key);
 	}
 	if(!zbase_cache_enable())
 	{

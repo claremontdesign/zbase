@@ -19,7 +19,8 @@ use Zbase\Traits;
 class Column extends Data implements Interfaces\IdInterface
 {
 
-	use Traits\Id;
+	use Traits\Id,
+	 Traits\Html;
 
 	/**
 	 * The Row
@@ -99,7 +100,7 @@ class Column extends Data implements Interfaces\IdInterface
 		if(!empty($tag))
 		{
 			$str = [];
-			$str[] = '<' . $tag . '>';
+			$str[] = '<' . $tag . ' ' . $this->renderTagAttribute('td'). '>';
 			if(!empty($this->_templateMode))
 			{
 				$str[] = '__' . $this->id() . '__';

@@ -33,17 +33,6 @@ return [
 		 * Form on each tab
 		 */
 		'form_tab' => false,
-//		'submit' => [
-//			'button' => [
-//				'html' => [
-//					'attributes' => [
-//						'angular' => [
-//							'ng-controller' => 'adminAccountMainController',
-//						]
-//					],
-//				],
-//			]
-//		],
 		/**
 		 * Model configuration
 		 * The Current Data to manipulate
@@ -67,28 +56,15 @@ return [
 		 * controller.post.actionName.entity.method = The method to call on the entity
 		 * widget()->controller(actionName);
 		 */
-		'controller' => [
-			'post' => [
-				'index' => [
-					'entity' => [
-						'method' => 'updateAccount'
-					],
-				],
+		'event' => [
+			'index' => [
+				'post' => [
+					'redirect' => [
+						'enable' => false
+					]
+				]
 			],
 		],
-//		'event' => [
-//			'front' => [
-//				'index' => [
-//					'post' => [
-//						'post' => [
-//							'route' => [
-//								'name' => 'account',
-//							]
-//						]
-//					],
-//				],
-//			],
-//		],
 		'tabs' => [
 			'account' => [
 				'type' => 'tab',
@@ -96,6 +72,20 @@ return [
 				'id' => 'profile',
 				'group' => 'accountTab',
 				'enable' => true,
+				'formConfiguration' => [
+					'form' => [
+						'startTag' => [
+							'action' => zbase_url_from_current(),
+							'html' => [
+								'attributes' => [
+									'class' => [
+										'zbase-ajax-form'
+									]
+								]
+							]
+						]
+					],
+				],
 				'elements' => [
 					'first_name' => [
 						'type' => 'text',
@@ -127,12 +117,26 @@ return [
 					],
 				],
 			],
-			'email' => [
+			'username' => [
 				'type' => 'tab',
-				'label' => 'Email Address',
-				'id' => 'email',
+				'label' => 'Username',
+				'id' => 'username',
 				'group' => 'accountTab',
 				'enable' => true,
+				'formConfiguration' => [
+					'form' => [
+						'startTag' => [
+							'action' => zbase_url_from_current(),
+							'html' => [
+								'attributes' => [
+									'class' => [
+										'zbase-ajax-form'
+									]
+								]
+							]
+						]
+					],
+				],
 				'elements' => [
 					'username' => [
 						'type' => 'text',
@@ -159,15 +163,61 @@ return [
 								},
 								'message' => 'Username already exists.'
 							],
+							'regex' => [
+								'enable' => true,
+								'text' => function(){
+									return 'regex:/^[a-z][a-z0-9]{5,31}$/';
+								},
+								'message' => 'Invalid username.'
+							],
+							'min' => [
+								'enable' => true,
+								'text' => function(){
+									return 'min:5';
+								},
+								'message' => 'Username should be of 5 up to 32 characters.'
+							],
+							'max' => [
+								'enable' => true,
+								'text' => function(){
+									return 'max:32';
+								},
+								'message' => 'Username should be of 5 up to 32 characters.'
+							],
 							'not_in' => [
 								'enable' => true,
 								'text' => function(){
-									return 'not_in:' . zbase_auth_user()->username;
+									$notAllowedUsernames = require zbase_path_library('notallowedusernames.php');
+									$notAllowedUsernames[] = zbase_auth_user()->username();
+									return 'not_in:' . implode(',', $notAllowedUsernames);
 								},
 								'message' => 'Please provide a different username.'
 							],
 						],
 					],
+				],
+			],
+			'email' => [
+				'type' => 'tab',
+				'label' => 'Email Address',
+				'id' => 'email',
+				'group' => 'accountTab',
+				'enable' => true,
+				'formConfiguration' => [
+					'form' => [
+						'startTag' => [
+							'action' => zbase_url_from_current(),
+							'html' => [
+								'attributes' => [
+									'class' => [
+										'zbase-ajax-form'
+									]
+								]
+							]
+						]
+					],
+				],
+				'elements' => [
 					'email' => [
 						'type' => 'email',
 						'id' => 'email',
@@ -177,6 +227,13 @@ return [
 						],
 						'angular' => [
 							'ngModel' => 'currentUser.email',
+						],
+						'html' => [
+							'attributes' => [
+								'input' => [
+									'autocomplete' => 'off'
+								]
+							],
 						],
 						'validations' => [
 							'required' => [
@@ -199,66 +256,75 @@ return [
 							],
 						],
 					],
-//					'account_password' => [
-//						'prefix' => 'email_',
-//						'widget' => 'accountConfirm',
-//					],
 				],
 			],
 			'password' => [
 				'type' => 'tab',
-				'label' => 'Password',
+				'label' => 'Update Password',
 				'id' => 'password',
 				'group' => 'accountTab',
 				'enable' => true,
+				'formConfiguration' => [
+					'form' => [
+						'startTag' => [
+							'action' => zbase_url_from_current(),
+							'html' => [
+								'attributes' => [
+									'class' => [
+										'zbase-ajax-form'
+									]
+								]
+							]
+						]
+					],
+				],
 				'elements' => [
+					'header' => [
+						'ui' => [
+							'type' => 'component.pageHeader',
+							'id' => 'header',
+							'text' => 'To update password, enter your current password.'
+						],
+					],
 					'password' => [
 						'type' => 'password',
 						'id' => 'password',
-						'label' => 'New Password',
-						'angular' => [
-							'ngModel' => 'currentUser.password',
-						],
+						'label' => null,
 						'validations' => [
 							'required' => [
 								'enable' => true,
-								'message' => 'A new password is required.'
+								'message' => 'Enter your account password.'
 							],
-							'min' => [
+							'accountPassword' => [
 								'enable' => true,
-								'text' => 'min:6',
-								'message' => 'Password too short.'
-							],
-							'passwordStrengthCheck' => [
-								'enable' => true,
-								'message' => 'Password is too weak.'
+								'message' => 'Account password don\'t match.'
 							],
 						],
 					],
-					'password_confirm' => [
-						'type' => 'password',
-						'id' => 'password_confirm',
-						'label' => 'Confirm New Password',
-						'angular' => [
-							'ngModel' => 'currentUser.passwordConfirm',
-						],
-						'validations' => [
-							'required' => [
-								'enable' => true,
-								'message' => 'Please verify new password.'
-							],
-							'required_with' => [
-								'enable' => true,
-								'text' => 'required_with:password',
-								'message' => 'Please verify new password.'
-							],
-							'same' => [
-								'enable' => true,
-								'text' => 'same:password',
-								'message' => 'New passwords are not the same.'
-							],
-						],
-					],
+//					'password_confirm' => [
+//						'type' => 'hidden',
+//						'id' => 'password_confirm',
+//						'label' => 'Confirm New Password',
+//						'angular' => [
+//							'ngModel' => 'currentUser.passwordConfirm',
+//						],
+//						'validations' => [
+//							'required' => [
+//								'enable' => false,
+//								'message' => 'Please verify new password.'
+//							],
+//							'required_with' => [
+//								'enable' => false,
+//								'text' => 'required_with:password',
+//								'message' => 'Please verify new password.'
+//							],
+//							'same' => [
+//								'enable' => false,
+//								'text' => 'same:password',
+//								'message' => 'New passwords are not the same.'
+//							],
+//						],
+//					],
 //					'account_password' => [
 //						'prefix' => 'password_',
 //						'widget' => 'accountConfirm',
@@ -278,46 +344,48 @@ return [
 								'html' => [
 									'attributes' => [
 										'ng-controller' => 'adminAccountMainController',
-										'flow-init' => function(){return '{headers:{\'X-CSRF-TOKEN\': \''.  zbase_csrf_token().'\'}, target: \''.  zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfileImage']) . '\'}'; },
-										'flow-files-submitted' => '$flow.upload();',
+										'flow-init' => function(){
+											return '{headers:{\'X-CSRF-TOKEN\': \'' . zbase_csrf_token() . '\'}, target: \'' . zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfileImage']) . '\'}';
+										},
+												'flow-files-submitted' => '$flow.upload();',
+											],
+										],
+									],
+								],
+								'submit' => [
+									'button' => [
+										'enable' => false,
 									],
 								],
 							],
 						],
-						'submit' => [
-							'button' => [
-								'enable' => false,
-							],
-						],
-					],
-				],
-				'elements' => [
-					'file' => [
-						'type' => 'file',
-						'id' => 'file',
-						'label' => 'Update Image',
-						'action' => function(){
-							return zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfileImage']);
-						},
-						'entity' => [
-							'property' => 'file',
-						],
-						'html' => [
-							'attributes' => [
-								'input' => [
-									'style' => 'width: 100px;'
-								],
-							],
-							'content' => [
-								'pre' => [
-									'enable' => true,
-									'view' => zbase_view_file_contents('node.files.files')
+						'elements' => [
+							'file' => [
+								'type' => 'file',
+								'id' => 'file',
+								'label' => 'Update Image',
+								'action' => function(){
+									return zbase_api_url(['module' => 'account', 'object' => 'user', 'method' => 'updateProfileImage']);
+								},
+										'entity' => [
+											'property' => 'file',
+										],
+										'html' => [
+											'attributes' => [
+												'input' => [
+													'style' => 'width: 100px;'
+												],
+											],
+											'content' => [
+												'pre' => [
+													'enable' => true,
+													'view' => zbase_view_file_contents('node.files.files')
+												]
+											],
+										],
+									],
 								]
 							],
 						],
 					],
-				]
-			],
-		],
-	],
-];
+				];

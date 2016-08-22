@@ -12,6 +12,7 @@ else
 	zbase_view_plugin_load('bootstrap');
 	zbase_view_plugin_load('zbase');
 	zbase_view_plugin_load('metronic-admin');
+	zbase_view_plugin_load('toastr');
 	?>
 	<!DOCTYPE html>
 	<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->

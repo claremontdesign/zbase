@@ -56,7 +56,7 @@ class RoleEntityTest extends TestCase
 	 */
 	public function testAccesses()
 	{
-		$user = zbase_entity('user')->repo()->by('username', 'admin')->first();
+		$user = zbase_entity('user')->repo()->by('username', 'adminx')->first();
 		$this->assertTrue($user->hasAccess('user'));
 		$this->assertTrue($user->hasAccess('only::admin'));
 		$this->assertFalse($user->hasAccess('only::user'));

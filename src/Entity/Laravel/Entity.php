@@ -120,7 +120,7 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 	public function byId($id)
 	{
 		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byId_' . $id);
-		return zbase_cache($cacheKey, function() use ($id){
+		return zbase_cache($cacheKey, function() use ($id, $cacheKey){
 			return $this->repo()->byId($id);
 		}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}

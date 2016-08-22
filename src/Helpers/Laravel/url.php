@@ -21,10 +21,18 @@
  */
 function zbase_url_from_route($name, $params = [], $relative = false)
 {
+	$routes = zbase_config_get('routes');
 	$prefix = '';
 	$name = str_replace('admin.', zbase_admin_key().'.', $name);
 	$name = str_replace('admin', zbase_admin_key(), $name);
 	$usernameRouteEnabled = zbase_route_username();
+	if(isset($routes[$name]['usernameroute']))
+	{
+		if($routes[$name]['usernameroute'] === false)
+		{
+			$usernameRouteEnabled = false;
+		}
+	}
 	if(!empty($usernameRouteEnabled))
 	{
 		$usernameRouteParameterName = zbase_route_username_prefix();

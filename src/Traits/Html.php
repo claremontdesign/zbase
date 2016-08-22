@@ -191,4 +191,20 @@ trait Html
 		$this->htmlConditions = $htmlConditions;
 	}
 
+	/**
+	 * Render the TAg Attiobute
+	 * @param string $tag HTML Tag
+	 *
+	 * @return string
+	 */
+	public function renderTagAttribute($tag)
+	{
+		$attributes = [];
+		if(method_exists($this, 'getAttributes'))
+		{
+			$attributes = $this->getAttributes();
+		}
+		return $this->renderHtmlAttributes(zbase_value_get($attributes, 'html.attributes.' . $tag, []));
+	}
+
 }

@@ -93,6 +93,20 @@ return [
 					]
 				]
 			],
+			'toastr' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('metronic/plugins/bootstrap-toastr/toastr.min.js'),
+				'enable' => true,
+				'dependents' => [
+					[
+						'id' => 'toastr-css',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/bootstrap-toastr/toastr.min.css'),
+						'enable' => true,
+						'position' => 94343,
+					],
+				]
+			],
 			// </editor-fold>
 			// <editor-fold defaultstate="collapsed" desc="Bootstrap">
 			'bootstrap' => [

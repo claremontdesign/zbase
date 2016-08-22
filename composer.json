@@ -3,10 +3,6 @@
 	"description": "The Zbase NoFramework.",
 	"keywords": ["framework", "laravel", "zbase", "dennesabing"],
 	"license": "MIT",
-	"repositories": [{
-			"type": "composer",
-			"url": "http://claremontdesign.com/repo/"
-		}],
 	"type": "project",
 	"require": {
 		"php": ">=5.5.9",

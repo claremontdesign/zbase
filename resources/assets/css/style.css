@@ -75,3 +75,8 @@
 .zbase-widget-wrapper-datatable table > tbody tr:hover{
 	background: #DFF0D8;
 }
+.form-group.has-error select,
+.form-group.has-error textarea,
+.form-group.has-error input{
+	border-color:maroon !important;
+}

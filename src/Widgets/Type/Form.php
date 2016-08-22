@@ -368,7 +368,8 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				$url = $toUrl;
 			}
 		}
-		if(!empty($url))
+		$enableRedirect = $this->_v('event.' . zbase_section() . '.' . $action . '.post.redirect.enable', $this->_v('event.' . $action . '.post.redirect.enable', true));
+		if(!empty($url) && !empty($enableRedirect))
 		{
 			return zbase_redirect()->to($url);
 		}

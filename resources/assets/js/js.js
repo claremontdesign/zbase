@@ -339,6 +339,16 @@ function zbase_event_checkbox(selector, event, cb)
  * @returns {undefined}
  */
 function zbase_toast(type, msg, position) {
+	if (jQuery('.page-content-inner').length > 0)
+	{
+		zbase_alert(type, msg, jQuery('.page-content-inner'), {manipulation: 'prepend'});
+		return;
+	}
+	if (jQuery('.alert-content-wrapper').length > 0)
+	{
+		zbase_alert(type, msg, jQuery('.alert-content-wrapper'), {manipulation: 'prepend'});
+		return;
+	}
 	if (typeof toastr != 'undefined')
 	{
 		if (type == 'error')
@@ -349,10 +359,17 @@ function zbase_toast(type, msg, position) {
 		{
 			toastr.warning(msg);
 		}
+		if (type == 'info')
+		{
+			toastr.info(msg);
+		}
+		if (type == 'success')
+		{
+			toastr.success(msg);
+		}
 	} else
 	{
-			zbase_alert(type, msg);
-		}
+		zbase_alert(type, msg, jQuery('.page-content-inner'), {manipulation: 'prepend'});
 	}
 }
 
@@ -373,12 +390,24 @@ function zbase_alert(type, msg, selector, opt)
 	}
 	var div = jQuery('<div>').addClass('alert alert-' + type).html(msg);
 	var manipulation = opt !== undefined && opt.manipulation !== undefined ? opt.manipulation : undefined;
-	if (selector.length > 0)
+	if (selector !== undefined)
 	{
-		selector.find('.alert').remove();
+		if (selector.length > 0)
+		{
+			selector.find('.alert').remove();
+		}
+		zbase_dom_insert_html(div, selector, manipulation);
 	}
-	zbase_dom_insert_html(div, selector, manipulation);
 	return div;
+}
+
+/**
+ * Remove all alerts
+ * @returns {undefined}
+ */
+function zbase_alerts_remove()
+{
+	jQuery('.alert').remove();
 }
 
 /**
@@ -579,24 +608,34 @@ function zbase_ajax_get(url, data, successCb, opt)
 		data: data,
 		beforeSend: function ()
 		{
-			if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+			if (typeof App != "undefined")
 			{
-				App.blockUI({
-					target: opt.loaderTarget
-				});
-			} else {
-				App.blockUI({
-					target: jQuery('.page-content-inner')
-				});
+				if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+				{
+					App.blockUI({
+						target: opt.loaderTarget,
+						cenrerY: true,
+						boxed: true
+					});
+				} else {
+					App.blockUI({
+						target: jQuery('.page-content-inner'),
+						cenrerY: true,
+						boxed: true
+					});
+				}
 			}
 		},
 		complete: function ()
 		{
-			if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+			if (typeof App != "undefined")
 			{
-				App.unblockUI(opt.loaderTarget);
-			} else {
-				App.unblockUI(jQuery('.page-content-inner'));
+				if (opt.loaderTarget !== undefined && jQuery(opt.loaderTarget).length > 0)
+				{
+					App.unblockUI(opt.loaderTarget);
+				} else {
+					App.unblockUI(jQuery('.page-content-inner'));
+				}
 			}
 		},
 		success: successCb
@@ -729,6 +768,7 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 				zbase_alert_form_element(idx, cContent);
 			});
 		});
+		return;
 	}
 	if (responseJSON.success !== undefined)
 	{
@@ -741,6 +781,55 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	if (responseJSON.warning !== undefined)
 	{
 		zbase_alert('warning', responseJSON.warning, jQuery('.page-content-inner'), {manipulation: 'prepend'});
+	}
+	if (responseJSON._alerts !== undefined)
+	{
+		if (responseJSON._alerts)
+		{
+			jQuery.each(responseJSON._alerts.errors, function (i, m) {
+				zbase_toast('error', m);
+			});
+			jQuery.each(responseJSON._alerts.info, function (i, m) {
+				zbase_toast('info', m);
+			});
+			jQuery.each(responseJSON._alerts.messages, function (i, m) {
+				zbase_toast('success', m);
+			});
+			jQuery.each(responseJSON._alerts.warning, function (i, m) {
+				zbase_toast('warning', m);
+			});
+		}
+	}
+	if (responseJSON.errors !== undefined)
+	{
+		jQuery.each(responseJSON.errors, function (i, m) {
+			zbase_alert_form_element(i, m);
+		});
+		return;
+	}
+	if (responseJSON._html_selector_replace !== undefined)
+	{
+		jQuery.each(responseJSON._html_selector_replace, function (selector, content) {
+			jQuery(selector).html(content);
+		});
+	}
+	if (responseJSON._html_selector_append !== undefined)
+	{
+		jQuery.each(responseJSON._html_selector_append, function (selector, content) {
+			jQuery(selector).append(content);
+		});
+	}
+	if (responseJSON._html_selector_prepend !== undefined)
+	{
+		jQuery.each(responseJSON._html_selector_prepend, function (selector, content) {
+			jQuery(selector).prepend(content);
+		});
+	}
+	if (responseJSON._html_selector_remove !== undefined)
+	{
+		jQuery.each(responseJSON._html_selector_remove, function (i, selector) {
+			jQuery(selector).remove();
+		});
 	}
 	if (responseJSON._package !== undefined && responseJSON._route !== undefined)
 	{
@@ -780,11 +869,17 @@ jQuery(document).ajaxSend(function (event, request, settings) {
 	} else {
 		zbase_ajax_preloader();
 	}
+	zbase_alerts_remove();
 });
 jQuery(document).ajaxStart(function () {
+
 });
 jQuery(document).ajaxStop(function () {
 	zbase_ajax_preloader_hide();
+	if (typeof App != "undefined")
+	{
+		App.unblockUI(jQuery('.page-content-inner'));
+	}
 });
 jQuery(document).ajaxSuccess(function (event, request, settings) {
 });
@@ -794,7 +889,50 @@ var Zbase = function () {
 	_this = this;
 	_this.prefix = 'zbase';
 
+	var initIntervalUpdates = function () {
+		if (jQuery('.zbase-ajax-interval').length > 0)
+		{
+			jQuery('.zbase-ajax-interval').each(function (i, e) {
+				var ele = jQuery(ele);
+				var url = ele.attr('data-url');
+				var time = ele.attr('data-mstime');
+				var func = ele.attr('data-funcname');
+				if (time === undefined)
+				{
+					time = 60000 * 5;
+				}
+				if (url !== undefined)
+				{
+					var method = ele.attr('data-method');
+					if (method == 'post')
+					{
+						window.setInterval(zbase_ajax_post(url, {}, null, {}), time);
+					} else {
+						window.setInterval(zbase_ajax_get(url, {}, function () {}, {}), time);
+					}
+				}
+				if (func !== undefined)
+				{
+					window.setInterval(func, time);
+				}
+			});
+		}
+	}
 	var initFormControls = function () {}
+	var initAjaxForm = function () {
+		if (jQuery('.zbase-ajax-form').length > 0)
+		{
+			jQuery('.zbase-ajax-form').submit(function (e) {
+				e.preventDefault();
+				var ele = jQuery(this);
+				var url = ele.attr('action');
+				if (!empty(url))
+				{
+					zbase_ajax_post(url, ele.serialize(), null, {});
+				}
+			});
+		}
+	}
 
 	/**
 	 * Confirmation buttons
@@ -889,6 +1027,20 @@ var Zbase = function () {
 				zbase_ajax(zbase_get_element_config(jQuery(this)));
 			});
 		}
+		if (jQuery('.zbase-ajax-anchor').length > 0)
+		{
+			jQuery('.zbase-ajax-anchor').click(function (e) {
+				e.preventDefault();
+				zbase_ajax_get(jQuery(this).attr('href'), {}, function () {}, {});
+			});
+		}
+		if (jQuery('.zbase-ajax-update-main-content').length > 0)
+		{
+			jQuery('.zbase-ajax-update-main-content').click(function (e) {
+				e.preventDefault();
+				zbase_ajax_get(jQuery(this).attr('href'), {maincontent: 1}, function () {}, {});
+			});
+		}
 	};
 
 	/**
@@ -947,9 +1099,11 @@ var Zbase = function () {
 	};
 	return {
 		init: function () {
+			initIntervalUpdates();
 			jQuery('.equalHeight').equalHeights();
 			initTabs();
 			initFormControls();
+			initAjaxForm();
 			initBtnActionConfirm();
 			initContentFromUrl();
 			initAjaxFromUrls();

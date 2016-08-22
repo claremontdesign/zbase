@@ -509,14 +509,29 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function log($task, $msg = null, $options = null)
 	{
-		$data = [
-			'remarks' => !empty($msg) ? $msg : null,
-			'task' => $task,
-			'ip_address' => zbase_ip(),
-			'user_id' => $this->id(),
-			'type' => 1,
-		];
-		zbase_entity('user_logs')->fill($data)->save();
+		try
+		{
+			if(!empty($msg) || !empty($task))
+			{
+				zbase_db_transaction_start();
+				$data = [
+					'remarks' => !empty($msg) ? $msg : null,
+					'task' => $task,
+					'ip_address' => zbase_ip(),
+					'user_id' => $this->id(),
+					'type' => 1,
+					'created_at' => zbase_date_now(),
+					'updated_at' => zbase_date_now(),
+					'options' => json_encode($options)
+				];
+				zbase_entity('user_logs')->insert($data);
+				zbase_db_transaction_commit();
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_db_transaction_rollback();
+			zbase_exception_throw($e);
+		}
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="Notifications">
@@ -990,15 +1005,26 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				 */
 				if(!empty($data['username']))
 				{
-					$this->updateUsername($data['username']);
+					if($this->username() != $data['username'])
+					{
+						$this->updateUsername($data['username']);
+						return true;
+					}
+					return false;
 				}
 				if(!empty($data['email']))
 				{
-					$this->updateRequestEmailAddress($data['email']);
+					if($this->email() != $data['email'])
+					{
+						$this->updateRequestEmailAddress($data['email']);
+						return true;
+					}
+					return false;
 				}
-				if(!empty($data['password']) && !empty($data['password_confirm']))
+				if(!empty($data['password']) && !empty($data['password']))
 				{
-					$this->updateRequestPassword($data['password_confirm']);
+					$this->updateRequestPassword();
+					return true;
 				}
 				$this->updateProfile($data);
 				return true;
@@ -1073,26 +1099,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		$this->log('user::lostPassword');
 		zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
-//		$code = zbase_generate_code();
-//		zbase_entity('user_tokens')->fill(['token' => $code, 'email' => $this->email(), 'user_id' => $this->id()]);
-//
-//
-//		$response = \Password::sendResetLink(['email' => $this->email], function (\Illuminate\Mail\Message $message) {
-//					$message->sender(zbase_config_get('email.noreply.email'), zbase_config_get('email.noreply.name'));
-//					$message->subject('Your Password Reset Link');
-//		});
-//
-//		$code = zbase_generate_code();
-//		zbase_messenger_email($this->email(), 'account-noreply', _zt('Your Password Reset Link'), zbase_view_file_contents('auth.password.email.password'), ['entity' => $this, 'token' => $code]);
-//
-//		$this->log('user::lostPassword');
-//		switch ($response)
-//		{
-//			case \Password::RESET_LINK_SENT:
-//				zbase_alert(\Zbase\Zbase::ALERT_INFO, 'A link to reset your password was sent to your email address. Kindly check.');
-//				return true;
-//		}
-//		return false;
+		if(zbase_is_dev())
+		{
+			$code = \DB::table('user_tokens')->where('email', $this->email())->first();
+			if(!empty($code))
+			{
+				$url = zbase_url_from_route('password-reset', ['token' => $code->token]);
+				zbase()->json()->setVariable('password_reset_url', $url);
+			}
+		}
 	}
 
 	// </editor-fold>
@@ -1104,26 +1119,14 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function updatePassword($password, $account = false)
 	{
-		zbase_db_transaction_start();
 		try
 		{
-			$oldPasswords = $this->getDataOption('password_old', []);
-			$oldPasswords[] = [
-				'old' => $this->password,
-				'date' => zbase_date_now(),
-				'ip' => zbase_ip()
-			];
-			$this->unsetDataOption('password_update_code');
-			$this->unsetDataOption('password_new');
-			$this->setDataOption('password_old', $oldPasswords);
+			zbase_db_transaction_start();
 			$this->password = zbase_bcrypt($password);
 			$this->password_updated_at = zbase_date_now();
 			$this->save();
-			if(!empty($account))
-			{
-				zbase_alert('info', _zt('Password successfully updated.'));
-			}
-			$this->log('user::updatePassword');
+			zbase_alert('info', _zt('Password successfully updated.'));
+			$this->log('user::updatePassword', null, ['password' => $this->password]);
 			zbase_db_transaction_commit();
 			return true;
 		} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -1137,24 +1140,11 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 * Check that the password was not used from the past
 	 * @param string $password The RAW password
 	 * @return boolena True was not used; false already used before
+	 *
+	 * @TODO Check from the logs
 	 */
 	public function checkNewPassword($password)
 	{
-		if(zbase_bcrypt_check($password, $this->password))
-		{
-			return false;
-		}
-		$oldPasswords = $this->getDataOption('password_old', []);
-		if(!empty($oldPasswords))
-		{
-			foreach ($oldPasswords as $o)
-			{
-				if(zbase_bcrypt_check($password, $o['old']))
-				{
-					return false;
-				}
-			}
-		}
 		return true;
 	}
 
@@ -1164,19 +1154,24 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 * @param string $newPassword The new RAW password
 	 * @return boolean
 	 */
-	public function updateRequestPassword($newPassword)
+	public function updateRequestPassword()
 	{
 		zbase_db_transaction_start();
 		try
 		{
-			$code = zbase_generate_code();
-			$updateCodes = $this->getDataOption('password_update_code', []);
-			$updateCodes[] = $code;
-			$this->setDataOption('password_update_code', $updateCodes);
-			$this->setDataOption('password_new', zbase_bcrypt($newPassword));
+			$code = zbase_generate_code(64);
+			\DB::table('user_tokens')->insert(['email' => $this->email(), 'token' => $code, 'created_at' => zbase_date_now(), 'user_id' => $this->id()]);
 			$this->save();
-			zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your password.', ['%email%' => $this->email()]));
-			zbase_messenger_email($this->email(), 'account-noreply', _zt('New Password update request'), zbase_view_file_contents('email.account.newPasswordRequest'), ['entity' => $this, 'code' => $code]);
+			$url = zbase_url_from_route('password-reset', ['token' => $code]);
+			$urlText = null;
+			if(zbase_is_dev())
+			{
+				$urlText = '<a href="' . $url . '">' . $url . '</a>';
+				zbase()->json()->setVariable('updateRequestPassword', $url);
+			}
+			zbase_alert('info', _zt('We sent an email to <strong>%email%</strong> with a link to complete the process of updating your password. ' . $urlText, ['%email%' => $this->email()]));
+			zbase_messenger_email($this->email(), 'account-noreply', _zt('New Password update request'), zbase_view_file_contents('email.account.newPasswordRequest'), ['entity' => $this, 'code' => $code, 'url' => $url]);
+			$this->log('user::updateRequestPassword', null, ['email' => $this->email()]);
 			zbase_db_transaction_commit();
 			return true;
 		} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -1232,7 +1227,6 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="UPDATE Email Address">
-
 	public function resendEmailVerificationCode()
 	{
 		if($this->emailVerificationEnabled())
@@ -1240,8 +1234,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$code = zbase_generate_code();
 			$this->setDataOption('email_verification_code', $code);
 			$this->save();
-			zbase_alert('info', _zt('We sent an email to %email% to verify your new email address.', ['%email%' => $this->email()]));
+			$msg = _zt('We sent an email to %email% to verify your new email address.', ['%email%' => $this->email()]);
 			zbase_messenger_email($this->email(), 'account-noreply', _zt('Email address verification code'), zbase_view_file_contents('email.account.newEmailAddressVerification'), ['entity' => $this, 'code' => $code, 'newEmailAddress' => $this->email()]);
+			if(zbase_is_dev())
+			{
+				$url = zbase_url_from_route('email-verify', ['email' => $this->email(), 'code' => $code]);
+				$msg .= ' <a href="' . $url . '">' . $url . '</a>';
+			}
+			zbase_alert('info', $msg);
+			$this->log('user::resendEmailVerificationCode', null, ['email' => $this->email()]);
+			$this->clearEntityCacheById();
+			$this->clearEntityCacheByTableColumns();
 			return true;
 		}
 		return false;
@@ -1269,9 +1272,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				$this->setDataOption('email_new', $newEmailAddress);
 				$this->setDataOption('email_new_request_date', zbase_date_now());
 				$this->save();
-				zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.', ['%email%' => $this->email()]));
-				zbase_messenger_email($this->email(), 'account-noreply', _zt('New Email address update request'), zbase_view_file_contents('email.account.newEmailAddressRequest'), ['entity' => $this, 'newEmailAddress' => $newEmailAddress, 'code' => $code]);
-				$this->log('user::updateRequestEmailAddress');
+				$url = zbase_url_from_route('update-email-request', ['email' => $this->email(), 'token' => $code]);
+				$urlText = null;
+				if(zbase_is_dev())
+				{
+					$urlText = '<a href="' . $url . '">' . $url . '</a>';
+					zbase()->json()->setVariable('updateRequestEmailAddress', $url);
+				}
+				zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.' . $urlText, ['%email%' => $this->email()]));
+				zbase_messenger_email($this->email(), 'account-noreply', _zt('New Email address update request'), zbase_view_file_contents('email.account.newEmailAddressRequest'), ['entity' => $this, 'newEmailAddress' => $newEmailAddress, 'code' => $code, 'url' => $url]);
+				$this->log('user::updateRequestEmailAddress', null, ['new_email' => $newEmailAddress]);
 				zbase_db_transaction_commit();
 				return true;
 			} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -1320,6 +1330,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			zbase_db_transaction_start();
 			try
 			{
+				$oldEmail = $this->email();
 				$oldEmails = $this->getDataOption('email_old', []);
 				$oldEmails[] = [
 					'old' => $this->email(),
@@ -1327,7 +1338,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					'ip' => zbase_ip(),
 					'new' => $newEmail
 				];
-				$this->setDataOption('email_old', $oldEmails);
+				//$this->setDataOption('email_old', $oldEmails);
 				$emailVerificationEnabled = zbase_config_get('auth.emailverify.enable', true);
 				$this->email = $newEmail;
 				$this->email_verified = $emailVerificationEnabled ? 0 : 1;
@@ -1336,8 +1347,12 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				{
 					$code = zbase_generate_code();
 					$this->setDataOption('email_verification_code', $code);
-					zbase_alert('info', _zt('We sent an email to %email% to verify your new email address.', ['%email%' => $newEmail]));
+					zbase_alert('info', _zt('Successfully updated your email address. We sent an email to <strong>%email%</strong> to verify your new email address.', ['%email%' => $newEmail]));
 					zbase_messenger_email($this->email(), 'account-noreply', _zt('Email address verification code'), zbase_view_file_contents('email.account.newEmailAddressVerification'), ['entity' => $this, 'code' => $code, 'newEmailAddress' => $newEmail]);
+				}
+				else
+				{
+					zbase_alert('info', _zt('Successfully updated your email address to <strong>' . $newEmail . '</strong>', ['%email%' => $newEmail]));
 				}
 				/**
 				 * Remove options on updating email address
@@ -1345,7 +1360,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				$this->unsetDataOption('email_new');
 				$this->unsetDataOption('email_new_request_date');
 				$this->save();
-				$this->log('user::updateEmailAddress');
+				$this->log('user::updateEmailAddress', null, ['old_email' => $oldEmail]);
 				zbase_db_transaction_commit();
 				return true;
 			} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -1364,37 +1379,53 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function verifyEmailAddress($code)
 	{
-		$verificationCode = $this->getDataOption('email_verification_code', null);
-		if(!is_null($code) && $code == $verificationCode)
+		try
 		{
-			$oldEmails = $this->getDataOption('email_old');
-			if(is_array($oldEmails))
+			$verificationCode = $this->getDataOption('email_verification_code', null);
+			if(!is_null($code) && $code == $verificationCode)
 			{
-				$i = 0;
-				foreach ($oldEmails as $e)
+				$oldEmails = $this->getDataOption('email_old');
+				if(is_array($oldEmails))
 				{
-					if($e['new'] == $this->email())
+					$i = 0;
+					foreach ($oldEmails as $e)
 					{
-						$e['verify'] = zbase_date_now();
-						$e['verify_ip'] = zbase_ip();
-						$oldEmails[$i] = $e;
+						if($e['new'] == $this->email())
+						{
+							$e['verify'] = zbase_date_now();
+							$e['verify_ip'] = zbase_ip();
+							$oldEmails[$i] = $e;
+						}
+						$i++;
 					}
-					$i++;
 				}
+				if(!empty($oldEmails))
+				{
+					$this->setDataOption('email_old', $oldEmails);
+				}
+				$this->unsetDataOption('email_verification_code');
+				$this->email_verified = 1;
+				$this->email_verified_at = zbase_date_now();
+				$this->log('user::verifyEmailAddress');
+				$this->save();
+				zbase_alert('info', _zt('Your email address <strong>%email%<strong> is now verified.', ['%email%' => $this->email()]));
+				zbase_session_flash('user_verifyEmailAddress', true);
+				return true;
 			}
-			if(!empty($oldEmails))
-			{
-				$this->setDataOption('email_old', $oldEmails);
-			}
-			$this->unsetDataOption('email_verification_code');
-			$this->email_verified = 1;
-			$this->email_verified_at = zbase_date_now();
-			$this->log('user::verifyEmailAddress');
-			$this->save();
-			zbase_alert('info', _zt('Your email address is now verified.', ['%email%' => $this->email()]));
-			return true;
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_exception_throw($e);
 		}
 		return false;
+	}
+
+	/**
+	 * Check if email address is verified
+	 * @return boolean
+	 */
+	public function isEmailVerified()
+	{
+		return (bool) $this->email_verified;
 	}
 
 	// </editor-fold>

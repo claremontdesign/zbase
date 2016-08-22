@@ -91,11 +91,14 @@ class PasswordController extends Controller
 	 */
 	public function postReset(Request $request)
 	{
+		$messages = [
+			'email.exists' => 'Invalid token given.'
+		];
 		$this->validate($request, [
 			'token' => 'required',
-			'email' => 'required|email',
-			'password' => 'required|confirmed|min:6',
-		]);
+			'email' => 'required|email|exists:user_tokens,email,token,' . zbase_request_input('token', '_'),
+			'password' => 'required|confirmed|min:6|same:password_confirmation',
+		], $messages);
 
 		$credentials = $request->only(
 				'email', 'password', 'password_confirmation', 'token'

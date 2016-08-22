@@ -25,7 +25,7 @@ class EntityTest extends TestCase
 		$entity->fill($data)->save();
 		$this->assertFalse(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
 		$data = [
-			'username' => 'sudo'
+			'username' => 'sudox'
 		];
 		$entity->fill($data)->save();
 		$this->assertFalse(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
@@ -38,7 +38,7 @@ class EntityTest extends TestCase
 	{
 		$entityName = 'user';
 		$attribute = 'username';
-		$value = 'admin';
+		$value = 'adminx';
 		$cacheKey = zbase_cache_key(zbase_entity($entityName), 'by_' . $attribute . '_' . $value);
 		$this->assertFalse(zbase_cache_has($cacheKey, [zbase_entity($entityName)->getTable()], ['driver' => 'file']));
 		$entity = zbase_entity($entityName)->by($attribute, $value);
@@ -90,7 +90,7 @@ class EntityTest extends TestCase
 	 */
 	public function testRepositoryById()
 	{
-		$user = zbase_entity('user')->repository()->by('username', 'admin')->first();
+		$user = zbase_entity('user')->repository()->by('username', 'adminx')->first();
 		$user->email = 'admin@zbase.com';
 		$user->unsetAllOptions();
 		$user->save();

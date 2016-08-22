@@ -154,6 +154,21 @@ return [
 			],
 			'enable' => true
 		],
+		'password-reset' => [
+			'controller' => [
+				'name' => 'password',
+				'method' => 'reset',
+				'enable' => true
+			],
+			'form' => [
+				'enable' => true
+			],
+			'url' => '/password/reset/{token?}',
+			'middleware' => [
+				'guestOnly' => true,
+			],
+			'enable' => true
+		],
 		'phpinfo' => [
 			'command' => function(){
 				return phpinfo();
