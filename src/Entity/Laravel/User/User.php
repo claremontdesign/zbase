@@ -1024,8 +1024,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				}
 				if(!empty($data['password']) && !empty($data['password']))
 				{
-					$this->updateRequestPassword();
-					return true;
+					if(zbase_bcrypt_check($data['password'], $this->password))
+					{
+						$this->updateRequestPassword();
+						return true;
+					}
+					else
+					{
+						return false;
+					}
 				}
 				$this->updateProfile($data);
 				return true;

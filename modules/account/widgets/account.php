@@ -72,6 +72,7 @@ return [
 				'id' => 'profile',
 				'group' => 'accountTab',
 				'enable' => true,
+				'position' => 100,
 				'formConfiguration' => [
 					'form' => [
 						'startTag' => [
@@ -301,34 +302,6 @@ return [
 							],
 						],
 					],
-//					'password_confirm' => [
-//						'type' => 'hidden',
-//						'id' => 'password_confirm',
-//						'label' => 'Confirm New Password',
-//						'angular' => [
-//							'ngModel' => 'currentUser.passwordConfirm',
-//						],
-//						'validations' => [
-//							'required' => [
-//								'enable' => false,
-//								'message' => 'Please verify new password.'
-//							],
-//							'required_with' => [
-//								'enable' => false,
-//								'text' => 'required_with:password',
-//								'message' => 'Please verify new password.'
-//							],
-//							'same' => [
-//								'enable' => false,
-//								'text' => 'same:password',
-//								'message' => 'New passwords are not the same.'
-//							],
-//						],
-//					],
-//					'account_password' => [
-//						'prefix' => 'password_',
-//						'widget' => 'accountConfirm',
-//					],
 				],
 			],
 			'images' => [
@@ -337,6 +310,7 @@ return [
 				'id' => 'images',
 				'group' => 'accountTab',
 				'enable' => true,
+				'position' => 90,
 				'formConfiguration' => [
 					'angular' => [
 						'form' => [

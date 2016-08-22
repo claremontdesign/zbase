@@ -1,12 +1,20 @@
 <?php
 
-$laravelRoot = __DIR__ . '/../';
-$zbasePackage = $laravelRoot . 'packages/dennesabing/zbase/';
-if(file_exists($laravelRoot . 'storage/maintenance'))
+if(!empty($pathToLaravel))
 {
-	if(file_exists($laravelRoot . 'storage/maintenance_schedule'))
+	$zbasePackage = $pathToLaravel . '/vendor/claremontdesign/zbase';
+}
+else
+{
+	$pathToLaravel = __DIR__ . '/..';
+	$zbasePackage = $pathToLaravel . '/packages/dennesabing/zbase';
+}
+
+if(file_exists($pathToLaravel . '/storage/maintenance'))
+{
+	if(file_exists($pathToLaravel . '/storage/maintenance_schedule'))
 	{
-		$details = json_decode(file_get_contents($laravelRoot . 'storage/maintenance_schedule'), true);
+		$details = json_decode(file_get_contents($pathToLaravel . '/storage/maintenance_schedule'), true);
 		if(!empty($details['maintenance-ips']))
 		{
 			$ips = explode("\n", $details['maintenance-ips']);
@@ -24,7 +32,7 @@ if(file_exists($laravelRoot . 'storage/maintenance'))
 	{
 		if(!file_exists(__DIR__ . '/maintenance.html'))
 		{
-			copy($zbasePackage . 'resources/views/contents/maintenance/maintenance.html', __DIR__ . '/maintenance.html');
+			copy($zbasePackage . '/resources/views/contents/maintenance/maintenance.html', __DIR__ . '/maintenance.html');
 		}
 		header('HTTP/1.1 503 Service Temporarily Unavailable');
 		header('Status: 503 Service Temporarily Unavailable');

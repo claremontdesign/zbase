@@ -125,7 +125,7 @@ return [
 			'enable' => true,
 			'class' => \Zbase\Entity\Laravel\User\Api::class,
 			'method' => 'updateProfileImage',
-			'requestMethod' => ['get','post'],
+			'requestMethod' => ['get', 'post'],
 			'notParams' => ['userId'],
 			'params' => [],
 		],
@@ -246,6 +246,20 @@ return [
 		],
 	// </editor-fold>
 	],
+	'navigation' => [
+		'back' => [
+			'enable' => true,
+			'nav' => [
+				'order' => 1,
+				'route' => [
+					'name' => 'admin.account'
+				],
+				'icon' => 'fa fa-user',
+				'label' => 'Account',
+				'title' => 'Account Settings'
+			]
+		],
+	],
 	'routes' => [],
 	'angular' => [
 		'mobile' => [
@@ -253,88 +267,88 @@ return [
 				'routeProvider' => [
 					[
 						'url' => function(){
-								return zbase_angular_route('admin.account', [], true);
+							return zbase_angular_route('admin.account', [], true);
 							},
-						'templateUrl' => function(){
-								return zbase_angular_template_url('account', [], true);
+								'templateUrl' => function(){
+							return zbase_angular_template_url('account', [], true);
 							},
-						'controller' => 'adminAccountMainController'
-					],
-					[
-						'url' => function(){
-								return zbase_angular_route('admin.logout', [], true);
+								'controller' => 'adminAccountMainController'
+							],
+							[
+								'url' => function(){
+									return zbase_angular_route('admin.logout', [], true);
 							},
-						'controller' => 'adminAccountMainController'
-					],
-					[
-						'auth' => false,
-						'url' => '/',
-						'templateUrl' => function(){
-								return zbase_angular_template_url('admin.login', [], true);
+										'controller' => 'adminAccountMainController'
+									],
+									[
+										'auth' => false,
+										'url' => '/',
+										'templateUrl' => function(){
+											return zbase_angular_template_url('admin.login', [], true);
 							},
-						'controller' => 'adminAuthController'
-					],
-				],
-				'controllers' => [
-					[
-						'controller' => 'mainController',
-						'view' => [
-							'file' => function(){
-								return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.mainController'));
+												'controller' => 'adminAuthController'
+											],
+										],
+										'controllers' => [
+											[
+												'controller' => 'mainController',
+												'view' => [
+													'file' => function(){
+														return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.mainController'));
 							}
-						],
-					],
-					[
-						'controller' => 'adminAccountMainController',
-						'view' => [
-							'file' => function(){
-								return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.adminAccountMainController'));
+												],
+											],
+											[
+												'controller' => 'adminAccountMainController',
+												'view' => [
+													'file' => function(){
+														return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.adminAccountMainController'));
 							}
-						],
-					],
-					[
-						'auth' => false,
-						'controller' => 'adminAuthController',
-						'view' => [
-							'file' => function(){
-								return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.adminAuthController'));
+												],
+											],
+											[
+												'auth' => false,
+												'controller' => 'adminAuthController',
+												'view' => [
+													'file' => function(){
+														return zbase_view_render(zbase_view_file_module('account.views.angular.back.mobile.controllers.adminAuthController'));
 							}
-						],
-					],
-				],
-			]
-		]
-	],
-	'controller' => [
-		'back' => [
-			'action' => [
-				'index' => [
-					'page' => [
-						'title' => 'Account Information',
-						'headTitle' => 'Account',
-						'subTitle' => 'Manage account and login information',
-						'breadcrumbs' => [
-							['label' => 'Account', 'link' => '#'],
-						],
-					],
-				],
-			]
-		],
-		'front' => [
-			'action' => [
-				'index' => [
-					'page' => [
-						'title' => 'Account Information',
-						'headTitle' => 'Account',
-						'subTitle' => 'Manage account and login information',
-						'breadcrumbs' => [
-							['label' => 'Account', 'link' => '#'],
-						],
-					],
-				],
-			]
-		],
-	],
+												],
+											],
+										],
+									]
+								]
+							],
+							'controller' => [
+								'back' => [
+									'action' => [
+										'index' => [
+											'page' => [
+												'title' => 'Account Information',
+												'headTitle' => 'Account',
+												'subTitle' => 'Manage account and login information',
+												'breadcrumbs' => [
+													['label' => 'Account', 'link' => '#'],
+												],
+											],
+										],
+									]
+								],
+								'front' => [
+									'action' => [
+										'index' => [
+											'page' => [
+												'title' => 'Account Information',
+												'headTitle' => 'Account',
+												'subTitle' => 'Manage account and login information',
+												'breadcrumbs' => [
+													['label' => 'Account', 'link' => '#'],
+												],
+											],
+										],
+									]
+								],
+							],
 //	'event' => [
 //		'front' => [
 //			'index' => [
@@ -348,33 +362,33 @@ return [
 //			],
 //		],
 //	],
-	'widgets' => [
-		'controller' => [
-			'index' => function(){
+		'widgets' => [
+			'controller' => [
+				'index' => function(){
+							return zbase_config_get('modules.account.widgets.controller.index', ['account' => null]);
+						},
+				'json-index' => function(){
 						return zbase_config_get('modules.account.widgets.controller.index', ['account' => null]);
 					},
-			'json-index' => function(){
-						return zbase_config_get('modules.account.widgets.controller.index', ['account' => null]);
-					},
-			'resend-email-verification' => function(){
-						zbase_auth_user()->resendEmailVerificationCode();
-						return zbase_redirect()->to(zbase_url_previous());
-					},
-			'json-resend-email-verification' => function(){
-						zbase_auth_user()->resendEmailVerificationCode();
-						return zbase_redirect()->to(zbase_url_previous());
-					},
-			'email-verify' => function(){
-						$emailAddress = zbase_route_input('task');
-						$code = zbase_request_input('c');
-						$user = zbase_user_by('email', $emailAddress);
-						if(!empty($user))
-						{
-							$user->verifyEmailAddress($code);
-							return zbase_redirect(zbase_url_from_route('home'));
-						}
-						return zbase_abort(404);
+				'resend-email-verification' => function(){
+					zbase_auth_user()->resendEmailVerificationCode();
+					return zbase_redirect()->to(zbase_url_previous());
+				},
+				'json-resend-email-verification' => function(){
+					zbase_auth_user()->resendEmailVerificationCode();
+					return zbase_redirect()->to(zbase_url_previous());
+				},
+				'email-verify' => function(){
+					$emailAddress = zbase_route_input('task');
+					$code = zbase_request_input('c');
+					$user = zbase_user_by('email', $emailAddress);
+					if(!empty($user))
+					{
+						$user->verifyEmailAddress($code);
+						return zbase_redirect(zbase_url_from_route('home'));
 					}
-				],
+					return zbase_abort(404);
+				}
 			],
-		];
+		],
+	];
