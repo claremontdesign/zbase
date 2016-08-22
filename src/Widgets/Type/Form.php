@@ -147,6 +147,26 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	}
 
 	/**
+	 * Has Default Values
+	 *
+	 * @return boolean
+	 */
+	public function hasDefaultValues()
+	{
+		return $this->_v('values.default.enable', false);
+	}
+
+	/**
+	 * Default Values
+	 *
+	 * @return boolean
+	 */
+	public function defaultValues()
+	{
+		return $this->_v('values.default.array', []);
+	}
+
+	/**
 	 * Controller Action
 	 * 	This will be called validating the form
 	 * @param string $action
@@ -162,96 +182,106 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				$this->_viewParams['viewFile'] = $deleteViewFile;
 			}
 		}
-		if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
+		if($this->hasEntity())
 		{
-			$page = [];
-			$page['title'] = $this->entity()->title();
-			$page['headTitle'] = $this->entity()->title();
-			zbase_view_page_details(['page' => $page]);
-			if($this->entity()->hasSoftDelete())
+			if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
 			{
-				if($this->entity()->trashed())
+				$page = [];
+				$page['title'] = $this->entity()->title();
+				$page['headTitle'] = $this->entity()->title();
+				zbase_view_page_details(['page' => $page]);
+				if($this->entity()->hasSoftDelete())
 				{
-					$this->_mode = 'display';
-				}
-				else
-				{
-					if($action == 'restore' || $action == 'ddelete')
+					if($this->entity()->trashed())
 					{
-						return zbase_redirect()->to(zbase_url_previous());
+						$this->_mode = 'display';
 					}
-				}
-			}
-			$inputs = zbase_route_inputs();
-			if(zbase_request_method() == 'post')
-			{
-				$inputs = zbase_request_inputs();
-			}
-			$ret = $this->entity()->widgetController(zbase_request_method(), $action, $inputs, $this);
-			$actionMessages = $this->entity()->getActionMessages($action);
-			if(!empty($actionMessages))
-			{
-				foreach ($actionMessages as $alertType => $alertMessages)
-				{
-					if(is_array($alertMessages))
+					else
 					{
-						foreach ($alertMessages as $alertMessage)
+						if($action == 'restore' || $action == 'ddelete')
 						{
-							zbase_alert($alertType, $alertMessage);
+							return zbase_redirect()->to(zbase_url_previous());
 						}
 					}
 				}
-			}
-			if(zbase_request_method() == 'post')
-			{
-				if(!empty($this->isValueToSession()))
-				{
-					$sessionPrefix = $this->_v('values.session.prefix', null);
-					foreach ($inputs as $k => $v)
-					{
-						if($k == '_token')
-						{
-							continue;
-						}
-						zbase_session_set($sessionPrefix . $k, $v);
-					}
-					return $this->_postEvent($action);
-				}
-			}
-			if(!empty($ret))
-			{
+				$inputs = zbase_route_inputs();
 				if(zbase_request_method() == 'post')
 				{
-					if(is_bool($ret) && zbase_request_is_ajax())
-					{
-						zbase()->json()->addVariable($action . '_sucess', 1);
-					}
-					if($this->isCreating())
-					{
-						zbase_session_flash($this->entity()->entityName() . 'new', $this->entity()->id());
-					}
-					return $this->_postEvent($action);
+					$inputs = zbase_request_inputs();
 				}
-				if($action == 'restore' || $action == 'ddelete')
+				$ret = $this->entity()->widgetController(zbase_request_method(), $action, $inputs, $this);
+				$actionMessages = $this->entity()->getActionMessages($action);
+				if(!empty($actionMessages))
 				{
-					return $this->_postEvent($action);
+					foreach ($actionMessages as $alertType => $alertMessages)
+					{
+						if(is_array($alertMessages))
+						{
+							foreach ($alertMessages as $alertMessage)
+							{
+								zbase_alert($alertType, $alertMessage);
+							}
+						}
+					}
+				}
+				if($this->isCreating())
+				{
+					if(zbase_is_dev())
+					{
+						if(method_exists($this->entity(), 'fakeValue'))
+						{
+							$entity = $this->_entity;
+							$this->setValues($entity::fakeValue());
+						}
+					}
+				}
+				if(zbase_request_method() == 'post')
+				{
+					if(!empty($this->isValueToSession()))
+					{
+						$sessionPrefix = $this->_v('values.session.prefix', null);
+						foreach ($inputs as $k => $v)
+						{
+							if($k == '_token')
+							{
+								continue;
+							}
+							zbase_session_set($sessionPrefix . $k, $v);
+						}
+						return $this->_postEvent($action);
+					}
+				}
+				if(!empty($ret))
+				{
+					if(zbase_request_method() == 'post')
+					{
+						if(is_bool($ret) && zbase_request_is_ajax())
+						{
+							zbase()->json()->addVariable($action . '_sucess', 1);
+						}
+						if($this->isCreating())
+						{
+							zbase_session_flash($this->entity()->entityName() . 'new', $this->entity()->id());
+						}
+						return $this->_postEvent($action);
+					}
+					if($action == 'restore' || $action == 'ddelete')
+					{
+						return $this->_postEvent($action);
+					}
 				}
 			}
-			if($this->isCreating())
+			else
 			{
-				if(zbase_is_dev())
-				{
-					if(method_exists($this->entity(), 'fakeValue'))
-					{
-						$entity = $this->_entity;
-						$this->setValues($entity::fakeValue());
-					}
-				}
+				return zbase_abort(404);
 			}
 		}
 		else
 		{
-			return zbase_abort(404);
+			if($this->hasDefaultValues())
+			{
+				$this->setValues($this->defaultValues());
+			}
 		}
 		return false;
 	}
@@ -838,17 +868,20 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function renderSubmitButton()
 	{
-		if(empty($this->_entityIsDefault) && $this->_entity->hasSoftDelete() && $this->_entity->trashed())
+		if($this->hasEntity())
 		{
-			if($this->_action == 'restore')
+			if(empty($this->_entityIsDefault) && $this->_entity->hasSoftDelete() && $this->_entity->trashed())
 			{
-				return '<button onclick="window.history.back();" type="button" class="btn">Cancel</button>&nbsp;<button type="submit" class="btn btn-info">Restore</button>';
+				if($this->_action == 'restore')
+				{
+					return '<button onclick="window.history.back();" type="button" class="btn">Cancel</button>&nbsp;<button type="submit" class="btn btn-info">Restore</button>';
+				}
+				if($this->_action == 'ddelete')
+				{
+					return '<button onclick="window.history.back();" type="button" class="btn">Not Now</button>&nbsp;<button type="submit" class="btn btn-danger">Delete Forever</button>';
+				}
+				return '';
 			}
-			if($this->_action == 'ddelete')
-			{
-				return '<button onclick="window.history.back();" type="button" class="btn">Not Now</button>&nbsp;<button type="submit" class="btn btn-danger">Delete Forever</button>';
-			}
-			return '';
 		}
 		$attributes = $this->_v('submit.button.' . $this->_action . '.html.attributes', $this->_v('submit.button.html.attributes', []));
 		$attributes['class'][] = 'btn btn-success';

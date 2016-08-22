@@ -78,6 +78,12 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	protected $mobile = null;
 
 	/**
+	 *
+	 * @var \Zbase\Models\System
+	 */
+	protected $system = null;
+
+	/**
 	 * Current Controller
 	 * @var \Zbase\Interfaces\ControllerInterface
 	 */
@@ -155,6 +161,19 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			$this->mobile = new \Zbase\Models\Mobile;
 		}
 		return $this->mobile;
+	}
+
+	/**
+	 * Return the SystemUtility
+	 * @retur \Zbase\Models\System
+	 */
+	public function system()
+	{
+		if(!$this->system instanceof \Zbase\Models\System)
+		{
+			$this->system = new \Zbase\Models\System;
+		}
+		return $this->system;
 	}
 
 	/**

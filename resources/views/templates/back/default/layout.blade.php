@@ -20,7 +20,7 @@ else
 	<!--[if !IE]><!-->
 	<html lang="en" class="no-js">
 		<head>
-			{!! zbase_view_render_head() !!}
+			<?php echo zbase_view_render_head(); ?>
 		</head>
 		<body class="backend page-header-fixed {{ implode(' ',zbase_view_placeholder('body_class')) }}">
 			<?php if(zbase_auth_has()): ?>

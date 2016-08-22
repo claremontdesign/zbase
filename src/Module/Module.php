@@ -316,6 +316,22 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	}
 
 	/**
+	 * Check if Module has the action
+	 *
+	 * @param string $action
+	 */
+	public function hasAction($action)
+	{
+		$section = zbase_section();
+		$widgets = $this->_v('widgets.' . $section . '.controller.action.' . $action, false);
+		if(!empty($widgets))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Return widgets by Index and IndexName
 	 * @param string $index
 	 * @param string $indexName
@@ -411,6 +427,10 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	public function pageProperties($action)
 	{
 		$section = zbase_section();
+		if(zbase_request_is_post())
+		{
+			$action = str_replace('post-', null, $action);
+		}
 		$title = $this->_v('controller.' . $section . '.action.' . $action . '.page.title', null);
 		$headTitle = $this->_v('controller.' . $section . '.action.' . $action . '.page.headTitle', $title);
 		$subTitle = $this->_v('controller.' . $section . '.action.' . $action . '.page.subTitle', null);

@@ -91,6 +91,12 @@ trait Module
 			$widgetsAction = (!empty($this->nodeName) ? $requestMethod . '-node-' . $this->nodeName . '-' : '') . 'json-' . $action;
 			$htmls = [];
 		}
+		if($this->getModule()->hasAction($requestMethod . '-' . $action))
+		{
+			$widgetsAction = $requestMethod . '-' .	 $action;
+			$action = $widgetsAction;
+			$htmls = [];
+		}
 		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($widgetsAction);
 		if(!is_array($widgets) && $widgets instanceof \Illuminate\Http\RedirectResponse)
 		{

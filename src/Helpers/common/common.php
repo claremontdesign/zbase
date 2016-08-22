@@ -140,17 +140,19 @@ function zbase_in_back()
  */
 function zbase_is_maintenance()
 {
-	if(file_exists(zbase_maintenance_file()))
+	$inMaintenance = zbase()->system()->inMaintenance();
+	if(!empty($inMaintenance) && zbase()->system()->checkIp())
 	{
-		return true;
+		return false;
 	}
-	return env('ZBASE_MAINTENANCE', false);
+	return zbase()->system()->inMaintenance();
 }
 
 /**
  * The file to check if exists.
  * if exists, we'll raise the maintenance to true
  * @return string
+ * @deprecated use zbase()->system()->
  */
 function zbase_maintenance_file()
 {
@@ -162,7 +164,7 @@ function zbase_maintenance_file()
  */
 function zbase_maintenance_set()
 {
-	file_put_contents(zbase_maintenance_file(), 1);
+	zbase()->system()->startMaintenance();
 }
 
 /**
@@ -170,10 +172,7 @@ function zbase_maintenance_set()
  */
 function zbase_maintenance_unset()
 {
-	if(file_exists(zbase_maintenance_file()))
-	{
-		unlink(zbase_maintenance_file());
-	}
+	zbase()->system()->stopMaintenance();
 }
 
 /**

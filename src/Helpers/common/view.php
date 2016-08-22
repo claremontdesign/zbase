@@ -945,7 +945,9 @@ function zbase_view_render_head()
 	if(zbase_is_angular())
 	{
 		$str .= '<title ng-bind="pageTitle">' . zbase()->view()->pageTitle() . '</title>';
-	} else {
+	}
+	else
+	{
 		$str .= '<title>' . zbase()->view()->pageTitle() . '</title>';
 	}
 	$str .= zbase_view_head_metas_render();
@@ -955,6 +957,12 @@ function zbase_view_render_head()
 	$str .= zbase_view_placeholder_render('head_scripts');
 	$str .= EOF . zbase_view_render(zbase_view_file_contents('google.analytics'));
 	$str .= EOF . zbase_view_styles_render();
+	if(zbase()->system()->inMaintenance() && zbase_is_back())
+	{
+		$str .= '<style type="text/css">
+			.header{background-color: maroon !important;}
+		</style>';
+	}
 	return $str;
 }
 
@@ -1021,6 +1029,6 @@ function zbase_view_compile($html)
 	/**
 	 * Remove javascript comments
 	 */
-	$html = preg_replace( "/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:)\/\/.*))/", "", $html );
+	$html = preg_replace("/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:)\/\/.*))/", "", $html);
 	return zbase_remove_whitespaces($html);
 }

@@ -49,15 +49,62 @@ return [
 			]
 		],
 	],
-	'routes' => [
+	'controller' => [
+		'back' => [
+			'action' => [
+				'maintenance' => [
+					'page' => [
+						'title' => 'System Maintenance',
+						'headTitle' => 'System Maintenance',
+						'subTitle' => '',
+						'breadcrumbs' => [
+							['label' => 'System Maintenance'],
+						],
+					],
+				],
+				'maintenance-mode-on' => [
+					'page' => [
+						'title' => 'System Maintenance - WEBSITE IN MAINTENANCE MODE!',
+						'headTitle' => 'System Maintenance',
+						'subTitle' => '',
+						'breadcrumbs' => [
+							['label' => 'System Maintenance'],
+						],
+					],
+				],
+				'maintenance-mode-off' => [
+					'page' => [
+						'title' => 'System Maintenance',
+						'headTitle' => 'System Maintenance',
+						'subTitle' => '',
+						'breadcrumbs' => [
+							['label' => 'System Maintenance'],
+						],
+					],
+				],
+			]
+		],
 	],
+	'routes' => [],
 	'widgets' => [
 		'back' => [
 			'controller' => [
 				'action' => [
-					'index' => [
-						'system-maintenance' => null,
+					'maintenance' => [
+						'system-maintenance-form' => null,
 					],
+					'post-maintenance' => function(){
+						zbase()->system()->scheduleDowntime(zbase_request_inputs());
+						return ['system-maintenance-form' => null];
+					},
+					'maintenance-mode-on' => function(){
+						zbase()->system()->startMaintenance();
+						return redirect()->to(zbase_url_previous());
+					},
+					'maintenance-mode-off' => function(){
+						zbase()->system()->stopMaintenance();
+						return redirect()->to(zbase_url_previous());
+					},
 				],
 			],
 		],

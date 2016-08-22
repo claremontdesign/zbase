@@ -94,7 +94,6 @@ abstract class Ui
 		}
 	}
 
-
 	/**
 	 * SEt the View Confioguration
 	 * @param type $view
@@ -224,6 +223,10 @@ abstract class Ui
 	public function getAccess()
 	{
 		$access = $this->_v('access', null);
+		if(is_string($access))
+		{
+			return $access;
+		}
 		if(is_array($access))
 		{
 			$enable = $this->_v('access.enable', false);

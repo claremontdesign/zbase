@@ -286,14 +286,10 @@ use AuthenticatesAndRegistersUsers,
 				}
 				return $this->sendLockoutResponse($request);
 			}
-
 			$credentials = $this->getCredentials($request);
 
 			if(\Auth::attempt($credentials, $request->has('remember')))
 			{
-				$redirect = zbase_request_input('redirect', zbase_session_get('__loginRedirect', $this->getLoginRedirectPath(zbase_auth_user())));
-				zbase()->json()->setVariable('_redirect', $redirect);
-				zbase()->json()->setVariable('login_success', 1);
 				if(zbase_is_back())
 				{
 					if(\Auth::guard($this->getGuard())->user()->isAdmin())
@@ -344,7 +340,10 @@ use AuthenticatesAndRegistersUsers,
 		}
 		$user->log('user::authenticated');
 		$user->authenticated();
-		return redirect()->intended($this->getLoginRedirectPath($user));
+		$redirect = zbase_request_input('redirect', zbase_session_get('__loginRedirect', zbase_url_from_route('home')));
+		zbase()->json()->setVariable('_redirect', $redirect);
+		zbase()->json()->setVariable('login_success', 1);
+		return redirect()->intended($redirect);
 	}
 
 	// </editor-fold>

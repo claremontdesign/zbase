@@ -311,6 +311,21 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	}
 
 	/**
+	 * Check if this has an entity to be checked.
+	 *
+	 * @return boolean
+	 */
+	public function hasEntity()
+	{
+		$entity = $this->_v('entity', false);
+		if(!empty($entity))
+		{
+			return $entity;
+		}
+		return false;
+	}
+
+	/**
 	 * Check if we are filtering for the current user
 	 * @return boolean
 	 */
@@ -417,6 +432,10 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	 */
 	public function entity()
 	{
+		if(empty($this->hasEntity()))
+		{
+			return false;
+		}
 		if(is_null($this->_entity))
 		{
 			$entityName = $this->_v('entity.name', null);

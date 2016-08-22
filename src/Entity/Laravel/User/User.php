@@ -357,7 +357,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			}
 		}
 
-		return zbase_cache(zbase_cache_key($this, 'hasAccess_' . $access . '_' . $this->id()), function() use ($access){
+		$cacheKey = zbase_cache_key($this, 'hasAccess_' . $access . '_' . $this->id());
+		return zbase_cache($cacheKey, function() use ($access){
 			/**
 			 * only::sudo,user,moderator
 			 * comma separated values
@@ -377,17 +378,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			if(preg_match('/only\:\:/', $access) > 0)
 			{
 				$access = str_replace('only::', '', $access);
-				$role = zbase_entity('user_roles')->getRoleByName($access);
+				$role = zbase_entity('user_roles')->getRoleByName(trim($access));
 				$roleClassname = get_class(zbase_entity('user_roles'));
 				if($role instanceof $roleClassname)
 				{
 					$userHighestRole = $this->getUserHighestRole();
 					if($userHighestRole->name() == $role->name())
 					{
-						return true;
+						return 1;
 					}
 				}
-				return false;
+				return 0;
 			}
 			if(preg_match('/below\:\:/', $access) > 0)
 			{
@@ -404,12 +405,12 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 						{
 							if($r->name() == $userHighestRole->name())
 							{
-								return true;
+								return 1;
 							}
 						}
 					}
 				}
-				return false;
+				return 0;
 			}
 			if(preg_match('/above\:\:/', $access) > 0)
 			{
@@ -426,12 +427,12 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 						{
 							if($r->name() == $userHighestRole->name())
 							{
-								return true;
+								return 1;
 							}
 						}
 					}
 				}
-				return false;
+				return 0;
 			}
 			if(preg_match('/same\:\:/', $access) > 0)
 			{
@@ -448,12 +449,12 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 						{
 							if($r->name() == $userHighestRole->name())
 							{
-								return true;
+								return 1;
 							}
 						}
 					}
 				}
-				return false;
+				return 0;
 			}
 			$role = zbase_entity('user_roles')->getRoleByName($access);
 			$roleClassname = get_class(zbase_entity('user_roles'));
@@ -462,7 +463,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				$userHighestRole = $this->getUserHighestRole();
 				if($userHighestRole->name() == $role->name())
 				{
-					return true;
+					return 1;
 				}
 				$roles = $userHighestRole->same();
 				if(!empty($roles))
@@ -471,7 +472,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					{
 						if($r->name() == $role->name())
 						{
-							return true;
+							return 1;
 						}
 					}
 				}
@@ -482,12 +483,12 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					{
 						if($r->name() == $role->name())
 						{
-							return true;
+							return 1;
 						}
 					}
 				}
 			}
-			return false;
+			return 0;
 		}, [$this->entityName], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}
 

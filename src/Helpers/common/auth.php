@@ -27,9 +27,9 @@ function zbase_auth_check_access($access, $resource = null)
 	{
 		return true;
 	}
-	if(zbase()->getAuth()->check())
+	if(zbase_auth_has())
 	{
-		return zbase_auth_user()->hasAccess(strtolower($access), $resource);
+		return (bool) zbase_auth_user()->hasAccess(strtolower($access), $resource);
 	}
 	return false;
 }

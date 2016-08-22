@@ -3,7 +3,7 @@
 	<!-- BEGIN TOP NAVIGATION BAR -->
 	<div class="header-inner">
 		<!-- BEGIN LOGO -->
-		<a class="navbar-brand" href="<?php echo zbase_url_from_route('admin')?>">
+		<a class="navbar-brand" href="<?php echo zbase_url_from_route('admin') ?>">
 			<?php
 			$adminName = zbase_config_get('view.package.templates.metronic.logotext', '<img src="' . zbase_path_asset('img/logo.png') . '" alt="logo" class="img-responsive"/>');
 			echo $adminName;
@@ -20,7 +20,7 @@
 
 
 
-			<?php echo zbase_view_render(zbase_view_file('partial.notification-bar'))?>
+<?php echo zbase_view_render(zbase_view_file('partial.notification-bar')) ?>
 
 
 
@@ -28,18 +28,18 @@
 			<!-- BEGIN USER LOGIN DROPDOWN -->
 			<li class="dropdown user">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
-					<img style="width:28px;" alt="" src="<?php echo zbase_auth_user()->avatarUrl(['w' => 30])?>"/>
+					<img style="width:28px;" alt="" src="<?php echo zbase_auth_user()->avatarUrl(['w' => 30]) ?>"/>
 					<span class="username">
-						<?php echo zbase_auth_user()->displayName()?>
+<?php echo zbase_auth_user()->displayName() ?>
 					</span>
 					<i class="fa fa-angle-down"></i>
 				</a>
 				<ul class="dropdown-menu">
 					<?php
-						$headerPullDownMenu = zbase_config_get('theme');
+					$headerPullDownMenu = zbase_config_get('theme');
 					?>
 					<li>
-						<a href="<?php echo zbase_url_from_route('admin.account')?>">
+						<a href="<?php echo zbase_url_from_route('admin.account') ?>">
 							<i class="fa fa-user"></i> My Profile
 						</a>
 					</li>
@@ -50,13 +50,13 @@
 							<i class="fa fa-arrows"></i> Full Screen
 						</a>
 					</li>
-<!--					<li>
-						<a href="extra_lock.html">
-							<i class="fa fa-lock"></i> Lock Screen
-						</a>
-					</li>-->
+					<!--					<li>
+											<a href="extra_lock.html">
+												<i class="fa fa-lock"></i> Lock Screen
+											</a>
+										</li>-->
 					<li>
-						<a href="<?php echo zbase_url_from_route('admin.logout')?>">
+						<a href="<?php echo zbase_url_from_route('admin.logout') ?>">
 							<i class="fa fa-key"></i> Log Out
 						</a>
 					</li>
