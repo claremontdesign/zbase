@@ -19,6 +19,7 @@ namespace Zbase\Models;
   ADD COLUMN `telegram_chat_id` INT(11) NULL DEFAULT NULL COMMENT 'Telegram Chat Id' AFTER `mlm_dl_left_count`;
  */
 use Zbase\Models;
+use Zbase\Entity\Laravel\User\User;
 
 class Telegram
 {
@@ -100,11 +101,11 @@ class Telegram
 	 * @param User $user
 	 * @param string $message
 	 */
-	public function send($user, $message)
+	public function send(User $user, $message)
 	{
 		if($this->isEnabled())
 		{
-			if($user instanceof \Zbase\Entity\Laravel\User\User)
+			if($user instanceof User && !empty($user->telegram_chat_id))
 			{
 				$chatId = $user->telegram_chat_id;
 				$url = 'https://api.telegram.org/bot' . $this->token() . '/sendMessage?chat=' . $chatId . '&text=' . $message;
@@ -174,14 +175,14 @@ class Telegram
 		{
 			zbase_alert('info', 'TG CALL: ' . $url);
 		}
-//		$opts = array(
-//			'http' => array(
-//				'method' => "GET",
-//				'header' => "Content-Type: application/x-www-form-urlencoded; charset: UTF-8"
-//			)
-//		);
-//		$context = stream_context_create($opts);
-//		return file_get_contents($url, false, $context);
+		$opts = array(
+			'http' => array(
+				'method' => "GET",
+				'header' => "Content-Type: application/x-www-form-urlencoded; charset: UTF-8"
+			)
+		);
+		$context = stream_context_create($opts);
+		return file_get_contents($url, false, $context);
 	}
 
 	/**
@@ -189,7 +190,7 @@ class Telegram
 	 *
 	 * @return string
 	 */
-	public function userCode()
+	public function userCode($user)
 	{
 		$code = zbase_generate_code();
 		\DB::table('user_tokens')->where(['user_id' => $user->id(), 'taggable_type' => 'telegram'])->delete();
@@ -202,25 +203,85 @@ class Telegram
 		return $code;
 	}
 
+	/**
+	 * Return a new user Code
+	 *
+	 * @return string
+	 */
+	public function checkUserCode($code, $chatId)
+	{
+		$token = \DB::table('user_tokens')->where(['taggable_type' => 'telegram', 'token' => $code])->first();
+		if(!empty($token))
+		{
+			$user = zbase_user_byid($token->user_id);
+			if(!empty($user))
+			{
+				$user->telegram_chat_id = $chatId;
+				$user->save();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Disable Telegram Notifications
+	 *
+	 * @return
+	 */
+	public function disableUserTelegram(User $user)
+	{
+		$user->telegram_chat_id = null;
+		$user->save();
+		zbase_alert('success', 'Telegram notificatios disabled.');
+		return true;
+	}
 
 	/**
 	 * Receive Message from Hook
 	 */
 	public function receiveMessage()
 	{
-		$code = zbase_request_query_input('start', false);
 		$string = file_get_contents('php://input');
-		$data = $code . "\n" . $string;
-		file_put_contents(zbase_storage_path() . '_tg', $data);
-//		if(!empty($code))
-//		{
-//			$code = \DB::table('user_tokens')->where(['token' => $code, 'taggable_type' => 'telegram'])->first();
-//			if(!empty($code))
-//			{
-//				//$user = zbase_user_byid($code->user_id);
-//				//$user->telegram_chat_id = '';
-//			}
-//		}
+		// $string = '{"update_id":798236645,"message":{"message_id":4,"from":{"id":81803240,"first_name":"DenxioAbing","last_name":"(zivxio)","username":"zivxio"},"chat":{"id":81803240,"first_name":"DenxioAbing","last_name":"(zivxio)","username":"zivxio","type":"private"},"date":1471951251,"text":"\/start MzfzuUGk5Wb4WNSkpeCQahA35J3GrZ5E","entities":[{"type":"bot_command","offset":0,"length":6}]}}';
+		if($string !== '')
+		{
+			$tg = json_decode($string);
+			if(isset($tg->message))
+			{
+				if(isset($tg->message->text) && isset($tg->message->from->id))
+				{
+					/**
+					 * update_id
+					 * message
+					 * message->message_id
+					 * message->from->id
+					 * message->from->first_name
+					 * message->from->last_name
+					 * message->from->username
+					 *
+					 * message->chat->id
+					 * message->chat->first_name
+					 * message->chat->last_name
+					 * message->chat->username
+					 *
+					 * message->date
+					 * message->text
+					 * message->entities
+					 * message->entities->0->type = bot_command
+					 * message->entities->0->offset
+					 * message->entities->0->length
+					 */
+					$text = $tg->message->text;
+					$chatId = $tg->message->chat->id;
+					if(preg_match('/\/start/', $text) > 0)
+					{
+						$code = trim(str_replace('/start ', null, $text));
+						$this->checkUserCode($code, $chatId);
+					}
+				}
+			}
+		}
 	}
 
 }

@@ -118,6 +118,10 @@ return [
 					'telegram' => [
 						'telegram-settings-form' => null,
 					],
+					'telegram-disable' => function(){
+						zbase()->telegram()->disableUserTelegram(zbase_auth_user());
+						return redirect()->to(zbase_url_previous());
+					},
 					'post-telegram' => function(){
 						zbase()->telegram()->saveSettings(zbase_request_inputs());
 						return ['telegram-settings-form' => null];

@@ -76,7 +76,6 @@ return [
 									return zbase_url_from_route('telegramhook', ['token' => $token]);
 								}
 							},
-							'readonly' => true,
 							'placeholder' => 'Webhook',
 						],
 					],

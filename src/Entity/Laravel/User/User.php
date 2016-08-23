@@ -610,6 +610,10 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				];
 				zbase_entity('user_notifications')->insert($data);
 				$this->notificationClearCache();
+				if(empty($options['telegram_disabled']))
+				{
+					zbase()->telegram()->send($this, $msg);
+				}
 				zbase_db_transaction_commit();
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
