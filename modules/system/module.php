@@ -44,7 +44,18 @@ return [
 						'icon' => 'fa fa-flash',
 						'label' => 'Maintenance',
 						'title' => 'Maintenance'
-					]
+					],
+					[
+						'route' => [
+							'name' => 'admin.system',
+							'params' => [
+								'action' => 'telegram'
+							]
+						],
+						'icon' => 'fa fa-flash',
+						'label' => 'Telegram',
+						'title' => 'Telegram'
+					],
 				],
 			]
 		],
@@ -52,6 +63,16 @@ return [
 	'controller' => [
 		'back' => [
 			'action' => [
+				'telegram' => [
+					'page' => [
+						'title' => 'Telegram Integration',
+						'headTitle' => 'Telegram Integration',
+						'subTitle' => '',
+						'breadcrumbs' => [
+							['label' => 'Telegram Integration'],
+						],
+					],
+				],
 				'maintenance' => [
 					'page' => [
 						'title' => 'System Maintenance',
@@ -85,7 +106,8 @@ return [
 			]
 		],
 	],
-	'routes' => [],
+	'routes' => [
+	],
 	'widgets' => [
 		'back' => [
 			'controller' => [
@@ -93,6 +115,13 @@ return [
 					'maintenance' => [
 						'system-maintenance-form' => null,
 					],
+					'telegram' => [
+						'telegram-settings-form' => null,
+					],
+					'post-telegram' => function(){
+						zbase()->telegram()->saveSettings(zbase_request_inputs());
+						return ['telegram-settings-form' => null];
+					},
 					'post-maintenance' => function(){
 						zbase()->system()->scheduleDowntime(zbase_request_inputs());
 						return ['system-maintenance-form' => null];

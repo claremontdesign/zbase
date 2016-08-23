@@ -39,9 +39,16 @@ class Json
 
 	}
 
-	public function addVariable($key, $val)
+	public function addVariable($key, $val, $isArray = false)
 	{
-		$this->vars[$key] = $val;
+		if($isArray)
+		{
+			$this->vars[$key][] = $val;
+		}
+		else
+		{
+			$this->vars[$key] = $val;
+		}
 		return $this;
 	}
 
@@ -57,9 +64,9 @@ class Json
 		return $this;
 	}
 
-	public function setVariable($key, $val)
+	public function setVariable($key, $val, $isArray = false)
 	{
-		$this->addVariable($key, $val);
+		$this->addVariable($key, $val, $isArray);
 	}
 
 	public function getVariable($key)

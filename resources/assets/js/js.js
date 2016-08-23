@@ -809,26 +809,34 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	}
 	if (responseJSON._html_selector_replace !== undefined)
 	{
-		jQuery.each(responseJSON._html_selector_replace, function (selector, content) {
-			jQuery(selector).html(content);
+		jQuery.each(responseJSON._html_selector_replace, function (i, content) {
+			jQuery.each(content, function(selector, html){
+				jQuery(selector).html(html);
+			});
 		});
 	}
 	if (responseJSON._html_selector_append !== undefined)
 	{
-		jQuery.each(responseJSON._html_selector_append, function (selector, content) {
-			jQuery(selector).append(content);
+		jQuery.each(responseJSON._html_selector_append, function (i, content) {
+			jQuery.each(content, function(selector, html){
+				jQuery(selector).append(html);
+			});
 		});
 	}
 	if (responseJSON._html_selector_prepend !== undefined)
 	{
-		jQuery.each(responseJSON._html_selector_prepend, function (selector, content) {
-			jQuery(selector).prepend(content);
+		jQuery.each(responseJSON._html_selector_prepend, function (i, content) {
+			jQuery.each(content, function(selector, html){
+				jQuery(selector).prepend(html);
+			});
 		});
 	}
 	if (responseJSON._html_selector_remove !== undefined)
 	{
-		jQuery.each(responseJSON._html_selector_remove, function (i, selector) {
-			jQuery(selector).remove();
+		jQuery.each(responseJSON._html_selector_remove, function (i, content) {
+			jQuery.each(content, function(selector, html){
+				jQuery(selector).remove();
+			});
 		});
 	}
 	if (responseJSON._package !== undefined && responseJSON._route !== undefined)

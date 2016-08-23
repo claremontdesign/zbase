@@ -34,7 +34,7 @@
 			$url = zbase_url_from_config($crumb);
 			?>
 			<li>
-				<a title="<?php echo $crumb['label']; ?>" href="<?php echo $url; ?>">
+				<a title="<?php echo !empty($crumb['title']) ? $crumb['title'] : $crumb['label']; ?>" href="<?php echo $url; ?>">
 					<?php echo $crumb['label']; ?>
 				</a>
 				<?php if($i < count($breadcrumbs)): ?>

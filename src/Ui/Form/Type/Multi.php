@@ -63,6 +63,10 @@ class Multi extends \Zbase\Ui\Form\Element
 			{
 				return $this->getUserRoles();
 			}
+			if(strtolower($this->_multiOptions) == 'userstatus')
+			{
+				return $this->getUserStatusOptions();
+			}
 		}
 		return $this->_multiOptions;
 	}
@@ -127,6 +131,21 @@ class Multi extends \Zbase\Ui\Form\Element
 		$options = [
 			1 => 'Yes',
 			0 => 'No',
+		];
+		return $options;
+	}
+
+	/**
+	 * Return the Yes/No Options
+	 * @return array
+	 */
+	public function getUserStatusOptions()
+	{
+		$options = [
+			'ok' => 'Ok',
+			'ban' => 'Banned',
+			'locked' => 'Locked',
+			'ban_no_auth' => 'Disabled'
 		];
 		return $options;
 	}

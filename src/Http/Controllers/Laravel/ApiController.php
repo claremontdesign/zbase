@@ -23,6 +23,27 @@ class ApiController extends Controller implements Interfaces\AttributeInterface
 
 	use Traits\Attribute, Traits\Api;
 
+	/**
+	 * Telegram Hook
+	 * http://dermasecrets-local.biz/telegram/237861793:AAFW6v2ZRg5oPHiQWuedtXuqs2GAguCSZU8
+	 */
+	public function telegramHook()
+	{
+		$code = zbase_request_query_input('start', false);
+		$string = file_get_contents('php://input');
+		$data = $code . "\n" . $string;
+		file_put_contents(zbase_storage_path() . '_tg', $data);
+//		if(!empty($code))
+//		{
+//			$code = \DB::table('user_tokens')->where(['token' => $code, 'taggable_type' => 'telegram'])->first();
+//			if(!empty($code))
+//			{
+//				//$user = zbase_user_byid($code->user_id);
+//				//$user->telegram_chat_id = '';
+//			}
+//		}
+	}
+
 	public function index()
 	{
 		return $this->apiIndex();

@@ -68,6 +68,7 @@ abstract class Data extends UIs\Ui implements UIs\UiInterface, Interfaces\IdInte
 		$attr = $this->_v('html.attributes.wrapper', []);
 		$attr['class'][] = 'zbase-ui-data';
 		$attr['class'][] = 'zbase-ui-data-' . $this->_type;
+		$attr['id'] = $this->id();
 		return $attr;
 	}
 }

@@ -326,6 +326,7 @@ return [
 			'enable' => true
 		],
 		'api' => [
+			'usernameroute' => false,
 			'controller' => [
 				'name' => 'api',
 				'method' => 'index',
@@ -333,6 +334,16 @@ return [
 			],
 			'httpVerb' => ['get', 'post', 'put', 'patch'],
 			'url' => '/api/{username}/{key}/{format}/{module}/{object}/{method}/{paramOne?}/{paramTwo?}/{paramThree?}/{paramFour?}/{paramFive?}/{paramSix?}',
+			'enable' => true
+		],
+		'telegramhook' => [
+			'usernameroute' => false,
+			'controller' => [
+				'name' => 'telegram',
+				'method' => 'telegramHook',
+				'enable' => true
+			],
+			'url' => '/telegram/{token?}',
 			'enable' => true
 		],
 	],

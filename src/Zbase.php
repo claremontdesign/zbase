@@ -84,6 +84,12 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	protected $system = null;
 
 	/**
+	 *
+	 * @var \Zbase\Models\Telegram
+	 */
+	protected $telegram = null;
+
+	/**
 	 * Current Controller
 	 * @var \Zbase\Interfaces\ControllerInterface
 	 */
@@ -174,6 +180,19 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			$this->system = new \Zbase\Models\System;
 		}
 		return $this->system;
+	}
+
+	/**
+	 * Return the SystemUtility
+	 * @retur \Zbase\Models\System
+	 */
+	public function telegram()
+	{
+		if(!$this->telegram instanceof \Zbase\Models\Telegram)
+		{
+			$this->telegram = new \Zbase\Models\Telegram;
+		}
+		return $this->telegram;
 	}
 
 	/**

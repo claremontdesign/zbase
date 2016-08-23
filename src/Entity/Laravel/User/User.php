@@ -132,6 +132,34 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	/**
+	 * REturn this User City State, Country
+	 * @return string
+	 */
+	public function cityStateCountry()
+	{
+		$address = $this->address();
+		if(!empty($address))
+		{
+			return $address->city . ', ' . $address->state . ', ' . $address->country;
+		}
+		return null;
+	}
+
+	/**
+	 * REturn this User Country
+	 * @return string
+	 */
+	public function country()
+	{
+		$address = $this->address();
+		if(!empty($address))
+		{
+			return $address->country;
+		}
+		return null;
+	}
+
+	/**
 	 * Return the User Profile
 	 * @return type
 	 */
@@ -154,6 +182,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->roleName = $this->roles()->first()->role_name;
 		}
 		return $this->roleName;
+	}
+
+	/**
+	 * Current Role
+	 * @return type
+	 */
+	public function displayRoleName()
+	{
+		return ucfirst($this->roleName());
 	}
 
 	/**
@@ -291,6 +328,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * @proxy $this->orderStatusText
+	 * @return string
+	 */
+	public function statusText()
+	{
+		$status = zbase_model_name('', 'class.ui.userStatus', \Zbase\Ui\Data\UserStatus::class);
+		$status = new $status(['value' => $this->status, 'id' => 'status' . $this->id()]);
+		return $status->render();
 	}
 
 	/**
@@ -999,7 +1047,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		if(strtolower($method) == 'post')
 		{
-			if($action == 'index')
+			if($action == 'index' || $action == 'view')
 			{
 				/**
 				 * Check for changes in Username
@@ -1041,6 +1089,168 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="QuerySearchFilters">
+
+	/**
+	 * Return SELECTs
+	 * @param array $filters
+	 */
+	public function querySelects($filters)
+	{
+		return ['*'];
+	}
+
+	/**
+	 * Join Query
+	 * @param array $filters Array of Filters
+	 * @param array $sorting Array of Sorting
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function queryJoins($filters, $sorting = [], $options = [])
+	{
+		$orderEntityName = $this->getOrderEntityName();
+		$joins = [];
+		$joins[] = [
+			'type' => 'join',
+			'model' => 'users_address as address',
+			'foreign_key' => 'users.user_id',
+			'local_key' => 'address.user_id',
+		];
+		$joins[] = [
+			'type' => 'join',
+			'model' => 'users_profile as profile',
+			'foreign_key' => 'users.user_id',
+			'local_key' => 'profile.user_id',
+		];
+		$joins[] = [
+			'type' => 'join',
+			'model' => 'users_roles as role',
+			'foreign_key' => 'users.user_id',
+			'local_key' => 'role.user_id',
+		];
+		$joins[] = [
+			'type' => 'join',
+			'model' => 'user_roles as rolename',
+			'foreign_key' => 'role.role_id',
+			'local_key' => 'rolename.role_id',
+		];
+		return $joins;
+	}
+
+	/**
+	 * Sorting Query
+	 * @param array $sorting Array of Sorting
+	 * @param array $filters Array of Filters
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function querySorting($sorting, $filters = [], $options = [])
+	{
+		$sort = ['users.created_at' => 'DESC'];
+		return $sort;
+	}
+
+	/**
+	 * Join Query
+	 * @param array $filters Array of Filters
+	 * @param array $sorting Array of Sorting
+	 * @param array $options some options
+	 * @return array
+	 */
+	public function querySearchFilters($filters, $options = [])
+	{
+		$query = zbase_request_input('adminUsersSearchQuery', (!empty($options['query']) ? $options['query'] : null));
+		if(!empty($query))
+		{
+			$queries = [];
+			if(preg_match('/\,/', $query) > 0)
+			{
+				$queries = explode(',', $query);
+			}
+			else
+			{
+				$queries[] = $query;
+			}
+			foreach ($queries as $query)
+			{
+				/**
+				 * Searching for Role
+				 */
+				if(preg_match('/role\:/', $query) > 0)
+				{
+					$filters['rolename.role_name'] = [
+						'like' => [
+							'field' => 'rolename.role_name',
+							'value' => '%' . trim(str_replace('role:', '', $query)) . '%'
+						]
+					];
+				}
+				/**
+				 * Searching for City
+				 */
+				if(preg_match('/city\:/', $query) > 0)
+				{
+					$filters['address.city'] = [
+						'like' => [
+							'field' => 'address.city',
+							'value' => '%' . trim(str_replace('city:', '', $query)) . '%'
+						]
+					];
+				}
+				/**
+				 * Searching for State
+				 */
+				if(preg_match('/state\:/', $query) > 0)
+				{
+					$filters['address.state'] = [
+						'like' => [
+							'field' => 'address.state',
+							'value' => '%' . trim(str_replace('state:', '', $query)) . '%'
+						]
+					];
+				}
+				/**
+				 * Searching for Country
+				 */
+				if(preg_match('/country\:/', $query) > 0)
+				{
+					$filters['address.country'] = [
+						'like' => [
+							'field' => 'address.country',
+							'value' => '%' . trim(str_replace('country:', '', $query)) . '%'
+						]
+					];
+				}
+				/**
+				 * Searching for Name
+				 */
+				if(preg_match('/name\:/', $query) > 0)
+				{
+					$filters['name'] = function($q) use ($query){
+						$name = trim(str_replace('name:', '', $query));
+						return $q->orWhere('profile.first_name', 'LIKE', '%' . $name . '%')
+										->orWhere('profile.last_name', 'LIKE', '%' . $name . '%');
+				 };
+				}
+				/**
+				 * Searching for Email
+				 */
+				if(preg_match('/\@/', $query) > 0)
+				{
+					$filters['users.email'] = [
+						'eq' => [
+							'field' => 'users.email',
+							'value' => $query
+						]
+					];
+				}
+			}
+		}
+		return $filters;
+	}
+
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="UPDATE PRofile">
 	/**
 	 * Update Profile
@@ -1048,9 +1258,32 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function updateProfile($data)
 	{
-		zbase_db_transaction_start();
 		try
 		{
+			zbase_db_transaction_start();
+			if(zbase_auth_user()->isAdmin())
+			{
+				if(!empty($data['role']))
+				{
+					$role = $this->roles()->getRelated()->repository()->by('role_name', $data['role'])->first();
+					if(!empty($role))
+					{
+						\DB::table('users_roles')->where('user_id', $this->id())->delete();
+						\DB::table('users_roles')->insert(['user_id' => $this->id(), 'role_id' => $role->id()]);
+						$this->clearEntityCacheByTableColumns();
+						$this->clearEntityCacheById();
+					}
+				}
+				if(!empty($data['status']))
+				{
+					$this->status = $data['status'];
+					$this->save();
+					zbase()->json()->setVariable('_html_selector_replace', ['#status' . $this->id() => $this->statusText()], true);
+					zbase()->json()->setVariable('_html_selector_replace', ['#statusxxx' . $this->id() => $this->statusText()], true);
+				}
+			}
+			zbase_db_transaction_commit();
+			zbase_db_transaction_start();
 			$fillables = $this->profile()->getFillable();
 			if(!empty($fillables))
 			{
@@ -1085,10 +1318,11 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					$saved = $userProfile->update($newData);
 					if(!empty($saved))
 					{
+						$this->alertProfileUpdated();
 						$this->clearEntityCacheByTableColumns();
 						$this->clearEntityCacheById();
-						zbase_alert('success', _zt('Profile Updated.'));
 						$this->log('user::updateProfile');
+						zbase()->json()->setVariable('_html_selector_replace', ['.userDisplayName' . $this->id() => $this->displayName()], true);
 						zbase_db_transaction_commit();
 						return true;
 					}
@@ -1096,8 +1330,23 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			}
 		} catch (\Zbase\Exceptions\RuntimeException $e)
 		{
-			zbase_db_transaction_rollbak();
+			zbase_db_transaction_rollback();
 			return false;
+		}
+	}
+
+	/**
+	 * Profile Was Updated,. Alerrt
+	 */
+	public function alertProfileUpdated()
+	{
+		if(zbase_auth_user()->id() !== $this->id())
+		{
+			zbase_alert('success', '<strong>' . _zt($this->displayName() . '</strong> profile was updated successfully.'));
+		}
+		else
+		{
+			zbase_alert('success', _zt('Your profile was updated successfully.'));
 		}
 	}
 
@@ -1227,9 +1476,19 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->setDataOption('username_old', $oldUsernames);
 			$this->username = $newUsername;
 			$this->save();
-			zbase_alert('success', _zt('Username updated!'));
+			/**
+			 * Admin is changing the email Address
+			 */
+			if(zbase_auth_user()->id() != $this->id())
+			{
+				zbase_alert('success', _zt('<strong>' . $this->displayName() . '</strong> username updated successfully!'));
+			}
+			else
+			{
+				zbase_alert('success', _zt('Username updated!'));
+				zbase_messenger_email($this->email(), 'account-noreply', _zt('Username was changed'), zbase_view_file_contents('email.account.updateUsername'), ['entity' => $this, 'old' => $oldUsername, 'new' => $newUsername]);
+			}
 			$this->log('user::updateUsername');
-			zbase_messenger_email($this->email(), 'account-noreply', _zt('Username was changed'), zbase_view_file_contents('email.account.updateUsername'), ['entity' => $this, 'old' => $oldUsername, 'new' => $newUsername]);
 		}
 	}
 
@@ -1272,24 +1531,43 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			try
 			{
 				/**
-				 * Send a request code to the old email address
-				 * option: email_verification_code: code; new_email: $newEmail Address
+				 * Admin is changing the email Address
 				 */
-				$code = zbase_generate_code();
-				$this->setDataOption('email_updaterequest_code', $code);
-				$this->setDataOption('email_new', $newEmailAddress);
-				$this->setDataOption('email_new_request_date', zbase_date_now());
-				$this->save();
-				$url = zbase_url_from_route('update-email-request', ['email' => $this->email(), 'token' => $code]);
-				$urlText = null;
-				if(zbase_is_dev())
+				if(zbase_auth_user()->id() != $this->id())
 				{
-					$urlText = '<a href="' . $url . '">' . $url . '</a>';
-					zbase()->json()->setVariable('updateRequestEmailAddress', $url);
+					/**
+					 * Send a request code to the old email address
+					 * option: email_verification_code: code; new_email: $newEmail Address
+					 */
+					$oldEmail = $this->email();
+					$this->email = $newEmailAddress;
+					$this->email_verified = 0;
+					$this->save();
+					zbase_alert('info', _zt($this->displayName() . ' email address was updated to <strong>%email%</strong> from <strong>' . $oldEmail . '</strong>.', ['%email%' => $this->email()]));
+					$this->log('user::updateRequestEmailAddress', null, ['new_email' => $newEmailAddress, 'admin_id' => zbase_auth_user()->id()]);
 				}
-				zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.' . $urlText, ['%email%' => $this->email()]));
-				zbase_messenger_email($this->email(), 'account-noreply', _zt('New Email address update request'), zbase_view_file_contents('email.account.newEmailAddressRequest'), ['entity' => $this, 'newEmailAddress' => $newEmailAddress, 'code' => $code, 'url' => $url]);
-				$this->log('user::updateRequestEmailAddress', null, ['new_email' => $newEmailAddress]);
+				else
+				{
+					/**
+					 * Send a request code to the old email address
+					 * option: email_verification_code: code; new_email: $newEmail Address
+					 */
+					$code = zbase_generate_code();
+					$this->setDataOption('email_updaterequest_code', $code);
+					$this->setDataOption('email_new', $newEmailAddress);
+					$this->setDataOption('email_new_request_date', zbase_date_now());
+					$this->save();
+					$url = zbase_url_from_route('update-email-request', ['email' => $this->email(), 'token' => $code]);
+					$urlText = null;
+					if(zbase_is_dev())
+					{
+						$urlText = '<a href="' . $url . '">' . $url . '</a>';
+						zbase()->json()->setVariable('updateRequestEmailAddress', $url);
+					}
+					zbase_alert('info', _zt('We sent an email to %email% with a link to complete the process of updating your email address.' . $urlText, ['%email%' => $this->email()]));
+					zbase_messenger_email($this->email(), 'account-noreply', _zt('New Email address update request'), zbase_view_file_contents('email.account.newEmailAddressRequest'), ['entity' => $this, 'newEmailAddress' => $newEmailAddress, 'code' => $code, 'url' => $url]);
+					$this->log('user::updateRequestEmailAddress', null, ['new_email' => $newEmailAddress]);
+				}
 				zbase_db_transaction_commit();
 				return true;
 			} catch (\Zbase\Exceptions\RuntimeException $e)
@@ -1434,6 +1712,29 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	public function isEmailVerified()
 	{
 		return (bool) $this->email_verified;
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="PageProperties">
+	/**
+	 * Page Property
+	 *
+	 * @param Widget $widget
+	 */
+	public function pageProperty($widget)
+	{
+		if($widget->id() == 'admin-user')
+		{
+			$page = [];
+			$page['title'] = '<span class="userDisplayName' . $this->id() . '">' . $this->displayName() . '</span>' . $this->statusText();
+			$page['headTitle'] = $this->displayName();
+			zbase_view_page_details(['page' => $page]);
+			$breadcrumbs = [
+				['label' => 'Users', 'name' => 'admin.users'],
+				['label' => '<span class="userDisplayName' . $this->id() . '">' . $this->displayName() . '</span>', 'link' => '#', 'title' => $this->displayName()],
+			];
+			zbase_view_breadcrumb($breadcrumbs);
+		}
 	}
 
 	// </editor-fold>

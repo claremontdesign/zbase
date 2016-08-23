@@ -328,9 +328,9 @@ abstract class Ui
 	{
 		if(is_array($contents))
 		{
-			foreach ($contents as $content)
+			foreach ($contents as $id => $content)
 			{
-				$this->addContent($content);
+				$this->addContent($content, $id);
 			}
 		}
 		return $this;
@@ -353,6 +353,10 @@ abstract class Ui
 	 */
 	public function addContent($content, $id = null)
 	{
+		if($content instanceof \Closure)
+		{
+			$content = $content();
+		}
 		if(is_string($content))
 		{
 			$configuration = ['content' => $content, 'id' => $id];

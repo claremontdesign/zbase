@@ -18,6 +18,24 @@ return [
 	'type' => 'datatable',
 	'enable' => true,
 	'config' => [
+		'queryOnLoad' => true,
+		'searchable' => [
+			'enable' => true,
+			'json' => true,
+			'url' => function(){
+				return zbase_url_from_route('admin.users');
+			},
+			'input' => [
+				'placeholder' => 'Enter UserID, email address to search'
+			],
+			'onload' => false,
+		],
+		'row' => [
+			'clickable' => [
+				'enable' => true,
+				'action' => 'view',
+			]
+		],
 		'angular' => [
 			'route' => [
 				'name' => 'admin.users'
@@ -35,9 +53,19 @@ return [
 		],
 		'entity' => [
 			'name' => 'user',
+			'node' => [
+				'enable' => true
+			],
 			'filter' => ['admin' => true],
 		],
 		'actions' => [
+			'view' => [
+				'enable' => true,
+				'route' => [
+					'name' => 'admin.users',
+					'params' => ['action' => 'view', 'id' => 'row::user_id']
+				],
+			],
 			'create' => [
 				'enable' => false,
 				'label' => 'Create new node',
@@ -47,59 +75,49 @@ return [
 				],
 			],
 			'update' => [
-				'enable' => true,
+				'enable' => false,
 				'route' => [
 					'name' => 'admin.users',
-					'params' => ['action' => 'update', 'id' => 'row::alpha_id']
+					'params' => ['action' => 'update', 'id' => 'row::user_id']
 				],
 			],
 			'delete' => [
-				'enable' => true,
+				'enable' => false,
 				'route' => [
 					'name' => 'admin.users',
-					'params' => ['action' => 'delete', 'id' => 'row::alpha_id']
+					'params' => ['action' => 'delete', 'id' => 'row::user_id']
 				],
 			],
 			'restore' => [
-				'enable' => true,
+				'enable' => false,
 				'route' => [
 					'name' => 'admin.users',
-					'params' => ['action' => 'restore', 'id' => 'row::alpha_id']
+					'params' => ['action' => 'restore', 'id' => 'row::user_id']
 				],
 			],
 			'ddelete' => [
-				'enable' => true,
+				'enable' => false,
 				'route' => [
 					'name' => 'admin.users',
-					'params' => ['action' => 'ddelete', 'id' => 'row::alpha_id']
+					'params' => ['action' => 'ddelete', 'id' => 'row::user_id']
 				],
 			],
 		],
 		'columns' => [
-			'id' => [
+			'user_id' => [
 				'label' => 'ID',
 				'enable' => true,
 				'data' => [
 					'type' => 'integer',
-					'index' => 'alpha_id'
+					'index' => 'user_id'
 				],
 			],
-			'pageTitle' => [
-				'label' => 'Page Title',
-				'json' => true,
+			'rolename' => [
+				'label' => 'Role',
 				'enable' => true,
 				'data' => [
 					'type' => 'string',
-					'index' => 'User: $$profile.first_name $$profile.last_name'
-				],
-			],
-			'viewTitle' => [
-				'label' => 'Title',
-				'enable' => true,
-				'json' => true,
-				'data' => [
-					'type' => 'string',
-					'index' => 'User: $$profile.first_name $$profile.last_name'
+					'index' => 'displayRoleName'
 				],
 			],
 			'email' => [
@@ -126,11 +144,19 @@ return [
 					'index' => 'profile.last_name'
 				],
 			],
+			'cityStateCountry' => [
+				'label' => 'Location',
+				'enable' => true,
+				'data' => [
+					'type' => 'string',
+					'index' => 'cityStateCountry'
+				],
+			],
 			'status' => [
 				'label' => 'Status',
 				'enable' => true,
 				'data' => [
-					'type' => 'displayStatus',
+					'type' => 'userStatus',
 					'index' => 'status'
 				],
 			],
@@ -140,14 +166,6 @@ return [
 				'data' => [
 					'type' => 'timestamp',
 					'index' => 'created_at'
-				],
-			],
-			'updated_at' => [
-				'label' => 'Updated',
-				'enable' => true,
-				'data' => [
-					'type' => 'timestamp',
-					'index' => 'updated_at'
 				],
 			],
 		],

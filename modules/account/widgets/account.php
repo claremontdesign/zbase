@@ -118,6 +118,26 @@ return [
 					],
 				],
 			],
+			'notifications' => [
+				'type' => 'tab',
+				'label' => 'Notifications',
+				'id' => 'notifications',
+				'group' => 'accountTab',
+				'enable' => true,
+				'position' => 9996,
+				'contents' => [
+					'notifications' => function(){
+						return zbase_view_render(zbase_view_file_module('account.views.notifications', 'account','zbase'), ['user' => zbase_auth_user()])->render();
+					}
+				],
+				'formConfiguration' => [
+					'submit' => [
+						'button' => [
+							'enable' => false
+						]
+					],
+				],
+			],
 			'username' => [
 				'type' => 'tab',
 				'label' => 'Username',

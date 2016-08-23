@@ -50,6 +50,10 @@ return [
 				'name' => Zbase\Http\Controllers\__FRAMEWORK__\ApiController::class,
 				'enable' => true
 			],
+			'telegram' => [
+				'name' => Zbase\Http\Controllers\__FRAMEWORK__\ApiController::class,
+				'enable' => true
+			],
 		],
 	],
 ];

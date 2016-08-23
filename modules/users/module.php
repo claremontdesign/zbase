@@ -25,7 +25,7 @@ return [
 	'backend' => true,
 	'frontend' => false,
 	'url' => [
-		'backend' => 'users/{action?}',
+		'backend' => 'users/{action?}/{id?}',
 	],
 	'navigation' => [
 		'back' => [
@@ -86,64 +86,80 @@ return [
 			'routeProvider' => [
 				[
 					'url' => function(){
-							return zbase_angular_route('admin.users', [], true);
+						return zbase_angular_route('admin.users', [], true);
 						},
-					'templateUrl' => function(){
-							return zbase_angular_template_url('admin-users-template', []);
+							'templateUrl' => function(){
+						return zbase_angular_template_url('admin-users-template', []);
 						},
-					'controller' => 'adminUsersController'
-				],
-				[
-					'url' => function(){
-							return zbase_angular_route('admin.users', ['action' => 'view'], true) . '/:itemId';
+							'controller' => 'adminUsersController'
+						],
+						[
+							'url' => function(){
+								return zbase_angular_route('admin.users', ['action' => 'view'], true) . '/:itemId';
 						},
-					'templateUrl' => function(){
-							return zbase_url_from_route('admin-user-template', [],true);
+									'templateUrl' => function(){
+								return zbase_url_from_route('admin-user-template', [], true);
 						},
-					'controller' => 'adminUsersController'
-				],
-			],
-			'controllers' => [
-				[
-					'controller' => 'adminUsersController',
-					'view' => [
-						'file' => function(){
-							return zbase_view_render(zbase_view_file_module('users.views.angular.controllers.adminUsersController'));
+									'controller' => 'adminUsersController'
+								],
+							],
+							'controllers' => [
+								[
+									'controller' => 'adminUsersController',
+									'view' => [
+										'file' => function(){
+											return zbase_view_render(zbase_view_file_module('users.views.angular.controllers.adminUsersController'));
 						}
+									],
+								],
+							],
+						]
 					],
-				],
-			],
-		]
-	],
-	'controller' => [
-		'back' => [
-			'action' => [
-				'index' => [
-					'page' => [
-						'title' => 'Manage Users',
-						'headTitle' => 'Manage Users',
-						'subTitle' => '',
-						'breadcrumbs' => [
-							['label' => 'Users', 'link' => '#'],
+					'controller' => [
+						'back' => [
+							'action' => [
+								'index' => [
+									'page' => [
+										'title' => 'Manage Users',
+										'headTitle' => 'Manage Users',
+										'subTitle' => '',
+										'breadcrumbs' => [
+											['label' => 'Users', 'link' => '#'],
+										],
+									],
+								],
+								'view' => [
+									'page' => [
+										'title' => 'Manage Users',
+										'headTitle' => 'Manage Users',
+										'subTitle' => '',
+										'breadcrumbs' => [
+											['label' => 'Users', 'name' => 'admin.users'],
+										],
+									],
+								],
+							]
 						],
 					],
-				],
-			]
-		],
-	],
-	'event' => [],
-	'widgets' => [
-		'back' => [
-			'controller' => [
-				'action' => [
-					'index' => [
-						'admin-users' => null
+					'event' => [],
+					'widgets' => [
+						'back' => [
+							'controller' => [
+								'action' => [
+									'index' => [
+										'admin-users' => null
+									],
+									'json-index' => [
+										'admin-users' => null
+									],
+									'view' => [
+										'admin-user' => null
+									],
+									'json-view' => [
+										'admin-user' => null
+									],
+								],
+							],
+						],
 					],
-					'view' => [
-						'admin-user' => null
-					],
-				],
-			],
-		],
-	],
-];
+				];

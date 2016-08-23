@@ -187,9 +187,17 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
 			{
 				$page = [];
-				$page['title'] = $this->entity()->title();
-				$page['headTitle'] = $this->entity()->title();
-				zbase_view_page_details(['page' => $page]);
+				if(method_exists($this->entity(), 'pageProperty'))
+				{
+					$this->entity()->pageProperty($this);
+				}
+				else
+				{
+					$page['title'] = $this->entity()->title();
+					$page['headTitle'] = $this->entity()->title();
+					zbase_view_page_details(['page' => $page]);
+				}
+
 				if($this->entity()->hasSoftDelete())
 				{
 					if($this->entity()->trashed())
