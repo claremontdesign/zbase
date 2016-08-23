@@ -29,7 +29,7 @@ $code = zbase()->telegram()->userCode($user);
 			<strong>When you're done downloading, installing and creating an account in Telegram App click the button below</strong>:
 			<br />
 			<br />
-			<a class="btn btn-success" href="https://telegram.me/<?php echo $telegramBot ?>?start=<?php echo $code ?>">Click to enable Telegram notifications</a>
+			<a class="btn btn-success" target="_blank" href="https://telegram.me/<?php echo $telegramBot ?>?start=<?php echo $code ?>">Click to enable Telegram notifications</a>
 		</p>
 	<?php else: ?>
 		<div class="alert alert-success">You are currently receiving notifications via Telegram</div>

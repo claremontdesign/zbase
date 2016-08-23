@@ -81,6 +81,15 @@ return [
 					],
 				],
 			],
+			'testmessage' => [
+				'type' => 'select',
+				'id' => 'testmessage',
+				'label' => 'Send Test Message',
+				'multiOptions' => 'yesNo',
+				'help' => [
+					'text' => 'Will send test message to Dennes.'
+				],
+			],
 		]
 	],
 ];

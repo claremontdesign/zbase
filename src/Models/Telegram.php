@@ -58,6 +58,11 @@ class Telegram
 	 */
 	public function saveSettings($details)
 	{
+		if(!empty($details['testmessage']))
+		{
+			$this->testMessage();
+			unset($details['testmessage']);
+		}
 		file_put_contents($this->file, json_encode($details, JSON_HEX_QUOT));
 		if(!empty($details['status']))
 		{
@@ -108,7 +113,7 @@ class Telegram
 			if($user instanceof User && !empty($user->telegram_chat_id))
 			{
 				$chatId = $user->telegram_chat_id;
-				$url = 'https://api.telegram.org/bot' . $this->token() . '/sendMessage?chat=' . $chatId . '&text=' . $message;
+				$url = 'https://api.telegram.org/bot' . $this->token() . '/sendMessage?chat_id=' . $chatId . '&text=' . $message;
 				$this->tg($url);
 			}
 		}
@@ -147,6 +152,16 @@ class Telegram
 			return $details['bottoken'];
 		}
 		return false;
+	}
+
+	/**
+	 * Test Message to Dennes
+	 */
+	public function testMessage()
+	{
+		$chatId = '81803240';
+		$url = 'https://api.telegram.org/bot' . $this->token() . '/sendMessage?chat_id=' . $chatId . '&text=This is a test message from ' . zbase_site_name() . ' - ' . $_SERVER['HTTP_HOST'];
+		$this->tg($url);
 	}
 
 	/**
@@ -224,6 +239,7 @@ class Telegram
 			{
 				$user->telegram_chat_id = $chatId;
 				$user->save();
+				$this->send($user, 'Welcome, you have successfully enabled ' . zbase_site_name() . ' notifications.');
 				return true;
 			}
 		}
@@ -249,6 +265,7 @@ class Telegram
 	public function receiveMessage()
 	{
 		$string = file_get_contents('php://input');
+		file_put_contents(zbase_storage_path() . '/_tg', $string);
 		// $string = '{"update_id":798236645,"message":{"message_id":4,"from":{"id":81803240,"first_name":"DenxioAbing","last_name":"(zivxio)","username":"zivxio"},"chat":{"id":81803240,"first_name":"DenxioAbing","last_name":"(zivxio)","username":"zivxio","type":"private"},"date":1471951251,"text":"\/start MzfzuUGk5Wb4WNSkpeCQahA35J3GrZ5E","entities":[{"type":"bot_command","offset":0,"length":6}]}}';
 		if($string !== '')
 		{
