@@ -737,8 +737,8 @@ function zbase_captcha_render()
 	$siteKey = zbase_config_get('recaptcha.sitekey', false);
 	if(!empty($siteKey))
 	{
-		//zbase_view_javascript_add('catcha', 'https://www.google.com/recaptcha/api.js');
-		//return '<div class="g-recaptcha" data-sitekey="' . $siteKey . '"></div>';
+		zbase_view_javascript_add('catcha', 'https://www.google.com/recaptcha/api.js');
+		return '<div class="g-recaptcha" data-sitekey="' . $siteKey . '"></div>';
 	}
 }
 
