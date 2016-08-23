@@ -26,7 +26,7 @@ return [
 				return zbase_url_from_route('admin.users');
 			},
 			'input' => [
-				'placeholder' => 'Enter UserID, email address to search'
+				'placeholder' => 'Enter UserID, email address or name:Lenton; city:Davao; state:Davao del sur; role:stockist;'
 			],
 			'onload' => false,
 		],
