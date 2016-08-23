@@ -14,6 +14,11 @@
  */
 $user = zbase_auth_user();
 $hasTelegram = !empty($user->telegram_chat_id) ? true : false;
+if(empty($hasTelegram))
+{
+	$codeCheck = zbase()->telegram()->checkUserCode(zbase_auth_user());
+}
+
 $telegramBot = zbase()->telegram()->botusername();
 $code = zbase()->telegram()->userCode($user);
 ?>

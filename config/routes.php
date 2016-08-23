@@ -343,7 +343,8 @@ return [
 				'method' => 'telegramHook',
 				'enable' => true
 			],
-			'url' => '/telegram/{token?}',
+			'httpVerb' => ['post'],
+			'url' => '/telegram/hook',
 			'enable' => true
 		],
 	],

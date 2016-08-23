@@ -229,18 +229,23 @@ class Telegram
 	 *
 	 * @return string
 	 */
-	public function checkUserCode($code, $chatId)
+	public function checkUserCode(User $user)
 	{
-		$token = \DB::table('user_tokens')->where(['taggable_type' => 'telegram', 'token' => $code])->first();
-		if(!empty($token))
+		$userCode = \DB::table('user_tokens')->where(['taggable_type' => 'telegram', 'user_id' => $user->id()])->first();
+		if(!empty($userCode))
 		{
-			$user = zbase_user_byid($token->user_id);
-			if(!empty($user))
+			$codeFile = zbase_storage_path() . '/tg/' . $userCode->token;
+			if(file_exists($codeFile))
 			{
-				$user->telegram_chat_id = $chatId;
-				$user->save();
-				$this->send($user, 'Welcome, you have successfully enabled ' . zbase_site_name() . ' notifications.');
-				return true;
+				$chatId = trim(file_get_contents($codeFile));
+				if(!empty($chatId))
+				{
+					$user->telegram_chat_id = $chatId;
+					$user->save();
+					$this->send($user, 'Welcome, you have successfully enabled ' . zbase_site_name() . ' notifications.');
+					unlink($codeFile);
+					return true;
+				}
 			}
 		}
 		return false;
@@ -261,11 +266,10 @@ class Telegram
 
 	/**
 	 * Receive Message from Hook
+	 * @NOTUSED
 	 */
 	public function receiveMessage()
 	{
-		$string = file_get_contents('php://input');
-		file_put_contents(zbase_storage_path() . '/_tg', $string);
 		// $string = '{"update_id":798236645,"message":{"message_id":4,"from":{"id":81803240,"first_name":"DenxioAbing","last_name":"(zivxio)","username":"zivxio"},"chat":{"id":81803240,"first_name":"DenxioAbing","last_name":"(zivxio)","username":"zivxio","type":"private"},"date":1471951251,"text":"\/start MzfzuUGk5Wb4WNSkpeCQahA35J3GrZ5E","entities":[{"type":"bot_command","offset":0,"length":6}]}}';
 		if($string !== '')
 		{
