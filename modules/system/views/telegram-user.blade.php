@@ -15,15 +15,7 @@
 $user = zbase_auth_user();
 $hasTelegram = (bool) $user->telegram_chat_id;
 $telegramBot = zbase()->telegram()->botusername();
-$code = zbase_generate_code();
-
-\DB::table('user_tokens')->where(['user_id' => $user->id(), 'taggable_type' => 'telegram'])->delete();
-$token = [
-	'user_id' => $user->id(),
-	'token' => $code,
-	'taggable_type' => 'telegram'
-];
-\DB::table('user_tokens')->insert($token);
+$code = zbase()->telegram()->userCode();
 ?>
 <div class="col-md-12">
 	<h2>Receive Updates and Notifications via Telegram</h2>

@@ -184,4 +184,43 @@ class Telegram
 //		return file_get_contents($url, false, $context);
 	}
 
+	/**
+	 * Return a new user Code
+	 *
+	 * @return string
+	 */
+	public function userCode()
+	{
+		$code = zbase_generate_code();
+		\DB::table('user_tokens')->where(['user_id' => $user->id(), 'taggable_type' => 'telegram'])->delete();
+		$token = [
+			'user_id' => $user->id(),
+			'token' => $code,
+			'taggable_type' => 'telegram'
+		];
+		\DB::table('user_tokens')->insert($token);
+		return $code;
+	}
+
+
+	/**
+	 * Receive Message from Hook
+	 */
+	public function receiveMessage()
+	{
+		$code = zbase_request_query_input('start', false);
+		$string = file_get_contents('php://input');
+		$data = $code . "\n" . $string;
+		file_put_contents(zbase_storage_path() . '_tg', $data);
+//		if(!empty($code))
+//		{
+//			$code = \DB::table('user_tokens')->where(['token' => $code, 'taggable_type' => 'telegram'])->first();
+//			if(!empty($code))
+//			{
+//				//$user = zbase_user_byid($code->user_id);
+//				//$user->telegram_chat_id = '';
+//			}
+//		}
+	}
+
 }

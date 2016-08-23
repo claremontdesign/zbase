@@ -29,19 +29,7 @@ class ApiController extends Controller implements Interfaces\AttributeInterface
 	 */
 	public function telegramHook()
 	{
-		$code = zbase_request_query_input('start', false);
-		$string = file_get_contents('php://input');
-		$data = $code . "\n" . $string;
-		file_put_contents(zbase_storage_path() . '_tg', $data);
-//		if(!empty($code))
-//		{
-//			$code = \DB::table('user_tokens')->where(['token' => $code, 'taggable_type' => 'telegram'])->first();
-//			if(!empty($code))
-//			{
-//				//$user = zbase_user_byid($code->user_id);
-//				//$user->telegram_chat_id = '';
-//			}
-//		}
+		zbase()->telegram()->receiveMessage();
 	}
 
 	public function index()
