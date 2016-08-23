@@ -1734,7 +1734,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$page['headTitle'] = $this->displayName();
 			zbase_view_page_details(['page' => $page]);
 			$breadcrumbs = [
-				['label' => 'Users', 'name' => 'admin.users'],
+				['label' => 'Users', 'route' => ['name' => 'admin.users']],
 				['label' => '<span class="userDisplayName' . $this->id() . '">' . $this->displayName() . '</span>', 'link' => '#', 'title' => $this->displayName()],
 			];
 			zbase_view_breadcrumb($breadcrumbs);
