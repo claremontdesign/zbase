@@ -171,18 +171,24 @@ class Telegram
 	 */
 	public function tg($url)
 	{
-		if(zbase_is_dev())
+		try
 		{
-			zbase_alert('info', 'TG CALL: ' . $url);
+			if(zbase_is_dev())
+			{
+				zbase_alert('info', 'TG CALL: ' . $url);
+			}
+			$opts = array(
+				'http' => array(
+					'method' => "GET",
+					'header' => "Content-Type: application/x-www-form-urlencoded; charset: UTF-8"
+				)
+			);
+			$context = stream_context_create($opts);
+			return file_get_contents($url, false, $context);
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_exception_throw($e);
 		}
-		$opts = array(
-			'http' => array(
-				'method' => "GET",
-				'header' => "Content-Type: application/x-www-form-urlencoded; charset: UTF-8"
-			)
-		);
-		$context = stream_context_create($opts);
-		return file_get_contents($url, false, $context);
 	}
 
 	/**
