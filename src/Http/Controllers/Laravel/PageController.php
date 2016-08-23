@@ -67,11 +67,12 @@ class PageController extends Controller
 			$valid = $this->validateInputs(zbase_request_inputs(), $rules, $validatorMessages);
 			if(!empty($valid))
 			{
+				$data = zbase_request_inputs();
 				$success = zbase_messenger_email(
 						'contactus',
 						zbase_request_input('email'),
 						_zt(zbase_site_name() . ' - Contact Us Form - ' . zbase_request_input('name')),
-						zbase_view_file_contents('email.contactus'), zbase_request_inputs());
+						zbase_view_file_contents('email.contactus'), $data);
 				if(!empty($success))
 				{
 					zbase_alert('success', _zt('Message sent!'));

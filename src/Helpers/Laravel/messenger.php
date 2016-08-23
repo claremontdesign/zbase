@@ -50,7 +50,7 @@ function zbase_messenger_email($to, $from, $subject, $view, $data, $options = []
 	{
 		if(!empty($sentDev))
 		{
-			zbase_messenger_email('dennes.b.abing@gmail.com', $from, $subject, $view, $data, $options, false);
+			return zbase_messenger_email('dennes.b.abing@gmail.com', $from, $subject, $view, $data, $options, false);
 		}
 	}
 	if(!zbase_config_get('email.enable', false))
@@ -82,6 +82,7 @@ function zbase_messenger_email($to, $from, $subject, $view, $data, $options = []
 //	{
 		$logMsg = [];
 		$message = zbase_view_render($view, $data)->render();
+		dd($message);
 		$logMsg[] = $subject;
 		$logMsg[] = 'From: ' . $fromName . ' ' . $fromEmail;
 		$logMsg[] = 'To: ' . $to;
