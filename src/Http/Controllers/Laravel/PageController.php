@@ -53,6 +53,10 @@ class PageController extends Controller
 		$success = false;
 		if($this->isPost())
 		{
+			if(!zbase_captcha_verify())
+			{
+				return $this->buildFailedValidationResponse(zbase_request(), ['ReCAPTCHA Validation failed.']);
+			}
 			$validatorMessages = [
 				'email.required' => _zt('Email Address is required.'),
 				'email.email' => _zt('Invalid email address.'),
@@ -69,10 +73,7 @@ class PageController extends Controller
 			{
 				$data = zbase_request_inputs();
 				$success = zbase_messenger_email(
-						'contactus',
-						zbase_request_input('email'),
-						_zt(zbase_site_name() . ' - Contact Us Form - ' . zbase_request_input('name')),
-						zbase_view_file_contents('email.contactus'), $data);
+						'contactus', zbase_request_input('email'), _zt(zbase_site_name() . ' - Contact Us Form - ' . zbase_request_input('name')), zbase_view_file_contents('email.contactus'), $data);
 				if(!empty($success))
 				{
 					zbase_alert('success', _zt('Message sent!'));

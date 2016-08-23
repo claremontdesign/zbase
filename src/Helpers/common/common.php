@@ -730,16 +730,40 @@ function zbase_log($msg, $type = null, $logFile = null, $entity = null)
  */
 function zbase_captcha_render()
 {
-	/**
-	 * SiteKey: 6LcF7iYTAAAAAFNFEC9twUQSwQIfkr7XFt0E0Kkt
-	 * SecretKey: 6LcF7iYTAAAAAMfSI42BiekUi0UjhJUZj3NPnXPx
-	 */
 	$siteKey = zbase_config_get('recaptcha.sitekey', false);
 	if(!empty($siteKey))
 	{
 		zbase_view_javascript_add('catcha', 'https://www.google.com/recaptcha/api.js');
 		return '<div class="g-recaptcha" data-sitekey="' . $siteKey . '"></div>';
 	}
+}
+
+/**
+ * Verify Recaptcha
+ * @return boolean
+ */
+function zbase_captcha_verify()
+{
+	$secretKey = zbase_config_get('recaptcha.secretkey', false);
+	$response = zbase_request_input('g-recaptcha-response', false);
+	if($response !== false && !empty($secretKey))
+	{
+		if(!empty($response))
+		{
+			$response = json_decode(file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secretKey . '&response=' . $response . '&remoteip=' . zbase_ip()), TRUE);
+			if($response['success'] == FALSE)
+			{
+				zbase_alert(\Zbase\Zbase::ALERT_ERROR, 'ReCAPTCHA Validation Failed.');
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	return true;
 }
 
 /**
