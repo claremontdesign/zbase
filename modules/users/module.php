@@ -20,7 +20,7 @@
 return [
 	'id' => 'users',
 	'enable' => true,
-	'access' => 'admin',
+	'access' => 'admin,user_id::27',
 	'class' => null,
 	'backend' => true,
 	'frontend' => false,

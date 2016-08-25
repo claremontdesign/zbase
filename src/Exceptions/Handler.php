@@ -41,6 +41,8 @@ class Handler extends ExceptionHandler
 				$error .=  "<br />";
 				$error .= 'Date: ' . zbase_date_now()->format('Y-m-d h:i:s A') . "<br />";
 				$error .= 'URL: ' . zbase_url_uri() .  "<br />";
+				$error .= 'Is Posting: ' . zbase_request_is_post() ? 'Yes' : 'No' .  "<br />";
+				$error .= 'Is AJAX: ' . zbase_request_is_ajax() ? 'Yes' : 'No' .  "<br />";
 				$error .= 'Data: ' . json_encode(zbase_request_inputs()) .  "<br />";
 				$error .= 'Routes: ' . json_encode(zbase_route_inputs()) .  "<br />";
 				$error .= 'IP Address: ' . zbase_ip() .  "<br />";

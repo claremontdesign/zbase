@@ -311,7 +311,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		{
 			if($requestMethod == 'post')
 			{
-				$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post-json.post', $this->_v('event.' . zbase_section() . '.' . $action . '.post-json'));
+				$e = $this->_v('event.' . zbase_section() . '.' . $action . '.post-json.post', $this->_v('event.' . $action . '.post-json'));
 			}
 			else
 			{
@@ -457,7 +457,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				return;
 			}
 			$validationRules = $this->getValidationRules();
-			// dd($validationRules);
+//			 dd($validationRules);
 			if(!empty($validationRules))
 			{
 				$v = \Validator::make(zbase_request_inputs(), $validationRules, $this->getValidationMessages());
@@ -590,6 +590,25 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 					}
 				}
 			}
+			else
+			{
+				if($e instanceof \Zbase\Ui\Form\ElementInterface)
+				{
+					if($e instanceof \Zbase\Interfaces\ValidationInterface)
+					{
+						if($e->hasValidations())
+						{
+							$widgetValidationRules = $e->getValidationRules($this->getAction());
+							if(!is_array($widgetValidationRules))
+							{
+								$widgetValidationRules = [$e->getId() => $widgetValidationRules];
+							}
+							$this->_validationRules = array_replace_recursive($this->_validationRules, $widgetValidationRules);
+							$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages($this->getAction()));
+						}
+					}
+				}
+			}
 		}
 		$currentTab = zbase_request_input('tab', false);
 		if($e instanceof \Zbase\Interfaces\ValidationInterface)
@@ -689,8 +708,16 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		$this->prepare();
 		if(!empty($this->_elements))
 		{
-			foreach ($this->_elements as $element)
+			foreach ($this->_elements as $i => $element)
 			{
+				if($element instanceof Form)
+				{
+					$formE = $element->element($name);
+					if($formE instanceof \Zbase\Ui\Form\ElementInterface)
+					{
+						return $formE;
+					}
+				}
 				if($name == $element->name())
 				{
 					return $element;

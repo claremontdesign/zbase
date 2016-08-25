@@ -422,7 +422,18 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			 *
 			 * same::sudo
 			 * will only be for users with same level as the given access
+			 *
+			 * user_id::123
 			 */
+			if(preg_match('/user_id\:\:/', $access) > 0)
+			{
+				$access = str_replace('user_id::', '', (int) $access);
+				if(zbase_auth_user()->id() == $access)
+				{
+					return 1;
+				}
+				return 0;
+			}
 			if(preg_match('/only\:\:/', $access) > 0)
 			{
 				$access = str_replace('only::', '', $access);
@@ -581,6 +592,27 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			zbase_db_transaction_rollback();
 			zbase_exception_throw($e);
 		}
+	}
+
+	/**
+	 * Delete this USER from
+	 * DB
+	 *
+	 * This will is a soft delete
+	 */
+	public function deleteUser()
+	{
+		/**
+		 * Delete from Addresses
+		 * Delete from Profile
+		 * Delete from Logs
+		 * Delete from notifications
+		 * Delete from Roles
+		 * Delete from tokens
+		 */
+		$this->delete();
+		$this->clearEntityCacheById();
+		$this->clearEntityCacheByTableColumns();
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="Notifications">
@@ -1140,6 +1172,28 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			'local_key' => 'rolename.role_id',
 		];
 		return $joins;
+	}
+
+	public function queryFilters($filters, $sorting, $options = [])
+	{
+		if($options['widget']->id() != 'admin-users')
+		{
+			if(!empty($filters))
+			{
+				foreach ($filters as $index => $filter)
+				{
+					foreach ($filter as $wher => $op)
+					{
+						if(!empty($op['field']) && preg_match('/\./', $op['field']) == 0)
+						{
+							$filters[$index][$wher]['field'] = 'users.' . $op['field'];
+						}
+					}
+				}
+			}
+			return $filters;
+		}
+		return [];
 	}
 
 	/**

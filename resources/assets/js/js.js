@@ -339,14 +339,14 @@ function zbase_event_checkbox(selector, event, cb)
  * @returns {undefined}
  */
 function zbase_toast(type, msg, position) {
-	if (jQuery('.page-content-inner').length > 0)
-	{
-		zbase_alert(type, msg, jQuery('.page-content-inner'), {manipulation: 'prepend'});
-		return;
-	}
 	if (jQuery('.alert-content-wrapper').length > 0)
 	{
 		zbase_alert(type, msg, jQuery('.alert-content-wrapper'), {manipulation: 'prepend'});
+		return;
+	}
+	if (jQuery('.page-content-inner').length > 0)
+	{
+		zbase_alert(type, msg, jQuery('.page-content-inner'), {manipulation: 'prepend'});
 		return;
 	}
 	if (typeof toastr != 'undefined')

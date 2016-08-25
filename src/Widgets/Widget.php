@@ -452,7 +452,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 					$this->_entity = $entity;
 					return $this->_entity;
 				}
-				$this->_entityObject = $entity = zbase()->entity($entityName, [], true);
+				$this->_entity = $this->_entityObject = $entity = zbase()->entity($entityName, [], true);
 				$repoById = $this->_v('entity.repo.byId', null);
 				$repoByFilter = $this->_v('entity.repo.byFilter', null);
 				if(is_null($repoById))
@@ -548,7 +548,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 							zbase()->json()->addVariable('id', $id);
 							if(!empty($repoById) && !empty($id) && empty($byAlpha))
 							{
-								$filters['id'] = ['eq' => ['field' => $entity->getKey(), 'value' => $id]];
+								$filters['id'] = ['eq' => ['field' => $entity->getKeyName(), 'value' => $id]];
 							}
 							if($this->isCurrentUser())
 							{

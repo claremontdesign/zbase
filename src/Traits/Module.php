@@ -133,6 +133,7 @@ trait Module
 					if($isAjax)
 					{
 						zbase()->json()->addVariable('errors', $v->errors()->getMessages());
+						return new \Illuminate\Http\JsonResponse($v->errors()->getMessages(), 422);
 					}
 					else
 					{

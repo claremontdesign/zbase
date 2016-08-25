@@ -223,7 +223,18 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 				 * Merge filters from widget configuration
 				 * entity.filter.query
 				 */
-				$filters = array_merge($filters, $this->_v('entity.filter.query', []));
+				if(!empty($filters))
+				{
+					$filters = array_merge($filters, $this->_v('entity.filter.query', []));
+				}
+				else
+				{
+					$widgetFilter = $this->_v('entity.filter.query', false);
+					if(!empty($widgetFilter))
+					{
+						$filters = $widgetFilter;
+					}
+				}
 				if($this->isSearchable() && $this->isSearching())
 				{
 					if(method_exists($entityObject, 'querySearchFilters'))
