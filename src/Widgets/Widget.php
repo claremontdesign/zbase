@@ -546,7 +546,7 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 						if($this->isNode())
 						{
 							zbase()->json()->addVariable('id', $id);
-							if(!empty($repoById) && !empty($id) && empty($byAlpha))
+							if(!empty($repoById) && !empty($id) && empty($byAlpha) && empty($bySlug))
 							{
 								$filters['id'] = ['eq' => ['field' => $entity->getKeyName(), 'value' => $id]];
 							}

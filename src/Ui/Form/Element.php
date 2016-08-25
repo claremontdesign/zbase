@@ -401,7 +401,12 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		}
 		if(!empty($configuration['ui']))
 		{
-			return \Zbase\Ui\Ui::factory($configuration['ui']);
+			$ui = \Zbase\Ui\Ui::factory($configuration['ui']);
+			if($ui->enabled())
+			{
+				return $ui;
+			}
+			return null;
 		}
 		$type = !empty($configuration['type']) ? $configuration['type'] : 'text';
 		$id = !empty($configuration['id']) ? $configuration['id'] : null;
@@ -413,8 +418,11 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		{
 			$className = zbase_model_name(null, 'class.ui.form.type.' . strtolower($type), '\Zbase\Ui\Form\Type\\' . ucfirst($type));
 			$element = new $className($configuration);
-			$element->prepare();
-			return $element;
+			if($element->enabled())
+			{
+				$element->prepare();
+				return $element;
+			}
 		}
 		return null;
 	}

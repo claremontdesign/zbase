@@ -730,8 +730,9 @@ function zbase_log($msg, $type = null, $logFile = null, $entity = null)
  */
 function zbase_captcha_render()
 {
+	$enable = zbase_config_get('recaptcha.enable', false);
 	$siteKey = zbase_config_get('recaptcha.sitekey', false);
-	if(!empty($siteKey))
+	if(!empty($siteKey) && !empty($enable))
 	{
 		zbase_view_javascript_add('catcha', 'https://www.google.com/recaptcha/api.js');
 		return '<div class="g-recaptcha" data-sitekey="' . $siteKey . '"></div>';
@@ -744,9 +745,10 @@ function zbase_captcha_render()
  */
 function zbase_captcha_verify()
 {
+	$enable = zbase_config_get('recaptcha.enable', false);
 	$secretKey = zbase_config_get('recaptcha.secretkey', false);
 	$response = zbase_request_input('g-recaptcha-response', false);
-	if($response !== false && !empty($secretKey))
+	if($response !== false && !empty($secretKey)  && !empty($enable))
 	{
 		if(!empty($response))
 		{

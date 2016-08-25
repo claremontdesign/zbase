@@ -525,6 +525,10 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	protected function _createElement($element, $tabName = null)
 	{
 		$e = \Zbase\Ui\Form\Element::factory($element);
+		if(is_null($e))
+		{
+			return;
+		}
 		$e->setAttribute('widgetEntity', $this->entity());
 		if($e instanceof \Zbase\Widgets\Type\FormInterface)
 		{
@@ -681,7 +685,12 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			{
 				foreach ($elements as $element)
 				{
-					$this->_elements[] = $this->_createElement($element);
+					$e = $this->_createElement($element);
+					if(is_null($e))
+					{
+						continue;
+					}
+					$this->_elements[] = $e;
 				}
 			}
 			$this->_elements = $this->sortPosition($this->_elements);

@@ -384,6 +384,14 @@ function zbase_toast(type, msg, position) {
  */
 function zbase_alert(type, msg, selector, opt)
 {
+	if(selector === undefined)
+	{
+		selector = jQuery('.page-content-inner');
+	}
+	if(opt === undefined)
+	{
+		opt = {manipulation: 'append'};
+	}
 	if (type === 'error')
 	{
 		type = 'danger';
