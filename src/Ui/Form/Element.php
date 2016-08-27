@@ -195,6 +195,11 @@ class Element extends \Zbase\Ui\Ui implements \Zbase\Ui\Form\ElementInterface, I
 		{
 			$this->_value = zbase_form_old($this->name());
 		}
+		if($this->_value instanceof \Closure)
+		{
+			$func = $this->_value;
+			return $func($this);
+		}
 		return $this->_value;
 	}
 

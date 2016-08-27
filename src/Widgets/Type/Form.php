@@ -511,6 +511,14 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function getValidationRules()
 	{
+		if(zbase_request_is_post())
+		{
+			$currentTab = zbase_request_input('tab', false);
+			if(!empty($this->_validationRules[$currentTab]))
+			{
+				return $this->_validationRules[$currentTab];
+			}
+		}
 		return $this->_validationRules;
 	}
 
@@ -640,7 +648,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		$currentTab = zbase_request_input('tab', false);
 		if($e instanceof \Zbase\Interfaces\ValidationInterface)
 		{
-			// var_dump('_createElement: ' . $currentTab . ' : ' . $tabName);
+			//var_dump('_createElement: ' . $currentTab . ' : ' . $tabName);
 			if($e->hasValidations())
 			{
 				$formTag = $this->_v('form_tab', true);
@@ -649,7 +657,11 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				{
 					if($tabName == $currentTab)
 					{
-						$this->_validationRules[$e->name()] = $e->getValidationRules($this->getAction());
+						if(empty($this->_validationRules[$tabName]))
+						{
+							$this->_validationRules[$tabName] = [];
+						}
+						$this->_validationRules[$tabName] = [$e->name() => $e->getValidationRules($this->getAction())];
 						$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages($this->getAction()));
 					}
 				}

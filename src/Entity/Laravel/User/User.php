@@ -1328,6 +1328,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					{
 						\DB::table('users_roles')->where('user_id', $this->id())->delete();
 						\DB::table('users_roles')->insert(['user_id' => $this->id(), 'role_id' => $role->id()]);
+						$this->roles = $role->role_name;
+						$this->save();
+						$this->notify('Your Role were changed into ' . $role->role_name);
 						$this->clearEntityCacheByTableColumns();
 						$this->clearEntityCacheById();
 					}
@@ -1356,6 +1359,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					if(!empty($profileImage))
 					{
 						$newData['avatar'] = $profileImage;
+						$this->avatar = $profileImage;
+						$this->save();
 					}
 				}
 				$userProfile = zbase_entity('user_profile')->where('user_id', $this->id());

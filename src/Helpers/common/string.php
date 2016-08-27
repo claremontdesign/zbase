@@ -131,7 +131,7 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
  */
 function zbase_string_split_city_state($cityState)
 {
-	if(!empty($cityState))
+	if(!empty($cityState) && preg_match('/,/', $cityState) > 0)
 	{
 		$ret = [];
 		$cityEx = explode(',', $cityState);
@@ -145,5 +145,5 @@ function zbase_string_split_city_state($cityState)
 		}
 		return $ret;
 	}
-	return null;
+	return $cityState;
 }

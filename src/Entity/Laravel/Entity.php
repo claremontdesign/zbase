@@ -175,12 +175,15 @@ class Entity extends LaravelModel implements Interfaces\EntityInterface
 	{
 		foreach ($this->getColumns() as $columnName => $columnConfig)
 		{
-			$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'by_' . $columnName . '_' . $this->{$columnName});
-			if($columnName == $this->getKeyName())
+			if(is_string($this->{$columnName}))
 			{
-				$idValue = $this->{$columnName};
+				$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'by_' . $columnName . '_' . $this->{$columnName});
+				if($columnName == $this->getKeyName())
+				{
+					$idValue = $this->{$columnName};
+				}
+				zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
 			}
-			zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
 		}
 		if(!empty($idValue))
 		{
