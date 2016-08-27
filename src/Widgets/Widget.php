@@ -452,6 +452,12 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 					$this->_entity = $entity;
 					return $this->_entity;
 				}
+				if($entity instanceof \Zbase\Post\PostInterface)
+				{
+					$this->_entityObject = $entity;
+					$this->_entity = $entity;
+					return $this->_entity;
+				}
 				$this->_entity = $this->_entityObject = $entity = zbase()->entity($entityName, [], true);
 				$repoById = $this->_v('entity.repo.byId', null);
 				$repoByFilter = $this->_v('entity.repo.byFilter', null);

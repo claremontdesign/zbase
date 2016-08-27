@@ -138,6 +138,96 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	{
 		if(!empty($this->_entity))
 		{
+			// <editor-fold defaultstate="collapsed" desc="PostInterface">
+			/**
+			 * PostInterface
+			 * August 26, 2016
+			 */
+			if($this->_entity instanceof \Zbase\Post\PostInterface)
+			{
+				$entityObject = $this->entityObject();
+				$entity = $this->_entity;
+				$entityName = $entity->postTableName();
+				$perPage = 10;
+				$filters = [];
+				$sorting = [];
+				$joins = [];
+				$urlFilters = [];
+				$selects = ['*'];
+				if($entity instanceof \Illuminate\Database\Eloquent\Collection)
+				{
+					$entity = $this->_entity->first();
+					if($entity instanceof \Zbase\Interfaces\EntityInterface)
+					{
+						$perPage = $entity->postRowsPerPage();
+					}
+				}
+				$perPage = zbase_request_query_input('pp', $perPage);
+				$repo = $entityObject->repository();
+				if($this->isNode())
+				{
+					/**
+					 * Filters from the URL
+					 */
+					$urlFilters = $this->getRequestFilters();
+					if($this->isNodeCategory() && $entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+					{
+						/**
+						 * We are getting the nodes on each category
+						 *  switch to node entityObject
+						 */
+						$entityObject = zbase_entity($entityName . '_category', [], true);
+						$repo = $entityObject->repository();
+						$categories = $entity->getDescendantsAndSelf();
+						if(!empty($categories))
+						{
+							foreach ($categories as $category)
+							{
+								$urlFilters['category'][] = $category;
+							}
+						}
+					}
+					if($this->isPublic())
+					{
+						$urlFilters['public'] = true;
+					}
+					if($this->isCurrentUser())
+					{
+						$urlFilters['currentUser'] = true;
+					}
+					$filters = $entityObject->postDatatableQueryFilters($urlFilters, $this);
+					$selects = $entityObject->postDatatableQuerySelects($this);
+					$joins = $entityObject->postDatatableQueryJoins($this);
+					$sorting = $entityObject->postDatatableQuerySorting($this->getRequestSorting(), $this);
+					/**
+					 * Merge filters from widget configuration
+					 * entity.filter.query
+					 */
+					if(!empty($filters))
+					{
+						$filters = array_merge($filters, $this->_v('entity.filter.query', []));
+					}
+					else
+					{
+						$widgetFilter = $this->_v('entity.filter.query', false);
+						if(!empty($widgetFilter))
+						{
+							$filters = $widgetFilter;
+						}
+					}
+				}
+				$this->_repoSelects = $selects;
+				$this->_repoJoins = $joins;
+				$this->_repoSorts = $sorting;
+				$this->_repoFilters = $filters;
+				$this->_repo = $repo;
+				return $this->_repo;
+			}
+			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="EntityInterface">
+			/**
+			 * Will be deprecated in favor of PostInterface
+			 */
 			$entityObject = $this->entityObject();
 			$entity = $this->_entity;
 			$perPage = 10;
@@ -252,8 +342,9 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 			$repo->setDebug($debug);
 			$repo->setQueryName($this->getWidgetPrefix('Repo'));
 			$this->_repo = $repo;
+			return $this->_repo;
+			// </editor-fold>
 		}
-		return $this->_repo;
 	}
 
 	/**
@@ -518,7 +609,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 			}
 			return $filters;
 		}
-		return false;
+		return [];
 	}
 
 	/**

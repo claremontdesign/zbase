@@ -399,7 +399,10 @@ function zbase_object_factory($className, $config = [])
 			}
 		}
 	}
-	$object->setZbase(zbase());
+	if(method_exists($object, 'setZbase'))
+	{
+		$object->setZbase(zbase());
+	}
 	return $object;
 }
 
@@ -748,7 +751,7 @@ function zbase_captcha_verify()
 	$enable = zbase_config_get('recaptcha.enable', false);
 	$secretKey = zbase_config_get('recaptcha.secretkey', false);
 	$response = zbase_request_input('g-recaptcha-response', false);
-	if($response !== false && !empty($secretKey)  && !empty($enable))
+	if($response !== false && !empty($secretKey) && !empty($enable))
 	{
 		if(!empty($response))
 		{
@@ -766,6 +769,16 @@ function zbase_captcha_verify()
 		return false;
 	}
 	return true;
+}
+
+/**
+ * Currency Format
+ * @param integer $number
+ * @return string
+ */
+function zbase_currency_format($number)
+{
+	return zbase_config_get('currency.symbol', 'PHP') . number_format($number, 2);
 }
 
 /**

@@ -74,11 +74,24 @@ class DatabaseSeeder extends Seeder
 				if(!empty($enable))
 				{
 					$model = zbase_data_get($entity, 'model', null);
+					$isPost = zbase_data_get($entity, 'post', false);
+					$postModel = null;
 					$modelName = zbase_class_name($model);
-					if(method_exists($modelName, 'seedingEventPost'))
+					if(!empty($isPost))
 					{
-						echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - PostSeeding Event\n";
-						$modelName::seedingEventPost($entity);
+						$postModel = zbase_object_factory($modelName);
+						if($postModel instanceof \Zbase\Post\PostInterface)
+						{
+							$postModel->postTableSeeder($entity);
+						}
+					}
+					else
+					{
+						if(method_exists($modelName, 'seedingEventPost'))
+						{
+							echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - PostSeeding Event\n";
+							$modelName::seedingEventPost($entity);
+						}
 					}
 				}
 			}

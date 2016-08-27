@@ -1,6 +1,7 @@
 <?php
 
 ini_set('memory_limit', '1024M');
+error_reporting(E_ALL);
 /**
  * Zbase
  *
@@ -43,7 +44,7 @@ class CreateTable extends Migration
 		$entities = zbase_config_get('entity', []);
 		if(!empty($entities))
 		{
-			foreach ($entities as $entity)
+			foreach ($entities as $entityName => $entity)
 			{
 				$enable = zbase_data_get($entity, 'enable', false);
 				if(empty($enable))
@@ -65,9 +66,22 @@ class CreateTable extends Migration
 					continue;
 				}
 				$modelName = zbase_class_name($model);
-				if(method_exists($modelName, 'entityConfiguration'))
+				$isPostModel = zbase_data_get($entity, 'post', false);
+				$postModel = null;
+				if(!empty($isPostModel))
 				{
-					$entity = $modelName::entityConfiguration($entity);
+					$postModel = zbase_object_factory($modelName);
+					if($postModel instanceof \Zbase\Post\PostInterface)
+					{
+						$entity = $postModel->postTableConfigurations($entity);
+					}
+				}
+				if(empty($isPostModel) && empty($postModel))
+				{
+					if(method_exists($modelName, 'entityConfiguration'))
+					{
+						$entity = $modelName::entityConfiguration($entity);
+					}
 				}
 				$tableName = zbase_data_get($entity, 'table.name', null);
 				if(empty($tableName))
@@ -75,6 +89,11 @@ class CreateTable extends Migration
 					continue;
 				}
 				$columns = zbase_data_get($entity, 'table.columns', []);
+
+				if(!empty($postModel) && $postModel instanceof \Zbase\Post\PostInterface)
+				{
+					$columns = $postModel->postTableColumnsConfiguration($columns, $entity);
+				}
 				$nodeable = zbase_data_get($entity, 'table.nodeable', false);
 				if(!empty($nodeable))
 				{
@@ -89,8 +108,7 @@ class CreateTable extends Migration
 				{
 					$columns = $modelName::tableColumns($columns, $entity);
 				}
-
-				//// <editor-fold defaultstate="collapsed" desc="PivoTable">
+				// <editor-fold defaultstate="collapsed" desc="PivoTable">
 				$pivotable = false; //zbase_data_get($entity, 'table.pivotable', false);
 				if(!empty($pivotable))
 				{
@@ -291,6 +309,16 @@ class CreateTable extends Migration
 					{
 						$table->text('options')->nullable();
 					}
+					$roleable = zbase_data_get($entity, 'table.roleable', false);
+					if(!empty($optionable))
+					{
+						$table->string('roles', 255)->nullable()->comment('Roles/Access');
+					}
+					$remarkable = zbase_data_get($entity, 'table.remarkable', false);
+					if(!empty($remarkable))
+					{
+						$table->text('remarks')->nullable();
+					}
 					$sluggable = zbase_data_get($entity, 'table.sluggable', false);
 					if(!empty($sluggable))
 					{
@@ -319,7 +347,7 @@ class CreateTable extends Migration
 					{
 						$table->ipAddress('ip_address')->comment('IP Address');
 					}
-					$alphaId = zbase_data_get($entity, 'table.alphaId', false);
+					$alphaId = zbase_data_get($entity, 'table.alphaId', zbase_data_get($entity, 'table.alphable', false));
 					if(!empty($alphaId))
 					{
 						$table->string('alpha_id', 64)->nullable();
@@ -374,9 +402,21 @@ class CreateTable extends Migration
 					continue;
 				}
 				$modelName = zbase_class_name($model);
-				if(method_exists($modelName, 'entityConfiguration'))
+				$isPostModel = zbase_data_get($entity, 'post', false);
+				if(!empty($isPostModel))
 				{
-					$entity = $modelName::entityConfiguration($entity);
+					$postModel = zbase_object_factory($modelName);
+					if($postModel instanceof \Zbase\Post\PostInterface)
+					{
+						$entity = $postModel->postTableConfigurations($entity);
+					}
+				}
+				else
+				{
+					if(method_exists($modelName, 'entityConfiguration'))
+					{
+						$entity = $modelName::entityConfiguration($entity);
+					}
 				}
 				$tableName = zbase_data_get($entity, 'table.name', null);
 				if(!empty($enable) && !empty($tableName))

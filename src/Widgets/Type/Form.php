@@ -187,15 +187,22 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			if($this->entity() instanceof \Zbase\Widgets\EntityInterface)
 			{
 				$page = [];
-				if(method_exists($this->entity(), 'pageProperty'))
+				if($this->entity() instanceof \Zbase\Post\PostInterface)
 				{
-					$this->entity()->pageProperty($this);
+					$this->entity()->postPageProperty($this);
 				}
 				else
 				{
-					$page['title'] = $this->entity()->title();
-					$page['headTitle'] = $this->entity()->title();
-					zbase_view_page_details(['page' => $page]);
+					if(method_exists($this->entity(), 'pageProperty'))
+					{
+						$this->entity()->pageProperty($this);
+					}
+					else
+					{
+						$page['title'] = $this->entity()->title();
+						$page['headTitle'] = $this->entity()->title();
+						zbase_view_page_details(['page' => $page]);
+					}
 				}
 
 				if($this->entity()->hasSoftDelete())
@@ -218,7 +225,16 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 					$inputs = zbase_request_inputs();
 				}
 				$ret = $this->entity()->widgetController(zbase_request_method(), $action, $inputs, $this);
-				$actionMessages = $this->entity()->getActionMessages($action);
+
+				if($this->entity() instanceof \Zbase\Post\PostInterface)
+				{
+					$actionMessages = $this->entity()->postMessages();
+				}
+				else
+				{
+					$actionMessages = $this->entity()->getActionMessages($action);
+				}
+
 				if(!empty($actionMessages))
 				{
 					foreach ($actionMessages as $alertType => $alertMessages)
@@ -269,7 +285,14 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 						}
 						if($this->isCreating())
 						{
-							zbase_session_flash($this->entity()->entityName() . 'new', $this->entity()->id());
+							if($this->entity() instanceof \Zbase\Post\PostInterface)
+							{
+								zbase_session_flash($this->entity()->postTableName() . 'new', $this->entity()->postId());
+							}
+							else
+							{
+								zbase_session_flash($this->entity()->entityName() . 'new', $this->entity()->id());
+							}
 						}
 						return $this->_postEvent($action);
 					}
@@ -991,10 +1014,13 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	public function wrapperAttributes()
 	{
 		$attr = parent::wrapperAttributes();
-		if(($this->_action == 'delete' && strtolower(zbase_request_method()) != 'post') || ($this->isNode() && $this->_entity->hasSoftDelete() && empty($this->_entityIsDefault) && $this->_entity->trashed()))
+		if(!empty($this->_entity))
 		{
-			$attr['class'][] = 'action-delete';
-			$attr['style'][] = 'border:2px solid red; padding:20px;';
+			if(($this->_action == 'delete' && strtolower(zbase_request_method()) != 'post') || ($this->isNode() && $this->_entity->hasSoftDelete() && empty($this->_entityIsDefault) && $this->_entity->trashed()))
+			{
+				$attr['class'][] = 'action-delete';
+				$attr['style'][] = 'border:2px solid red; padding:20px;';
+			}
 		}
 		return $attr;
 	}

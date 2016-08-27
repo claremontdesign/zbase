@@ -2110,8 +2110,27 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'type' => 'timestamp',
 				'nullable' => true,
 				'comment' => 'Date password updated'
-			]
+			],
+			'avatar' => [
+				'hidden' => false,
+				'fillable' => false,
+				'nullable' => true,
+				'type' => 'string',
+				'subType' => 'avatarurl',
+				'length' => 255,
+				'comment' => 'Avatar URL'
+			],
+			'roles' => [
+				'hidden' => false,
+				'fillable' => false,
+				'nullable' => true,
+				'type' => 'text',
+				'length' => 255,
+				'comment' => 'User CSV Roles'
+			],
 		];
+
+
 		return $columns;
 	}
 
