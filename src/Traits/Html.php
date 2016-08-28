@@ -72,6 +72,19 @@ trait Html
 			{
 				if(is_array($value))
 				{
+					$valueAtt = '';
+//					foreach ($value as $v => $vls)
+//					{
+//						if(is_array($vls))
+//						{
+//							$valueAtt .= implode(' ', $vls);
+//						}
+//						else
+//						{
+//							$valueAtt .= $vls;
+//						}
+//					}
+//					$attributes[] = $key . '="' . $valueAtt . '"';
 					$attributes[] = $key . '="' . implode(' ', $value) . '"';
 				}
 				else

@@ -81,6 +81,19 @@ function zbase_response($response)
 			'info' => zbase_alerts('info'),
 			'warning' => zbase_alerts('warning'),
 		]);
+		$jsonScripts = zbase()->json()->getVariable('_html_script');
+		$jsonScriptReturn = '';
+		if(!empty($jsonScripts))
+		{
+			foreach ($jsonScripts as $jScripts)
+			{
+				if(!empty($jScripts[0]))
+				{
+					$jsonScriptReturn .= $jScripts[0] .';';
+				}
+			}
+		}
+		zbase()->json()->setVariable('_html_script', str_replace(';;',';',$jsonScriptReturn));
 		$forceResponse = zbase_request_input('forceResponse', zbase_request_query_input('forceResponse', false));
 		/**
 		 * JSONP Callback
@@ -171,7 +184,6 @@ function zbase_exception_throw(\Exception $e)
 //{
 //	zbase_exception_throw($e);
 //}
-
 //try
 //{
 //	zbase_db_transaction_start();

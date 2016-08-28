@@ -80,3 +80,7 @@
 .form-group.has-error input{
 	border-color:maroon !important;
 }
+.zbase-ui-wrapperzbase-ui-wrapper-pageHeader{
+	border-bottom:2px solid gray;
+	margin-bottom: 20px;
+}

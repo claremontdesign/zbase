@@ -99,3 +99,13 @@ function zbase_date_human($time, $format = DATE_FORMAT_DB)
 {
 	return zbase_date_from_format($format, $time)->diffForHumans();
 }
+
+/**
+ * Readable DAte
+ * Difference for Humans
+ * @return string
+ */
+function zbase_date_human_formatted($time, $format = DATE_FORMAT_DB)
+{
+	return zbase_date_from_format($format, $time)->format('F d, Y h:i A') . ' [' . zbase_date_human($time) . ']';
+}

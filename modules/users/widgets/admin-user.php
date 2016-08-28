@@ -16,7 +16,7 @@
  */
 return [
 	'type' => 'form',
-	'enable' => true,
+	'enable' => function(){return zbase_config_get('modules.users.widgets.adminUser', true);},
 	'config' => [
 		'form_tab' => false,
 		'form' => [

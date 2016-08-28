@@ -16,7 +16,7 @@
  */
 return [
 	'type' => 'form',
-	'enable' => true,
+	'enable' => function(){return zbase_config_get('modules.account.enable', true);},
 	/**
 	 * string|array
 	 * 	string: minimum|admin
@@ -71,7 +71,7 @@ return [
 				'label' => 'Profile',
 				'id' => 'profile',
 				'group' => 'accountTab',
-				'enable' => true,
+				'enable' => function(){return zbase_config_get('modules.account.widgets.account.tab.account', true);},
 				'position' => 100,
 				'formConfiguration' => [
 					'form' => [
@@ -123,11 +123,11 @@ return [
 				'label' => 'Notifications',
 				'id' => 'notifications',
 				'group' => 'accountTab',
-				'enable' => true,
+				'enable' => function(){return zbase_config_get('modules.account.widgets.account.tab.notifications', true);},
 				'position' => 9996,
 				'contents' => [
 					'notifications' => function(){
-						return zbase_view_render(zbase_view_file_module('account.views.notifications', 'account','zbase'), ['user' => zbase_auth_user()])->render();
+						return zbase_view_render(zbase_view_file_module('account.views.notifications', 'account','zbase'), ['user' => zbase_auth_user()]);
 					}
 				],
 				'formConfiguration' => [
@@ -143,7 +143,7 @@ return [
 				'label' => 'Username',
 				'id' => 'username',
 				'group' => 'accountTab',
-				'enable' => true,
+				'enable' => function(){return zbase_config_get('modules.account.widgets.account.tab.username', true);},
 				'formConfiguration' => [
 					'form' => [
 						'startTag' => [
@@ -223,7 +223,7 @@ return [
 				'label' => 'Email Address',
 				'id' => 'email',
 				'group' => 'accountTab',
-				'enable' => true,
+				'enable' => function(){return zbase_config_get('modules.account.widgets.account.tab.email', true);},
 				'formConfiguration' => [
 					'form' => [
 						'startTag' => [
@@ -284,7 +284,7 @@ return [
 				'label' => 'Update Password',
 				'id' => 'password',
 				'group' => 'accountTab',
-				'enable' => true,
+				'enable' => function(){return zbase_config_get('modules.account.widgets.account.tab.password', true);},
 				'formConfiguration' => [
 					'form' => [
 						'startTag' => [
@@ -329,7 +329,7 @@ return [
 				'label' => 'Profile Image',
 				'id' => 'images',
 				'group' => 'accountTab',
-				'enable' => true,
+				'enable' => function(){return zbase_config_get('modules.account.widgets.account.tab.images', true);},
 				'position' => 90,
 				'formConfiguration' => [
 					'angular' => [

@@ -343,10 +343,19 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 			{
 				$moduleClassname = !empty($this->modules[$name]['class']) ? $this->modules[$name]['class'] : zbase_model_name('module', 'class.module', \Zbase\Module\Module::class);
 				$module = new $moduleClassname;
+//				if($module->isEnable() && $module->hasAccess())
+//				{
+//					$module->setConfiguration($this->modules[$name]);
+//					$this->modules[$name] = $module;
+//				}
+//				else
+//				{
+//					unset($this->modules[$name]);
+//				}
 				$module->setConfiguration($this->modules[$name]);
 				$this->modules[$name] = $module;
 			}
-			if($this->modules[$name] instanceof \Zbase\Module\ModuleInterface)
+			if(!empty($this->modules[$name]) && $this->modules[$name] instanceof \Zbase\Module\ModuleInterface)
 			{
 				return $this->modules[$name];
 			}
@@ -393,9 +402,12 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 		foreach ($this->modules as $name => $m)
 		{
 			$m = $this->module($name, $m);
-			if(zbase_directory_check($m->getPath() . '/widgets'))
+			if(!empty($m))
 			{
-				$this->loadWidgetFrom($m->getPath() . '/widgets');
+				if(zbase_directory_check($m->getPath() . '/widgets'))
+				{
+					$this->loadWidgetFrom($m->getPath() . '/widgets');
+				}
 			}
 		}
 	}

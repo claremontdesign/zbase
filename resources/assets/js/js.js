@@ -384,13 +384,13 @@ function zbase_toast(type, msg, position) {
  */
 function zbase_alert(type, msg, selector, opt)
 {
-	if(selector === undefined)
+	if (selector === undefined)
 	{
 		selector = jQuery('.page-content-inner');
 	}
-	if(opt === undefined)
+	if (opt === undefined)
 	{
-		opt = {manipulation: 'append'};
+		opt = {manipulation: 'prepend'};
 	}
 	if (type === 'error')
 	{
@@ -499,6 +499,59 @@ function zbase_dom_insert_html(html, selector, mode)
 		}
 	}
 }
+
+/**
+ * Toggle between 2 elements on action
+ * @param e The event eg. click
+ * @param ele The selector  to attach the even
+ * @param showEle The current viewed selector
+ * @param hiddenEle The second selector that is by default, hidden
+ * @param selectorsToShow Selectors to show
+ * @param selectorsToHide Selectors to hide
+ * @param showCb Callback on showing
+ * @param hiddenCb Callback on hiding
+ * @returns
+ */
+function zbase_attach_toggle_event(e, ele, showEle, hiddenEle, selectorsToHide, showCb, hiddenCb)
+{
+	if (jQuery(ele).length > 0)
+	{
+		jQuery(ele).unbind(e).bind(e, function () {
+			jQuery(selectorsToHide).not(showEle).hide();
+			if (jQuery(showEle).is(':visible'))
+			{
+				if (showCb !== undefined && showCb !== null)
+				{
+					showCb();
+				}
+				jQuery(hiddenEle).show();
+				jQuery(showEle).hide();
+			} else {
+				if (hiddenCb !== undefined && hiddenCb !== null)
+				{
+					hiddenCb();
+				}
+				jQuery(hiddenEle).hide();
+				jQuery(showEle).show();
+			}
+		});
+	}
+}
+
+/**
+ * Show hide Element
+ * @returns {undefined}
+ */
+function zbase_toggle_element(e)
+{
+	if (jQuery(e).is(':visible'))
+	{
+		jQuery(e).hide();
+	} else {
+		jQuery(e).show();
+	}
+}
+
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="LOCALStorage">
 /**
@@ -815,18 +868,26 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 		});
 		return;
 	}
+	if (responseJSON._html_selector_remove !== undefined)
+	{
+		jQuery.each(responseJSON._html_selector_remove, function (i, content) {
+			jQuery.each(content, function (selector, html) {
+				jQuery(selector).remove();
+			});
+		});
+	}
 	if (responseJSON._html_selector_replace !== undefined)
 	{
 		jQuery.each(responseJSON._html_selector_replace, function (i, content) {
-			jQuery.each(content, function(selector, html){
-				jQuery(selector).html(html);
+			jQuery.each(content, function (selector, html) {
+				jQuery(selector).replaceWith(html);
 			});
 		});
 	}
 	if (responseJSON._html_selector_append !== undefined)
 	{
 		jQuery.each(responseJSON._html_selector_append, function (i, content) {
-			jQuery.each(content, function(selector, html){
+			jQuery.each(content, function (selector, html) {
 				jQuery(selector).append(html);
 			});
 		});
@@ -834,16 +895,24 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	if (responseJSON._html_selector_prepend !== undefined)
 	{
 		jQuery.each(responseJSON._html_selector_prepend, function (i, content) {
-			jQuery.each(content, function(selector, html){
+			jQuery.each(content, function (selector, html) {
 				jQuery(selector).prepend(html);
 			});
 		});
 	}
-	if (responseJSON._html_selector_remove !== undefined)
+	if (responseJSON._html_selector_show !== undefined)
 	{
-		jQuery.each(responseJSON._html_selector_remove, function (i, content) {
-			jQuery.each(content, function(selector, html){
-				jQuery(selector).remove();
+		jQuery.each(responseJSON._html_selector_show, function (i, content) {
+			jQuery.each(content, function (selector) {
+				jQuery(selector).show();
+			});
+		});
+	}
+	if (responseJSON._html_selector_hide !== undefined)
+	{
+		jQuery.each(responseJSON._html_selector_show, function (i, content) {
+			jQuery.each(content, function (selector) {
+				jQuery(selector).hide();
 			});
 		});
 	}
@@ -864,6 +933,10 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 		{
 			eval(packageRouteCallback + '(responseJSON);');
 		}
+	}
+	if (responseJSON._html_script !== undefined)
+	{
+		eval(responseJSON._html_script);
 	}
 	zbase_ajax_preloader_hide();
 });

@@ -21,9 +21,13 @@
  */
 function zbase_url_from_route($name, $params = [], $relative = false)
 {
+	if(!\Route::has($name))
+	{
+		return '#';
+	}
 	$routes = zbase_config_get('routes');
 	$prefix = '';
-	$name = str_replace('admin.', zbase_admin_key().'.', $name);
+	$name = str_replace('admin.', zbase_admin_key() . '.', $name);
 	$name = str_replace('admin', zbase_admin_key(), $name);
 	$usernameRouteEnabled = zbase_route_username();
 	if(isset($routes[$name]['usernameroute']))
@@ -54,9 +58,17 @@ function zbase_url_from_route($name, $params = [], $relative = false)
 	if(!empty($relative))
 	{
 		$home = route('index');
-		return str_replace($home, '', route($name, $params));
+		$url = str_replace($home, '', route($name, $params));
 	}
-	return route($name, $params);
+	else
+	{
+		$url = route($name, $params);
+	}
+	if($usernameRouteEnabled && !empty($usernameRoute))
+	{
+		$url = str_replace($usernameRoute . '/' . $usernameRoute, '/' . $usernameRoute . '/', $url);
+	}
+	return $url;
 }
 
 /**

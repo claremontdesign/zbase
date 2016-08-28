@@ -1,17 +1,36 @@
+<?php echo zbase_view_render(zbase_view_file_contents('email.header')); ?>
+
+
+ERROR: -----
+
+<?php echo $error ?>
+
+<br />
+<br />
+<br />
+MESSAGE: -------------------
+
+<?php echo $message ?>
+
+
+<br />
+<br />
+<br />
+--- DETAILS:
 <?php
-
-/**
- * Dx
- *
- * @link http://dennesabing.com
- * @author Dennes B Abing <dennes.b.abing@gmail.com>
- * @license proprietary
- * @copyright Copyright (c) 2015 ClaremontDesign/MadLabs-Dx
- * @version 0.0.0.1
- * @since Aug 16, 2016 9:27:47 PM
- * @file exceptions.blade.php
- * @project Zbase
- * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
- */
-
+$error = 'Date: ' . zbase_date_now()->format('Y-m-d h:i:s A') . "<br />";
+$error .= 'URL: ' . zbase_url_uri() . "<br />";
+$error .= 'Is Posting: ' . (zbase_request_is_post() ? 'Yes' : 'No') . "<br />";
+$error .= 'Is AJAX: ' . (zbase_request_is_ajax() ? 'Yes' : 'No') . "<br />";
+$error .= 'Data: ' . json_encode(zbase_request_inputs()) . "<br />";
+$error .= 'Routes: ' . json_encode(zbase_route_inputs()) . "<br />";
+$error .= 'IP Address: ' . zbase_ip() . "<br /><br /";
+if(zbase_auth_has())
+{
+	$user = zbase_auth_user();
+	$error .= 'User: ' . $user->email() . ' ' . $user->username() . '[' . $user->id() . ']' . "<br />";
+}
 echo $error;
+?>
+
+<?php echo zbase_view_render(zbase_view_file_contents('email.footer')); ?>

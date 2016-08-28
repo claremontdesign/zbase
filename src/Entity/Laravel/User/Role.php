@@ -163,18 +163,18 @@ class Role extends BaseEntity implements Interfaces\IdInterface
 			],
 			[
 				'parent_id' => 1,
-				'role_name' => 'manager'
-			],
-			[
-				'parent_id' => 1,
 				'role_name' => 'editor'
 			],
 			[
 				'parent_id' => 2,
-				'role_name' => 'admin'
+				'role_name' => 'manager'
 			],
 			[
 				'parent_id' => 3,
+				'role_name' => 'admin'
+			],
+			[
+				'parent_id' => 5,
 				'role_name' => 'sudo'
 			]
 		];

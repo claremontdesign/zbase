@@ -38,20 +38,7 @@ class Handler extends ExceptionHandler
 			$error = $e->getMessage();
 			if(preg_match('/failed to pass validation/', $error) == 0)
 			{
-				$error .=  "<br />";
-				$error .= 'Date: ' . zbase_date_now()->format('Y-m-d h:i:s A') . "<br />";
-				$error .= 'URL: ' . zbase_url_uri() .  "<br />";
-				$error .= 'Is Posting: ' . zbase_request_is_post() ? 'Yes' : 'No' .  "<br />";
-				$error .= 'Is AJAX: ' . zbase_request_is_ajax() ? 'Yes' : 'No' .  "<br />";
-				$error .= 'Data: ' . json_encode(zbase_request_inputs()) .  "<br />";
-				$error .= 'Routes: ' . json_encode(zbase_route_inputs()) .  "<br />";
-				$error .= 'IP Address: ' . zbase_ip() .  "<br />";
-				if(zbase_auth_has())
-				{
-					$user = zbase_auth_user();
-					$error .= 'User: ' . $user->email() . ' ' . $user->username() . '[' . $user->id() . ']' .  "<br />";
-				}
-				zbase_messenger_email('dennes.b.abing@gmail.com', 'noreply', 'DermaSecrets.Biz Error', zbase_view_file_contents('email.exceptions'), ['error' => $error]);
+				zbase_messenger_error(['error' => $error]);
 			}
 		}
 		return parent::report($e);
@@ -66,7 +53,38 @@ class Handler extends ExceptionHandler
 	 */
 	public function render($request, \Exception $e)
 	{
-		// return response()->view(zbase_view_file('errors.' . $e->getStatusCode()), compact('request', 'e'));
+		if(zbase_route_username())
+		{
+			$uri = trim(zbase_url_uri(), '/');
+			if(!empty($uri))
+			{
+				/**
+				 * instances like:
+				 * 	dxenns/dxenns/login
+				 * 	username/username/login
+				 */
+				$uriEx = explode('/', $uri);
+				if(!empty($uriEx))
+				{
+					$fU = null;
+					foreach ($uriEx as $u)
+					{
+						if($fU == $u)
+						{
+							$hasSame = true;
+							break;
+						}
+						$fU = $u;
+					}
+				}
+				if(!empty($hasSame))
+				{
+					$url = str_replace($fU . '/' . $fU, '/' . $fU, $uri);
+					header('location:'  . $url, true, 301);
+					exit();
+				}
+			}
+		}
 		return parent::render($request, $e);
 	}
 

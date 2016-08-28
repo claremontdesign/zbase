@@ -82,6 +82,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	protected $_repoJoins = [];
 	protected $_repoFilters = [];
 	protected $_repoSorts = [];
+	protected $_repoPerPage = 10;
 
 	/**
 	 * Has Actions Flag?
@@ -162,7 +163,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 						$perPage = $entity->postRowsPerPage();
 					}
 				}
-				$perPage = zbase_request_query_input('pp', $perPage);
+				$this->_repoPerPage = zbase_request_query_input('pp', $perPage);
 				$repo = $entityObject->repository();
 				if($this->isNode())
 				{
@@ -364,11 +365,11 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 						$entityObject = $this->entityObject();
 						if($entityObject->hasSoftDelete() && $this->nodeIncludeTrashed())
 						{
-							$this->_rows = $repo->withTrashed()->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, true);
+							$this->_rows = $repo->withTrashed()->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, $this->_repoPerPage);
 						}
 						else
 						{
-							$this->_rows = $repo->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, true);
+							$this->_rows = $repo->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, $this->_repoPerPage);
 						}
 					}
 				}

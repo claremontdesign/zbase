@@ -309,10 +309,21 @@ class CreateTable extends Migration
 					{
 						$table->text('options')->nullable();
 					}
-					$roleable = zbase_data_get($entity, 'table.roleable', false);
-					if(!empty($optionable))
+					$typeable = zbase_data_get($entity, 'table.typeable', false);
+					if(!empty($typeable))
 					{
-						$table->string('roles', 255)->nullable()->comment('Roles/Access');
+						$table->integer('type')->unsigned()->comment('Type')->nullable(true);
+					}
+					$addedable = zbase_data_get($entity, 'table.addedable', false);
+					if(!empty($addedable))
+					{
+						$table->integer('added_by')->unsigned()->comment('Added by')->nullable(true);
+						$table->index('added_by');
+					}
+					$roleable = zbase_data_get($entity, 'table.roleable', false);
+					if(!empty($roleable))
+					{
+						$table->text('roles')->nullable()->comment('Roles/Access');
 					}
 					$remarkable = zbase_data_get($entity, 'table.remarkable', false);
 					if(!empty($remarkable))

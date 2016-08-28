@@ -49,7 +49,7 @@ class Timestamp extends Data
 			{
 				$this->_viewParams['ui'] = $this;
 				$str = $this->htmlPreContent();
-				$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams())->__toString();
+				$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams());
 				$str .= $this->htmlPostContent();
 				$this->_rendered = true;
 				return $str;

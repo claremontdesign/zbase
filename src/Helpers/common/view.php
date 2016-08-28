@@ -800,6 +800,15 @@ function zbase_view_breadcrumb_render()
 	}
 }
 
+/**
+ * Return Breadcrumb
+ * @return string|html
+ */
+function zbase_view_breadcrumb_get()
+{
+	return zbase()->view()->getBreadcrumb();
+}
+
 // </editor-fold>
 
 /**

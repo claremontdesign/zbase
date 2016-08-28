@@ -19,8 +19,8 @@
  */
 return [
 	'id' => 'users',
-	'enable' => true,
-	'access' => 'admin,user_id::27',
+	'enable' => function(){return zbase_config_get('modules.users.enable', true);},
+	'access' => 'admin',
 	'class' => null,
 	'backend' => true,
 	'frontend' => false,

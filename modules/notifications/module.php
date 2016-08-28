@@ -53,7 +53,7 @@ return [
 				},
 				'height' => '250px',
 				'defaultContent' => function(){
-					zbase_view_script_add('mnotifications-script', zbase_view_render(zbase_view_file_module('notifications.views.js', 'notifications', 'zbase'))->render(), true);
+					zbase_view_script_add('mnotifications-script', zbase_view_render(zbase_view_file_module('notifications.views.js', 'notifications', 'zbase')), true);
 					$notifications = zbase_auth_user()->notificationsLatest();
 					if(!empty($notifications))
 					{

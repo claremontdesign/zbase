@@ -434,7 +434,7 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 		$title = $this->_v('controller.' . $section . '.action.' . $action . '.page.title', null);
 		$headTitle = $this->_v('controller.' . $section . '.action.' . $action . '.page.headTitle', $title);
 		$subTitle = $this->_v('controller.' . $section . '.action.' . $action . '.page.subTitle', null);
-		$breadcrumbs = $this->_v('controller.' . $section . '.action.' . $action . '.page.breadcrumbs', []);
+		$breadcrumbs = $this->_v('controller.' . $section . '.action.' . $action . '.page.breadcrumbs', $this->_v('controller.' . $section . '.action.index.page.breadcrumbs', []));
 		zbase_view_pagetitle_set($headTitle, $title, $subTitle);
 		if(!empty($breadcrumbs))
 		{

@@ -15,5 +15,5 @@
  */
 ?>
 <?php if(zbase()->telegram()->isEnabled()):?>
-	<?php echo zbase_view_render(zbase_view_file_module('system.views.telegram-user', 'system', 'zbase'), ['user' => zbase_auth_user()])->render();?>
+	<?php echo zbase_view_render(zbase_view_file_module('system.views.telegram-user', 'system', 'zbase'), ['user' => zbase_auth_user()]);?>
 <?php endif;?>

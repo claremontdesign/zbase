@@ -189,7 +189,7 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				$page = [];
 				if($this->entity() instanceof \Zbase\Post\PostInterface)
 				{
-					$this->entity()->postPageProperty($this);
+					$this->entity()->postPageProperties($this);
 				}
 				else
 				{
@@ -361,13 +361,27 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 					$action = 'update';
 				}
 				$byAlphaId = $this->_v('entity.repo.byAlphaId.route', false);
-				if(!empty($byAlphaId))
+				if($this->entityIsPostInterface($this->entity()))
 				{
-					$params = ['action' => $action, 'id' => $this->entity()->alphaId()];
+					if(!empty($byAlphaId))
+					{
+						$params = ['action' => $action, 'id' => $this->entity()->postAlphaId()];
+					}
+					else
+					{
+						$params = ['action' => $action, 'id' => $this->entity()->postId()];
+					}
 				}
 				else
 				{
-					$params = ['action' => $action, 'id' => $this->entity()->id()];
+					if(!empty($byAlphaId))
+					{
+						$params = ['action' => $action, 'id' => $this->entity()->alphaId()];
+					}
+					else
+					{
+						$params = ['action' => $action, 'id' => $this->entity()->id()];
+					}
 				}
 			}
 			else
@@ -947,8 +961,14 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function renderSubmitButton()
 	{
+		$cancelId = 'cancelButton' . $this->getHtmlId();
 		if($this->hasEntity())
 		{
+			if($this->_entity instanceof \Zbase\Post\PostInterface)
+			{
+				$postAction = $this->_v('post.action', $this->_action);
+				$cancelId = 'formCancelButton' . ucfirst($postAction) . $this->entity()->postHtmlId();
+			}
 			if(empty($this->_entityIsDefault) && $this->_entity->hasSoftDelete() && $this->_entity->trashed())
 			{
 				if($this->_action == 'restore')
@@ -992,11 +1012,11 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 			}
 			if(!empty($cancelUrl))
 			{
-				$cancelButton = '<a id="cancelButton' . $this->getHtmlId() . '" href="' . $cancelUrl . '" ' . $this->renderHtmlAttributes($cancelAttributes) . '>' . $cancelLabel . '</a>';
+				$cancelButton = '<a id="' . $cancelId . '" href="' . $cancelUrl . '" ' . $this->renderHtmlAttributes($cancelAttributes) . '>' . $cancelLabel . '</a>';
 			}
 			else
 			{
-				$cancelButton = '<button id="cancelButton' . $this->getHtmlId() . '" type="button" ' . $this->renderHtmlAttributes($cancelAttributes) . '>' . $cancelLabel . '</button>';
+				$cancelButton = '<button id="' . $cancelId . '" type="button" ' . $this->renderHtmlAttributes($cancelAttributes) . '>' . $cancelLabel . '</button>';
 			}
 		}
 		if(zbase_is_angular_template())
@@ -1016,7 +1036,8 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 	 */
 	public function submitButtonLabel()
 	{
-		return $this->_v('submit.button.' . $this->_action . '.label', $this->_v('submit.button.label', 'Submit'));
+		// return $this->_v('submit.button.' . $this->_action . '.label', $this->_v('submit.button.label', 'Submit'));
+		return $this->_v('submit.button.label', 'Submit');
 	}
 
 	/**

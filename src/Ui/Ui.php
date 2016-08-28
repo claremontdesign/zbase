@@ -473,7 +473,7 @@ abstract class Ui
 			$viewFile = $this->_v('html.content.post.view', false);
 			if(!empty($viewFile))
 			{
-				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this])->__toString();
+				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this]);
 			}
 			$html = $this->_v('html.content.post.html', false);
 			if(!empty($html))
@@ -498,7 +498,7 @@ abstract class Ui
 			$viewFile = $this->_v('html.content.append.view', false);
 			if(!empty($viewFile))
 			{
-				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this])->__toString();
+				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this]);
 			}
 			$html = $this->_v('html.content.append.html', false);
 			if(!empty($html))
@@ -523,7 +523,7 @@ abstract class Ui
 			$viewFile = $this->_v('html.content.prepend.view', false);
 			if(!empty($viewFile))
 			{
-				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this])->__toString();
+				return zbase_view_render(zbase_view_file_contents($viewFile), ['ui' => $this]);
 			}
 			$html = $this->_v('html.content.prepend.html', false);
 			if(!empty($html))
@@ -590,11 +590,11 @@ abstract class Ui
 				$str = $this->htmlPreContent();
 				if(!empty($this->_viewFileContent))
 				{
-					$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams())->__toString();
+					$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams());
 				}
 				else
 				{
-					$str .= zbase_view_render($this->_viewFile, $this->getViewParams())->__toString();
+					$str .= zbase_view_render($this->_viewFile, $this->getViewParams());
 				}
 				$str .= $this->htmlPostContent();
 				$this->_rendered = true;

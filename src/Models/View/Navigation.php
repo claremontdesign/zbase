@@ -211,7 +211,7 @@ class Navigation
 //		$str .= '</a>' . EOF;
 //		$str .= $childStr;
 //		$str .= '</li>' . EOF;
-
+		$str = '';
 		$classIsActive = (!empty($this->active) ? 'active' : '');
 		$aPre = '';
 		$aPost = '';
@@ -219,7 +219,7 @@ class Navigation
 		$title = $this->title;
 		$aAttributes = $this->renderHtmlAttributes();
 		$label = '';
-
+//
 		$childStr = $this->_childrenMenu();
 		$label .= '<i class="' . $this->icon . '"></i>' . EOF;
 		$label .= '<span class="title">' . $this->label . '</span>' . EOF;

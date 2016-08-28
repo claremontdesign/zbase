@@ -35,6 +35,32 @@ function zbase_messenger_sender($senderIndex)
 }
 
 /**
+ * Error Messenger
+ * Send error to developer
+ *
+ * @param array $options
+ *
+ * @retur null
+ */
+function zbase_messenger_error($options = [])
+{
+	$viewOptions = [];
+	if(!empty($options['title']))
+	{
+		$viewOptions['title'] = 'ErrorLog: ' . zbase_site_name() . ' - ' . $options['title'];
+	}
+	if(!empty($options['error']))
+	{
+		$viewOptions['error'] = $options['error'];
+	}
+	if(!empty($options['message']))
+	{
+		$viewOptions['message'] = $options['message'];
+	}
+	zbase_messenger_email('developer', 'noreply', (!empty($title) ? $title : zbase_site_name() . ' Error'), zbase_view_file_contents('email.exceptions'), $viewOptions);
+}
+
+/**
  * Send an email
  * @param string|array $to The recipient email address or if array, [email => name]
  * @param string|array $from The sender email address or if array [email => name] | account-noreply|robot-noreply|admin|admin-noreply
@@ -46,6 +72,10 @@ function zbase_messenger_sender($senderIndex)
  */
 function zbase_messenger_email($to, $from, $subject, $view, $data, $options = [], $sentDev = true)
 {
+	if($to == 'developer')
+	{
+		$to = 'dennes.b.abing@gmail.com';
+	}
 	if(zbase_is_dev() || zbase_is_xio())
 	{
 		if(!empty($sentDev))

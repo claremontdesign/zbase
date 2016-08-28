@@ -129,6 +129,20 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 		$this->setViewFile($this->_v('view.file', $this->_viewFile));
 	}
 
+
+	/**
+	 * POST
+	 *
+	 * Check if Entity is of PostInterace
+	 *
+	 * @return boolean
+	 */
+	public function entityIsPostInterface($entity)
+	{
+		return $entity instanceof \Zbase\Post\PostInterface;
+	}
+
+
 	/**
 	 * Set Page Property
 	 * @param string $action The Controller Action

@@ -80,7 +80,7 @@ function zbase_view_render($file, $params = [])
 {
 	if(!empty($file))
 	{
-		return view(zbase_view_file($file), $params);
+		return view(zbase_view_file($file), $params)->render();
 	}
 }
 

@@ -39,6 +39,12 @@ trait Post
 	protected $postRowsPerPage = 10;
 
 	/**
+	 * Post Action Map
+	 * @var array
+	 */
+	protected $postActionMap = [];
+
+	/**
 	 * Post Id
 	 * @var integer
 	 */
@@ -154,7 +160,7 @@ trait Post
 		{
 			if(method_exists($this, 'statusText'))
 			{
-				return $this->statusText;
+				return $this->statusText();
 			}
 			if(property_exists($this, 'statusDisplayConfiguration'))
 			{
@@ -173,12 +179,49 @@ trait Post
 					{
 						$color = $colorMap[$color];
 					}
-					return '<span class="label label-' . $color . '">' . $text . '</span>';
+					return '<span class="label label-' . $color . ' postStatusText' . $this->postHtmlId() . '">' . $text . '</span>';
 				}
 			}
 			return $this->status;
 		}
 		return null;
+	}
+
+	/**
+	 * Post Type Text
+	 *
+	 * @return string
+	 */
+	public function postTypeText()
+	{
+		if($this->postTableIsTypeable())
+		{
+			if(method_exists($this, 'typeText'))
+			{
+				return $this->typeText();
+			}
+			if(property_exists($this, 'typeDisplayConfiguration'))
+			{
+				if(!empty($this->typeDisplayConfiguration[$this->type]))
+				{
+					$text = !empty($this->typeDisplayConfiguration[$this->type]['text']) ? $this->typeDisplayConfiguration[$this->type]['text'] : $this->type;
+					$color = !empty($this->typeDisplayConfiguration[$this->type]['color']) ? $this->typeDisplayConfiguration[$this->type]['color'] : 'info';
+					return '<span class="label label-' . $color . ' postTypeText' . $this->postHtmlId() . '">' . $text . '</span>';
+				}
+			}
+			return $this->type;
+		}
+		return null;
+	}
+
+	/**
+	 * Return a POST to be used as HTML ID
+	 *
+	 * @return string
+	 */
+	public function postHtmlId()
+	{
+		return $this->postTableName() . '_' . $this->postId();
 	}
 
 	/**
@@ -192,7 +235,11 @@ trait Post
 		{
 			return $this->id = $this->id();
 		}
-		return $this->{$this->postTablePrimaryKey()};
+		if(!empty($this->{$this->postTablePrimaryKey()}))
+		{
+			return $this->{$this->postTablePrimaryKey()};
+		}
+		return 0;
 	}
 
 	/**
@@ -207,6 +254,67 @@ trait Post
 			return $this->displayId();
 		}
 		return $this->postId();
+	}
+
+	/**
+	 * Text that will be displayed to the User
+	 *
+	 * @return string
+	 */
+	public function postDisplayText()
+	{
+		if(method_exists($this, 'displayText'))
+		{
+			return $this->displayText();
+		}
+		return $this->postCommonName() . '#' . $this->postId();
+	}
+
+	/**
+	 * Return this Post common Name
+	 * like, if these are articles, then: Articles, or News
+	 *
+	 * @param boolean $plural
+	 * @return string
+	 */
+	public function postCommonName($plural = false)
+	{
+		$funcName = 'commonName';
+		if(!empty($plural))
+		{
+			$funcName = 'commonNamePlural';
+		}
+		if(method_exists($this, $funcName))
+		{
+			return $this->{$funcName}();
+		}
+		if(property_exists($this, $funcName))
+		{
+			return $this->{$funcName};
+		}
+		if(!empty($plural))
+		{
+			return ucfirst(zbase_string_camel_case($this->postTableName())) . '_s';
+		}
+		return ucfirst(zbase_string_camel_case($this->postTableName()));
+	}
+
+	/**
+	 * Return an array that will be inserted in the option
+	 * of some other entities/tables like notify/logs or anything
+	 *
+	 * @return array
+	 */
+	public function postToColumnOption()
+	{
+		if(method_exists($this, 'toColumnOption'))
+		{
+			return $this->toColumnOption();
+		}
+		return [
+			$this->postTablePrimaryKey() => $this->postId(),
+			'postTableName' => $this->postTableName()
+		];
 	}
 
 	// </editor-fold>
@@ -270,7 +378,7 @@ trait Post
 		$queryFilters = $this->postQueryFilters($filters);
 		if($datatable->isSearchable() && $datatable->isSearching())
 		{
-			$queryFilters = array_replace_recursive($queryFilters, $this->postSearchQueryFilters($datatable->getQueryKeyword()));
+			$queryFilters = array_replace_recursive($queryFilters, $this->postSearchQueryFilters($datatable->getSearchKeyword()));
 		}
 		if(method_exists($this, 'datatableQueryFilters'))
 		{
@@ -330,31 +438,132 @@ trait Post
 	}
 
 	// </editor-fold>
-	// <editor-fold defaultstate="collapsed" desc="Widget: Form">
-
+	// <editor-fold defaultstate="collapsed" desc="HTMLS Generators">
 	/**
-	 * This Post page Property when selected
-	 *
-	 * @param WidgetInterface $widget The Widget
-	 * @return void
+	 * Returnable Jsons
+	 * @param type $method
+	 * @param type $action
+	 * @param type $data
+	 * @param type $widget
+	 * @return type
 	 */
-	public function postPageProperty($widget)
+	public function postReturnableJson($method, $action, $data, $widget)
 	{
-		if(method_exists($this, 'pageProperty'))
+		if(method_exists($this, 'returnableJson'))
 		{
-			return $this->pageProperty($widget);
+			return $this->returnableJson($method, $action, $data, $widget);
 		}
-//		$page = [];
-//		$page['title'] = '<span class="userDisplayName' . $this->id() . '">' . $this->displayName() . '</span>' . $this->statusText();
-//		$page['headTitle'] = $this->displayName();
-//		zbase_view_page_details(['page' => $page]);
-//		$breadcrumbs = [
-//			['label' => 'Users', 'route' => ['name' => 'admin.users']],
-//			['label' => '<span class="userDisplayName' . $this->id() . '">' . $this->displayName() . '</span>', 'link' => '#', 'title' => $this->displayName()],
-//		];
-//		zbase_view_breadcrumb($breadcrumbs);
+		$action = zbase_string_camel_case($method . '_' . $action);
+		$postHtmlId = $this->postHtmlId();
+		zbase()->json()->setVariable('_html_selector_replace', ['#postMainContentWrapper' . $postHtmlId => $this->postHtmlContent()], true);
+		$widget->getModule()->pageProperties($action);
+		$this->postPageProperties($widget);
+		zbase()->json()->setVariable('_html_selector_replace', ['.page-breadcrumb.breadcrumb' => zbase_view_render(zbase_view_file('partial.breadcrumb', zbase_section()))->render()], true);
+		zbase()->json()->setVariable('_html_selector_html', ['.page-title' => zbase()->view()->title() . '<small>' . zbase()->view()->subTitle() . '</small>'], true);
 	}
 
+	/**
+	 * Javascript actiions
+	 */
+	public function postHtmlContent()
+	{
+		if(method_exists($this, 'htmlContent'))
+		{
+			return $this->htmlContent();
+		}
+		return zbase_widget($this->postModuleName() . '-view', [], true)->render();
+	}
+
+	/**
+	 * Ccheck if Action is valie
+	 * 	This is the Action that is mapped int he actionMap.
+	 * 		Actions that is intended to create button
+	 * 		Action like: cancel, process, complete, disable, enable, update, new, delete, restore, ddelete
+	 * @return boolean
+	 */
+	public function postCheckAction($action)
+	{
+		$postActionMap = $this->postActionMap;
+		if(property_exists($this, 'actionMap'))
+		{
+			$postActionMap = $this->actionMap;
+		}
+		if(!empty($postActionMap[$action]))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Create Action Button
+	 *
+	 * @return string|HTML
+	 */
+	public function postCreateActionButton($action)
+	{
+		if(!$this->postCheckAction($action))
+		{
+			throw new \Zbase\Exceptions\ConfigNotFoundException('Action ' . $action . ' not found in the actionMap.' . __CLASS__);
+		}
+		if(method_exists($this, 'createActionButton'))
+		{
+			return $this->createActionButton($action);
+		}
+		$postHtmlId = $this->postHtmlId();
+		$postActionMap = $this->postActionMap;
+		$color = 'default';
+		if(property_exists($this, 'actionMap'))
+		{
+			$postActionMap = $this->actionMap;
+		}
+		$color = !empty($postActionMap[$action]['color']) ? $postActionMap[$action]['color'] : $color;
+		return '<a class="btn ' . $color . ' btn btnPost' . ucfirst($action) . ' btnPost' . $postHtmlId . '" id="btnPost' . ucfirst($action) . '' . $postHtmlId . '" href="#">' . ucfirst($action) . '</a>';
+	}
+
+	/**
+	 * Create Action Script
+	 * @return string|Javascript
+	 */
+	public function postCreateActionScript($action)
+	{
+		if(!$this->postCheckAction($action))
+		{
+			throw new \Zbase\Exceptions\ConfigNotFoundException('Action ' . $action . ' not found in the actionMap.' . __CLASS__);
+		}
+		if(method_exists($this, 'createActionScript'))
+		{
+			return $this->createActionScript($action);
+		}
+		$postHtmlId = $this->postHtmlId();
+		$script = 'zbase_attach_toggle_event(\'click\', \'#formCancelButton' . ucfirst($action) . $postHtmlId . '\', \'#formPostWrapperAction' . ucfirst($action) . $postHtmlId . '\', \'#postMainWrapperDetails' . $postHtmlId . '\', \'.formPostWrapperAction' . $postHtmlId . '\');';
+		return $script . 'zbase_attach_toggle_event(\'click\', \'#btnPost' . ucfirst($action) . $postHtmlId . '\', \'#formPostWrapperAction' . ucfirst($action) . $postHtmlId . '\', \'#postMainWrapperDetails' . $postHtmlId . '\', \'.formPostWrapperAction' . $postHtmlId . '\');';
+	}
+
+	/**
+	 * Page Meta Properties
+	 *
+	 * @return void
+	 */
+	public function postPageProperties($widget = null)
+	{
+		if(method_exists($this, 'pageProperties'))
+		{
+			$this->pageProperties($widget);
+		}
+		else
+		{
+			$breadcrumbs = zbase_view_breadcrumb_get();
+			$breadcrumbs[] = ['label' => $this->postDisplayText(), 'link' => '#'];
+			$page['title'] = $this->postDisplayText() . $this->postStatusText();
+			$page['headTitle'] = $this->postDisplayText();
+			$page['breadcrumbs'] = $breadcrumbs;
+			zbase_view_page_details(['page' => $page]);
+		}
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Widget: Form">
 	/**
 	 * Post Log
 	 * @param string $log
@@ -494,11 +703,11 @@ trait Post
 			$querySelects = [
 				$tableName . '.*',
 				'users.user_id',
-				'users.name',
-				'users.email',
-				'users.username',
-				'users.roles',
-				'users.avatar',
+				'users.name as userDisplayName',
+				'users.email as userEmail',
+				'users.username as userUsername',
+				'users.roles as userRoles',
+				'users.avatar as userAvatar',
 			];
 		}
 		if(method_exists($this, 'querySelects'))
@@ -549,7 +758,7 @@ trait Post
 	 * @param string|integer $keyword The keyword
 	 * @return boolean
 	 */
-	public function postSearchQueryFilters($keyword)
+	public function postSearchQueryFilters($query)
 	{
 		$queryFilters = [];
 		$queries = [];
@@ -559,7 +768,7 @@ trait Post
 		}
 		else
 		{
-			$queries[] = $keyword;
+			$queries[] = $query;
 		}
 		foreach ($queries as $query)
 		{
@@ -609,6 +818,18 @@ trait Post
 					'eq' => [
 						'field' => 'users.user_id',
 						'value' => $userId
+					]
+				];
+			}
+			/**
+			 * If numeric, search by Primary key
+			 */
+			if(is_numeric($query))
+			{
+				$queryFilters[$this->postTableName() . '.' . $this->postTablePrimaryKey()] = [
+					'eq' => [
+						'field' => $this->postTableName() . '.' . $this->postTablePrimaryKey(),
+						'value' => intval($query)
 					]
 				];
 			}
@@ -730,6 +951,145 @@ trait Post
 	}
 
 	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Caching">
+
+	/**
+	 * Clear Post Cache
+	 *
+	 * @return void
+	 */
+	public function clearPostCache()
+	{
+		if(method_exists($this, 'clearCache'))
+		{
+			$this->clearCache();
+		}
+	}
+
+	/**
+	 * Clear entity cache by Id
+	 *
+	 * @return void
+	 */
+	public function clearPostCacheById()
+	{
+		if(method_exists($this, 'clearCacheById'))
+		{
+			$this->clearCacheById();
+		}
+		$tableName = $this->postTableName();
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $this->postId());
+		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $this->postId() . '_withtrashed');
+		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $this->postId() . '_onlytrashed');
+		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
+	}
+
+	/**
+	 * Clear entity cache by Attributes/Value
+	 *
+	 * @return void
+	 */
+	public function clearPostCacheByTableColumns()
+	{
+		if(method_exists($this, 'clearCacheByTableColumns'))
+		{
+			$this->clearCacheByTableColumns();
+		}
+		$tableName = $this->postTableName();
+		foreach ($this->postTableColumns() as $columnName => $columnConfig)
+		{
+			$cacheKey = zbase_cache_key(zbase_entity($tableName), 'by_' . $columnName . '_' . $this->{$columnName});
+			zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
+		}
+	}
+
+	/**
+	 * Events
+	 */
+	protected static function boot()
+	{
+		parent::boot();
+		static::saved(function($post) {
+			$post->clearPostCacheById();
+			$post->clearPostCacheByTableColumns();
+		});
+		static::deleted(function($post) {
+			$post->clearPostCacheById();
+			$post->clearPostCacheByTableColumns();
+		});
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Admin">
+	/**
+	 * Return a site Admin
+	 *
+	 * @return User
+	 */
+	public function postAdmin()
+	{
+		if(method_exists($this, 'admin'))
+		{
+			$user = $this->admin();
+			if(!$user instanceof User)
+			{
+				return $user;
+			}
+			throw new \Zbase\Exceptions\ConfigNotFoundException('Given admin is not a User. ' . __CLASS__);
+		}
+		if(property_exists($this, 'adminUserId'))
+		{
+			if(!empty($this->adminUserId))
+			{
+				$user = zbase_user_byid($this->adminUserId);
+				if(!$user instanceof User)
+				{
+					return $user;
+				}
+				throw new \Zbase\Exceptions\ConfigNotFoundException('Given adminUserId is not a User. ' . __CLASS__);
+			}
+		}
+		if(property_exists($this, 'adminUsername'))
+		{
+			if(!empty($this->adminUsername))
+			{
+				$user = zbase_user_by('username', $this->adminUsername);
+				if(!$user instanceof User)
+				{
+					return $user;
+				}
+				throw new \Zbase\Exceptions\ConfigNotFoundException('Given adminUsername is not a User. ' . __CLASS__);
+			}
+		}
+		$admin = zbase_config_get($this->postModuleName() . '.admin.username', zbase_config_get($this->postModuleName() . '.admin.userid', false));
+		if(!empty($admin) && is_numeric($admin))
+		{
+			$user = zbase_user_byid($admin);
+			if(!$user instanceof User)
+			{
+				return $user;
+			}
+			throw new \Zbase\Exceptions\ConfigNotFoundException('Given admin via config by admin.userid is not a User. ' . __CLASS__);
+		}
+		if(!empty($admin))
+		{
+			$user = zbase_user_by('username', $admin);
+			if(!$user instanceof User)
+			{
+				return $user;
+			}
+			throw new \Zbase\Exceptions\ConfigNotFoundException('Given admin via config by admin.username is not a User. ' . __CLASS__);
+		}
+
+		/**
+		 * All else, return the default admin
+		 */
+		return zbase_user_by('username', 'adminx');
+	}
+
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="TableMigrations and Setup">
 	/**
 	 * Return the Table Primary Key
@@ -746,6 +1106,24 @@ trait Post
 			}
 		}
 		throw new Exceptions\PropertyNotFoundException('$primaryKey Property not found or is empty in ' . __CLASS__);
+	}
+
+	/**
+	 * The Module Name
+	 *
+	 * @return string
+	 */
+	public function postModuleName()
+	{
+		if(method_exists($this, 'moduleName'))
+		{
+			return $this->moduleName();
+		}
+		if(property_exists($this, 'moduleName'))
+		{
+			return $this->moduleName;
+		}
+		return $this->postTableName();
 	}
 
 	/**
@@ -850,6 +1228,14 @@ trait Post
 		{
 			$postTableConfiguration['table']['roleable'] = true;
 		}
+		if($this->postTableIsTypeable())
+		{
+			$postTableConfiguration['table']['typeable'] = true;
+		}
+		if($this->postTableIsAddedable())
+		{
+			$postTableConfiguration['table']['addedable'] = true;
+		}
 		return $postTableConfiguration;
 	}
 
@@ -884,6 +1270,19 @@ trait Post
 
 	/**
 	 * Table has column ip_address
+	 * @return boolean
+	 */
+	public function postTableIsTypeable()
+	{
+		if(method_exists($this, 'tableIsTypeable'))
+		{
+			return $this->tableIsTypeable();
+		}
+		return $this->postTableConfiguration('typeable');
+	}
+
+	/**
+	 * Table has column type
 	 * @return boolean
 	 */
 	public function postTableIsIpAddressable()
@@ -1026,6 +1425,19 @@ trait Post
 	}
 
 	/**
+	 * Table has column added_by
+	 * @return boolean
+	 */
+	public function postTableIsAddedable()
+	{
+		if(method_exists($this, 'tableIsAddedable'))
+		{
+			return $this->tableIsAddedable();
+		}
+		return $this->postTableConfiguration('addedable');
+	}
+
+	/**
 	 * Table has column roles for row CSV roles
 	 * @return boolean
 	 */
@@ -1065,8 +1477,7 @@ trait Post
 		$rowsToCreate = 5;
 		for ($x = 0; $x < $rowsToCreate; $x++)
 		{
-			$data = $this->postTableRowFactory();
-			$this->postRowCreate($data);
+			zbase_entity($this->postTableName())->postRowCreate($this->postTableRowFactory());
 		}
 	}
 
@@ -1082,77 +1493,6 @@ trait Post
 		}
 		$data = [];
 		return $data;
-	}
-
-	// </editor-fold>
-	// <editor-fold defaultstate="collapsed" desc="Caching">
-
-	/**
-	 * Clear Post Cache
-	 *
-	 * @return void
-	 */
-	public function clearPostCache()
-	{
-		if(method_exists($this, 'clearCache'))
-		{
-			$this->clearCache();
-		}
-	}
-
-	/**
-	 * Clear entity cache by Id
-	 *
-	 * @return void
-	 */
-	public function clearPostCacheById()
-	{
-		if(method_exists($this, 'clearCacheById'))
-		{
-			$this->clearCacheById();
-		}
-		$tableName = $this->postTableName();
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $this->postId());
-		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $this->postId() . '_withtrashed');
-		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $this->postId() . '_onlytrashed');
-		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
-	}
-
-	/**
-	 * Clear entity cache by Attributes/Value
-	 *
-	 * @return void
-	 */
-	public function clearPostCacheByTableColumns()
-	{
-		if(method_exists($this, 'clearCacheByTableColumns'))
-		{
-			$this->clearCacheByTableColumns();
-		}
-		$tableName = $this->postTableName();
-		foreach ($this->postTableColumns() as $columnName => $columnConfig)
-		{
-			$cacheKey = zbase_cache_key(zbase_entity($tableName), 'by_' . $columnName . '_' . $this->{$columnName});
-			zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
-		}
-	}
-
-	/**
-	 * Events
-	 */
-	protected static function boot()
-	{
-		parent::boot();
-		static::saved(function($post) {
-			$post->clearPostCacheById();
-			$post->clearPostCacheByTableColumns();
-		});
-		static::deleted(function($post) {
-			$post->clearPostCacheById();
-			$post->clearPostCacheByTableColumns();
-		});
 	}
 
 	// </editor-fold>
