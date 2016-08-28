@@ -58,6 +58,16 @@ return [
 				]
 			],
 		],
+		'html' => [
+			'content' => [
+				'pre' => [
+					'enable' => true,
+					'html' => function(){
+						return zbase_widget('admin-users', [], true, ['config' => ['searchable' => ['onload' => false]]]);
+					}
+				]
+			],
+		],
 		'tabs' => [
 			'account' => [
 				'type' => 'tab',

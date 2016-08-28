@@ -33,12 +33,15 @@ class Handler extends ExceptionHandler
 	 */
 	public function report(\Exception $e)
 	{
-		if($e instanceof \Exception)
+		if(!zbase_is_dev())
 		{
-			$error = $e->getMessage();
-			if(preg_match('/failed to pass validation/', $error) == 0)
+			if($e instanceof \Exception)
 			{
-				zbase_messenger_error(['error' => $error]);
+				$error = $e->getMessage();
+				if(preg_match('/failed to pass validation/', $error) == 0)
+				{
+					zbase_messenger_error(['error' => $error]);
+				}
 			}
 		}
 		return parent::report($e);
@@ -80,7 +83,7 @@ class Handler extends ExceptionHandler
 				if(!empty($hasSame))
 				{
 					$url = str_replace($fU . '/' . $fU, '/' . $fU, $uri);
-					header('location:'  . $url, true, 301);
+					header('location:' . $url, true, 301);
 					exit();
 				}
 			}

@@ -18,7 +18,7 @@ return [
 	'type' => 'datatable',
 	'enable' => true,
 	'config' => [
-		'queryOnLoad' => true,
+		'queryOnLoad' => false,
 		'searchable' => [
 			'enable' => true,
 			'json' => true,
@@ -28,7 +28,7 @@ return [
 			'input' => [
 				'placeholder' => 'Enter UserID, email address or name:Lenton; city:Davao; state:Davao del sur; role:stockist;'
 			],
-			'onload' => false,
+			'onload' => true,
 		],
 		'row' => [
 			'clickable' => [

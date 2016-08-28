@@ -1237,6 +1237,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				 */
 				if(preg_match('/role\:/', $query) > 0)
 				{
+					$stringFound = true;
 					$filters['rolename.role_name'] = [
 						'like' => [
 							'field' => 'rolename.role_name',
@@ -1249,6 +1250,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				 */
 				if(preg_match('/city\:/', $query) > 0)
 				{
+					$stringFound = true;
 					$filters['address.city'] = [
 						'like' => [
 							'field' => 'address.city',
@@ -1261,6 +1263,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				 */
 				if(preg_match('/state\:/', $query) > 0)
 				{
+					$stringFound = true;
 					$filters['address.state'] = [
 						'like' => [
 							'field' => 'address.state',
@@ -1273,6 +1276,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				 */
 				if(preg_match('/country\:/', $query) > 0)
 				{
+					$stringFound = true;
 					$filters['address.country'] = [
 						'like' => [
 							'field' => 'address.country',
@@ -1285,6 +1289,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				 */
 				if(preg_match('/name\:/', $query) > 0)
 				{
+					$stringFound = true;
 					$filters['name'] = function($q) use ($query){
 						$name = trim(str_replace('name:', '', $query));
 						return $q->orWhere('profile.first_name', 'LIKE', '%' . $name . '%')
@@ -1296,12 +1301,35 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				 */
 				if(preg_match('/\@/', $query) > 0)
 				{
+					$stringFound = true;
 					$filters['users.email'] = [
 						'eq' => [
 							'field' => 'users.email',
 							'value' => $query
 						]
 					];
+				}
+				/**
+				 * Searching Id
+				 */
+				if(is_numeric($query))
+				{
+					$stringFound = true;
+					$filters['users.user_id'] = [
+						'eq' => [
+							'field' => 'users.user_id',
+							'value' => intval($query)
+						]
+					];
+				}
+				if(empty($stringFound))
+				{
+					$filters['name'] = function($q) use ($query){
+						$name = trim(str_replace('name:', '', $query));
+						return $q->orWhere('users.name', 'LIKE', '%' . $name . '%')
+										->orWhere('users.email', 'LIKE', '%' . $name . '%')
+										->orWhere('users.username', 'LIKE', '%' . $name . '%');
+					};
 				}
 			}
 		}
@@ -1789,8 +1817,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		if($widget->id() == 'admin-user')
 		{
 			$page = [];
-			$page['title'] = '<span class="userDisplayName' . $this->id() . '">' . $this->displayName() . '</span>' . $this->statusText();
+			$page['title'] = '<span class="userDisplayName' . $this->id() . '">' . $this->roleTitle() . ' - ' . $this->id() . ': ' . $this->displayName() . '</span>' . $this->statusText();
 			$page['headTitle'] = $this->displayName();
+			$page['subTitle'] = $this->email() . '|' . $this->username() . '|' . $this->cityStateCountry();
 			zbase_view_page_details(['page' => $page]);
 			$breadcrumbs = [
 				['label' => 'Users', 'route' => ['name' => 'admin.users']],

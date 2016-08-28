@@ -1,17 +1,19 @@
 <?php echo zbase_view_render(zbase_view_file_contents('email.header')); ?>
 
-
+<?php if(!empty($error)):?>
 ERROR: -----
-
+<br />
 <?php echo $error ?>
+<?php endif;?>
 
+<?php if(!empty($message)):?>
 <br />
 <br />
 <br />
 MESSAGE: -------------------
-
+<br />
 <?php echo $message ?>
-
+<?php endif;?>
 
 <br />
 <br />
