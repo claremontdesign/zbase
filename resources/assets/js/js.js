@@ -415,7 +415,7 @@ function zbase_alert(type, msg, selector, opt)
  */
 function zbase_alerts_remove()
 {
-	jQuery('.alert').remove();
+	jQuery('.alert').not('.alert-block').remove();
 }
 
 /**
@@ -429,9 +429,17 @@ function zbase_alert_form_element(name, msg)
 	var element = jQuery('[name="' + name + '"]');
 	if (element.length > 0)
 	{
-		element.closest('.form-group').addClass('has-error');
-		element.addClass('error');
-		element.after('<span class="help-block help-block-error">' + msg + '</span>');
+		if (element.next().hasClass('help-block'))
+		{
+			if(element.next().text().indexOf(msg) === -1)
+			{
+				element.next('.help-block').append(' ' + msg);
+			}
+		} else {
+			element.closest('.form-group').addClass('has-error');
+			element.addClass('error');
+			element.after('<span class="help-block help-block-error">' + msg + '</span>');
+		}
 	}
 }
 
@@ -884,6 +892,14 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 			});
 		});
 	}
+	if (responseJSON._html_selector_html !== undefined)
+	{
+		jQuery.each(responseJSON._html_selector_html, function (i, content) {
+			jQuery.each(content, function (selector, html) {
+				jQuery(selector).html(html);
+			});
+		});
+	}
 	if (responseJSON._html_selector_append !== undefined)
 	{
 		jQuery.each(responseJSON._html_selector_append, function (i, content) {
@@ -934,9 +950,10 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 			eval(packageRouteCallback + '(responseJSON);');
 		}
 	}
-	if (responseJSON._html_script !== undefined)
+	if (responseJSON._html_script !== undefined && responseJSON._html_script !== '')
 	{
 		eval(responseJSON._html_script);
+		Zbase.init();
 	}
 	zbase_ajax_preloader_hide();
 });
@@ -1188,6 +1205,7 @@ var Zbase = function () {
 	};
 	return {
 		init: function () {
+			var_dump('Zbase Initializing...');
 			initIntervalUpdates();
 			jQuery('.equalHeight').equalHeights();
 			initTabs();

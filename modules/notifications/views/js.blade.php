@@ -7,7 +7,6 @@ jQuery('#notification-<?php echo $prefix?>').mouseover(function(){
 	{
 		return;
 	}
-	jQuery(this).addClass('updated');
 	var data = {loader: false};
 	zbase_ajax_post('<?php echo zbase_url_from_route('admin.notifications', ['action' => 'seen'])?>', data, {}, {});
 	jQuery('#notification-<?php echo $prefix?>-badge').text('');

@@ -151,7 +151,7 @@ class CreateTable extends Migration
 
 				if(empty($columns))
 				{
-					continue;
+					// continue;
 				}
 				Schema::create($tableName, function(Blueprint $table) use($columns, $entity, $modelName, $tableName, $migrateCommand)
 				{
@@ -162,7 +162,9 @@ class CreateTable extends Migration
 					{
 						$table->increments($primaryKey);
 					}
-					// <editor-fold defaultstate="collapsed" desc="Columns">
+					if(!empty($columns))
+					{
+						// <editor-fold defaultstate="collapsed" desc="Columns">
 					foreach ($columns as $columnName => $column)
 					{
 						$columnName = zbase_data_get($column, 'name', $columnName);
@@ -287,6 +289,7 @@ class CreateTable extends Migration
 						}
 					}
 					// </editor-fold>
+					}
 					$orderable = zbase_data_get($entity, 'table.orderable', false);
 					if(!empty($orderable))
 					{

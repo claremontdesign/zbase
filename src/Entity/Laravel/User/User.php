@@ -404,9 +404,20 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				return false;
 			}
 		}
-
 		$cacheKey = zbase_cache_key($this, 'hasAccess_' . $access . '_' . $this->id());
 		return zbase_cache($cacheKey, function() use ($access){
+//			if(!empty($this->attributes['roles']))
+//			{
+//				$roles = json_decode($this->attributes['roles'], true);
+//				foreach ($roles as $role)
+//				{
+//					$role = zbase_entity('user_roles')->getRoleByName($role);
+//					if(strtolower($role) == $access)
+//					{
+//						return 1;
+//					}
+//				}
+//			}
 			/**
 			 * only::sudo,user,moderator
 			 * comma separated values
@@ -805,7 +816,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				$model->roles()->save($role);
 				$logMsg[] = 'Role: ' . $role->name() . ' saved!';
 				$model->alpha_id = zbase_generate_hash([$model->user_id, rand(1, 1000), time()], $model->getTable());
-				$model->save();
+				$model->roles = json_encode([$role->role_name]);
 				if(!empty($attributesProfile))
 				{
 					\Eloquent::unguard();
@@ -819,6 +830,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					];
 					$profileAttributes = array_replace_recursive($attributesProfile, $profileAttributes);
 					$profileAttributes['user_id'] = $model->id();
+					$model->avatar = $profileAttributes['avatar'];
 					zbase_entity('user_profile')->fill($profileAttributes)->save();
 					$logMsg[] = 'Profile saved!';
 				}
@@ -831,9 +843,11 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					$attributesAddress['is_default'] = 1;
 					$attributesAddress['type'] = 'home';
 					$attributesAddress['user_id'] = $model->id();
+					$model->location = $attributesAddress['city'] . ', ' . $attributesAddress['state'] . ', ' . $attributesAddress['country'];
 					zbase_entity('user_address')->fill($attributesAddress)->save();
 					$logMsg[] = 'Address saved!';
 				}
+				$model->save();
 				$model->toggleRelationshipMode();
 				if($model->sendWelcomeMessage($attributes))
 				{
@@ -1324,11 +1338,10 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				}
 				if(empty($stringFound))
 				{
-					$filters['name'] = function($q) use ($query){
-						$name = trim(str_replace('name:', '', $query));
-						return $q->orWhere('users.name', 'LIKE', '%' . $name . '%')
-										->orWhere('users.email', 'LIKE', '%' . $name . '%')
-										->orWhere('users.username', 'LIKE', '%' . $name . '%');
+					$filters['users.name'] = function($q) use ($query){
+						return $q->orWhere('users.name', 'LIKE', '%' . $query . '%')
+										->orWhere('users.email', 'LIKE', '%' . $query . '%')
+										->orWhere('users.username', 'LIKE', '%' . $query . '%');
 					};
 				}
 			}
@@ -1356,7 +1369,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					{
 						\DB::table('users_roles')->where('user_id', $this->id())->delete();
 						\DB::table('users_roles')->insert(['user_id' => $this->id(), 'role_id' => $role->id()]);
-						$this->roles = $role->role_name;
+						$userRoles = [$role->role_name];
+						$this->roles = json_encode($userRoles);
 						$this->save();
 						$this->notify('Your Role were changed into ' . $role->role_name);
 						$this->clearEntityCacheByTableColumns();
@@ -1975,20 +1989,26 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$sudo = \DB::table('users')->where(['username' => 'sudox'])->first();
 		$sudoRole = \DB::table('user_roles')->where('role_name', 'sudo')->first();
 		\DB::table('users_roles')->where('user_id', $sudo->user_id)->update(['role_id' => $sudoRole->role_id]);
+		\DB::table('users')->where('user_id', $sudo->user_id)->update(['roles' => json_encode([$sudoRole->role_name])]);
 
 		$admin = \DB::table('users')->where(['username' => 'adminx'])->first();
 		$adminRole = \DB::table('user_roles')->where('role_name', 'admin')->first();
 		\DB::table('users_roles')->where('user_id', $admin->user_id)->update(['role_id' => $adminRole->role_id]);
+		\DB::table('users')->where('user_id', $admin->user_id)->update(['roles' => json_encode([$adminRole->role_name])]);
 
 		$system = \DB::table('users')->where(['username' => 'systemx'])->first();
 		\DB::table('users_roles')->where('user_id', $system->user_id)->update(['role_id' => $adminRole->role_id]);
+		\DB::table('users')->where('user_id', $admin->user_id)->update(['roles' => json_encode([$adminRole->role_name])]);
 
 		$user = \DB::table('users')->where(['username' => 'userx'])->first();
 		$userRole = \DB::table('user_roles')->where('role_name', 'user')->first();
 		\DB::table('users_roles')->where('user_id', $user->user_id)->update(['role_id' => $userRole->role_id]);
+		\DB::table('users')->where('user_id', $user->user_id)->update(['roles' => json_encode([$userRole->role_name])]);
+
 		$moderator = \DB::table('users')->where(['username' => 'moderatorx'])->first();
 		$moderatorRole = \DB::table('user_roles')->where('role_name', 'moderator')->first();
 		\DB::table('users_roles')->where('user_id', $moderator->user_id)->update(['role_id' => $moderatorRole->role_id]);
+		\DB::table('users')->where('user_id', $moderator->user_id)->update(['roles' => json_encode([$moderatorRole->role_name])]);
 	}
 
 	/**
@@ -2161,6 +2181,14 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'type' => 'text',
 				'length' => 255,
 				'comment' => 'User CSV Roles'
+			],
+			'location' => [
+				'hidden' => false,
+				'fillable' => false,
+				'nullable' => true,
+				'type' => 'string',
+				'length' => 255,
+				'comment' => 'User Location'
 			],
 		];
 

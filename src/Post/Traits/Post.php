@@ -313,7 +313,7 @@ trait Post
 		}
 		return [
 			$this->postTablePrimaryKey() => $this->postId(),
-			'postTableName' => $this->postTableName()
+			$this->postTablePrimaryKey() . '_entity' => $this->postTableName()
 		];
 	}
 
@@ -707,6 +707,7 @@ trait Post
 				'users.email as userEmail',
 				'users.username as userUsername',
 				'users.roles as userRoles',
+				'users.location as userLocation',
 				'users.avatar as userAvatar',
 			];
 		}
