@@ -91,6 +91,20 @@ trait Post
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Setter/Getters/Properties">
 	/**
+	 * Return a Text to be displayed to the Console
+	 * @param type $methodCalled
+	 * @return type
+	 */
+	public function postConsoleDiplayText()
+	{
+		if(method_exists($this, 'consoleDisplayText'))
+		{
+			return $this->consoleDisplayText();
+		}
+		return ' ' . strip_tags($this->postDisplayText() . ' ' . $this->postTypeText() . ' ' . $this->postStatusText());
+	}
+
+	/**
 	 * Post Owner
 	 * @return User
 	 */
@@ -206,6 +220,17 @@ trait Post
 				{
 					$text = !empty($this->typeDisplayConfiguration[$this->type]['text']) ? $this->typeDisplayConfiguration[$this->type]['text'] : $this->type;
 					$color = !empty($this->typeDisplayConfiguration[$this->type]['color']) ? $this->typeDisplayConfiguration[$this->type]['color'] : 'info';
+					$colorMap = [
+						'red' => 'danger',
+						'yellow' => 'warning',
+						'green' => 'success',
+						'gray' => 'default',
+						'blue' => 'info',
+					];
+					if(array_key_exists($color, $colorMap))
+					{
+						$color = $colorMap[$color];
+					}
 					return '<span class="label label-' . $color . ' postTypeText' . $this->postHtmlId() . '">' . $text . '</span>';
 				}
 			}
@@ -327,6 +352,14 @@ trait Post
 	{
 		if(!empty($data))
 		{
+			if($this->postTableIsTimestampable())
+			{
+				if(empty($data['created_at']))
+				{
+					$data['created_at'] = zbase_date_now();
+					$data['updated_at'] = zbase_date_now();
+				}
+			}
 			if(method_exists($this, 'rowCreate'))
 			{
 				return $this->rowCreate($data);
@@ -343,6 +376,13 @@ trait Post
 	{
 		if(!empty($data))
 		{
+			if($this->postTableIsTimestampable())
+			{
+				if(empty($data['updated_at']))
+				{
+					$data['updated_at'] = zbase_date_now();
+				}
+			}
 			if(method_exists($this, 'rowUpdate'))
 			{
 				return $this->rowUpdate($data);
@@ -463,6 +503,27 @@ trait Post
 	}
 
 	/**
+	 * Returnable Jsons Without the PageProperties
+	 * @param type $method
+	 * @param type $action
+	 * @param type $data
+	 * @param type $widget
+	 * @return type
+	 */
+	public function postReturnableJsonWithoutPageProperties($method, $action, $data, $widget)
+	{
+		if(method_exists($this, 'returnableJsonWithOutPageProperties'))
+		{
+			return $this->returnableJson($method, $action, $data, $widget);
+		}
+		$action = zbase_string_camel_case($method . '_' . $action);
+		$postHtmlId = $this->postHtmlId();
+		zbase()->json()->setVariable('_html_selector_replace', ['#postMainContentWrapper' . $postHtmlId => $this->postHtmlContent()], true);
+		zbase()->json()->setVariable('_html_selector_replace', ['.postStatusText' . $postHtmlId => $this->postStatusText()], true);
+		$widget->getModule()->pageProperties($action);
+	}
+
+	/**
 	 * Javascript actiions
 	 */
 	public function postHtmlContent()
@@ -500,7 +561,7 @@ trait Post
 	 *
 	 * @return string|HTML
 	 */
-	public function postCreateActionButton($action)
+	public function postCreateActionButton($action, $options = [])
 	{
 		if(!$this->postCheckAction($action))
 		{
@@ -508,7 +569,7 @@ trait Post
 		}
 		if(method_exists($this, 'createActionButton'))
 		{
-			return $this->createActionButton($action);
+			return $this->createActionButton($action, $options = []);
 		}
 		$postHtmlId = $this->postHtmlId();
 		$postActionMap = $this->postActionMap;
@@ -517,25 +578,42 @@ trait Post
 		{
 			$postActionMap = $this->actionMap;
 		}
+		$attr = [];
 		$color = !empty($postActionMap[$action]['color']) ? $postActionMap[$action]['color'] : $color;
-		return '<a class="btn ' . $color . ' btn btnPost' . ucfirst($action) . ' btnPost' . $postHtmlId . '" id="btnPost' . ucfirst($action) . '' . $postHtmlId . '" href="#">' . ucfirst($action) . '</a>';
+		$label = !empty($postActionMap[$action]['text']) ? $postActionMap[$action]['text'] : $action;
+		$btnClass = !empty($postActionMap[$action]['btnClass']) ? ' ' . $postActionMap[$action]['btnClass'] . ' ' : '';
+		return '<a class="btn ' . $color . ' btn btnPost' . ucfirst($action) . ' btnPost' . $postHtmlId . $btnClass . '" '
+				. 'id="btnPost' . ucfirst($action) . '' . $postHtmlId . '" href="#" title="' . $label . '" ' . implode(' ', $attr) . '>' . ucfirst($label) . '</a>';
 	}
 
 	/**
 	 * Create Action Script
 	 * @return string|Javascript
 	 */
-	public function postCreateActionScript($action)
+	public function postCreateActionScript($action, $options = [])
 	{
+		// zbase_ajax_post
 		if(!$this->postCheckAction($action))
 		{
 			throw new \Zbase\Exceptions\ConfigNotFoundException('Action ' . $action . ' not found in the actionMap.' . __CLASS__);
 		}
 		if(method_exists($this, 'createActionScript'))
 		{
-			return $this->createActionScript($action);
+			return $this->createActionScript($action, $options = []);
 		}
 		$postHtmlId = $this->postHtmlId();
+		if(!empty($options['zbase-ajax-url']))
+		{
+			if(zbase_is_back())
+			{
+				$url = zbase_url_from_route('admin.' . $this->postModuleName(), ['action' => $action, 'id' => $this->postId()]);
+			}
+			else
+			{
+				$url = zbase_url_from_route($this->postModuleName(), ['action' => $action, 'id' => $this->postId()]);
+			}
+			return 'jQuery(\'#btnPost' . ucfirst($action) . $postHtmlId . '\').click(function(e){e.preventDefault();zbase_ajax_post(\'' . $url . '\',{},function(){},{})});';
+		}
 		$script = 'zbase_attach_toggle_event(\'click\', \'#formCancelButton' . ucfirst($action) . $postHtmlId . '\', \'#formPostWrapperAction' . ucfirst($action) . $postHtmlId . '\', \'#postMainWrapperDetails' . $postHtmlId . '\', \'.formPostWrapperAction' . $postHtmlId . '\');';
 		return $script . 'zbase_attach_toggle_event(\'click\', \'#btnPost' . ucfirst($action) . $postHtmlId . '\', \'#formPostWrapperAction' . ucfirst($action) . $postHtmlId . '\', \'#postMainWrapperDetails' . $postHtmlId . '\', \'.formPostWrapperAction' . $postHtmlId . '\');';
 	}
@@ -604,7 +682,7 @@ trait Post
 		$methodName = zbase_string_camel_case('node_' . $method . '_' . $action . '_widget_controller');
 		if(zbase_is_dev())
 		{
-			zbase()->json()->addVariable(__METHOD__, $methodName);
+			zbase()->json()->addVariable(__METHOD__ . ' : ' . $this->postTableName(), $methodName);
 		}
 		if(method_exists($this, $methodName))
 		{
@@ -676,13 +754,26 @@ trait Post
 	 */
 	public function postQueryJoins()
 	{
+		$queryJoins = [];
 		$tableName = $this->postTableName();
-		$queryJoins[] = [
-			'type' => 'join',
-			'model' => 'users as users',
-			'foreign_key' => $tableName . '.user_id',
-			'local_key' => 'users.user_id',
-		];
+		if($this->postTableIsUserable())
+		{
+			$queryJoins[] = [
+				'type' => 'join',
+				'model' => 'users as users',
+				'foreign_key' => $tableName . '.user_id',
+				'local_key' => 'users.user_id',
+			];
+		}
+		if($this->postTableIsOtherUserable())
+		{
+			$queryJoins[] = [
+				'type' => 'join',
+				'model' => 'users as other_users',
+				'foreign_key' => $tableName . '.other_user_id',
+				'local_key' => 'users.user_id',
+			];
+		}
 		if(method_exists($this, 'queryJoins'))
 		{
 			return $this->queryJoins($queryJoins);
@@ -702,7 +793,7 @@ trait Post
 		{
 			$querySelects = [
 				$tableName . '.*',
-				'users.user_id',
+				'users.user_id as userId',
 				'users.name as userDisplayName',
 				'users.email as userEmail',
 				'users.username as userUsername',
@@ -710,6 +801,16 @@ trait Post
 				'users.location as userLocation',
 				'users.avatar as userAvatar',
 			];
+		}
+		if($this->postTableIsOtherUserable())
+		{
+			$querySelects[] = 'other_users.user_id as otherUserId';
+			$querySelects[] = 'other_users.name as otherUserDisplayName';
+			$querySelects[] = 'other_users.email as otherUserEmail';
+			$querySelects[] = 'other_users.username as otherUserUsername';
+			$querySelects[] = 'other_users.roles as otherUserRoles';
+			$querySelects[] = 'other_users.location as otherUserLocation';
+			$querySelects[] = 'other_users.avatar as otherUserAvatar';
 		}
 		if(method_exists($this, 'querySelects'))
 		{
@@ -1016,6 +1117,18 @@ trait Post
 			$post->clearPostCacheById();
 			$post->clearPostCacheByTableColumns();
 		});
+		static::creating(function($post) {
+			if(!empty($post->options) && is_array($post->options))
+			{
+				$post->options = json_encode($post->options);
+			}
+		});
+		static::updating(function($post) {
+			if(!empty($post->options) && is_array($post->options))
+			{
+				$post->options = json_encode($post->options);
+			}
+		});
 		static::deleted(function($post) {
 			$post->clearPostCacheById();
 			$post->clearPostCacheByTableColumns();
@@ -1237,6 +1350,14 @@ trait Post
 		{
 			$postTableConfiguration['table']['addedable'] = true;
 		}
+		if($this->postTableIsOtherUserable())
+		{
+			$postTableConfiguration['table']['otherUserable'] = true;
+		}
+		if($this->postTableIsHashable())
+		{
+			$postTableConfiguration['table']['hashable'] = true;
+		}
 		return $postTableConfiguration;
 	}
 
@@ -1270,7 +1391,7 @@ trait Post
 	}
 
 	/**
-	 * Table has column ip_address
+	 * Table has column type
 	 * @return boolean
 	 */
 	public function postTableIsTypeable()
@@ -1280,6 +1401,19 @@ trait Post
 			return $this->tableIsTypeable();
 		}
 		return $this->postTableConfiguration('typeable');
+	}
+
+	/**
+	 * Table has column hash
+	 * @return boolean
+	 */
+	public function postTableIsHashable()
+	{
+		if(method_exists($this, 'tableIsHashable'))
+		{
+			return $this->tableIsHashable();
+		}
+		return $this->postTableConfiguration('hashable');
 	}
 
 	/**
@@ -1293,6 +1427,19 @@ trait Post
 			return $this->tableIsIpAddressable();
 		}
 		return $this->postTableConfiguration('ipAddressable');
+	}
+
+	/**
+	 * Table has column type
+	 * @return boolean
+	 */
+	public function postTableIsOtherUserable()
+	{
+		if(method_exists($this, 'tableIsOtherUserable'))
+		{
+			return $this->tableIsOtherUserable();
+		}
+		return $this->postTableConfiguration('otherUserable');
 	}
 
 	/**
@@ -1473,7 +1620,7 @@ trait Post
 	{
 		if(method_exists($this, 'tableSeeder'))
 		{
-			$this->tableSeeder();
+			return $this->tableSeeder();
 		}
 		$rowsToCreate = 5;
 		for ($x = 0; $x < $rowsToCreate; $x++)

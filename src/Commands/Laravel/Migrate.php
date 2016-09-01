@@ -51,6 +51,7 @@ class Migrate extends Command
 	public function handle()
 	{
 		zbase_maintenance_set();
+		zbase()->setConsoleCommand($this);
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
 		$packages = zbase()->packages();
 		if(!empty($packages))

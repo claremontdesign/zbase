@@ -35,6 +35,12 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	protected $commands = ['assets' => [], 'clear' => [], 'migrate' => [], 'install' => []];
 
 	/**
+	 * the Console command
+	 * @var Command
+	 */
+	protected $consoleCommand = null;
+
+	/**
 	 * Zbase packages
 	 * @var array
 	 */
@@ -661,6 +667,24 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	}
 
 	// </editor-fold>
+
+	/**
+	 * The Console Command
+	 * @param type $command
+	 */
+	public function setConsoleCommand($command)
+	{
+		$this->consoleCommand = $command;
+	}
+
+	/**
+	 * Return the Console Command
+	 * @return type
+	 */
+	public function consoleCommand()
+	{
+		return $this->consoleCommand;
+	}
 
 	/**
 	 * Add a new Command

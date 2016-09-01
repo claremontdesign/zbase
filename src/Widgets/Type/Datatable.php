@@ -526,6 +526,16 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	}
 
 	/**
+	 * Check if when clicking rows will open a row after
+	 *
+	 * @return boolean
+	 */
+	public function isRowsClickableToNextRow()
+	{
+		return $this->_v('row.clickable.nextrow', $this->_v('rows.clickable', false));
+	}
+
+	/**
 	 * Return the Row clickable URL
 	 * @param EntityInterface $row
 	 * @param boolean $template If to generate a template

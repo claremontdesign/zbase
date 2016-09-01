@@ -19,84 +19,90 @@ class DatabaseSeeder extends Seeder
 	 */
 	public function run()
 	{
-		echo " - Seeding\n";
-		LaravelModel::unguard();
-		$entities = zbase_config_get('entity', []);
-
-		if(!empty($entities))
+		try
 		{
-			foreach ($entities as $entityName => $entity)
+			echo " - Seeding\n";
+			LaravelModel::unguard();
+			$entities = zbase_config_get('entity', []);
+
+			if(!empty($entities))
 			{
-				$enable = zbase_data_get($entity, 'enable', false);
-				if(!empty($enable))
+				foreach ($entities as $entityName => $entity)
 				{
-					$model = zbase_data_get($entity, 'model', null);
-					$modelName = zbase_class_name($model);
-					if(method_exists($modelName, 'seedingEventPre'))
+					$enable = zbase_data_get($entity, 'enable', false);
+					if(!empty($enable))
 					{
-						echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - PreSeeding Event\n";
-						$modelName::seedingEventPre($entity);
-					}
-				}
-			}
-			foreach ($entities as $entityName => $entity)
-			{
-				$enable = zbase_data_get($entity, 'enable', false);
-				if(!empty($enable))
-				{
-					$this->_defaults($entityName, $entity);
-				}
-			}
-			foreach ($entities as $entityName => $entity)
-			{
-				$enable = zbase_data_get($entity, 'enable', false);
-				if(!empty($enable))
-				{
-					$this->_factory($entityName, $entity);
-				}
-			}
-			foreach ($entities as $entityName => $entity)
-			{
-				$enable = zbase_data_get($entity, 'enable', false);
-				if(!empty($enable))
-				{
-					$modelName = zbase_data_get($entity, 'seeder.model', null);
-					if(!empty($modelName))
-					{
-						echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - Model Seeder\n";
-						$this->call($modelName);
-					}
-				}
-			}
-			foreach ($entities as $entityName => $entity)
-			{
-				$enable = zbase_data_get($entity, 'enable', false);
-				if(!empty($enable))
-				{
-					$model = zbase_data_get($entity, 'model', null);
-					$isPost = zbase_data_get($entity, 'post', false);
-					$postModel = null;
-					$modelName = zbase_class_name($model);
-					if(!empty($isPost))
-					{
-						$postModel = zbase_object_factory($modelName);
-						if($postModel instanceof \Zbase\Post\PostInterface)
+						$model = zbase_data_get($entity, 'model', null);
+						$modelName = zbase_class_name($model);
+						if(method_exists($modelName, 'seedingEventPre'))
 						{
-							$postModel->postTableSeeder($entity);
-						}
-					}
-					else
-					{
-						if(method_exists($modelName, 'seedingEventPost'))
-						{
-							echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - PostSeeding Event\n";
-							$modelName::seedingEventPost($entity);
+							echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - PreSeeding Event\n";
+							$modelName::seedingEventPre($entity);
 						}
 					}
 				}
+				foreach ($entities as $entityName => $entity)
+				{
+					$enable = zbase_data_get($entity, 'enable', false);
+					if(!empty($enable))
+					{
+						$this->_defaults($entityName, $entity);
+					}
+				}
+				foreach ($entities as $entityName => $entity)
+				{
+					$enable = zbase_data_get($entity, 'enable', false);
+					if(!empty($enable))
+					{
+						$this->_factory($entityName, $entity);
+					}
+				}
+				foreach ($entities as $entityName => $entity)
+				{
+					$enable = zbase_data_get($entity, 'enable', false);
+					if(!empty($enable))
+					{
+						$modelName = zbase_data_get($entity, 'seeder.model', null);
+						if(!empty($modelName))
+						{
+							echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - Model Seeder\n";
+							$this->call($modelName);
+						}
+					}
+				}
+				foreach ($entities as $entityName => $entity)
+				{
+					$enable = zbase_data_get($entity, 'enable', false);
+					if(!empty($enable))
+					{
+						$model = zbase_data_get($entity, 'model', null);
+						$isPost = zbase_data_get($entity, 'post', false);
+						$postModel = null;
+						$modelName = zbase_class_name($model);
+						if(!empty($isPost))
+						{
+							$postModel = zbase_object_factory($modelName);
+							if($postModel instanceof \Zbase\Post\PostInterface)
+							{
+								$postModel->postTableSeeder($entity);
+							}
+						}
+						else
+						{
+							if(method_exists($modelName, 'seedingEventPost'))
+							{
+								echo " -- " . (!empty($modelName) ? $modelName . ' - ' : '') . $entityName . " - PostSeeding Event\n";
+								$modelName::seedingEventPost($entity);
+							}
+						}
+					}
+				}
 			}
+			LaravelModel::reguard();
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_exception_throw($e);
 		}
-		LaravelModel::reguard();
 	}
 
 	/**

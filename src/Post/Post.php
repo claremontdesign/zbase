@@ -25,7 +25,6 @@ class Post extends LaravelModel implements \Zbase\Interfaces\EntityInterface
 //	 \Illuminate\Database\Eloquent\SoftDeletes,
 	 \Zbase\Post\Traits\Sortable;
 
-
 	const STATUS_HIDDEN = 0;
 	const STATUS_DRAFT = 1;
 	const STATUS_DISPLAY = 2;
@@ -58,7 +57,7 @@ class Post extends LaravelModel implements \Zbase\Interfaces\EntityInterface
 	 * columns/fields that can only be filled by user through form
 	 * @var array
 	 */
-	protected $fillable = [];
+	protected $fillable = ['*'];
 
 	/**
 	 * The attributes/field that are  excluded from the model's JSON form

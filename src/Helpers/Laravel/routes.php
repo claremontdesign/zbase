@@ -425,7 +425,7 @@ function zbase_route_response($name, $route)
 					if(!empty($uriV))
 					{
 						/**
-						 * If it isn't an admin key, check it agains given Routes
+						 * If it isn't an admin key, check it against given Routes
 						 */
 						if($uriV !== $adminKey)
 						{
@@ -443,6 +443,7 @@ function zbase_route_response($name, $route)
 											{
 												if(!empty($urlExV))
 												{
+													// dd($uriV, $urlExV, $uriEx, $urlEx);
 													if($uriV == $urlExV)
 													{
 														/**

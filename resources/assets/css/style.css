@@ -65,7 +65,53 @@
 @media only screen and (max-width: 374px) {
 
 }
+@media
+only screen and (max-width: 760px),
+(min-device-width: 768px) and (max-device-width: 1024px)  {
 
+	table, thead, tbody, th, td, tr {
+		display: block !important;
+	}
+
+	thead tr {
+		position: absolute !important;
+		top: -9999px !important;
+		left: -9999px !important;
+	}
+
+	tr { border: 1px solid #ccc !important; }
+
+	td {
+		border: none !important;
+		border-bottom: 1px solid #eee !important;
+		position: relative !important;
+		padding-left: 20% !important;
+	}
+
+	td:before {
+		position: absolute !important;
+		top: 6px !important;
+		left: 6px !important;
+		width: 45% !important;
+		padding-right: 10px !important;
+		white-space: nowrap !important;
+	}
+	.zbase-datatable-row-toggle-copy td{
+		padding-left:10px !important;
+	}
+	.zbase-datatable-row-toggle-copy td:before {
+		content: "" !important;
+	}
+}
+@media only screen and (max-width: 768px)
+{
+	.flip-scroll tbody tr {
+		margin-left: 0px !important;
+	}
+	.table-responsive {
+		border: 0px solid #ddd;
+	}
+}
 .pointer{
 	cursor:pointer;
 }
@@ -84,3 +130,15 @@
 	border-bottom:2px solid gray;
 	margin-bottom: 20px;
 }
+.zbase-datatable-row-toggle-copy-wrapper{
+	padding:20px;
+	border:1px dotted gray;
+	margin: 0px;
+}
+.zbase-datatable-row-toggle-copy{
+	background-color: white !important;
+}
+.zbase-datatable-row-toggle-hover{
+	background-color: white !important;
+}
+

@@ -62,6 +62,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	/**
+	 * Check if user can create a personal URL
+	 *
+	 * return boolean
+	 */
+	public function hasUrl()
+	{
+		return false;
+	}
+
+	/**
 	 * The Entity Id
 	 * @return integer
 	 */
@@ -228,6 +238,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			return $profile->first_name . ' ' . $profile->last_name;
 		}
 		return null;
+	}
+
+	/**
+	 * Usable method to displa user information
+	 *
+	 * @return string
+	 */
+	public function displayFullDetails()
+	{
+		return $this->username() . ' [#' . $this->id() . '|' . $this->email() . ']';
 	}
 
 	public function getFirstNameAttribute()
@@ -1911,7 +1931,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'status' => 'ok',
 				'username' => 'sudox',
 				'name' => 'Super User',
-				'email' => 'sudo@zbase.com',
+				'email' => 'sudox@' . zbase_domain(),
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'password' => \Zbase\Models\Data\Column::f('string', 'password'),
@@ -1924,8 +1944,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			[
 				'status' => 'ok',
 				'username' => 'adminx',
-				'name' => 'Administrator',
-				'email' => 'admin@zbase.com',
+				'name' => 'Admin Istrator',
+				'email' => 'adminx@' . zbase_domain(),
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'password' => \Zbase\Models\Data\Column::f('string', 'password'),
@@ -1939,7 +1959,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'status' => 'ok',
 				'username' => 'systemx',
 				'name' => 'Mr. System',
-				'email' => 'system@zbase.com',
+				'email' => 'systemx@' . zbase_domain(),
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'password' => zbase_generate_code(),
@@ -1952,8 +1972,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			[
 				'status' => 'ok',
 				'username' => 'userx',
-				'name' => 'Normal User',
-				'email' => 'user@zbase.com',
+				'name' => 'Just User',
+				'email' => 'userx@' . zbase_domain(),
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'password' => \Zbase\Models\Data\Column::f('string', 'password'),
@@ -1967,7 +1987,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'status' => 'ok',
 				'username' => 'moderatorx',
 				'name' => 'Moody Moderator',
-				'email' => 'moderator@zbase.com',
+				'email' => 'moderator@' . zbase_domain(),
 				'email_verified' => 1,
 				'email_verified_at' => \Zbase\Models\Data\Column::f('timestamp'),
 				'password' => \Zbase\Models\Data\Column::f('string', 'password'),
@@ -1989,7 +2009,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$sudo = \DB::table('users')->where(['username' => 'sudox'])->first();
 		$sudoRole = \DB::table('user_roles')->where('role_name', 'sudo')->first();
 		\DB::table('users_roles')->where('user_id', $sudo->user_id)->update(['role_id' => $sudoRole->role_id]);
-		\DB::table('users')->where('user_id', $sudo->user_id)->update(['roles' => json_encode([$sudoRole->role_name])]);
+		\DB::table('users')->whereIn('username', array('sudox', 'systemx'))->update(['roles' => json_encode([$sudoRole->role_name])]);
 
 		$admin = \DB::table('users')->where(['username' => 'adminx'])->first();
 		$adminRole = \DB::table('user_roles')->where('role_name', 'admin')->first();

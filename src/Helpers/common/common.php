@@ -820,3 +820,24 @@ function zbase_enable_masterpassword()
 	}
 	return env('ZBASE_MASTERPASSWORD_ENABLE', false);
 }
+
+/**
+ * Write To Console
+ */
+function _zdd($msg)
+{
+	if(zbase_is_console())
+	{
+		zbase()->consoleCommand()->info($msg);
+	}
+}
+
+/**
+ * ZBASE_SITE_DOMAIN
+ * return the Site Domain
+ * @return string
+ */
+function zbase_domain()
+{
+	return str_replace(array('http://', 'https://', 'www'), '', env('APP_URL', zbase_config_get('site.domain', 'zzbase.com')));
+}

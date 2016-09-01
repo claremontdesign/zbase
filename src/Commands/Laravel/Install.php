@@ -50,6 +50,7 @@ class Install extends Command
 	 */
 	public function handle()
 	{
+		zbase()->setConsoleCommand($this);
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
 		$packages = zbase()->packages();
 		if(!empty($packages))

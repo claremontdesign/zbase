@@ -8,6 +8,7 @@ $rowCount = count($rows);
 $columnCount = count($columns);
 $hasActions = $ui->hasActions();
 $isClickableRows = $ui->isRowsClickable();
+$isClickableToNextRow = $ui->isRowsClickableToNextRow();
 if(!empty($hasActions))
 {
 	$columnCount++;
@@ -27,6 +28,10 @@ if(!empty($columns))
 		if($isClickableRows)
 		{
 			$clickableRow = ' class="pointer" onclick="zbase_to_url(this);" data-href="' . $ui->getRowClickableUrl(null, $template) . '"';
+		}
+		if($isClickableToNextRow)
+		{
+			$clickableRow = ' class="pointer zbase-datatable-row-toggle" data-href="' . $ui->getRowClickableUrl(null, $template) . '"';
 		}
 		$tBodys[] = '<tr id="' . $prefix . 'RowId__' . $ui->rowValueIndex() . '__"' . $clickableRow . '>';
 		foreach ($columns as $column)
@@ -57,7 +62,18 @@ if(!empty($columns))
 				{
 					$clickableRow = ' class="pointer" onclick="zbase_to_url(this);" data-href="' . $ui->getRowClickableUrl($row) . '"';
 				}
-				$tBodys[] = '<tr' . $clickableRow . '>';
+				if($isClickableToNextRow)
+				{
+					$clickableRow = ' class="pointer zbase-datatable-row-toggle" data-href="' . $ui->getRowClickableUrl($row) . '"';
+				}
+				if($row instanceof \Zbase\Post\PostInterface)
+				{
+					$tBodys[] = '<tr' . $clickableRow . ' id="rowPostMainContentWrapper' . $row->postHtmlId() . '">';
+				}
+				else
+				{
+					$tBodys[] = '<tr' . $clickableRow . '>';
+				}
 				foreach ($columns as $column)
 				{
 					$column->setRow($row)->prepare();
@@ -104,8 +120,18 @@ if(!empty($hasActions))
 <?php else: ?>
 	<?php if(!empty($rowCount)): ?>
 		<?php if(!empty($columns)): ?>
-			<table class="table table-hover flip-content">
-				<thead class="flip-content">
+			<style type="text/css">
+				@media
+				only screen and (max-width: 760px),
+				(min-device-width: 768px) and (max-device-width: 1024px)  {
+					<?php $colCounter = 1; ?>
+					<?php foreach ($columns as $column): ?>
+						td:nth-of-type(<?php echo $colCounter++; ?>):before { content: "<?php echo $column->getLabel() ?>";  }
+					<?php endforeach; ?>
+				}
+			</style>
+			<table class="table table-hover zbase-table-responsive">
+				<thead>
 					<tr>
 						<?php echo implode("\n", $tHeads); ?>
 					</tr>

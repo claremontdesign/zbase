@@ -65,5 +65,12 @@ function zbase_user_system()
  */
 function zbase_user_by($attr, $value)
 {
-	return zbase_entity('user')->by($attr, $value);
+	if(preg_match('/@/', $value) > 0)
+	{
+		return zbase_entity('user')->by('email', $value);
+	}
+	else
+	{
+		return zbase_entity('user')->by($attr, $value);
+	}
 }

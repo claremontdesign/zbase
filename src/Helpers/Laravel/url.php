@@ -41,16 +41,27 @@ function zbase_url_from_route($name, $params = [], $relative = false)
 	{
 		$usernameRouteParameterName = zbase_route_username_prefix();
 		$usernameRoute = zbase_route_username_get();
+		$username = zbase_route_input(zbase_route_username_prefix(), false);
+		if(!empty($username))
+		{
+			$username = strtolower($username);
+			$user = zbase_user_by('username', $username);
+			if($user instanceof \Zbase\Entity\Laravel\User\User && $user->hasUrl())
+			{
+				$usernameRoute = true;
+			}
+		}
 		if(empty($usernameRoute) && zbase_auth_has() && zbase_is_back())
 		{
-			$usernameRoute = zbase_auth_user()->username();
+			$username = zbase_auth_user()->username();
+			$usernameRoute = true;
 		}
 		if(!empty($usernameRoute))
 		{
 			$prefix = $usernameRouteParameterName;
 			if(empty($params[$usernameRouteParameterName]))
 			{
-				$params[$usernameRouteParameterName] = $usernameRoute;
+				$params[$usernameRouteParameterName] = $username;
 			}
 		}
 	}

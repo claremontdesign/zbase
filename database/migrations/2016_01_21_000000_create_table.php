@@ -165,130 +165,130 @@ class CreateTable extends Migration
 					if(!empty($columns))
 					{
 						// <editor-fold defaultstate="collapsed" desc="Columns">
-					foreach ($columns as $columnName => $column)
-					{
-						$columnName = zbase_data_get($column, 'name', $columnName);
-						if($columnName == $primaryKey)
+						foreach ($columns as $columnName => $column)
 						{
-							continue;
-						}
-						$type = zbase_data_get($column, 'type', 'string');
-						$defaultLength = 16;
-						if($type == 'string')
-						{
-							$defaultLength = 255;
-						}
-						elseif($type == 'integer' || $type == 'decimal' || $type == 'double')
-						{
+							$columnName = zbase_data_get($column, 'name', $columnName);
+							if($columnName == $primaryKey)
+							{
+								continue;
+							}
+							$type = zbase_data_get($column, 'type', 'string');
 							$defaultLength = 16;
-						}
-						$index = zbase_data_get($column, 'index', false);
-						$unique = zbase_data_get($column, 'unique', false);
-						$length = zbase_data_get($column, 'length', $defaultLength);
-						$comment = zbase_data_get($column, 'comment', false);
-						$default = zbase_data_get($column, 'default', null);
-						$unsigned = zbase_data_get($column, 'unsigned', false);
-						$nullable = zbase_data_get($column, 'nullable', false);
-						if(!is_null($type))
-						{
-							if($type == 'decimal')
+							if($type == 'string')
 							{
-								$length = zbase_data_get($column, 'length', 16);
-								$decimal = zbase_data_get($column, 'decimal', 2);
-								$col = $table->decimal($columnName, $length, $decimal);
+								$defaultLength = 255;
 							}
-							elseif($type == 'double')
+							elseif($type == 'integer' || $type == 'decimal' || $type == 'double')
 							{
-								$length = zbase_data_get($column, 'length', 16);
-								$decimal = zbase_data_get($column, 'decimal', 2);
-								$col = $table->double($columnName, $length, $decimal);
+								$defaultLength = 16;
 							}
-							elseif($type == 'json')
+							$index = zbase_data_get($column, 'index', false);
+							$unique = zbase_data_get($column, 'unique', false);
+							$length = zbase_data_get($column, 'length', $defaultLength);
+							$comment = zbase_data_get($column, 'comment', false);
+							$default = zbase_data_get($column, 'default', null);
+							$unsigned = zbase_data_get($column, 'unsigned', false);
+							$nullable = zbase_data_get($column, 'nullable', false);
+							if(!is_null($type))
 							{
-								$col = $table->text($columnName);
-							}
-							elseif($type == 'integer')
-							{
-								$col = $table->integer($columnName);
-							}
-							elseif($type == 'bigint')
-							{
-								$col = $table->bigInteger($columnName);
-							}
-							elseif($type == 'tinyint')
-							{
-								$col = $table->tinyInteger($columnName);
-							}
-							elseif($type == 'ipAddress')
-							{
-								$col = $table->ipAddress($columnName);
-							}
-							elseif($type == 'enum')
-							{
-								$enums = zbase_data_get($column, 'enum', []);
-								if(!empty($enums))
+								if($type == 'decimal')
 								{
-									$col = $table->enum($columnName, $enums);
+									$length = zbase_data_get($column, 'length', 16);
+									$decimal = zbase_data_get($column, 'decimal', 2);
+									$col = $table->decimal($columnName, $length, $decimal);
 								}
-							}
-							else
-							{
-								if(empty($length))
+								elseif($type == 'double')
 								{
-									$col = $table->{$type}($columnName);
+									$length = zbase_data_get($column, 'length', 16);
+									$decimal = zbase_data_get($column, 'decimal', 2);
+									$col = $table->double($columnName, $length, $decimal);
+								}
+								elseif($type == 'json')
+								{
+									$col = $table->text($columnName);
+								}
+								elseif($type == 'integer')
+								{
+									$col = $table->integer($columnName);
+								}
+								elseif($type == 'bigint')
+								{
+									$col = $table->bigInteger($columnName);
+								}
+								elseif($type == 'tinyint')
+								{
+									$col = $table->tinyInteger($columnName);
+								}
+								elseif($type == 'ipAddress')
+								{
+									$col = $table->ipAddress($columnName);
+								}
+								elseif($type == 'enum')
+								{
+									$enums = zbase_data_get($column, 'enum', []);
+									if(!empty($enums))
+									{
+										$col = $table->enum($columnName, $enums);
+									}
 								}
 								else
 								{
-									$col = $table->{$type}($columnName, $length);
+									if(empty($length))
+									{
+										$col = $table->{$type}($columnName);
+									}
+									else
+									{
+										$col = $table->{$type}($columnName, $length);
+									}
 								}
-							}
-							if(!is_null($default))
-							{
-								$col->default($default);
-							}
-							else
-							{
-								$col->default(null);
-							}
-							if(!empty($nullable))
-							{
-								$col->nullable();
-							}
-							if(!empty($index))
-							{
-								$table->index($columnName);
-							}
-							if(!empty($unique))
-							{
-								$table->unique($columnName);
-							}
-							if(!empty($unsigned))
-							{
-								$col->unsigned();
-							}
-							if(!empty($comment))
-							{
-								$col->comment($comment);
-							}
-							$foreignTable = zbase_data_get($column, 'foreign.table', null);
-							$foreignColumn = zbase_data_get($column, 'foreign.column', null);
-							$foreignOnDelete = zbase_data_get($column, 'foreign.onDelete', null);
-							$foreignOnUpdate = zbase_data_get($column, 'foreign.onUpdate', null);
-							if(!is_null($foreignTable) && !is_null($foreignColumn))
-							{
-								$col = $table->foreign($columnName)->references($foreignColumn)->on($foreignTable);
-								if(!is_null($foreignOnDelete))
+								if(!is_null($default))
 								{
-									$col->onDelete($foreignOnDelete);
+									$col->default($default);
 								}
-								if(!is_null($foreignOnUpdate))
+								else
 								{
-									$col->onUpdate($foreignOnUpdate);
+									$col->default(null);
+								}
+								if(!empty($nullable))
+								{
+									$col->nullable();
+								}
+								if(!empty($index))
+								{
+									$table->index($columnName);
+								}
+								if(!empty($unique))
+								{
+									$table->unique($columnName);
+								}
+								if(!empty($unsigned))
+								{
+									$col->unsigned();
+								}
+								if(!empty($comment))
+								{
+									$col->comment($comment);
+								}
+								$foreignTable = zbase_data_get($column, 'foreign.table', null);
+								$foreignColumn = zbase_data_get($column, 'foreign.column', null);
+								$foreignOnDelete = zbase_data_get($column, 'foreign.onDelete', null);
+								$foreignOnUpdate = zbase_data_get($column, 'foreign.onUpdate', null);
+								if(!is_null($foreignTable) && !is_null($foreignColumn))
+								{
+									$col = $table->foreign($columnName)->references($foreignColumn)->on($foreignTable);
+									if(!is_null($foreignOnDelete))
+									{
+										$col->onDelete($foreignOnDelete);
+									}
+									if(!is_null($foreignOnUpdate))
+									{
+										$col->onUpdate($foreignOnUpdate);
+									}
 								}
 							}
 						}
-					}
-					// </editor-fold>
+						// </editor-fold>
 					}
 					$orderable = zbase_data_get($entity, 'table.orderable', false);
 					if(!empty($orderable))
@@ -300,6 +300,12 @@ class CreateTable extends Migration
 					{
 						$table->integer('user_id')->unsigned()->comment('User Id')->nullable(true);
 						$table->index('user_id');
+					}
+					$otherUserable = zbase_data_get($entity, 'table.otherUserable', false);
+					if(!empty($otherUserable))
+					{
+						$table->integer('other_user_id')->unsigned()->comment('Other User Id')->nullable(true);
+						$table->index('other_user_id');
 					}
 					$statusable = zbase_data_get($entity, 'table.statusable', false);
 					if(!empty($statusable))
@@ -316,6 +322,11 @@ class CreateTable extends Migration
 					if(!empty($typeable))
 					{
 						$table->integer('type')->unsigned()->comment('Type')->nullable(true);
+					}
+					$hashable = zbase_data_get($entity, 'table.hashable', false);
+					if(!empty($hashable))
+					{
+						$table->string('hash', 255)->nullable()->comment('Hash value');
 					}
 					$addedable = zbase_data_get($entity, 'table.addedable', false);
 					if(!empty($addedable))
@@ -374,6 +385,26 @@ class CreateTable extends Migration
 						$table->integer($polymorphicPrefix . '_id')->nullable();
 						$table->string($polymorphicPrefix . '_type', 64)->nullable();
 					}
+
+					$indexes = zbase_data_get($entity, 'table.indexes', null);
+					if(!empty($indexes))
+					{
+						foreach ($indexes as $indexName => $index)
+						{
+							$indexType = !empty($index['type']) ? $index['type'] : null;
+							$indexName = !empty($index['name']) ? $index['name'] : null;
+							$indexColumns = !empty($index['columns']) ? $index['columns'] : $indexName;
+							switch ($indexType)
+							{
+								case 'unique':
+									$table->unique($indexColumns, $indexName);
+									break;
+								default;
+									$table->index($indexColumns, $indexName);
+							}
+						}
+					}
+
 					// echo " -- Migrated " . (!empty($modelName) ? $modelName . ' - ' : '') . $tableName . "\n";
 					$migrateCommand->info(" -- Migrated " . (!empty($modelName) ? $modelName . ' - ' : '') . $tableName);
 					});

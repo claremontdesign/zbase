@@ -338,19 +338,27 @@ function zbase_event_checkbox(selector, event, cb)
  * @param {type} opt
  * @returns {undefined}
  */
-function zbase_toast(type, msg, position) {
-	if (jQuery('.alert-content-wrapper').length > 0)
+function zbase_toast(type, msg, position, forceToast) {
+	if (!forceToast)
 	{
-		zbase_alert(type, msg, jQuery('.alert-content-wrapper'), {manipulation: 'prepend'});
-		return;
-	}
-	if (jQuery('.page-content-inner').length > 0)
-	{
-		zbase_alert(type, msg, jQuery('.page-content-inner'), {manipulation: 'prepend'});
-		return;
+		if (jQuery('.alert-content-wrapper').length > 0)
+		{
+			zbase_alert(type, msg, jQuery('.alert-content-wrapper'), {manipulation: 'prepend'});
+			return;
+		}
+		if (jQuery('.page-content-inner').length > 0)
+		{
+			zbase_alert(type, msg, jQuery('.page-content-inner'), {manipulation: 'prepend'});
+			return;
+		}
 	}
 	if (typeof toastr != 'undefined')
 	{
+		toastr.options = {
+		  closeButton: true,
+		  positionClass: position === undefined ? 'toast-bottom-right' : position,
+		}
+
 		if (type == 'error')
 		{
 			toastr.error(msg);
@@ -431,7 +439,7 @@ function zbase_alert_form_element(name, msg)
 	{
 		if (element.next().hasClass('help-block'))
 		{
-			if(element.next().text().indexOf(msg) === -1)
+			if (element.next().text().indexOf(msg) === -1)
 			{
 				element.next('.help-block').append(' ' + msg);
 			}
@@ -855,17 +863,19 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	{
 		if (responseJSON._alerts)
 		{
+			var forceToast = responseJSON._toastit !== undefined ? true : false;
+			var toastPosition = responseJSON._toastpos !== undefined ? responseJSON._toastpos : 'toast-bottom-right';
 			jQuery.each(responseJSON._alerts.errors, function (i, m) {
-				zbase_toast('error', m);
+				zbase_toast('error', m, toastPosition, forceToast);
 			});
 			jQuery.each(responseJSON._alerts.info, function (i, m) {
-				zbase_toast('info', m);
+				zbase_toast('info', m, toastPosition, forceToast);
 			});
 			jQuery.each(responseJSON._alerts.messages, function (i, m) {
-				zbase_toast('success', m);
+				zbase_toast('success', m, toastPosition, forceToast);
 			});
 			jQuery.each(responseJSON._alerts.warning, function (i, m) {
-				zbase_toast('warning', m);
+				zbase_toast('warning', m, toastPosition, forceToast);
 			});
 		}
 	}
@@ -1203,12 +1213,46 @@ var Zbase = function () {
 			}
 		}
 	};
+
+	/**
+	 * Initialize Datatable
+	 * @returns {undefined}
+	 */
+	var initDatatable = function () {
+		if (jQuery('.zbase-datatable-row-toggle').length > 0)
+		{
+			jQuery('.zbase-datatable-row-toggle').unbind('click').click(function () {
+				var r = jQuery(this);
+				if (r.next().hasClass('zbase-datatable-row-toggle-copy'))
+				{
+					if (r.next().is(':visible'))
+					{
+						r.next().hide();
+					} else {
+						r.next().show();
+					}
+					return;
+				}
+				var url = r.attr('data-href');
+				if (url !== null && url !== undefined)
+				{
+
+					var tdCount = r.find('td').length;
+					var rId = r.attr('id');
+					var newRTpl = '<tr class="zbase-datatable-row-toggle-copy"><td colspan="' + tdCount + '"><div class="zbase-datatable-row-toggle-copy-wrapper" id="rowCopy' + rId + '"></div></td></tr>';
+					r.after(newRTpl);
+					zbase_ajax_post(url, {}, function () {}, {loaderTarget: r.next().find('td')});
+				}
+			});
+		}
+	};
 	return {
 		init: function () {
 			var_dump('Zbase Initializing...');
 			initIntervalUpdates();
 			jQuery('.equalHeight').equalHeights();
 			initTabs();
+			initDatatable();
 			initFormControls();
 			initAjaxForm();
 			initBtnActionConfirm();
