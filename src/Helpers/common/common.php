@@ -17,6 +17,7 @@ use Illuminate\Support\Debug\Dumper;
 use Zbase\Interfaces;
 
 !defined('EOF') ? define("EOF", "\n") : '';
+!defined('PHP_EOL') ? define("PHP_EOL", "\n") : '';
 define("ZBASE", "zbase");
 
 if(!function_exists('env'))

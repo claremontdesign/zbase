@@ -109,7 +109,7 @@ return [
 									'view' => [
 										'file' => function(){
 											return zbase_view_render(zbase_view_file_module('users.views.angular.controllers.adminUsersController'));
-						}
+											}
 									],
 								],
 							],

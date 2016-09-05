@@ -219,7 +219,6 @@ function zbase_routes_init($routes = null)
 				}
 			}
 		}
-
 		$usernameRoute = zbase_route_username();
 		/**
 		 * Using Username Route
@@ -411,7 +410,8 @@ function zbase_route_response($name, $route)
 		 */
 		$useUsernameRoute = false;
 	}
-	if($usernameRoute == false && !empty($useUsernameRoute))
+	//if($usernameRoute === false && !empty($useUsernameRoute))
+	if($usernameRoute === false && !empty($useUsernameRoute))
 	{
 		$uri = zbase_url_uri();
 		$adminKey = zbase_admin_key();
@@ -432,18 +432,17 @@ function zbase_route_response($name, $route)
 							$routes = zbase_config_get('routes', []);
 							if(!empty($routes))
 							{
-								foreach ($routes as $route)
+								foreach ($routes as $rName => $r)
 								{
-									if(!empty($route['enable']) && !empty($route['url']))
+									if(!empty($r['enable']) && !empty($r['url']))
 									{
-										$urlEx = explode('/', $route['url']);
+										$urlEx = explode('/', $r['url']);
 										if(!empty($urlEx))
 										{
 											foreach ($urlEx as $urlExV)
 											{
 												if(!empty($urlExV))
 												{
-													// dd($uriV, $urlExV, $uriEx, $urlEx);
 													if($uriV == $urlExV)
 													{
 														/**
@@ -464,6 +463,8 @@ function zbase_route_response($name, $route)
 										/**
 										 * Found it, break it
 										 */
+										$name = $rName;
+										$route = $r;
 										break;
 									}
 								}
@@ -486,14 +487,15 @@ function zbase_route_response($name, $route)
 					 */
 					if($name != 'index')
 					{
-						$response = new \Zbase\Exceptions\NotFoundHttpException();
-						return $response->render(zbase_request(), $response);
+						// $response = new \Zbase\Exceptions\NotFoundHttpException();
+						// return $response->render(zbase_request(), $response);
 					}
 				}
 			}
 		}
 	}
 	$usernameRoutePrefix = zbase_route_username_prefix();
+	$originalRouteName = str_replace($usernameRoutePrefix, '', $name);
 	zbase()->setCurrentRouteName($name);
 	$guest = true;
 	$authed = false;
@@ -508,6 +510,10 @@ function zbase_route_response($name, $route)
 	if(!empty($backend))
 	{
 //		zbase_in_back();
+	}
+	if(!empty($useUsernameRoute) && zbase_auth_has() && $usernameRoute != zbase_auth_user()->username())
+	{
+		return redirect(zbase_url_from_route($originalRouteName, [$usernameRoutePrefix => zbase_auth_user()->username()]));
 	}
 	if(!empty($middleware))
 	{

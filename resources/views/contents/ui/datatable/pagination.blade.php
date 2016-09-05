@@ -1,5 +1,4 @@
 <?php
-
 $perPages = $ui->getRowsPerPages();
 if($paginator instanceof \Illuminate\Pagination\LengthAwarePaginator)
 {
@@ -11,12 +10,11 @@ if($paginator instanceof \Illuminate\Pagination\LengthAwarePaginator)
 	$presenter = new \Illuminate\Pagination\BootstrapThreePresenter($paginator);
 	if(zbase_is_angular())
 	{
-		 echo str_replace(array('?page=', 'class="pagination', route('index')), array('/page/', 'class="pagination pagination-sm','#'), $presenter->render());
-		//echo $paginator;
+		 echo str_replace(array('?page=', 'class="pagination', route('index')), array('/page/', 'class="pagination pagination-pages pagination-sm','#'), $presenter->render());
 	}
 	else
 	{
-		echo str_replace(array('class="pagination'), array('class="pagination pagination-sm'), $presenter->render());
+		echo str_replace(array('class="pagination'), array('class="pagination pagination-pages pagination-sm'), $presenter->render());
 	}
 	if(!zbase_is_angular())
 	{
@@ -40,7 +38,7 @@ if($paginator instanceof \Illuminate\Pagination\LengthAwarePaginator)
 		}
 		if($paginator->total() > $paginator->perPage())
 		{
-			echo '<li><a data-perpage="all" href="' . zbase_url_from_current(['pp' => $paginator->total()], false) . '" ' . ($paginator->perPage() > $perPageRequest ? 'class="active"' : '') . ' title="View all rows">'
+			echo '<li><a data-perpage="all" href="' . zbase_url_from_current(['pp' => $paginator->total()], false) . '" ' . ($paginator->perPage() > $perPageRequest ? 'class="pagination-view-all active"' : '') . ' title="View all rows">'
 			. 'View all'
 			. '</a></li>';
 		}

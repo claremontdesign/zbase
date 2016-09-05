@@ -1,12 +1,13 @@
 <?php
 $dataPrefix = $ui->getWidgetPrefix();
 $prefix = $ui->getWidgetPrefix('search');
+$exportPrefix = $ui->getWidgetPrefix('export');
 $isSearchable = $ui->isSearchable();
 $searchUrl = $ui->getSearchUrl();
 $queryJson = $ui->isSearchResultJson();
 $queryOnLoad = $ui->isQueryOnLoad();
 $searchOnLoad = $ui->isSearchOnLoad();
-$tableTemplate = !empty($dataTableTemplate) ? $dataTableTemplate : zbase_view_file_contents('ui.datatable.table');
+$tableTemplate = !empty($dataTableTemplate) ? $dataTableTemplate : $ui->searchResultsTemplate();
 if(empty($isSearchable))
 {
 	return;
@@ -38,15 +39,17 @@ if(empty($isSearchable))
 	{
 		if(jQuery('#<?php echo $prefix?>Wrapper').length > 1)
 		{
-			jQuery('#<?php echo $prefix?>Wrapper .btn-toolbar').remove();
+			// jQuery('#<?php echo $prefix?>Wrapper .btn-toolbar').remove();
 		}
 		jQuery('#<?php echo $prefix?>Table').remove();
-		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.btn-toolbar').eq(0).remove();
+		// jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.btn-toolbar').eq(0).remove();
 		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.datatable-empty-message').eq(0).remove();
 		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('table').eq(0).remove();
+		var <?php echo $prefix?>Toolbar = jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.btn-toolbar').eq(0);
+		var <?php echo $prefix?>Pagination = <?php echo $prefix?>Toolbar.find('.pagination-pages');
 		if(r.<?php echo $dataPrefix?> !== undefined && r.<?php echo $dataPrefix?>.totalRows > 0)
 		{
-			jQuery(<?php echo $prefix?>TemplateTable).insertAfter('#<?php echo $prefix?>SearchWrapper');
+			<?php echo $prefix?>Toolbar.after(<?php echo $prefix?>TemplateTable);
 			if(r.<?php echo $dataPrefix?>.rows !== undefined)
 			{
 				jQuery.each(r.<?php echo $dataPrefix?>.rows, function(i, row){
@@ -56,9 +59,57 @@ if(empty($isSearchable))
 			} else {
 				zbase_call_function('<?php echo $prefix?>Callback', r.<?php echo $dataPrefix?>.rows);
 			}
+			/**
+			 * pagination
+			 */
+			<?php echo $prefix?>Toolbar.find('.pagination-view-all').parent('li').hide();
+			<?php echo $prefix?>Toolbar.find('.pagination-pages').hide();
+			<?php echo $prefix?>Toolbar.find('.pagination-perpage').hide();
+			if(r.<?php echo $dataPrefix?>.maxPage !== undefined && r.<?php echo $dataPrefix?>.maxPage > 1)
+			{
+				<?php echo $prefix?>Toolbar.find('.pagination-pages').show();
+				<?php echo $prefix?>Toolbar.find('.pagination-perpage').show();
+				var <?php echo $prefix?>CurPage = r.<?php echo $dataPrefix?>.currentPage;
+				<?php echo $prefix?>Pagination.find('li').remove();
+				if(<?php echo $prefix?>CurPage > 1)
+				{
+					<?php echo $prefix?>Pagination.append('<li><a data-page="'+ (<?php echo $prefix?>CurPage-1) +' "href="?page=' + (<?php echo $prefix?>CurPage-1) + '" class="<?php echo $dataPrefix?>page">&laquo;</a></li>');
+				}
+				for(var page = 1; page <= r.<?php echo $dataPrefix?>.maxPage; page++)
+				{
+					if(page == r.<?php echo $dataPrefix?>.currentPage)
+					{
+						<?php echo $prefix?>Pagination.append('<li class="active"><span>' + page + '</span></li>');
+					} else {
+						<?php echo $prefix?>Pagination.append('<li><a data-page="'+page+' "href="?page=' + page + '" class="<?php echo $dataPrefix?>page">' + page + '</a></li>');
+					}
+				}
+				if(<?php echo $prefix?>CurPage < r.<?php echo $dataPrefix?>.maxPage)
+				{
+					<?php echo $prefix?>Pagination.append('<li><a data-page="'+ (<?php echo $prefix?>CurPage+1) +' "href="?page=' + (<?php echo $prefix?>CurPage+1) + '" class="<?php echo $dataPrefix?>page">&raquo;</a></li>');
+				}
+				jQuery('.<?php echo $dataPrefix?>page').unbind('click').click(function(e){
+					e.preventDefault();
+					 <?php echo $prefix?>GoSearch(jQuery(this).attr('href'));
+					<?php echo $prefix?>CurPage = jQuery(this).attr('data-page');
+				});
+				<?php echo $prefix?>Toolbar.find('.pagination-view-all').parent('li').show();
+				<?php echo $prefix?>Toolbar.find('.pagination-view-all').unbind('click').click(function(e){
+					e.preventDefault();
+					 <?php echo $prefix?>GoSearch('?pp=' + r.<?php echo $dataPrefix?>.totalRows);
+				});
+			}
+			jQuery('.<?php echo $exportPrefix ?>Filters').remove();
+			if(jQuery('#<?php echo $exportPrefix ?>SearchQuery').length == 0)
+			{
+				jQuery('#<?php echo $exportPrefix ?>Wrapper').find('form').append('<input id="<?php echo $exportPrefix ?>SearchQuery" type="hidden" value="' + jQuery('#<?php echo $prefix?>query').val() + '" name="<?php echo $prefix?>Query" />');
+			}
+			jQuery('#<?php echo $exportPrefix ?>SearchQuery').val(jQuery('#<?php echo $prefix?>query').val());
 		} else {
 			jQuery(<?php echo $prefix?>EmptyMessage).insertAfter('#<?php echo $prefix?>SearchWrapper');
 		}
+		// Toolbar
+
 	}
 	function <?php echo $prefix?>beforeSendCheck(){
 		var o = jQuery('#<?php echo $prefix?>query');
@@ -70,9 +121,9 @@ if(empty($isSearchable))
 		}
 		return ok;
 	}
-	function <?php echo $prefix?>GoSearch()
+	function <?php echo $prefix?>GoSearch(url)
 	{
-		var c = {url: '<?php echo $searchUrl?>',
+		var c = {url: url !== undefined ? url : '<?php echo $searchUrl?>',
 					form: true,
 					method: 'post',
 					beforeSendCheck: <?php echo $prefix?>beforeSendCheck,

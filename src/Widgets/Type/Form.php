@@ -494,7 +494,6 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 				return;
 			}
 			$validationRules = $this->getValidationRules();
-//			 dd($validationRules);
 			if(!empty($validationRules))
 			{
 				$v = \Validator::make(zbase_request_inputs(), $validationRules, $this->getValidationMessages());
@@ -528,9 +527,9 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		if(zbase_request_is_post())
 		{
 			$currentTab = zbase_request_input('tab', false);
-			if(!empty($this->_validationRules[$currentTab]))
+			if(!empty($this->_validationRules['_tab' . $currentTab]))
 			{
-				return $this->_validationRules[$currentTab];
+				return $this->_validationRules['_tab' . $currentTab];
 			}
 		}
 		return $this->_validationRules;
@@ -662,20 +661,18 @@ class Form extends Widgets\Widget implements Widgets\WidgetInterface, FormInterf
 		$currentTab = zbase_request_input('tab', false);
 		if($e instanceof \Zbase\Interfaces\ValidationInterface)
 		{
-			//var_dump('_createElement: ' . $currentTab . ' : ' . $tabName);
 			if($e->hasValidations())
 			{
 				$formTag = $this->_v('form_tab', true);
-				//var_dump('_hasValidations: ' . $currentTab . ' : ' . $tabName);
 				if(zbase_request_method() == 'post' && empty($formTag) && !empty($currentTab))
 				{
 					if($tabName == $currentTab)
 					{
-						if(empty($this->_validationRules[$tabName]))
+						if(!isset($this->_validationRules['_tab' . $tabName]))
 						{
-							$this->_validationRules[$tabName] = [];
+							$this->_validationRules['_tab' . $tabName] = [];
 						}
-						$this->_validationRules[$tabName] = [$e->name() => $e->getValidationRules($this->getAction())];
+						$this->_validationRules['_tab' . $tabName][$e->name()] = $e->getValidationRules($this->getAction());
 						$this->_validationMessages = array_replace_recursive($this->_validationMessages, $e->getValidationMessages($this->getAction()));
 					}
 				}

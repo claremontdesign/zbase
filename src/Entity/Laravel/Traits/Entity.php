@@ -278,7 +278,14 @@ trait Entity
 		{
 			$options = [];
 		}
-		$options[$key] = $value;
+		if(empty($value) && isset($options[$key]))
+		{
+			unset($options[$key]);
+		}
+		else
+		{
+			$options[$key] = $value;
+		}
 		$this->options = $options;
 		return $this;
 	}

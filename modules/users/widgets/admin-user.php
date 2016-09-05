@@ -304,12 +304,12 @@ return [
 					],
 				],
 			],
-			'password' => [
+			'passwordx' => [
 				'type' => 'tab',
 				'label' => 'Update Password',
-				'id' => 'password',
+				'id' => 'passwordx',
 				'group' => 'accountTab',
-				'enable' => false,
+				'enable' => true,
 				'formConfiguration' => [
 					'form' => [
 						'startTag' => [
@@ -325,25 +325,29 @@ return [
 					],
 				],
 				'elements' => [
-					'header' => [
-						'ui' => [
-							'type' => 'component.pageHeader',
-							'id' => 'header',
-							'text' => 'To update password, enter your current password.'
-						],
-					],
 					'password' => [
 						'type' => 'password',
 						'id' => 'password',
-						'label' => null,
+						'label' => 'Enter new Password',
 						'validations' => [
 							'required' => [
 								'enable' => true,
-								'message' => 'Enter your account password.'
+								'message' => 'Enter new password.'
 							],
-							'accountPassword' => [
+							'same' => [
 								'enable' => true,
-								'message' => 'Account password don\'t match.'
+								'text' => 'required|confirmed|min:6'
+							],
+						],
+					],
+					'password_confirmation' => [
+						'type' => 'password',
+						'id' => 'password_confirmation',
+						'label' => 'Confirm new Password',
+						'validations' => [
+							'required' => [
+								'enable' => true,
+								'message' => 'Enter new password.'
 							],
 						],
 					],

@@ -10,7 +10,9 @@
 		"intervention/imagecache": ">=2.3",
 		"nesbot/carbon": "~1.14",
 		"baum/baum": ">1.1",
-		"flowjs/flow-php-server": ">1"
+		"flowjs/flow-php-server": ">1",
+		"maatwebsite/excel": "~2.1.0",
+		"laravelcollective/bus": "^5.2"
 	},
 	"require-dev": {
 	},

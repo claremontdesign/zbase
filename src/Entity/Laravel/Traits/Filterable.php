@@ -60,6 +60,11 @@ trait Filterable
 	 * 				'value' => value
 	 * 			]
 	 * 		],
+	 * 		['null' => [
+	 * 				'field' => 'columnName',
+	 * 				'value' => value
+	 * 			]
+	 * 		],
 	 * 		field_name REGEXP '"key_name":"([^"])key_word([^"])"'
 	 * 		['json' => [
 	 * 				'field' => 'columnName',
@@ -172,7 +177,17 @@ trait Filterable
 							if(!empty($v['field']) && isset($v['value']) && isset($v['keyName']))
 							{
 								$query->where($v['field'], 'REGEXP', '"' . $v['keyName'] . '":"' . $v['value'] . '"');
-								// $query->where($v['field'], 'RLIKE', '"' . $v['keyName'] . '":"[[:<:]]' . $v['value'] . '[[:>:]]"');
+							}
+							break;
+						case 'notnull':
+							if(!empty($v['field']))
+							{
+								$query->whereNotNull($v['field']);
+							}
+						case 'isnull':
+							if(!empty($v['field']))
+							{
+								$query->whereNull($v['field']);
 							}
 							break;
 						default;

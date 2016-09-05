@@ -34,7 +34,7 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 
 	public function boot()
 	{
-        parent::boot();
+		parent::boot();
 		$this->loadViewsFrom(__DIR__ . '/../resources/views', zbase_tag());
 		$this->loadViewsFrom(__DIR__ . '/../modules', zbase_tag() . 'modules');
 		if(!zbase_is_testing())

@@ -93,16 +93,24 @@ trait Module
 		}
 		if($this->getModule()->hasAction($requestMethod . '-' . $action))
 		{
-			$widgetsAction = $requestMethod . '-' .	 $action;
+			$widgetsAction = $requestMethod . '-' . $action;
 			$action = $widgetsAction;
 			$htmls = [];
 		}
 		$widgets = $this->getModule()->pageProperties($action)->widgetsByControllerAction($widgetsAction);
+		if(count($widgets) == 1)
+		{
+			$firstWidget = collect($widgets)->first();
+			if($firstWidget instanceof \Zbase\Widgets\WidgetInterface)
+			{
+				$firstWidget->pageProperties($widgetsAction);
+			}
+		}
 		if(!is_array($widgets) && $widgets instanceof \Illuminate\Http\RedirectResponse)
 		{
 			return $widgets;
 		}
-		zbase()->json()->addVariable('_widget', $this->getModule()->id() . '_' . str_replace('-','',$action));
+		zbase()->json()->addVariable('_widget', $this->getModule()->id() . '_' . str_replace('-', '', $action));
 		if(zbase_is_dev())
 		{
 			zbase()->json()->addVariable(__METHOD__, $widgetsAction);
@@ -182,8 +190,13 @@ trait Module
 					{
 						zbase()->json()->addVariable('$jsonIndexName', $jsonIndexName);
 					}
-					zbase()->json()->addVariable($jsonIndexName, $widget->toArray());
-				} else {
+					if(!$widget->isExporting())
+					{
+						zbase()->json()->addVariable($jsonIndexName, $widget->toArray());
+					}
+				}
+				else
+				{
 					if($isAjax)
 					{
 						$htmls[str_replace('-', '_', $widget->id())] = $widget->render();

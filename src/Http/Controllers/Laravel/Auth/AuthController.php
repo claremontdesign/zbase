@@ -306,7 +306,16 @@ use AuthenticatesAndRegistersUsers,
 				}
 				else
 				{
-					$this->redirectTo = zbase_url_from_route('home');
+					if(zbase_route_username())
+					{
+						$user = \Auth::guard($this->getGuard())->user();
+						$usernameRoutePrefix = zbase_route_username_prefix();
+						$this->redirectTo = zbase_url_from_route('home', [$usernameRoutePrefix => $user->username()]);
+					}
+					else
+					{
+						$this->redirectTo = zbase_url_from_route('home');
+					}
 				}
 				return $this->handleUserWasAuthenticated($request, $throttles);
 			}
@@ -339,7 +348,15 @@ use AuthenticatesAndRegistersUsers,
 		}
 		$user->log('user::authenticated');
 		$user->authenticated();
-		$redirect = zbase_request_input('redirect', zbase_session_get('__loginRedirect', zbase_url_from_route('home')));
+		if(zbase_route_username())
+		{
+			$usernameRoutePrefix = zbase_route_username_prefix();
+			$redirect = zbase_request_input('redirect', zbase_session_get('__loginRedirect', zbase_url_from_route('home', [$usernameRoutePrefix => $user->username()])));
+		}
+		else
+		{
+			$redirect = zbase_request_input('redirect', zbase_session_get('__loginRedirect', zbase_url_from_route('home')));
+		}
 		zbase()->json()->setVariable('_redirect', $redirect);
 		zbase()->json()->setVariable('login_success', 1);
 		return redirect()->intended($redirect);

@@ -105,6 +105,12 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	protected $_rowsPrepared = false;
 	protected $_htmlWrapperAttributes = ['class' => ['table-responsive']];
 
+	public function __construct($widgetId, $configuration)
+	{
+		$this->_emptyViewFile = zbase_view_file_contents('ui.datatable.empty');
+		parent::__construct($widgetId, $configuration);
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="Rows">
 
 	/**
@@ -240,7 +246,8 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 					$perPage = $entity->getPerPage();
 				}
 			}
-			$repo = $entityObject->repository()->perPage(zbase_request_query_input('pp', $this->_v('row.perpage', $perPage)));
+			$this->_repoPerPage = zbase_request_query_input('pp', $this->_v('row.perpage', $perPage));
+			$repo = $entityObject->repository()->perPage($this->_repoPerPage);
 			$filters = [];
 			$sorting = [];
 			$joins = [];
@@ -415,13 +422,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	}
 
 	// </editor-fold>
-
-	public function __construct($widgetId, $configuration)
-	{
-		$this->_emptyViewFile = zbase_view_file_contents('ui.datatable.empty');
-		parent::__construct($widgetId, $configuration);
-	}
-
+	// <editor-fold defaultstate="collapsed" desc="Searching">
 	/**
 	 * Return the Search Text Placeholder
 	 *
@@ -430,6 +431,16 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	public function searchTextPlaceholder()
 	{
 		return $this->_v('searchable.input.placeholder', 'Search Data');
+	}
+
+	/**
+	 * Return the Search Text Placeholder
+	 *
+	 * @return string
+	 */
+	public function searchResultsTemplate()
+	{
+		return $this->_v('searchable.view.template', zbase_view_file_contents('ui.datatable.table'));
 	}
 
 	/**
@@ -503,6 +514,8 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 			return zbase_request_input($this->getWidgetPrefix('search_query'));
 		}
 	}
+
+	// </editor-fold>
 
 	/**
 	 * Check if table rows can be selectable.
@@ -971,6 +984,10 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		$this->_rows();
 		$this->_actions();
 		$this->_columns();
+		if($this->isExporting())
+		{
+			return $this->export();
+		}
 	}
 
 	/**
@@ -1012,7 +1029,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 			$datas = [
 				'currentPage' => $rows->currentPage(),
 				'maxPage' => $rows->lastPage(),
-				'totalRows' => count($rows)
+				'totalRows' => $rows->total()
 			];
 			$columns = $this->getProcessedColumns();
 			if(!empty($rows))
@@ -1050,4 +1067,130 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		return [];
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="Export">
+
+	/**
+	 * Export datatable
+	 *
+	 * @return array
+	 */
+	public function export()
+	{
+		$rows = $this->getRows();
+		if(!empty($rows))
+		{
+			$datas = [];
+			if(!empty($rows))
+			{
+				$format = strtolower($this->exportFormat());
+				$columns = $this->exportColumns();
+				$prefix = $this->exportFilename();
+				$name = $this->exportName();
+				$filename = $prefix . date('Ymdhisa');
+				$headers = [];
+				if(!empty($columns))
+				{
+					foreach ($columns as $cIndexId => $cSettings)
+					{
+						$headers[] = !empty($cSettings['label']) ? $cSettings['label'] : $cIndexId;
+					}
+					$datas[] = $headers;
+				}
+				foreach ($rows as $row)
+				{
+					if(method_exists($row, 'cast'))
+					{
+						$row = $row->cast();
+					}
+					if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+					{
+						$row->setBrowseCategory($this->entity());
+					}
+					if($row instanceof \Zbase\Post\Interfaces\ExportInterface)
+					{
+						$rowData = $row->exportToArray();
+						if(!empty($columns))
+						{
+							$data = [];
+							foreach ($columns as $cIndexId => $cSettings)
+							{
+								$data[] = isset($rowData[$cIndexId]) ? $rowData[$cIndexId] : '';
+							}
+							$datas[] = $data;
+						}
+					}
+				}
+				if(!empty($datas))
+				{
+					if($format == 'excel')
+					{
+						$excel = \Excel::create($filename, function($excel) use ($datas, $name) {
+									$excel->sheet($name, function($sheet) use ($datas) {
+										$sheet->freezeFirstRowAndColumn();
+										$sheet->fromArray($datas, null, 'A1', false, false);
+							});
+						})->store('xlsx');
+						return redirect()->to(zbase_public_download_link($filename . '.xlsx'));
+					}
+				}
+			}
+		}
+		return [];
+	}
+
+	/**
+	 * Is Exportable
+	 * @return boolean
+	 */
+	public function isExportable()
+	{
+		return $this->_v('exportable.enable', $this->_v('exportable', false));
+	}
+
+	/**
+	 * Export Headers
+	 * @return boolean
+	 */
+	public function exportColumns()
+	{
+		return $this->_v('exportable.columns', false);
+	}
+
+	/**
+	 * Export Headers
+	 * @return boolean
+	 */
+	public function exportFilename()
+	{
+		return $this->_v('exportable.filename', $this->getWidgetPrefix('export'));
+	}
+
+	/**
+	 * Export Headers
+	 * @return boolean
+	 */
+	public function exportName()
+	{
+		return $this->_v('exportable.name', $this->getWidgetPrefix('export'));
+	}
+
+	/**
+	 * Is Exportable
+	 * @return boolean
+	 */
+	public function exportFormat()
+	{
+		return zbase_request_input($this->getWidgetPrefix('export') . 'Format', 'excel');
+	}
+
+	/**
+	 * Return the Export Filters
+	 * @return array
+	 */
+	public function exportFilters()
+	{
+		return zbase_request_input($this->getWidgetPrefix('export') . 'Filter', []);
+	}
+
+	// </editor-fold>
 }

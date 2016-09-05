@@ -56,6 +56,54 @@ trait Post
 	 */
 	protected $messages = [];
 
+	// <editor-fold defaultstate="collapsed" desc="Events">
+	/**
+	 * Cast all property values properly
+	 *
+	 * @return $this
+	 */
+	public function postCastProperties()
+	{
+		if($this->postTableIsOptionable())
+		{
+			if(!empty($this->options) && is_array($this->options))
+			{
+				$this->options = json_encode($this->options);
+			}
+		}
+		if($this->postTableIsUserable() && $this->user_id instanceof User)
+		{
+			$this->user_id = $this->user_id->id();
+		}
+		return $this;
+	}
+
+	/**
+	 * Events
+	 */
+	protected static function boot()
+	{
+		parent::boot();
+		static::saved(function($post) {
+			$post->clearPostCacheById();
+			$post->clearPostCacheByTableColumns();
+		});
+		static::creating(function($post) {
+			return $post->postCastProperties();
+		});
+		static::saving(function($post) {
+			return $post->postCastProperties();
+		});
+		static::updating(function($post) {
+			return $post->postCastProperties();
+		});
+		static::deleted(function($post) {
+			$post->clearPostCacheById();
+			$post->clearPostCacheByTableColumns();
+		});
+	}
+
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Messages">
 	/**
 	 * Add a message/alert
@@ -345,6 +393,39 @@ trait Post
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Manipulations">
 	/**
+	 * Fill this Object based on the given Assoc Array
+	 *
+	 * @param array $data
+	 *
+	 * @return void
+	 */
+	public function postObjectInitProperties($data)
+	{
+		if(method_exists($this, 'objectInitProperties'))
+		{
+			$this->objectInitProperties($data);
+		}
+		else
+		{
+			$columns = $this->postTableColumns();
+			foreach ($data as $k => $v)
+			{
+				if(in_array($k, $columns))
+				{
+					if($v instanceof User)
+					{
+						$this->{$k} = $v->id();
+					}
+					else
+					{
+						$this->{$k} = $v;
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Create a new row
 	 * @param array $data
 	 */
@@ -498,7 +579,7 @@ trait Post
 		zbase()->json()->setVariable('_html_selector_replace', ['#postMainContentWrapper' . $postHtmlId => $this->postHtmlContent()], true);
 		$widget->getModule()->pageProperties($action);
 		$this->postPageProperties($widget);
-		zbase()->json()->setVariable('_html_selector_replace', ['.page-breadcrumb.breadcrumb' => zbase_view_render(zbase_view_file('partial.breadcrumb', zbase_section()))->render()], true);
+		zbase()->json()->setVariable('_html_selector_replace', ['.page-breadcrumb.breadcrumb' => zbase_view_render(zbase_view_file('partial.breadcrumb', zbase_section()))], true);
 		zbase()->json()->setVariable('_html_selector_html', ['.page-title' => zbase()->view()->title() . '<small>' . zbase()->view()->subTitle() . '</small>'], true);
 	}
 
@@ -1107,34 +1188,6 @@ trait Post
 		}
 	}
 
-	/**
-	 * Events
-	 */
-	protected static function boot()
-	{
-		parent::boot();
-		static::saved(function($post) {
-			$post->clearPostCacheById();
-			$post->clearPostCacheByTableColumns();
-		});
-		static::creating(function($post) {
-			if(!empty($post->options) && is_array($post->options))
-			{
-				$post->options = json_encode($post->options);
-			}
-		});
-		static::updating(function($post) {
-			if(!empty($post->options) && is_array($post->options))
-			{
-				$post->options = json_encode($post->options);
-			}
-		});
-		static::deleted(function($post) {
-			$post->clearPostCacheById();
-			$post->clearPostCacheByTableColumns();
-		});
-	}
-
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Admin">
 	/**
@@ -1643,5 +1696,22 @@ trait Post
 		return $data;
 	}
 
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Post Comments">
+	/**
+	 *
+	 * @TODO Add Note
+	 * @param \Zbase\Post\Traits\PostNote $note
+	 */
+//	public function postAddNote(PostComments $note)
+//	{
+//
+//	}
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Post Images">
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Post Logs">
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Post Category">
 	// </editor-fold>
 }

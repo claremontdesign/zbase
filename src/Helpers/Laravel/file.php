@@ -116,6 +116,24 @@ function zbase_public_path($path = null)
 }
 
 /**
+ * Zbase Public Download Folder
+ */
+function zbase_public_download_folder()
+{
+	$folder = zbase_public_path() . '/zbase_tmp/downloads/';
+	zbase_directory_check($folder, true);
+	return $folder;
+}
+
+/**
+ * Zbase Public Download Folder
+ */
+function zbase_public_download_link($file)
+{
+	return '/zbase_tmp/downloads/' . $file;
+}
+
+/**
  * Return the Storage Path
  * return laravel\storage
  *

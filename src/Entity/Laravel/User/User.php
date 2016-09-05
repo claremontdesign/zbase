@@ -86,6 +86,14 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	/**
+	 * Return the value of the "roles" column
+	 */
+	public function rolesAttribute()
+	{
+		return $this->getAttribute('roles');
+	}
+
+	/**
 	 * Return Default Address
 	 * @return UserAddress
 	 */
@@ -94,7 +102,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		if(is_null($this->address))
 		{
 			$this->address = false;
-			$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_address' . '_' . $this->id());
+			$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_address_' . $this->id());
 			$this->address = zbase_cache($cacheKey, function(){
 				$filter = [
 					'is_default' => [
@@ -175,10 +183,14 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function profile()
 	{
-		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_profile' . '_' . $this->id());
-		return zbase_cache($cacheKey, function(){
-			return zbase_entity('user_profile')->repo()->by('user_id', $this->id())->first();
-		}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+		if(is_null($this->userProfile))
+		{
+			$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_profile_' . $this->id());
+			$this->userProfile = zbase_cache($cacheKey, function(){
+				return zbase_entity('user_profile')->repo()->by('user_id', $this->id())->first();
+			}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+		}
+		return $this->userProfile;
 	}
 
 	/**
@@ -330,7 +342,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function isAdmin()
 	{
-		return $this->hasAccess(zbase_auth_minimum());
+		return $this->hasAccess('admin');
 	}
 
 	/**
@@ -1140,7 +1152,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					}
 					return false;
 				}
-				if(!empty($data['password']) && !empty($data['password']))
+				if(!empty($data['password']) && !empty($data['password']) && zbase_auth_user()->id() == $this->id())
 				{
 					if(zbase_bcrypt_check($data['password'], $this->password))
 					{
@@ -1151,6 +1163,11 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					{
 						return false;
 					}
+				}
+				if(!empty($data['password']) && !empty($data['password_confirmation']) && zbase_auth_is('admin'))
+				{
+					$this->updatePassword($data['password']);
+					return true;
 				}
 				$this->updateProfile($data);
 				return true;
@@ -1210,6 +1227,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 
 	public function queryFilters($filters, $sorting, $options = [])
 	{
+		if($options['widget']->id() == 'mlmdirectreferrals-admin'){
+
+		}
 		if($options['widget']->id() != 'admin-users')
 		{
 			if(!empty($filters))
@@ -1425,7 +1445,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 						$this->save();
 					}
 				}
-				$userProfile = zbase_entity('user_profile')->where('user_id', $this->id());
+				$userProfile = $this->profile();
 				foreach ($data as $key => $val)
 				{
 					if(in_array($key, $fillables))
@@ -2263,4 +2283,20 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="ClearCache">
+	/**
+	 * Clear entity cache by Id
+	 *
+	 * @return void
+	 */
+	public function clearEntityCacheById()
+	{
+		parent::clearEntityCacheById();
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_address_' . $this->id());
+		zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
+		$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_profile_' . $this->id());
+		zbase_cache_remove($cacheKey, [$this->entityName()], ['driver' => 'file']);
+	}
+
+// </editor-fold>
 }

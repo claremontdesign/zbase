@@ -51,6 +51,11 @@ function zbase_response($response)
 	}
 	if(!empty($jsonResponse))
 	{
+		$formId = zbase_request_input('_formId', null);
+		if(!empty($formId))
+		{
+			zbase()->json()->setVariable('_formId', $formId);
+		}
 		zbase()->json()->setVariable('_route', zbase_route_name());
 		zbase()->json()->setVariable('_package', zbase_view_template_package());
 		$code = 200;
@@ -89,11 +94,11 @@ function zbase_response($response)
 			{
 				if(!empty($jScripts[0]))
 				{
-					$jsonScriptReturn .= $jScripts[0] .';';
+					$jsonScriptReturn .= $jScripts[0] . ';';
 				}
 			}
 		}
-		zbase()->json()->setVariable('_html_script', str_replace(';;',';',$jsonScriptReturn));
+		zbase()->json()->setVariable('_html_script', str_replace(';;', ';', $jsonScriptReturn));
 		$forceResponse = zbase_request_input('forceResponse', zbase_request_query_input('forceResponse', false));
 		/**
 		 * JSONP Callback
@@ -175,6 +180,7 @@ function zbase_exception_throw(\Exception $e)
 	{
 		dd($e);
 	}
+	zbase_alert('error', 'There was a problem. ' . $e->getMessage());
 	zbase_abort(500);
 }
 

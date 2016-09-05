@@ -129,6 +129,19 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 		$this->setViewFile($this->_v('view.file', $this->_viewFile));
 	}
 
+	/**
+	 * Check if we are exporting
+	 * @return boolean
+	 */
+	public function isExporting()
+	{
+		$exporting = zbase_request_input($this->getWidgetPrefix('export'), false);
+		if($this->isExportable() && !empty($exporting))
+		{
+			return true;
+		}
+		return false;
+	}
 
 	/**
 	 * POST
@@ -141,7 +154,6 @@ class Widget extends \Zbase\Ui\Ui implements \Zbase\Ui\UiInterface
 	{
 		return $entity instanceof \Zbase\Post\PostInterface;
 	}
-
 
 	/**
 	 * Set Page Property

@@ -114,11 +114,11 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 		}
 		if(!empty($strings) && !empty($separator))
 		{
-			return implode($separator, $strings);
+			return '<address>' . implode($separator, $strings) . '</address>';
 		}
 		if(is_array($strings))
 		{
-			return implode($separator, $strings);
+			return '<address>' . implode($separator, $strings) . '</address>';
 		}
 	}
 }

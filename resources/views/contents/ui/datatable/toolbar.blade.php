@@ -22,11 +22,14 @@ if(zbase_is_mobile())
 	</div>
 <?php else: ?>
 	<div role="toolbar" class="btn-toolbar">
-		<div class="col-md-10 pull-left">
+		<div class="toolbar-wraper col-md-6 pull-left">
 			<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.pagination'), ['paginator' => $rows, 'ui' => $ui]); ?>
 		</div>
-		<div class="col-md-2 pull-right">
+		<div class="toolbar-wraper col-md-3">
 			<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.sorting'), ['ui' => $ui]); ?>
+		</div>
+		<div class="toolbar-wraper col-md-3 pull-right">
+			<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.export'), ['ui' => $ui]); ?>
 		</div>
 	</div>
 	<?php if(!empty($actionCreateButton)): ?>

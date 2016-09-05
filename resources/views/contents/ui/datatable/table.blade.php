@@ -101,6 +101,7 @@ if(!empty($hasActions))
 	<?php if(!empty($columnConfig)): ?>
 		var <?php echo $prefix ?>Columns = <?php echo json_encode($columnConfig, true) ?>;
 	<?php endif; ?>
+	var <?php echo $prefix ?>TemplateToolbar = '<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.toolbar'), ['ui' => $ui, 'template' => true]); ?>';
 	var <?php echo $prefix ?>TemplateTable = '<table class="table table-hover flip-content" id="<?php echo $prefix ?>Table">
 		<thead class="flip-content">
 			<tr>
@@ -121,12 +122,10 @@ if(!empty($hasActions))
 	<?php if(!empty($rowCount)): ?>
 		<?php if(!empty($columns)): ?>
 			<style type="text/css">
-				@media
-				only screen and (max-width: 760px),
-				(min-device-width: 768px) and (max-device-width: 1024px)  {
+				@media screen and (max-width: 767px){
 					<?php $colCounter = 1; ?>
 					<?php foreach ($columns as $column): ?>
-						td:nth-of-type(<?php echo $colCounter++; ?>):before { content: "<?php echo $column->getLabel() ?>";  }
+						td:nth-of-type(<?php echo $colCounter++; ?>):before { content: "<?php echo $column->getLabel() ?>:";  }
 					<?php endforeach; ?>
 				}
 			</style>

@@ -355,8 +355,8 @@ function zbase_toast(type, msg, position, forceToast) {
 	if (typeof toastr != 'undefined')
 	{
 		toastr.options = {
-		  closeButton: true,
-		  positionClass: position === undefined ? 'toast-bottom-right' : position,
+			closeButton: true,
+			positionClass: position === undefined ? 'toast-bottom-right' : position,
 		}
 
 		if (type == 'error')
@@ -432,9 +432,16 @@ function zbase_alerts_remove()
  * @param {type} msg
  * @returns {undefined}
  */
-function zbase_alert_form_element(name, msg)
+function zbase_alert_form_element(name, msg, formId)
 {
-	var element = jQuery('[name="' + name + '"]');
+	if (formId !== undefined)
+	{
+		var element = jQuery('#' + formId).find('[name="' + name + '"]');
+	}
+	if (element === undefined)
+	{
+		var element = jQuery('[name="' + name + '"]');
+	}
 	if (element.length > 0)
 	{
 		if (element.next().hasClass('help-block'))
@@ -882,7 +889,7 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	if (responseJSON.errors !== undefined)
 	{
 		jQuery.each(responseJSON.errors, function (i, m) {
-			zbase_alert_form_element(i, m);
+			zbase_alert_form_element(i, m, (responseJSON._formId !== undefined ? responseJSON._formId : undefined));
 		});
 		return;
 	}
@@ -985,7 +992,7 @@ jQuery(document).ajaxSend(function (event, request, settings) {
 	} else {
 		zbase_ajax_preloader();
 	}
-	zbase_alerts_remove();
+	// zbase_alerts_remove();
 });
 jQuery(document).ajaxStart(function () {
 
