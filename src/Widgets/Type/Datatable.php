@@ -170,6 +170,10 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 					}
 				}
 				$this->_repoPerPage = zbase_request_query_input('pp', $perPage);
+				if($this->isExporting())
+				{
+					$this->_repoPerPage = 99999999999;
+				}
 				$repo = $entityObject->repository();
 				if($this->isNode())
 				{
@@ -247,6 +251,10 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 				}
 			}
 			$this->_repoPerPage = zbase_request_query_input('pp', $this->_v('row.perpage', $perPage));
+			if($this->isExporting())
+			{
+				$this->_repoPerPage = 99999999999;
+			}
 			$repo = $entityObject->repository()->perPage($this->_repoPerPage);
 			$filters = [];
 			$sorting = [];
@@ -331,6 +339,13 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 					if(!empty($widgetFilter))
 					{
 						$filters = $widgetFilter;
+					}
+				}
+				if($this->isExporting())
+				{
+					if(method_exists($entityObject, 'queryExportFilters'))
+					{
+						$filters = $entityObject->queryExportFilters($filters, ['widget' => $this]);
 					}
 				}
 				if($this->isSearchable() && $this->isSearching())
@@ -1154,6 +1169,15 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	public function exportColumns()
 	{
 		return $this->_v('exportable.columns', false);
+	}
+
+	/**
+	 * Export Headers
+	 * @return boolean
+	 */
+	public function exportableFilters()
+	{
+		return $this->_v('exportable.filters', []);
 	}
 
 	/**

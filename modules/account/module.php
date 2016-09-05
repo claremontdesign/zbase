@@ -378,6 +378,16 @@ return [
 					zbase_auth_user()->resendEmailVerificationCode();
 					return zbase_redirect()->to(zbase_url_previous());
 				},
+				'json-telegram-check' => function(){
+						$r = zbase()->telegram()->checkUserCode(zbase_auth_user());
+						if($r)
+						{
+							zbase()->json()->addVariable('telegramHooked', 1);
+							return zbase_redirect()->to(zbase_url_from_route('admin.account'));
+						} else {
+							dd('waiting to hooked...');
+						}
+				},
 				'email-verify' => function(){
 					$emailAddress = zbase_route_input('task');
 					$code = zbase_request_input('c');

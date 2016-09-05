@@ -511,7 +511,7 @@ function zbase_route_response($name, $route)
 	{
 //		zbase_in_back();
 	}
-	if(!empty($useUsernameRoute) && zbase_auth_has() && $usernameRoute != zbase_auth_user()->username())
+	if(!empty($useUsernameRoute) && zbase_auth_has() && $usernameRoute != zbase_auth_user()->username() && $originalRouteName == 'home')
 	{
 		return redirect(zbase_url_from_route($originalRouteName, [$usernameRoutePrefix => zbase_auth_user()->username()]));
 	}

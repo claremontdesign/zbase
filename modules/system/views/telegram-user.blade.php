@@ -31,15 +31,56 @@ $code = zbase()->telegram()->userCode($user);
 	<hr />
 	<?php if(empty($hasTelegram)): ?>
 		<p>
-			<strong>When you're done downloading, installing and creating an account in Telegram App click the button below</strong>:
+			<strong>When you're done downloading, installing and creating an account in Telegram App click the button below.</strong>
 			<br />
 			<br />
-			<a class="btn btn-success" target="_blank" href="https://telegram.me/<?php echo $telegramBot ?>?start=<?php echo $code ?>">Click to enable Telegram notifications</a>
-		</p>
-	<?php else: ?>
-		<div class="alert alert-success">You are currently receiving notifications via Telegram</div>
-		<br />
-		<br />
-		<a class="btn btn-warning" href="<?php echo zbase_url_from_route('admin.system', ['action' => 'telegram-disable']) ?>">Disable Telegram notifications</a>
-	<?php endif; ?>
+			<strong>
+					A new window will open and it will prompt you to open or install the Telegram App.
+					<br />
+					Follow the instruction until you will receive the first message from the DermaSecrets.
+			</strong>
+			<br />
+			<br />
+			<a class="btn btn-success" id="btnTelegramEnable" target="_blank" href="https://telegram.me/<?php echo $telegramBot ?>?start=<?php echo $code ?>">Click to enable Telegram notifications</a>
+			<div id="telegramConnetingInfo" class="alert alert-block alert-warning fade in" style="display: none;">
+				<h4 class="alert-heading">Please don't close the window until we were able to connect to your account.</h4>
+				<p>
+					A new window will open and it will prompt you to open or install the Telegram App.
+					<br />
+					Follow the instruction until you will receive the first message from the DermaSecrets.
+					<br />
+					<br />
+					Don't close this window yet.
+				</p>
+			</div>
+	</p>
+
+	<?php ob_start(); ?>
+	<script type="text/javascript">
+		jQuery('#btnTelegramEnable').click(function (e) {
+			e.preventDefault();
+			jQuery(this).hide();
+			jQuery('#telegramConnetingInfo').show();
+			setInterval(function () {
+				zbase_ajax_post('<?php echo zbase_url_from_route('admin.account', ['action' => 'telegram-check']) ?>', {}, function (e) {
+					if (e.telegramHooked !== undefined)
+					{
+						window.location = '<?php echo zbase_url_from_current() ?>';
+					}
+				}, {});
+			}, 5000);
+			window.open(jQuery(this).attr('href'));
+		});
+	</script>
+	<?php
+	$script = ob_get_clean();
+	zbase_view_script_add('telegramEnabler', $script, true);
+	?>
+
+<?php else: ?>
+	<div class="alert alert-success">You are currently receiving notifications via Telegram</div>
+	<br />
+	<br />
+	<a class="btn btn-warning" href="<?php echo zbase_url_from_route('admin.system', ['action' => 'telegram-disable']) ?>">Disable Telegram notifications</a>
+<?php endif; ?>
 </div>

@@ -49,7 +49,12 @@ if(empty($isSearchable))
 		var <?php echo $prefix?>Pagination = <?php echo $prefix?>Toolbar.find('.pagination-pages');
 		if(r.<?php echo $dataPrefix?> !== undefined && r.<?php echo $dataPrefix?>.totalRows > 0)
 		{
-			<?php echo $prefix?>Toolbar.after(<?php echo $prefix?>TemplateTable);
+			if(<?php echo $prefix?>Toolbar.length > 0)
+			{
+				<?php echo $prefix?>Toolbar.after(<?php echo $prefix?>TemplateTable);
+			} else {
+				jQuery(<?php echo $prefix?>TemplateTable).insertAfter('#<?php echo $prefix?>SearchWrapper')
+			}
 			if(r.<?php echo $dataPrefix?>.rows !== undefined)
 			{
 				jQuery.each(r.<?php echo $dataPrefix?>.rows, function(i, row){

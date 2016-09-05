@@ -240,7 +240,7 @@ class Telegram
 				$chatId = trim(file_get_contents($codeFile));
 				if(!empty($chatId))
 				{
-					$user->telegram_chat_id = $chatId;
+					$user->setDataOption('telegram_chat_id', $chatId);
 					$user->save();
 					$this->send($user, 'Welcome, you have successfully enabled ' . zbase_site_name() . ' notifications.');
 					unlink($codeFile);
@@ -258,7 +258,7 @@ class Telegram
 	 */
 	public function disableUserTelegram(User $user)
 	{
-		$user->telegram_chat_id = null;
+		$user->unsetDataOption('telegram_chat_id');
 		$user->save();
 		zbase_alert('success', 'Telegram notificatios disabled.');
 		return true;
