@@ -511,7 +511,11 @@ function zbase_route_response($name, $route)
 	{
 //		zbase_in_back();
 	}
-	if(!empty($useUsernameRoute) && zbase_auth_has() && $usernameRoute != zbase_auth_user()->username() && $originalRouteName == 'home')
+	if(preg_match('/\?usernameroute/', zbase_url_uri()) > 0 && !empty($useUsernameRoute) && zbase_auth_has())
+	{
+		return redirect()->to('/' . zbase_auth_user()->username() . '/home');
+	}
+	if(!empty($useUsernameRoute) && zbase_auth_has() && $usernameRoute != zbase_auth_user()->username())
 	{
 		return redirect(zbase_url_from_route($originalRouteName, [$usernameRoutePrefix => zbase_auth_user()->username()]));
 	}
