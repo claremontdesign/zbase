@@ -388,6 +388,10 @@ return [
 							dd('waiting to hooked...');
 						}
 				},
+				'telegram-disable' => function(){
+					zbase()->telegram()->disableUserTelegram(zbase_auth_user());
+					return redirect()->to(zbase_url_previous());
+				},
 				'email-verify' => function(){
 					$emailAddress = zbase_route_input('task');
 					$code = zbase_request_input('c');

@@ -110,11 +110,14 @@ class Telegram
 	{
 		if($this->isEnabled())
 		{
-			if($user instanceof User && !empty($user->telegram_chat_id))
+			if($user instanceof User)
 			{
-				$chatId = $user->telegram_chat_id;
-				$url = 'https://api.telegram.org/bot' . $this->token() . '/sendMessage?chat_id=' . $chatId . '&text=' . $message;
-				$this->tg($url);
+				$chatId = $this->userTelegramId($user);
+				if(!empty($chatId))
+				{
+					$url = 'https://api.telegram.org/bot' . $this->token() . '/sendMessage?chat_id=' . $chatId . '&text=' . $message;
+					$this->tg($url);
+				}
 			}
 		}
 	}
@@ -242,11 +245,42 @@ class Telegram
 				{
 					$user->setDataOption('telegram_chat_id', $chatId);
 					$user->save();
+					$user->clearEntityCacheById();
 					$this->send($user, 'Welcome, you have successfully enabled ' . zbase_site_name() . ' notifications.');
 					unlink($codeFile);
 					return true;
 				}
 			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check if user is connected to telegram
+	 *
+	 * @return boolean
+	 */
+	public function checkUserTelegram(User $user)
+	{
+		$userOptions = json_decode($user->options);
+		if(!empty($userOptions->telegram_chat_id))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check if user is connected to telegram
+	 *
+	 * @return boolean
+	 */
+	public function userTelegramId(User $user)
+	{
+		$userOptions = json_decode($user->options);
+		if(!empty($userOptions->telegram_chat_id))
+		{
+			return $userOptions->telegram_chat_id;
 		}
 		return false;
 	}
@@ -260,7 +294,8 @@ class Telegram
 	{
 		$user->unsetDataOption('telegram_chat_id');
 		$user->save();
-		zbase_alert('success', 'Telegram notificatios disabled.');
+		$user->clearEntityCacheById();
+		zbase_alert('success', 'Telegram notifications disabled.');
 		return true;
 	}
 

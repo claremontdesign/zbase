@@ -13,17 +13,16 @@
  * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
  */
 $user = zbase_auth_user();
-$hasTelegram = !empty($user->telegram_chat_id) ? true : false;
+$hasTelegram = zbase()->telegram()->checkUserTelegram(zbase_auth_user());
 if(empty($hasTelegram))
 {
 	$codeCheck = zbase()->telegram()->checkUserCode(zbase_auth_user());
 }
-
 $telegramBot = zbase()->telegram()->botusername();
 $code = zbase()->telegram()->userCode($user);
 ?>
 <div class="col-md-12">
-	<h2>Receive Updates and Notifications via Telegram</h2>
+	<h2>Receive Real-Time Updates and Notifications via Telegram</h2>
 	<hr />
 	<h3>What is Telegram?</h3>
 	<p>Telegram is a cloud-based mobile and desktop messaging app with a focus on security and speed.</p>
@@ -81,6 +80,6 @@ $code = zbase()->telegram()->userCode($user);
 	<div class="alert alert-success">You are currently receiving notifications via Telegram</div>
 	<br />
 	<br />
-	<a class="btn btn-warning" href="<?php echo zbase_url_from_route('admin.system', ['action' => 'telegram-disable']) ?>">Disable Telegram notifications</a>
+	<a class="btn btn-warning" href="<?php echo zbase_url_from_route('admin.account', ['action' => 'telegram-disable']) ?>">Disable Telegram notifications</a>
 <?php endif; ?>
 </div>
