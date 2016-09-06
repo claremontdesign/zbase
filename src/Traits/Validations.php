@@ -116,7 +116,7 @@ trait Validations
 					}
 					if(!empty($config['message']))
 					{
-						$this->_validationMessages[$this->name() . '.' . $type] = $config['message'];
+						$this->_validationMessages[$this->name() . '.' . $type] = zbase_data_get($config, 'message');
 					}
 				}
 			}

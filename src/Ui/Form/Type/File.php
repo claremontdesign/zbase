@@ -24,4 +24,14 @@ class File extends \Zbase\Ui\Form\Element
 	 */
 	protected $_type = 'file';
 	protected $_viewFile = 'ui.form.type.file';
+
+	/**
+	 * If to use multiple Uploader
+	 * @return boolean
+	 */
+	public function isMultiple()
+	{
+		return $this->_v('uploader.multiple', false);
+	}
+
 }

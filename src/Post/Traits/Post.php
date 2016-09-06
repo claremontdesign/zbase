@@ -33,6 +33,12 @@ trait Post
 	protected $postOwner = null;
 
 	/**
+	 * Owner Display Details
+	 * @var string
+	 */
+	protected $ownerDisplayDetails = null;
+
+	/**
 	 * Default Rows Per Page
 	 * @var integer
 	 */
@@ -43,6 +49,12 @@ trait Post
 	 * @var array
 	 */
 	protected $postActionMap = [];
+
+	/**
+	 * Post Options column Optioin
+	 * @var type
+	 */
+	protected $postOptions = [];
 
 	/**
 	 * Post Id
@@ -56,6 +68,27 @@ trait Post
 	 */
 	protected $messages = [];
 
+	/**
+	 * Initialized
+	 */
+	public function postInit()
+	{
+		if($this->postFileEnabled())
+		{
+			if(property_exists($this, 'actionMap'))
+			{
+				$this->actionMap['upload'] = [
+					'color' => 'blue',
+					'text' => 'Upload'
+				];
+			}
+			$this->postActionMap['upload'] = [
+				'color' => 'blue',
+				'text' => 'Upload'
+			];
+		}
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="Events">
 	/**
 	 * Cast all property values properly
@@ -68,7 +101,11 @@ trait Post
 		{
 			if(!empty($this->options) && is_array($this->options))
 			{
-				$this->options = json_encode($this->options);
+				$this->options = json_encode($this->options, JSON_UNESCAPED_SLASHES);
+			}
+			if(!empty($this->options) && is_object($this->options))
+			{
+				$this->options = json_encode($this->options, JSON_UNESCAPED_SLASHES);
 			}
 		}
 		if($this->postTableIsUserable() && $this->user_id instanceof User)
@@ -177,6 +214,92 @@ trait Post
 				}
 			}
 			return $this->postOwner;
+		}
+		throw new Exceptions\PropertyNotFoundException('Post is not userable. No ownership found in ' . __CLASS__);
+	}
+
+	/**
+	 * Post Owner Display Details
+	 *
+	 * @return string
+	 */
+	public function postOwnerDisplayDetails()
+	{
+		if($this->postTableIsUserable())
+		{
+			if(method_exists($this, 'ownerDisplayDetails'))
+			{
+				return $this->ownerDisplayDetails();
+			}
+			if(is_null($this->postOwner))
+			{
+				if(!empty($this->userDisplayName))
+				{
+					$ownerDetails = [];
+					$ownerDetails[] = $this->userDisplayName;
+					$ownerDetails[] = $this->userId . '/' . $this->userUsername . '/' . $this->userEmail;
+					$roles = json_decode($this->userRoles, true);
+					if(!empty($roles))
+					{
+						$userRoles = [];
+						foreach ($roles as $role)
+						{
+							$userRoles[] = ucfirst($role);
+						}
+						$ownerDetails[] = implode(',', $userRoles);
+					}
+					$ownerDetails[] = $this->userLocation;
+					$this->ownerDisplayDetails = implode('<br />', $ownerDetails);
+				}
+				else
+				{
+					$this->ownerDisplayDetails = $this->postOwner()->displayDetails();
+				}
+			}
+			return $this->ownerDisplayDetails;
+		}
+		throw new Exceptions\PropertyNotFoundException('Post is not userable. No ownership found in ' . __CLASS__);
+	}
+
+	/**
+	 * Post Owner Export Details
+	 *
+	 * @return string
+	 */
+	public function postOwnerExportDetails()
+	{
+		if($this->postTableIsUserable())
+		{
+			if(method_exists($this, 'ownerExportDetails'))
+			{
+				return $this->ownerExportDetails();
+			}
+			if(is_null($this->postOwner))
+			{
+				if(!empty($this->userDisplayName))
+				{
+					$ownerDetails = [];
+					$ownerDetails[] = $this->userDisplayName;
+					$ownerDetails[] = $this->userId . '/' . $this->userUsername . '/' . $this->userEmail;
+					$roles = json_decode($this->userRoles, true);
+					if(!empty($roles))
+					{
+						$userRoles = [];
+						foreach ($roles as $role)
+						{
+							$userRoles[] = ucfirst($role);
+						}
+						$ownerDetails[] = implode(',', $userRoles);
+					}
+					$ownerDetails[] = $this->userLocation;
+					$this->ownerDisplayDetails = implode(PHP_EOL, $ownerDetails);
+				}
+				else
+				{
+					$this->ownerDisplayDetails = $this->postOwner()->displayDetails();
+				}
+			}
+			return $this->ownerDisplayDetails;
 		}
 		throw new Exceptions\PropertyNotFoundException('Post is not userable. No ownership found in ' . __CLASS__);
 	}
@@ -501,6 +624,10 @@ trait Post
 		{
 			$queryFilters = array_replace_recursive($queryFilters, $this->postSearchQueryFilters($datatable->getSearchKeyword()));
 		}
+		if($datatable->isExportable() && $datatable->isExporting())
+		{
+			$queryFilters = array_replace_recursive($queryFilters, $this->postExportQueryFilters($datatable->exportFilters()));
+		}
 		if(method_exists($this, 'datatableQueryFilters'))
 		{
 			return $this->datatableQueryFilters($filters, $queryFilters, $datatable);
@@ -791,6 +918,21 @@ trait Post
 				zbase_db_transaction_commit();
 				return true;
 			}
+			if($action == 'upload' && strtolower($method) == 'post')
+			{
+				zbase_db_transaction_start();
+				$options = [
+					'postObject' => $this,
+					'upload_dir' => $this->postFileUploadFolder(),
+					'image_versions' => false,
+					'script_url' => $this->postFileUrl()
+				];
+				$uploadHandler = new \Zbase\Utility\FileUploadHandler($options);
+				$this->postLog($this->postTableName() . '_' . $action);
+				zbase()->json()->addVariable('_postHtmlId', $this->postHtmlId());
+				zbase_db_transaction_commit();
+				return true;
+			}
 			if($action == 'delete' && strtolower($method) == 'post')
 			{
 				zbase_db_transaction_start();
@@ -936,6 +1078,45 @@ trait Post
 	}
 
 	/**
+	 * Export Filters
+	 * @param array $exportFilters
+	 *
+	 * @return array
+	 */
+	public function postExportQueryFilters($exportFilters)
+	{
+		if(method_exists($this, 'exportQueryFilters'))
+		{
+			return $this->exportQueryFilters($exportFilters);
+		}
+		$exportFilterValueMap = $this->postTableColumns();
+		if(property_exists($this, 'exportFilterValueMap'))
+		{
+			$exportFilterValueMap = $this->exportFilterValueMap;
+		}
+		$queryFilters = [];
+		$tableName = $this->postTableName();
+		foreach ($exportFilters as $index => $value)
+		{
+			if(array_key_exists($index, $exportFilterValueMap))
+			{
+				$column = zbase_data_get($exportFilterValueMap, $index . '.column', $tableName . '.' . $index);
+				$value = zbase_data_get($exportFilterValueMap, $index . '.value.' . $value, $value);
+				if(strtolower($value) != 'all')
+				{
+					$queryFilters[$column] = [
+						'eq' => [
+							'field' => $column,
+							'value' => $value
+						]
+					];
+				}
+			}
+		}
+		return $queryFilters;
+	}
+
+	/**
 	 * Query by search keyword
 	 *
 	 * @param string|integer $keyword The keyword
@@ -951,10 +1132,11 @@ trait Post
 		}
 		else
 		{
-			$queries[] = $query;
+			$queries[] = trim($query);
 		}
 		foreach ($queries as $query)
 		{
+			$query = trim($query);
 			/**
 			 * Searching for Name
 			 */
@@ -962,6 +1144,7 @@ trait Post
 			{
 				$queryFilters['users.name'] = function($q) use ($query){
 					$name = trim(str_replace('name:', '', $query));
+					zbase()->json()->addVariable('__searchKeywords', $name, true);
 					return $q->orWhere('users.name', 'LIKE', '%' . $name . '%')
 									->orWhere('users.username', 'LIKE', '%' . $name . '%');
 					};
@@ -971,6 +1154,7 @@ trait Post
 			 */
 			if(preg_match('/\@/', $query) > 0)
 			{
+				zbase()->json()->addVariable('__searchKeywords', $query, true);
 				$queryFilters['users.email'] = [
 					'eq' => [
 						'field' => 'users.email',
@@ -983,7 +1167,8 @@ trait Post
 			 */
 			if(preg_match('/username\:/', $query) > 0)
 			{
-				$username = trim(str_replace('username:', '', $query));
+				$username = str_replace('username:', '', $query);
+				zbase()->json()->addVariable('__searchKeywords', $username, true);
 				$queryFilters['users.username'] = [
 					'like' => [
 						'field' => 'users.username',
@@ -1016,6 +1201,16 @@ trait Post
 					]
 				];
 			}
+			if(empty($queryFilters))
+			{
+				zbase()->json()->addVariable('__searchKeywords', $query, true);
+				$queryFilters['users.name'] = function($q) use ($query){
+					return $q->orWhere('users.name', 'LIKE', '%' . $query . '%')
+									->orWhere('users.email', 'LIKE', '%' . $query . '%')
+									->orWhere('users.location', 'LIKE', '%' . $query . '%')
+									->orWhere('users.username', 'LIKE', '%' . $query . '%');
+					};
+			}
 		}
 		if(method_exists($this, 'searchQueryFilters'))
 		{
@@ -1035,7 +1230,7 @@ trait Post
 		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $postId);
 		return zbase_cache($cacheKey, function() use ($postId, $cacheKey){
 			return $this->repo()->byId($postId);
-		}, [$tableName], $this->postCacheMinutes(), ['forceCache' => $this->postForceCache(), 'driver' => $this->postCacheDriver()]);
+		}, [$tableName], $this->postCacheMinutes(), ['forceCache' => $this->postCacheForce(), 'driver' => $this->postCacheDriver()]);
 	}
 
 	/**
@@ -1709,9 +1904,453 @@ trait Post
 //	}
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Post Images">
+
+	/**
+	 * Javascript
+	 * @param type $file
+	 * @param type $action
+	 */
+	public function postFileScript($action, $file = null)
+	{
+		$action = ucfirst($action);
+		$postHtmlId = $this->postHtmlId();
+		$script = "jQuery('.{$postHtmlId}File{$action}Btn').unbind('click').click(function(e){
+			e.preventDefault();
+			var ele = jQuery(this);
+			ele.hide();
+			var btnNo = jQuery('<button type=\"button\" class=\"btn btn-no btn-success btn-sm\">No, don\'t delete</button>');
+			var btnYes = jQuery('<button type=\"button\" class=\"btn btn-yes btn-danger btn-sm\">Yes</button>');
+			var btnDiv = jQuery('<div>').html(btnNo.outerHtml() + btnYes.outerHtml());
+			jQuery(btnDiv).find('.btn-no').click(function () {
+				btnDiv.remove();
+				ele.show();
+			});
+			jQuery(btnDiv).find('.btn-yes').click(function () {
+				zbase_ajax_post(ele.attr('href'), {}, function(){
+					jQuery('.' + ele.attr('data-id')).remove();
+					if(jQuery('#{$postHtmlId}FilesWrapper').find('.thumbnail').length == 0)
+					{
+						jQuery('#{$postHtmlId}FilesWrapper').html('<p class=\"empty\">No images found.</p>');
+					}
+				}, {loaderTarget: jQuery(this).parent('.{$postHtmlId}FileWrapper')});
+			});
+			zbase_dom_insert_html(btnDiv, ele, 'insertbefore');
+			})";
+		return $script;
+	}
+	/**
+	 * Post Upload a new File
+	 * @param type $fileIndex
+	 */
+	public function postUploadFile($fileIndex = 'file', $caption = null)
+	{
+		try
+		{
+			if(!$this->postFileEnabled())
+			{
+				throw new \Zbase\Exceptions\ConfigNotFoundException('Uploading is disabled for ' . $this->postTableName());
+			}
+			$defaultImageFormat = zbase_config_get('post.files.image.format', 'png');
+			$folder = $this->postFileUploadFolder();
+			zbase_directory_check($folder, true);
+			/**
+			 * Check if we have a URL given
+			 * @TODO save image that are from remote URL
+			 */
+			if(preg_match('/http\:/', $fileIndex) || preg_match('/https\:/', $fileIndex))
+			{
+				return;
+			}
+			if(!empty($_FILES[$fileIndex]['name']))
+			{
+				$filename = zbase_file_name_from_file($_FILES[$fileIndex]['name'], time(), true);
+				$uploadedFile = zbase_file_upload_image($fileIndex, $folder, $filename, $defaultImageFormat);
+			}
+			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
+			{
+				/**
+				 * No Table, let's use the option column
+				 * to save the image link
+				 */
+				if(!$this->postFileHasTable())
+				{
+					$file = new \stdClass();
+				}
+				if(!empty($file))
+				{
+					$file->is_primary = 0;
+					$file->status = 2;
+					$file->mimetype = zbase_file_mime_type($uploadedFile);
+					$file->size = zbase_file_size($uploadedFile);
+					$file->filename = basename($uploadedFile);
+					$file->post_id = $this->postId();
+					$file->caption = $caption;
+					return $this->postFileAdd($file);
+				}
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_exception_throw($e);
+			return false;
+		}
+	}
+
+	/**
+	 * Url to a file
+	 *
+	 * @return string
+	 */
+	public function postFileUrl($file = null, $action = 'view', $options = [])
+	{
+		if(method_exists($this, 'fileUrl'))
+		{
+			return $this->fileUrl();
+		}
+		$task = null;
+		if(is_object($file) && !empty($file->name))
+		{
+			$task = $file->name;
+		}
+		if(is_object($file) && !empty($file->filename))
+		{
+			$task = $file->filename;
+		}
+		if(is_string($file))
+		{
+			$task = $file;
+		}
+		$action = str_replace('file-', '', $action);
+		if($action != 'delete')
+		{
+			if(!empty($options['thumbnail']))
+			{
+				$width = 100;
+				$height = 100;
+			}
+			$width = !empty($options['w']) ? $options['w'] : (!empty($width) ? $width : null);
+			$height = !empty($options['h']) ? $options['h'] : (!empty($height) ? $height : null);
+			if(!empty($width) && !empty($height))
+			{
+				$task = $width . 'x' . $height . '_' . $task;
+			}
+		}
+		return zbase_url_from_route('admin.file', ['table' => $this->postTableName(), 'action' => $action, 'id' => $this->postId(), 'file' => $task]);
+	}
+
+	/**
+	 * Add a new file/image
+	 * @param PostFile $file
+	 *
+	 * @return PostFile
+	 */
+	public function postFileAdd($file)
+	{
+		try
+		{
+			zbase_db_transaction_start();
+			if(!$this->postFileHasTable())
+			{
+				$file->user_id = zbase_auth_user()->id();
+				$files = $this->postFiles();
+				if(empty($files))
+				{
+					$files = [(array) $file];
+				}
+				else
+				{
+					$files[] = (array) $file;
+				}
+				$this->postSetOption('_files', $files);
+				$this->save();
+				zbase_db_transaction_commit();
+				return $file;
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_db_transaction_rollback();
+			zbase_exception_throw($e);
+			return false;
+		}
+	}
+
+	/**
+	 * Check if file can be deleted
+	 *
+	 * @return boolean
+	 */
+	public function postFileCanBeDeleted($file, User $user = null)
+	{
+		$user = $user instanceof \Zbase\Entity\Laravel\User\User ? $user : zbase_auth_user();
+		if($user->isAdmin())
+		{
+			return true;
+		}
+		if($user->id() == $file->user_id)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Delete/Remove File
+	 * @param object|array $file
+	 *
+	 * return boolean
+	 */
+	public function postFileDelete($file)
+	{
+		try
+		{
+			$file = (object) $file;
+			if(file_exists($this->postFileUploadFolder() . $file->filename))
+			{
+				zbase_db_transaction_start();
+				$files = $this->postFiles();
+				$i = 0;
+				foreach ($files as $f)
+				{
+					if($f['filename'] == $file->filename)
+					{
+						unset($files[$i]);
+						unlink($this->postFileUploadFolder() . $file->filename);
+						break;
+					}
+					$i++;
+				}
+				$this->postSetOption('_files', $files);
+				$this->save();
+				zbase()->json()->addVariable('post_file_deleted', 1);
+				zbase_db_transaction_commit();
+				return true;
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_db_transaction_rollback();
+			zbase_exception_throw($e);
+			return false;
+		}
+	}
+
+	/**
+	 * Serve/View the Image
+	 * @param object|array $file
+	 * @param integer $width
+	 * @param integer $height
+	 * @param integer $quality
+	 * @return Response
+	 */
+	public function postFileServe($file, $width = null, $height = null, $quality = 80)
+	{
+		$file = (object) $file;
+		if(file_exists($this->postFileUploadFolder() . $file->filename))
+		{
+			return \Response::make($this->postFileResize($this->postFileUploadFolder() . $file->filename, $width, $height), 200, array('Content-Type' => $file->mimetype));
+		}
+	}
+
+	/**
+	 * REsize the File
+	 * @param type $file
+	 * @param type $w
+	 * @param type $h
+	 * @param type $q
+	 */
+	public function postFileResize($path, $width, $height, $q = 80)
+	{
+		return \Image::cache(function($image) use ($width, $height, $path){
+					if(empty($width))
+					{
+						$size = getimagesize($path);
+						$width = $size[0];
+						$height = $size[1];
+					}
+					if(!empty($width) && !empty($height))
+					{
+						return $image->make($path)->resize($width, $height, function($constraint)
+						{
+									$constraint->upsize();
+									$constraint->aspectRatio();
+						});
+					}
+					if(!empty($width) && empty($height))
+					{
+						return $image->make($path)->resize($width, null, function($constraint)
+						{
+									$constraint->upsize();
+									$constraint->aspectRatio();
+						});
+					}
+					if(empty($width) && !empty($height))
+					{
+						return $image->make($path)->resize(null, $height, function($constraint)
+						{
+									$constraint->upsize();
+									$constraint->aspectRatio();
+						});
+					}
+					return $image->make($path)->resize($width, $height);
+		});
+	}
+
+	/**
+	 * Return all uploaded files
+	 *
+	 * @return array
+	 */
+	public function postFiles()
+	{
+		return $this->postGetOption('_files');
+	}
+
+	/**
+	 * Return a file by filename
+	 *
+	 * return PostFile
+	 */
+	public function postFileByFilename($filename)
+	{
+		$files = $this->postFiles();
+		if(!empty($files))
+		{
+			foreach ($files as $file)
+			{
+				if($file['filename'] == $filename)
+				{
+					if(file_exists($this->postFileUploadFolder() . $filename))
+					{
+						return $file;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * check if we have to upload files
+	 *
+	 * @return boolean
+	 */
+	public function postFileEnabled()
+	{
+		if(method_exists($this, 'fileEnabled'))
+		{
+			return $this->fileEnabled();
+		}
+		if(property_exists($this, 'postFileEnabled'))
+		{
+			return $this->postFileEnabled;
+		}
+		return false;
+	}
+
+	/**
+	 * Return the File Upload Folder
+	 *
+	 * @return string
+	 */
+	public function postFileUploadFolder()
+	{
+		return zbase_storage_path() . '/' . zbase_tag() . '/' . $this->postTableName() . '/' . $this->postId() . '/';
+	}
+
+	/**
+	 * Check that file table is present
+	 *
+	 * @return boolean
+	 */
+	public function postFileHasTable()
+	{
+		return \Schema::hasTable($this->postTableName() . '_files');
+	}
+
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Post Logs">
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Post Category">
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="PostColumnOptions">
+	/**
+	 * Set an Option
+	 * @param string $key The option key
+	 * @param mixed $val The value to set
+	 *
+	 * @return PostInterface
+	 */
+	public function postSetOption($key, $val)
+	{
+		$options = json_decode($this->options, true);
+		if(is_string($options))
+		{
+			$options = json_decode($options, true);
+		}
+		$options[$key] = $val;
+		$this->options = $options;
+		return $this;
+	}
+
+	/**
+	 * Return an Option
+	 * @param string $key The option key
+	 * @param mixed $default The Default value
+	 *
+	 * @return mixed
+	 */
+	public function postGetOption($key, $default = null)
+	{
+		$options = json_decode($this->options, true);
+		if(is_string($options))
+		{
+			$options = json_decode($options, true);
+		}
+		if(isset($options[$key]))
+		{
+			return $options[$key];
+		}
+		return $default;
+	}
+
+	/**
+	 * Remove/Unset an option
+	 * @param string $key The option key
+	 * @return PostInterface
+	 */
+	public function postUnsetOption($key)
+	{
+		$options = json_decode($this->options, true);
+		if(is_string($options))
+		{
+			$options = json_decode($options, true);
+		}
+		if(isset($options[$key]))
+		{
+			unset($options[$key]);
+		}
+		$this->options = $options;
+		return $this;
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Access">
+	/**
+	 * Check if current user has access
+	 *
+	 * @return boolean
+	 */
+	public function postUserHasAccess(User $user = null)
+	{
+		$user = !empty($user) ? $user : zbase_auth_user();
+		if($user->id() == $this->postOwnerId())
+		{
+			return true;
+		}
+		if($user->isAdmin())
+		{
+			return true;
+		}
+		return true;
+	}
+
 	// </editor-fold>
 }

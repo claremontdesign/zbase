@@ -284,6 +284,135 @@ return [
 				]
 			],
 			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="FileUpload">
+			'fileupload' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('metronic/plugins/fancybox/source/jquery.fancybox.pack.js'),
+				'enable' => true,
+				'position' => 890,
+				'dependents' => [
+					[
+						'id' => 'fileupload_blueimp',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/jquery-file-upload/blueimp-gallery/blueimp-gallery.min.css'),
+						'enable' => true,
+						'position' => 895,
+					],
+					[
+						'id' => 'fileupload_style',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/jquery-file-upload/css/jquery.fileupload.css'),
+						'enable' => true,
+						'position' => 896,
+					],
+					[
+						'id' => 'fileupload_facybox',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/fancybox/source/jquery.fancybox.css'),
+						'enable' => true,
+						'position' => 897,
+					],
+					[
+						'id' => 'fileupload_ui',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/jquery-file-upload/css/jquery.fileupload-ui.css'),
+						'enable' => true,
+						'position' => 898,
+					],
+					[
+						'id' => 'fileupload_uiwidget',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/vendor/jquery.ui.widget.js'),
+						'enable' => true,
+						'position' => 899,
+					],
+					[
+						'id' => 'fileupload_tmpl',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/vendor/tmpl.min.js'),
+						'enable' => true,
+						'position' => 898,
+					],
+					[
+						'id' => 'fileupload_loadimage',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/vendor/load-image.min.js'),
+						'enable' => true,
+						'position' => 897,
+					],
+					[
+						'id' => 'fileupload_blob',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/vendor/canvas-to-blob.min.js'),
+						'enable' => true,
+						'position' => 896,
+					],
+					[
+						'id' => 'fileupload_blueimp',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/blueimp-gallery/jquery.blueimp-gallery.min.js'),
+						'enable' => true,
+						'position' => 895,
+					],
+					[
+						'id' => 'fileupload_iframe_transport',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/jquery.iframe-transport.js'),
+						'enable' => true,
+						'position' => 894,
+					],
+					[
+						'id' => 'fileupload_fileupload',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/jquery.fileupload.js'),
+						'enable' => true,
+						'position' => 893,
+					],
+					[
+						'id' => 'fileupload_process',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/jquery.fileupload-process.js'),
+						'enable' => true,
+						'position' => 892,
+					],
+					[
+						'id' => 'fileupload_image',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/jquery.fileupload-image.js'),
+						'enable' => true,
+						'position' => 891,
+					],
+					[
+						'id' => 'fileupload_audio',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/jquery.fileupload-audio.js'),
+						'enable' => false,
+						'position' => 890,
+					],
+					[
+						'id' => 'fileupload_video',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/jquery.fileupload-video.js'),
+						'enable' => false,
+						'position' => 889,
+					],
+					[
+						'id' => 'fileupload_validate',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/jquery.fileupload-validate.js'),
+						'enable' => true,
+						'position' => 888,
+					],
+					[
+						'id' => 'fileupload_ui',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/jquery-file-upload/js/jquery.fileupload-ui.js'),
+						'enable' => true,
+						'position' => 887,
+					],
+				]
+			],
+			// </editor-fold>
 			// <editor-fold defaultstate="collapsed" desc="Metronic::Admin">
 			'metronic-admin' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,

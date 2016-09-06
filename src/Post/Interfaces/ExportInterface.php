@@ -21,5 +21,5 @@ interface ExportInterface
 	 * Export to Array
 	 * @return array
 	 */
-	public function exportToArray();
+	public function exportToArray($columns = [], $options = []);
 }

@@ -1123,7 +1123,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 					}
 					if($row instanceof \Zbase\Post\Interfaces\ExportInterface)
 					{
-						$rowData = $row->exportToArray();
+						$rowData = $row->exportToArray($columns, []);
 						if(!empty($columns))
 						{
 							$data = [];

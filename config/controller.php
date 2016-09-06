@@ -34,6 +34,10 @@ return [
 				'name' => Zbase\Http\Controllers\__FRAMEWORK__\NodeController::class,
 				'enable' => true
 			],
+			'post' => [
+				'name' => Zbase\Http\Controllers\__FRAMEWORK__\PostController::class,
+				'enable' => true
+			],
 			'auth' => [
 				'name' => Zbase\Http\Controllers\__FRAMEWORK__\Auth\AuthController::class,
 				'enable' => true

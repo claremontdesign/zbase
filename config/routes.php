@@ -94,6 +94,26 @@ return [
 					'backend' => true,
 					'enable' => true,
 				],
+				'file' => [
+					'controller' => [
+						'name' => 'post',
+						'method' => 'file',
+						'enable' => true,
+						'params' => [
+							'table' => null,
+							'action' => null,
+							'id' => null,
+							'file' => null
+						]
+					],
+					'middleware' => [
+						'auth' => true,
+					],
+					'httpVerb' => ['post','get'],
+					'url' => 'post-file/{table?}/{action?}/{id?}/{file?}',
+					'backend' => true,
+					'enable' => true,
+				],
 			],
 		],
 		'index' => [

@@ -22,6 +22,7 @@
  */
 function zbase_messenger_sender($senderIndex)
 {
+	zbase_public_path();
 	if(!preg_match('/@/', $senderIndex))
 	{
 		$toEmail = zbase_config_get('email.' . $senderIndex . '.email');
