@@ -68,6 +68,19 @@ class Multi extends \Zbase\Ui\Form\Element
 				return $this->getUserStatusOptions();
 			}
 		}
+		/**
+		 * Given Options are from \Zbase\Post\PostInterface like: PostInterface::postStatusText
+		 */
+		if(!empty($this->_multiOptions))
+		{
+			foreach ($this->_multiOptions as $v => $settings)
+			{
+				if(!empty($settings['text']))
+				{
+					$this->_multiOptions[$v] = !empty($settings['text']) ? $settings['text'] : $v;
+				}
+			}
+		}
 		return $this->_multiOptions;
 	}
 

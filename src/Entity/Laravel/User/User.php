@@ -2220,7 +2220,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'nullable' => true,
 				'type' => 'text',
 				'length' => 255,
-				'comment' => 'User CSV Roles'
+				'comment' => 'User Roles'
 			],
 			'location' => [
 				'hidden' => false,
@@ -2231,8 +2231,6 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				'comment' => 'User Location'
 			],
 		];
-
-
 		return $columns;
 	}
 

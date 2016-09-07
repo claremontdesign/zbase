@@ -289,33 +289,28 @@ use AuthenticatesAndRegistersUsers,
 
 			if(\Auth::attempt($credentials, $request->has('remember')))
 			{
-				if(zbase_is_back())
+				if(\Auth::guard($this->getGuard())->user()->isAdmin())
 				{
-					if(\Auth::guard($this->getGuard())->user()->isAdmin())
+					$this->redirectTo = zbase_url_from_route('admin');
+					if(zbase_is_json())
 					{
-						if(zbase_is_json())
-						{
-							zbase()->json()->setVariable('_redirect', zbase_url_from_route('admin'));
-						}
-						return $this->handleUserWasAuthenticated($request, $throttles);
+						zbase()->json()->setVariable('_redirect', zbase_url_from_route('admin'));
 					}
+					return $this->handleUserWasAuthenticated($request, $throttles);
+				}
+				if(zbase_route_username())
+				{
+					$user = \Auth::guard($this->getGuard())->user();
+					$usernameRoutePrefix = zbase_route_username_prefix();
+					$this->redirectTo = zbase_url_from_route('home', [$usernameRoutePrefix => $user->username()]);
+				}
+				else
+				{
+					$this->redirectTo = zbase_url_from_route('home');
 				}
 				if(!empty($redirect))
 				{
 					$this->redirectTo = $redirect;
-				}
-				else
-				{
-					if(zbase_route_username())
-					{
-						$user = \Auth::guard($this->getGuard())->user();
-						$usernameRoutePrefix = zbase_route_username_prefix();
-						$this->redirectTo = zbase_url_from_route('home', [$usernameRoutePrefix => $user->username()]);
-					}
-					else
-					{
-						$this->redirectTo = zbase_url_from_route('home');
-					}
 				}
 				return $this->handleUserWasAuthenticated($request, $throttles);
 			}
@@ -355,7 +350,7 @@ use AuthenticatesAndRegistersUsers,
 		}
 		else
 		{
-			$redirect = zbase_request_input('redirect', zbase_session_get('__loginRedirect', zbase_url_from_route('home')));
+			$redirect = !empty($this->redirectTo) ? $this->redirectTo : zbase_request_input('redirect', zbase_session_get('__loginRedirect', zbase_url_from_route('home')));
 		}
 		zbase()->json()->setVariable('_redirect', $redirect);
 		zbase()->json()->setVariable('login_success', 1);

@@ -476,6 +476,13 @@ return [
 						'position' => 498,
 					],
 					[
+						'id' => 'metronic-admin-uniform',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/uniform/css/uniform.default.css'),
+						'enable' => true,
+						'position' => 498,
+					],
+					[
 						'id' => 'metronic-admin-metronic',
 						'type' => \Zbase\Models\View::STYLESHEET,
 						'href' => zbase_path_asset('metronic/css/style-metronic.css'),

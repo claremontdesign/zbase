@@ -561,7 +561,19 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 */
 	public function isRowsClickableToNextRow()
 	{
-		return $this->_v('row.clickable.nextrow', $this->_v('rows.clickable', false));
+		return $this->_v('row.clickable.nextrow', false);
+	}
+
+	/**
+	 * When clicking the Row,
+	 * Page content will be replaced with
+	 * the ajax content
+	 *
+	 * @return boolean
+	 */
+	public function isRowsToNextRowReplaceContent()
+	{
+		return $this->_v('row.clickable.innercontent', false);
 	}
 
 	/**

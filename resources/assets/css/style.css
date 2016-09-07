@@ -18,7 +18,7 @@
 }
 .zbase-datatable-row-toggle-copy-wrapper{
 	padding:20px;
-	border:1px dotted gray;
+	border:0px dotted gray;
 	margin: 0px;
 }
 .zbase-datatable-row-toggle-copy{
@@ -27,7 +27,16 @@
 .zbase-datatable-row-toggle-hover{
 	background-color: white !important;
 }
-
+.pagination{
+	margin:0px 0px !important;
+}
+.toolbar-wraper{
+	padding:10px 0px;
+}
+.btn-toolbar{
+	border-bottom:1px solid gray;
+	margin-bottom: 20px;
+}
 
 /* Responsive CSS Document */
 

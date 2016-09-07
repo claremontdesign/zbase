@@ -411,6 +411,34 @@ trait Post
 	}
 
 	/**
+	 * Create a colored labeled text
+	 *
+	 * @param string|integer $value the value
+	 * @param array $displayConfiguration Display configuration
+	 * @return string
+	 */
+	public function postCreateLabeledText($value, $displayConfiguration)
+	{
+		if(!empty($displayConfiguration[$value]))
+		{
+			$text = !empty($displayConfiguration[$value]['text']) ? $displayConfiguration[$value]['text'] : $value;
+			$color = !empty($displayConfiguration[$value]['color']) ? $displayConfiguration[$value]['color'] : 'gray';
+			$colorMap = [
+				'red' => 'danger',
+				'yellow' => 'warning',
+				'green' => 'success',
+				'gray' => 'default',
+				'blue' => 'info',
+			];
+			if(array_key_exists($color, $colorMap))
+			{
+				$color = $colorMap[$color];
+			}
+			return '<span class="label label-' . $color . ' postStatusText' . $this->postHtmlId() . '">' . $text . '</span>';
+		}
+	}
+
+	/**
 	 * Return a POST to be used as HTML ID
 	 *
 	 * @return string
@@ -706,8 +734,6 @@ trait Post
 		zbase()->json()->setVariable('_html_selector_replace', ['#postMainContentWrapper' . $postHtmlId => $this->postHtmlContent()], true);
 		$widget->getModule()->pageProperties($action);
 		$this->postPageProperties($widget);
-		zbase()->json()->setVariable('_html_selector_replace', ['.page-breadcrumb.breadcrumb' => zbase_view_render(zbase_view_file('partial.breadcrumb', zbase_section()))], true);
-		zbase()->json()->setVariable('_html_selector_html', ['.page-title' => zbase()->view()->title() . '<small>' . zbase()->view()->subTitle() . '</small>'], true);
 	}
 
 	/**
@@ -845,6 +871,12 @@ trait Post
 			$page['headTitle'] = $this->postDisplayText();
 			$page['breadcrumbs'] = $breadcrumbs;
 			zbase_view_page_details(['page' => $page]);
+		}
+		if(zbase_request_is_ajax())
+		{
+			zbase()->json()->setVariable('_html_selector_append', ['.page-breadcrumb.breadcrumb' => '<li><i class="fa fa-angle-right"></i><a title="' . $this->postDisplayText() . '" href="#">' . $this->postDisplayText() . '</a></li>'], true);
+			// zbase()->json()->setVariable('_html_selector_replace', ['.page-breadcrumb.breadcrumb' => zbase_view_render(zbase_view_file('partial.breadcrumb', zbase_section()))], true);
+			zbase()->json()->setVariable('_html_selector_html', ['.page-title' => zbase()->view()->title() . '<small>' . zbase()->view()->subTitle() . '</small>'], true);
 		}
 	}
 
@@ -1005,13 +1037,14 @@ trait Post
 	}
 
 	/**
-	 * Return the Columns to Return
+	 * Return the Columns to Query
 	 *
 	 * @return aray
 	 */
 	public function postQuerySelects()
 	{
 		$tableName = $this->postTableName();
+		$querySelects = [];
 		if($this->postTableIsUserable())
 		{
 			$querySelects = [
@@ -1226,6 +1259,10 @@ trait Post
 	 */
 	public function postById($postId)
 	{
+		if(method_exists($this, 'byId'))
+		{
+			return $this->byId();
+		}
 		$tableName = $this->postTableName();
 		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $postId);
 		return zbase_cache($cacheKey, function() use ($postId, $cacheKey){
@@ -1938,6 +1975,7 @@ trait Post
 			})";
 		return $script;
 	}
+
 	/**
 	 * Post Upload a new File
 	 * @param type $fileIndex

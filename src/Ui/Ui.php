@@ -320,6 +320,25 @@ abstract class Ui
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Contents">
 	/**
+	 * Tag before this element
+	 *
+	 * @return string
+	 */
+	public function preTag()
+	{
+		return $this->_v('preTag', null);
+	}
+
+	/**
+	 * Tag after this element
+	 *
+	 * @return string
+	 */
+	public function postTag()
+	{
+		return $this->_v('postTag', null);
+	}
+	/**
 	 * Set the UI Content
 	 * @param array|Ui\ContentInterface[]|Ui\UiInterface[] $contents
 	 * @return \Zbase\Ui\Ui
@@ -587,7 +606,8 @@ abstract class Ui
 					zbase()->view()->multiAdd($this->_v('view.library', false));
 				}
 				$this->_viewParams['ui'] = $this;
-				$str = $this->htmlPreContent();
+				$str = $this->preTag();
+				$str .= $this->htmlPreContent();
 				if(!empty($this->_viewFileContent))
 				{
 					$str .= zbase_view_render(zbase_view_file_contents($this->_viewFile), $this->getViewParams());
@@ -597,6 +617,7 @@ abstract class Ui
 					$str .= zbase_view_render($this->_viewFile, $this->getViewParams());
 				}
 				$str .= $this->htmlPostContent();
+				$str .= $this->postTag();
 				$this->_rendered = true;
 				return $str;
 			}

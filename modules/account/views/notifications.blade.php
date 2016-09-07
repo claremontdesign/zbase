@@ -14,6 +14,6 @@
  * @package Expression package is undefined on line 14, column 15 in Templates/Scripting/EmptyPHP.php.
  */
 ?>
-<?php if(zbase()->telegram()->isEnabled()):?>
+<?php if(zbase()->telegram()->isEnabled() && zbase_config_get('modules.account.widgets.account.tab.telegram', true)):?>
 	<?php echo zbase_view_render(zbase_view_file_module('account.views.telegram-user', 'account', 'zbase'), ['user' => zbase_auth_user()]);?>
 <?php endif;?>

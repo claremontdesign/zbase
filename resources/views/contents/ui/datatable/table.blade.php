@@ -9,6 +9,8 @@ $columnCount = count($columns);
 $hasActions = $ui->hasActions();
 $isClickableRows = $ui->isRowsClickable();
 $isClickableToNextRow = $ui->isRowsClickableToNextRow();
+$isRowsToNextRowReplaceContent = $ui->isRowsToNextRowReplaceContent();
+$tableId = $ui->id();
 if(!empty($hasActions))
 {
 	$columnCount++;
@@ -31,7 +33,7 @@ if(!empty($columns))
 		}
 		if($isClickableToNextRow)
 		{
-			$clickableRow = ' class="pointer zbase-datatable-row-toggle" data-href="' . $ui->getRowClickableUrl(null, $template) . '"';
+			$clickableRow = ' class="pointer zbase-datatable-row-toggle" '. (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl(null, $template) . '"';
 		}
 		$tBodys[] = '<tr id="' . $prefix . 'RowId__' . $ui->rowValueIndex() . '__"' . $clickableRow . '>';
 		foreach ($columns as $column)
@@ -64,7 +66,7 @@ if(!empty($columns))
 				}
 				if($isClickableToNextRow)
 				{
-					$clickableRow = ' class="pointer zbase-datatable-row-toggle" data-href="' . $ui->getRowClickableUrl($row) . '"';
+					$clickableRow = ' class="pointer zbase-datatable-row-toggle" '. (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl($row) . '"';
 				}
 				if($row instanceof \Zbase\Post\PostInterface)
 				{
