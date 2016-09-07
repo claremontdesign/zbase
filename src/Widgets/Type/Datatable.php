@@ -387,12 +387,13 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 						$entityObject = $this->entityObject();
 						if($entityObject->hasSoftDelete() && $this->nodeIncludeTrashed())
 						{
-							$this->_rows = $repo->withTrashed()->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, $this->_repoPerPage);
+							$this->_rows = $repo->setDebug(false)->withTrashed()->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, $this->_repoPerPage);
 						}
 						else
 						{
-							$this->_rows = $repo->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, $this->_repoPerPage);
+							$this->_rows = $repo->setDebug(false)->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, $this->_repoPerPage);
 						}
+						// dd($this->_repoFilters, $this->_rows);
 					}
 				}
 				$this->_rowsPrepared = true;

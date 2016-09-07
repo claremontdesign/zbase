@@ -22,7 +22,6 @@
 	})
 }(jQuery);
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="PHPJS">
 function str_replace(search, replace, subject, countObj) { // eslint-disable-line camelcase
 	var i = 0
@@ -986,13 +985,13 @@ jQuery(document).ajaxError(function (event, request, settings) {
 });
 jQuery(document).ajaxSend(function (event, request, settings) {
 	zbase_alert_form_reset();
-	if (settings.data !== undefined && settings.data.indexOf('loader=false') == 0)
+	if (settings.data !== undefined && (typeof settings.data == 'string') && settings.data.indexOf('loader=false') == 0)
 	{
 		zbase_ajax_preloader_hide();
 	} else {
 		zbase_ajax_preloader();
 	}
-	// zbase_alerts_remove();
+	zbase_alerts_remove();
 });
 jQuery(document).ajaxStart(function () {
 
@@ -1218,6 +1217,10 @@ var Zbase = function () {
 					jQuery('[href="' + secondTab + '"]').tab('show');
 				}
 			}
+			if(window.location.hash !== undefined && window.location.hash !== '')
+			{
+				jQuery('a[href="' + window.location.hash + '"]').trigger('click');
+			}
 		}
 	};
 
@@ -1253,6 +1256,24 @@ var Zbase = function () {
 			});
 		}
 	};
+    var handleFancybox = function () {
+        if (!jQuery.fancybox) {
+            return;
+        }
+        if (jQuery(".fancybox-button").size() > 0) {
+            jQuery(".fancybox-button").fancybox({
+                groupAttr: 'data-rel',
+                prevEffect: 'none',
+                nextEffect: 'none',
+                closeBtn: true,
+                helpers: {
+                    title: {
+                        type: 'inside'
+                    }
+                }
+            });
+        }
+    }
 	return {
 		init: function () {
 			var_dump('Zbase Initializing...');
@@ -1266,6 +1287,7 @@ var Zbase = function () {
 			initContentFromUrl();
 			initAjaxFromUrls();
 			initClickableUrls();
+			handleFancybox();
 		}
 	};
 }();

@@ -1037,7 +1037,7 @@ class FileUploadHandler
 		{
 			if(extension_loaded('imagick'))
 			{
-				$image = new Imagick();
+				$image = new \Imagick();
 				try
 				{
 					if(@$image->pingImage($file_path))

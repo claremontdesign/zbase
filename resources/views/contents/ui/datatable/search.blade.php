@@ -49,6 +49,7 @@ if(empty($isSearchable))
 		var <?php echo $prefix?>Pagination = <?php echo $prefix?>Toolbar.find('.pagination-pages');
 		if(r.<?php echo $dataPrefix?> !== undefined && r.<?php echo $dataPrefix?>.totalRows > 0)
 		{
+			<?php echo $prefix?>Toolbar.show();
 			if(<?php echo $prefix?>Toolbar.length > 0)
 			{
 				<?php echo $prefix?>Toolbar.after(<?php echo $prefix?>TemplateTable);
@@ -112,6 +113,7 @@ if(empty($isSearchable))
 			jQuery('#<?php echo $exportPrefix ?>SearchQuery').val(jQuery('#<?php echo $prefix?>query').val());
 		} else {
 			jQuery(<?php echo $prefix?>EmptyMessage).insertAfter('#<?php echo $prefix?>SearchWrapper');
+			<?php echo $prefix?>Toolbar.hide();
 		}
 		// Toolbar
 
