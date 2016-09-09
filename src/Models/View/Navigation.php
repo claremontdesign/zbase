@@ -91,9 +91,7 @@ class Navigation
 	 * Nav Format
 	 * @var string|HTML
 	 */
-	protected $format = '<li class="{CLASS_ISACTIVE}">'
-			. '{A_PRE}<a href="{URL}" title="{TITLE}" {A_ATTRIBUTES}>{LABEL}</a>{A_POST}'
-			. '</li>';
+	protected $format = '<li class="{CLASS_ISACTIVE}">{A_PRE}<a href="{URL}" title="{TITLE}" {A_ATTRIBUTES}>{LABEL}</a>{A_POST}</li>';
 
 	/**
 	 * Constructor

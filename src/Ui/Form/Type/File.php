@@ -34,4 +34,13 @@ class File extends \Zbase\Ui\Form\Element
 		return $this->_v('uploader.multiple', false);
 	}
 
+	/**
+	 * Uplaod will be on Form Submit
+	 * @return boolean
+	 */
+	public function uploadOnFormSubmit()
+	{
+		return $this->_v('uploader.onFormSubmit', false);
+	}
+
 }

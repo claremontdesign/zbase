@@ -52,6 +52,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	protected $address = null;
 	protected $userProfile = null;
 
+	protected $remember_token = null;
+
 	/**
 	 * The Entity Id
 	 * @return integer

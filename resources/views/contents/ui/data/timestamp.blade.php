@@ -1,5 +1,9 @@
 <?php
 $date = !empty($date) ? $date : (!empty($value) && $value instanceof \Carbon\Carbon ? $value : null);
+if(empty($date))
+{
+	return;
+}
 if(is_string($date))
 {
 	$date = zbase_date_from_db($date);

@@ -35,7 +35,7 @@ else
 							<div class="row">
 								<div class="col-md-12">
 									<h3 class="page-title">
-										<?php echo zbase()->view()->title() ?> <small><?php echo zbase()->view()->subTitle() ?></small>
+										<span class="zbase-page-title"><?php echo zbase()->view()->title() ?> <small><?php echo zbase()->view()->subTitle() ?></small></span>
 									</h3>
 									<?php echo zbase_view_render(zbase_view_file('partial.breadcrumb', 'back')); ?>
 								</div>

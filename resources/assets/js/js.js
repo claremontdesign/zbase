@@ -318,6 +318,15 @@ function zbase_get_form_element_value(ele)
 }
 
 /**
+ * Form Reset all values
+ * @returns {undefined}
+ */
+function zbase_form_reset(selector)
+{
+	jQuery(selector).trigger('reset');
+}
+
+/**
  * Add checkbox Event
  * @param {string} selector Selector
  * @param {string} event The Event Name
@@ -942,7 +951,7 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	}
 	if (responseJSON._html_selector_hide !== undefined)
 	{
-		jQuery.each(responseJSON._html_selector_show, function (i, content) {
+		jQuery.each(responseJSON._html_selector_hide, function (i, content) {
 			jQuery.each(content, function (selector) {
 				jQuery(selector).hide();
 			});
@@ -969,8 +978,8 @@ jQuery(document).ajaxComplete(function (event, request, settings) {
 	if (responseJSON._html_script !== undefined && responseJSON._html_script !== '')
 	{
 		eval(responseJSON._html_script);
-		Zbase.init();
 	}
+	Zbase.init();
 	zbase_ajax_preloader_hide();
 });
 jQuery(document).ajaxError(function (event, request, settings) {
@@ -1217,7 +1226,7 @@ var Zbase = function () {
 					jQuery('[href="' + secondTab + '"]').tab('show');
 				}
 			}
-			if(window.location.hash !== undefined && window.location.hash !== '')
+			if (window.location.hash !== undefined && window.location.hash !== '')
 			{
 				jQuery('a[href="' + window.location.hash + '"]').trigger('click');
 			}
@@ -1244,36 +1253,59 @@ var Zbase = function () {
 					return;
 				}
 				var url = r.attr('data-href');
+				var rId = r.attr('id');
+				var dataContent = r.attr('data-content');
 				if (url !== null && url !== undefined)
 				{
-
-					var tdCount = r.find('td').length;
-					var rId = r.attr('id');
-					var newRTpl = '<tr class="zbase-datatable-row-toggle-copy"><td colspan="' + tdCount + '"><div class="zbase-datatable-row-toggle-copy-wrapper" id="rowCopy' + rId + '"></div></td></tr>';
-					r.after(newRTpl);
-					zbase_ajax_post(url, {}, function () {}, {loaderTarget: r.next().find('td')});
+					if (dataContent !== undefined)
+					{
+						zbase_ajax_post(url, {_innercontent: 1, _innerContentId: rId, _datatableRow: 1}, function () {}, {});
+					} else {
+						var tdCount = r.find('td').length;
+						var rId = r.attr('id');
+						var newRTpl = '<tr class="zbase-datatable-row-toggle-copy"><td colspan="' + tdCount + '"><div class="zbase-datatable-row-toggle-copy-wrapper" id="rowCopy' + rId + '"></div></td></tr>';
+						r.after(newRTpl);
+						zbase_ajax_post(url, {}, function () {}, {loaderTarget: r.next().find('td')});
+					}
 				}
 			});
 		}
 	};
-    var handleFancybox = function () {
-        if (!jQuery.fancybox) {
-            return;
-        }
-        if (jQuery(".fancybox-button").size() > 0) {
-            jQuery(".fancybox-button").fancybox({
-                groupAttr: 'data-rel',
-                prevEffect: 'none',
-                nextEffect: 'none',
-                closeBtn: true,
-                helpers: {
-                    title: {
-                        type: 'inside'
-                    }
-                }
-            });
-        }
-    }
+	var handleFancybox = function () {
+		if (!jQuery.fancybox) {
+			return;
+		}
+		if (jQuery(".fancybox-button").size() > 0) {
+			jQuery(".fancybox-button").fancybox({
+				groupAttr: 'data-rel',
+				prevEffect: 'none',
+				nextEffect: 'none',
+				closeBtn: true,
+				helpers: {
+					title: {
+						type: 'inside'
+					}
+				}
+			});
+		}
+	}
+
+	// Handles custom checkboxes & radios using jQuery Uniform plugin
+	var handleUniform = function () {
+		if (!jQuery().uniform) {
+			return;
+		}
+		var test = $("input[type=checkbox]:not(.toggle, .make-switch), input[type=radio]:not(.toggle, .star, .make-switch)");
+		if (test.size() > 0) {
+			test.each(function () {
+				if ($(this).parents(".checker").size() == 0) {
+					$(this).show();
+					$(this).uniform();
+				}
+			});
+		}
+	}
+
 	return {
 		init: function () {
 			var_dump('Zbase Initializing...');
@@ -1288,6 +1320,7 @@ var Zbase = function () {
 			initAjaxFromUrls();
 			initClickableUrls();
 			handleFancybox();
+			handleUniform();
 		}
 	};
 }();

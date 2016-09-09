@@ -94,6 +94,7 @@ function zbase_response($response)
 			{
 				if(!empty($jScripts[0]))
 				{
+					$jScripts[0] = str_replace(array('<script type="text/javascript">','</script>'), '', $jScripts[0]);
 					$jsonScriptReturn .= $jScripts[0] . ';';
 				}
 			}

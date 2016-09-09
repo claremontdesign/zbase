@@ -10,6 +10,7 @@ $formId = $ui->form()->htmlId();
 if(!empty($multiple))
 {
 	zbase_view_plugin_load('fileupload');
+	$onFormSubmit = $ui->uploadOnFormSubmit();
 }
 ?>
 <div <?php echo $wrapperAttributes ?>>
@@ -27,7 +28,12 @@ if(!empty($multiple))
 		}
 		</script>
 		<?php
-		zbase_view_script_add('fileuploadFunctions' . $formId, ob_get_clean(), false);
+		if(zbase_request_is_ajax())
+		{
+			zbase()->json()->setVariable('_html_script', [ob_get_clean()], true);
+		} else {
+			zbase_view_script_add('fileuploadFunctions' . $formId, ob_get_clean(), false);
+		}
 		?>
 		<?php ob_start()?>
 		<script type="text/javascript">
@@ -40,7 +46,12 @@ if(!empty($multiple))
             });
 		</script>
 		<?php
-		zbase_view_script_add('fileupload' . $formId, ob_get_clean(), true);
+		if(zbase_request_is_ajax())
+		{
+			zbase()->json()->setVariable('_html_script', [ob_get_clean()], true);
+		} else {
+			zbase_view_script_add('fileupload' . $formId, ob_get_clean(), true);
+		}
 		?>
 		<script id="template-upload" type="text/x-tmpl">
 			{% for (var i=0, file; file=o.files[i]; i++) { %}
@@ -63,16 +74,18 @@ if(!empty($multiple))
 						{% } %}
 					</td>
 					<td>
+						<?php if(empty($onFormSubmit)):?>
 						{% if (!o.files.error && !i && !o.options.autoUpload) { %}
 							<button class="btn blue start btn-sm">
 								<i class="fa fa-upload"></i>
 								<span>Start</span>
 							</button>
 						{% } %}
+						<?php endif;?>
 						{% if (!i) { %}
 							<button class="btn red cancel btn-sm">
 								<i class="fa fa-ban"></i>
-								<span>Cancel</span>
+								<span>Remove</span>
 							</button>
 						{% } %}
 					</td>
@@ -122,13 +135,14 @@ if(!empty($multiple))
     </script>
 		<div id="<?php echo $ui->getHtmlId()?>Uploader" class="row fileupload-buttonbar">
 			<div class="col-lg-7">
-				<span class="btn green fileinput-button">
+				<span class="btn blue fileinput-button">
 					<i class="fa fa-plus"></i>
 					<span>
 						Add files...
 					</span>
 					<input type="file" name="files[]" multiple="">
 				</span>
+				<?php if(empty($onFormSubmit)):?>
 				<button type="submit" class="btn blue start">
 					<i class="fa fa-upload"></i>
 					<span>
@@ -141,6 +155,7 @@ if(!empty($multiple))
 						Cancel upload
 					</span>
 				</button>
+				<?php endif;?>
 				<span class="fileupload-process">
 				</span>
 			</div>

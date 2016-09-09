@@ -15,6 +15,7 @@ date_default_timezone_set(zbase_date_default_timezone());
  * http://carbon.nesbot.com/docs/
  */
 define('DATE_FORMAT_DB', 'Y-m-d H:i:s');
+define('DATE_FORMAT_INPUT', 'Y-m-d\TH:i:s');
 
 /**
  * Return the default timezone
@@ -88,6 +89,16 @@ function zbase_date_from_format($format, $time, $tz = null)
 function zbase_date_from_db($time)
 {
 	return zbase_date_from_format(DATE_FORMAT_DB, $time);
+}
+
+/**
+ * Format Date From HTML Date element with Time
+ * @param string $time
+ * @return \Datetime
+ */
+function zbase_date_from_input($time)
+{
+	return zbase_date_from_format(DATE_FORMAT_INPUT, $time);
 }
 
 /**

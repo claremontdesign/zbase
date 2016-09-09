@@ -379,6 +379,14 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		{
 			try
 			{
+				$datas = $this->_v('datas', null);
+				if(!empty($datas))
+				{
+					$this->_rows = $datas;
+					$this->_rowsPrepared = true;
+					return;
+				}
+
 				if(!empty($this->_entity))
 				{
 					if($this->isQueryOnLoad())
@@ -532,6 +540,11 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	}
 
 	// </editor-fold>
+
+	public function hasToolbar()
+	{
+		return $this->_v('toolbar.enable', true);
+	}
 
 	/**
 	 * Check if table rows can be selectable.
