@@ -158,6 +158,21 @@ return [
 									'json-view' => [
 										'admin-user' => null
 									],
+									'json-email' => function(){
+											return zbase_config_get('modules.account.widgets.controller.email', ['admin-user-email' => null]);
+										},
+									'json-password' => function(){
+											return zbase_config_get('modules.account.widgets.controller.password', ['admin-user-password' => null]);
+										},
+									'json-username' => function(){
+											return zbase_config_get('modules.account.widgets.controller.username', ['admin-user-username' => null]);
+										},
+									'json-profile' => function(){
+											return zbase_config_get('modules.account.widgets.controller.profile', ['admin-user-profile' => null]);
+										},
+									'image' => function(){
+											return zbase_config_get('modules.account.widgets.controller.image', ['admin-user-image' => null]);
+										},
 								],
 							],
 						],

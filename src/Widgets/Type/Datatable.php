@@ -656,7 +656,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 */
 	public function rowValueIndex()
 	{
-		return $this->_v('value.index', 'alpha_id');
+		return $this->_v('value.index', !empty($this->entity()) ? $this->entity()->getKeyName() : 'id');
 	}
 
 	/**

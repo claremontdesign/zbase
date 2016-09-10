@@ -109,6 +109,33 @@ return [
 							return null;
 						},
 					],
+					'json-fetch' => [
+						'notifications-fetch' => function(){
+							$notifications = zbase_auth_user()->notificationsNotNotified();
+							if(!empty($notifs))
+							{
+								$string = null;
+								foreach($notifications as $notification)
+								{
+									$string .= '<li data-id="' . $notification->id() . '" id="notifications-list-'.$notification->id().'">
+										<a href="'. $notification->url() . '">
+											<span class="label label-sm label-icon label-'.$notification->displayColor().'">
+												<i class="fa '. $notification->displayIcon() . '"></i>
+											</span>
+											 ' . $notification->displayMessage() . '
+											<span class="time">
+												 ' . $notification->displayTime() . '
+											</span>
+										</a>
+									</li>';
+								}
+								zbase()->json()->addVariable('_html_selector_prepend', ['#notification-notifications-dropdown-menu-list' => $string], true);
+								zbase()->json()->addVariable('_html_selector_html', ['#notification-notifications-default-message' => 'New notifications'], true);
+								zbase()->json()->addVariable('_html_selector_html', ['#notification-notifications-badge' => count($notifications)], true);
+							}
+							return null;
+						},
+					],
 				],
 			],
 		],

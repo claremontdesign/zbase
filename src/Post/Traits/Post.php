@@ -271,7 +271,7 @@ trait Post
 				}
 				else
 				{
-					$this->ownerDisplayDetails = $this->postOwner()->displayDetails();
+					$this->ownerDisplayDetails = $this->postOwner()->displayName();
 				}
 			}
 			return $this->ownerDisplayDetails;
@@ -464,6 +464,16 @@ trait Post
 	public function postHtmlId()
 	{
 		return $this->postTableName() . '_' . $this->postId();
+	}
+
+	/**
+	 * Return a POST to be used as HTML ID for template
+	 *
+	 * @return string
+	 */
+	public function postHtmlTemplateId()
+	{
+		return $this->postTableName() . '___' . $this->postTablePrimaryKey() . '__';
 	}
 
 	/**
@@ -2611,6 +2621,21 @@ trait Post
 		}
 		$this->options = $options;
 		return $this;
+	}
+
+	/**
+	 * Return the Post Options
+	 *
+	 * @return array
+	 */
+	public function postGetOptions()
+	{
+		$options = json_decode($this->options, true);
+		if(is_string($options))
+		{
+			$options = json_decode($options, true);
+		}
+		return $options;
 	}
 
 	// </editor-fold>

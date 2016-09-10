@@ -51,7 +51,6 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	protected $roleName = null;
 	protected $address = null;
 	protected $userProfile = null;
-
 	protected $remember_token = null;
 
 	/**
@@ -259,9 +258,13 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 *
 	 * @return string
 	 */
-	public function displayFullDetails()
+	public function displayFullDetails($linkable = false)
 	{
-		return $this->username() . ' [#' . $this->id() . '|' . $this->email() . ']';
+		if(!empty($linkable) && zbase_auth_is('admin'))
+		{
+			return '<a href="'.zbase_url_from_route('admin.users', ['action' => 'view', 'id' => $this->id()]).'" target="_blank">' . $this->displayName() . ' [ID#' . $this->id() . '|'.$this->username().'|' . $this->email() . '|'.$this->roleName().']</a>';
+		}
+		return $this->displayName() . ' [ID#' . $this->id() . '|'.$this->username().'|' . $this->email() . '|'.$this->roleName().']';
 	}
 
 	public function getFirstNameAttribute()
@@ -372,6 +375,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		$status = zbase_model_name('', 'class.ui.userStatus', \Zbase\Ui\Data\UserStatus::class);
 		$status = new $status(['value' => $this->status, 'id' => 'status' . $this->id()]);
+		return $status->render();
+	}
+
+	/**
+	 * @proxy $this->orderStatusText
+	 * @return string
+	 */
+	public function emailVerifiedText()
+	{
+		$status = zbase_model_name('', 'class.ui.boolean', \Zbase\Ui\Data\Boolean::class);
+		$status = new $status(['value' => $this->isEmailVerified(), 'id' => 'emailVerified' . $this->id()]);
 		return $status->render();
 	}
 
@@ -773,7 +787,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					]
 				],
 			];
-			return zbase_entity('user_notifications')->repo()->count($filters);
+			return zbase_entity('user_notifications')->repo()->all($filters);
 		}, [zbase_entity($this->entityName)->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}
 
@@ -1031,9 +1045,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$uploadedFile = zbase_file_upload_image($index, $folder, $filename, zbase_config_get('node.files.image.format', 'png'));
 			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
 			{
-				if(file_exists($folder . $this->profile->avatar))
+				if(file_exists($folder . $this->avatar))
 				{
-					unlink($folder . $this->profile->avatar);
+					unlink($folder . $this->avatar);
 				}
 				return basename($uploadedFile);
 			}
@@ -1049,13 +1063,13 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function avatarUrl($options = [])
 	{
-		if(preg_match('/http/', $this->profile->avatar) == 1)
+		if(preg_match('/http/', $this->avatar) == 1)
 		{
-			return str_replace('http://', '//', $this->profile->avatar);
+			return str_replace('http://', '//', $this->avatar);
 		}
 		$fullImage = false;
 		$params['id'] = $this->alphaId();
-		$params['image'] = $this->profile->avatar;
+		$params['image'] = $this->avatar;
 		if(empty($options) || !empty($options['full']))
 		{
 			$fullImage = true;
@@ -1081,10 +1095,18 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 * @param boolean $download If to download
 	 * @return boolean
 	 */
-	public function serveImage($width, $height = null, $quality = null, $download = false)
+	public function serveImage($width, $height = null, $quality = null, $download = false, $image = null)
 	{
 		$folder = zbase_storage_path() . '/' . zbase_tag() . '/user/' . $this->id() . '/';
-		$path = $folder . $this->profile->avatar;
+		if(!empty($image))
+		{
+			$path = $folder . $image;
+		}
+		else
+		{
+			$path = $folder . $this->avatar;
+		}
+		// dd($this, $path, file_exists($path));
 		if(file_exists($path))
 		{
 			$cachedImage = \Image::cache(function($image) use ($width, $height, $path){
@@ -1131,47 +1153,77 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		if(strtolower($method) == 'post')
 		{
-			if($action == 'index' || $action == 'view')
+			$isAdmin = zbase_auth_user()->isAdmin();
+			if($action == 'image')
 			{
-				/**
-				 * Check for changes in Username
-				 */
+				$profileImage = $this->uploadProfileImage();
+				if(!empty($profileImage))
+				{
+					$this->profile()->avatar = $profileImage;
+					$this->profile()->save();
+					$this->avatar = $profileImage;
+					$this->save();
+					$this->clearEntityCacheById();
+					$this->clearEntityCacheByTableColumns();
+					zbase_alert('info', _zt('Profile image saved.'));
+					return true;
+				}
+				return false;
+			}
+			if($action == 'username')
+			{
 				if(!empty($data['username']))
 				{
 					if($this->username() != $data['username'])
 					{
 						$this->updateUsername($data['username']);
+						$this->clearEntityCacheById();
+						$this->clearEntityCacheByTableColumns();
 						return true;
 					}
-					return false;
 				}
+				return false;
+			}
+			if($action == 'email')
+			{
 				if(!empty($data['email']))
 				{
 					if($this->email() != $data['email'])
 					{
 						$this->updateRequestEmailAddress($data['email']);
+						$this->clearEntityCacheById();
+						$this->clearEntityCacheByTableColumns();
 						return true;
 					}
-					return false;
 				}
+				return false;
+			}
+			if($action == 'password')
+			{
 				if(!empty($data['password']) && !empty($data['password']) && zbase_auth_user()->id() == $this->id())
 				{
 					if(zbase_bcrypt_check($data['password'], $this->password))
 					{
 						$this->updateRequestPassword();
+						$this->clearEntityCacheById();
+						$this->clearEntityCacheByTableColumns();
 						return true;
-					}
-					else
-					{
-						return false;
 					}
 				}
 				if(!empty($data['password']) && !empty($data['password_confirmation']) && zbase_auth_is('admin'))
 				{
 					$this->updatePassword($data['password']);
+					$this->clearEntityCacheById();
+					$this->clearEntityCacheByTableColumns();
 					return true;
 				}
+				return false;
+			}
+			if($action == 'profile')
+			{
 				$this->updateProfile($data);
+				$this->clearEntityCacheById();
+				$this->clearEntityCacheByTableColumns();
 				return true;
 			}
 		}
@@ -1229,7 +1281,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 
 	public function queryFilters($filters, $sorting, $options = [])
 	{
-		if($options['widget']->id() == 'mlmdirectreferrals-admin'){
+		if($options['widget']->id() == 'mlmdirectreferrals-admin')
+		{
 
 		}
 		if($options['widget']->id() != 'admin-users')
@@ -1529,7 +1582,14 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$this->password = zbase_bcrypt($password);
 			$this->password_updated_at = zbase_date_now();
 			$this->save();
-			zbase_alert('info', _zt('Password successfully updated.'));
+			if(zbase_auth_is('admin'))
+			{
+				zbase_alert('info', _zt($this->displayFullDetails() . ' Password successfully updated.'));
+			}
+			else
+			{
+				zbase_alert('info', _zt('Password successfully updated.'));
+			}
 			$this->log('user::updatePassword', null, ['password' => $this->password]);
 			zbase_db_transaction_commit();
 			return true;
@@ -1628,7 +1688,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			 */
 			if(zbase_auth_user()->id() != $this->id())
 			{
-				zbase_alert('success', _zt('<strong>' . $this->displayName() . '</strong> username updated successfully!'));
+				zbase_alert('success', _zt('<strong>' . $this->displayFullDetails() . '</strong> username updated successfully!'));
 			}
 			else
 			{
@@ -1680,7 +1740,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				/**
 				 * Admin is changing the email Address
 				 */
-				if(zbase_auth_user()->id() != $this->id())
+				if(zbase_auth_user()->id() != $this->id() && zbase_auth_user()->isAdmin())
 				{
 					/**
 					 * Send a request code to the old email address
@@ -1690,7 +1750,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					$this->email = $newEmailAddress;
 					$this->email_verified = 0;
 					$this->save();
-					zbase_alert('info', _zt($this->displayName() . ' email address was updated to <strong>%email%</strong> from <strong>' . $oldEmail . '</strong>.', ['%email%' => $this->email()]));
+					zbase_alert('info', _zt($this->displayFullDetails() . ' email address was updated to <strong>%email%</strong> from <strong>' . $oldEmail . '</strong>.', ['%email%' => $this->email()]));
 					$this->log('user::updateRequestEmailAddress', null, ['new_email' => $newEmailAddress, 'admin_id' => zbase_auth_user()->id()]);
 				}
 				else
@@ -1859,30 +1919,6 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	public function isEmailVerified()
 	{
 		return (bool) $this->email_verified;
-	}
-
-	// </editor-fold>
-	// <editor-fold defaultstate="collapsed" desc="PageProperties">
-	/**
-	 * Page Property
-	 *
-	 * @param Widget $widget
-	 */
-	public function pageProperty($widget)
-	{
-		if($widget->id() == 'admin-user')
-		{
-			$page = [];
-			$page['title'] = '<span class="userDisplayName' . $this->id() . '">' . $this->roleTitle() . ' - ' . $this->id() . ': ' . $this->displayName() . '</span>' . $this->statusText();
-			$page['headTitle'] = $this->displayName();
-			$page['subTitle'] = $this->email() . '|' . $this->username() . '|' . $this->cityStateCountry();
-			zbase_view_page_details(['page' => $page]);
-			$breadcrumbs = [
-				['label' => 'Users', 'route' => ['name' => 'admin.users']],
-				['label' => '<span class="userDisplayName' . $this->id() . '">' . $this->displayName() . '</span>', 'link' => '#', 'title' => $this->displayName()],
-			];
-			zbase_view_breadcrumb($breadcrumbs);
-		}
 	}
 
 	// </editor-fold>

@@ -94,6 +94,52 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 		return $this->_v('path', []);
 	}
 
+	/**
+	 * Return contents for a certain module and widget
+	 *
+	 * @param string $module The module that is asking for content
+	 * @param string $widget The widget that is asking for content
+	 * @param string $section The current section [default: front] front|back
+	 * @param boolean $adminView IF for admin [default: false]
+	 * @param string $key key to search
+	 * @return assocArray [indexName => [content => '', 'position' => '']]
+	 */
+	public function widgetContents($widgetName, $module, $section = 'front', $adminView = false, $key = 'contents')
+	{
+		$contents = $this->_v('contents.' . $section . '.' . $module . '.' . $widgetName . '.' . (empty($key) ? 'contents' : $key), []);
+		if(!empty($adminView))
+		{
+			$adminContents = $this->_v('admin.contents.' . $section . '.' . $module . '.' . $widgetName . '.' . (empty($key) ? 'contents' : $key), []);
+			$contents = array_merge($contents, $adminContents);
+		}
+		return $contents;
+	}
+
+	/**
+	 * Return contents for a certain module and widget
+	 *
+	 * @param string $module The module that is asking for content
+	 * @param string $widget The widget that is asking for content
+	 * @param string $section The current section [default: front] front|back
+	 * @param boolean $adminView IF for admin [default: false]
+	 * @param string $key key to search
+	 * @return assocArray [indexName => [label => '', 'position' => '']]
+	 */
+	public function widgetTabs($widgetName, $module, $section = 'front', $adminView = false, $key = null)
+	{
+		return $this->widgetContents($widgetName, $module, $section, $adminView, 'tabs');
+	}
+
+	/**
+	 * Return Acocunt Contents
+	 *
+	 * @return array
+	 */
+	public function accountTabs()
+	{
+		return $this->_v('account.tabs', []);
+	}
+
 	// <editor-fold defaultstate="collapsed" desc="Notifications">
 	/**
 	 * Return the Module Notification

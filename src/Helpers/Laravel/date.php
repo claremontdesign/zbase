@@ -112,6 +112,16 @@ function zbase_date_human($time, $format = DATE_FORMAT_DB)
 }
 
 /**
+ * Human Readable DAte
+ * Difference for Humans
+ * @return string
+ */
+function zbase_date_human_html($time, $format = DATE_FORMAT_DB)
+{
+	return zbase_view_render(zbase_view_file_contents('ui.data.timestamp'),array('date' => $time));
+}
+
+/**
  * Readable DAte
  * Difference for Humans
  * @return string

@@ -367,8 +367,20 @@ return [
 				'index' => function(){
 							return zbase_config_get('modules.account.widgets.controller.index', ['account' => null]);
 						},
-				'json-index' => function(){
-						return zbase_config_get('modules.account.widgets.controller.index', ['account' => null]);
+				'json-email' => function(){
+						return zbase_config_get('modules.account.widgets.controller.email', ['account-email' => null]);
+					},
+				'json-password' => function(){
+						return zbase_config_get('modules.account.widgets.controller.password', ['account-password' => null]);
+					},
+				'json-username' => function(){
+						return zbase_config_get('modules.account.widgets.controller.username', ['account-username' => null]);
+					},
+				'json-profile' => function(){
+						return zbase_config_get('modules.account.widgets.controller.profile', ['account-profile' => null]);
+					},
+				'image' => function(){
+						return zbase_config_get('modules.account.widgets.controller.image', ['account-image' => null]);
 					},
 				'resend-email-verification' => function(){
 					zbase_auth_user()->resendEmailVerificationCode();

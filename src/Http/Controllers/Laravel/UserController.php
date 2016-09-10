@@ -36,14 +36,10 @@ class UserController extends Controller
 		$id = zbase_route_input('id', null);
 		if(!empty($id))
 		{
-			$entity = zbase_entity('user', [], true);
+			$entity = zbase_user_by('alpha_id', $id);
 			if(!empty($entity))
 			{
-				$entity = $entity->repository()->byAlphaId($id);
-				if(!empty($entity))
-				{
-					return $entity->serveImage(zbase_route_input('w'), zbase_route_input('h'), zbase_route_input('q'));
-				}
+				return $entity->serveImage(zbase_route_input('w'), zbase_route_input('h'), zbase_route_input('q'), false, zbase_route_input('image'));
 			}
 		}
 		return $this->notfound();

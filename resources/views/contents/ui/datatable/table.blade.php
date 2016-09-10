@@ -35,7 +35,13 @@ if(!empty($columns))
 		{
 			$clickableRow = ' class="pointer zbase-datatable-row-toggle" '. (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl(null, $template) . '"';
 		}
-		$tBodys[] = '<tr id="' . $prefix . 'RowId__' . $ui->rowValueIndex() . '__"' . $clickableRow . '>';
+
+		if($ui->entity() instanceof \Zbase\Post\PostInterface)
+		{
+			$tBodys[] = '<tr' . $clickableRow . ' id="rowPostMainContentWrapper' . $ui->entity()->postHtmlTemplateId() . '">';
+		} else {
+			$tBodys[] = '<tr id="' . $prefix . 'RowId__' . $ui->rowValueIndex() . '__"' . $clickableRow . '>';
+		}
 		foreach ($columns as $column)
 		{
 			$column->setTemplateMode(true)->prepare();
