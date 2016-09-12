@@ -403,7 +403,8 @@ function zbase_file_serve_image($path, $width, $height, $quality = 80, $download
 	if(file_exists($path))
 	{
 		$info = $path !== null ? getimagesize($path) : getimagesizefromstring($path);
-		$newFile = dirname($path) . '/' . md5(basename($path) . '_' . $width . 'x' . $height);
+		zbase_directory_check(zbase_storage_path('tmp/images'), true);
+		$newFile = zbase_storage_path('tmp/images') . '/' . md5(basename($path) . '_' . $width . 'x' . $height);
 		switch ($info[2])
 		{
 			case IMAGETYPE_JPEG:
@@ -417,11 +418,14 @@ function zbase_file_serve_image($path, $width, $height, $quality = 80, $download
 				break;
 			default: return false;
 		}
-		copy($path, $newFile);
-		zbase_file_image_resize($newFile, null, $width, $height, true, 'file', true, false, $quality);
+		if(!file_exists($newFile))
+		{
+			copy($path, $newFile);
+			zbase_file_image_resize($newFile, null, $width, $height, true, 'file', true, false, $quality);
+		}
 		$mime = image_type_to_mime_type($info[2]);
-		$size = filesize($path);
-		return ['src' => $path, 'size' => $size, 'mime' => $mime];
+		$size = filesize($newFile);
+		return ['src' => $newFile, 'size' => $size, 'mime' => $mime];
 	}
 }
 
