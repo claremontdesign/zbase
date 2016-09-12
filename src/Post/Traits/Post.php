@@ -2314,17 +2314,14 @@ trait Post
 		$action = str_replace('file-', '', $action);
 		if($action != 'delete')
 		{
-			if(!empty($options['thumbnail']))
-			{
-				$width = 100;
-				$height = 100;
-			}
-			$width = !empty($options['w']) ? $options['w'] : (!empty($width) ? $width : null);
-			$height = !empty($options['h']) ? $options['h'] : (!empty($height) ? $height : null);
-			if(!empty($width) && !empty($height))
-			{
-				$task = $width . 'x' . $height . '_' . $task;
-			}
+//			if(!empty($options['thumbnail']))
+//			{
+//				$width = 100;
+//				$height = 100;
+//				$task = '100x100_' . $task;
+//			}
+//			$width = !empty($options['w']) ? $options['w'] : (!empty($width) ? $width : null);
+//			$height = !empty($options['h']) ? $options['h'] : (!empty($height) ? $height : null);
 		}
 		return zbase_url_from_route('admin.file', ['table' => $this->postTableName(), 'action' => $action, 'id' => $this->postId(), 'file' => $task]);
 	}
@@ -2372,16 +2369,17 @@ trait Post
 	 */
 	public function postFileCanBeDeleted($file, User $user = null)
 	{
-		$user = $user instanceof \Zbase\Entity\Laravel\User\User ? $user : zbase_auth_user();
-		if($user->isAdmin())
-		{
-			return true;
-		}
-		if($user->id() == $file->user_id)
-		{
-			return true;
-		}
-		return false;
+		return true;
+//		$user = $user instanceof \Zbase\Entity\Laravel\User\User ? $user : zbase_auth_user();
+//		if($user->isAdmin())
+//		{
+//			return true;
+//		}
+//		if($user->id() == $file->user_id)
+//		{
+//			return true;
+//		}
+//		return false;
 	}
 
 	/**
@@ -2450,6 +2448,15 @@ trait Post
 	 */
 	public function postFileResize($path, $width, $height, $q = 80)
 	{
+		if(!class_exists('\Image'))
+		{
+			$image = zbase_file_serve_image($path, $width, $height, $q);
+			if(!empty($image))
+			{
+				return \Response::make(readfile($image['src'], $image['size'])->header('Content-Type', $image['mime']));
+			}
+			return zbase_abort(404);
+		}
 		return \Image::cache(function($image) use ($width, $height, $path){
 					if(empty($width))
 					{
