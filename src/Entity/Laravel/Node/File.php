@@ -755,31 +755,40 @@ class File extends BaseEntity implements WidgetEntityInterface
 	 */
 	public function getImageByPath($path, $width, $height, $quality, $download)
 	{
+		if(!class_exists('\Image'))
+		{
+			$image = zbase_file_serve_image($path, $width, $height, $quality, $download);
+			if(!empty($image))
+			{
+				return \Response::make(readfile($image['src'], $image['size'])->header('Content-Type', $image['mime']));
+			}
+			return zbase_abort(404);
+		}
 		return \Image::cache(function($image) use ($width, $height, $path){
-					if(empty($width))
+				if(empty($width))
+				{
+					$size = getimagesize($path);
+					$width = $size[0];
+					$height = $size[1];
+				}
+				if(!empty($width) && empty($height))
+				{
+					return $image->make($path)->resize($width, null, function($constraint)
 					{
-						$size = getimagesize($path);
-						$width = $size[0];
-						$height = $size[1];
-					}
-					if(!empty($width) && empty($height))
+								$constraint->upsize();
+								$constraint->aspectRatio();
+					});
+				}
+				if(empty($width) && !empty($height))
+				{
+					return $image->make($path)->resize(null, $height, function($constraint)
 					{
-						return $image->make($path)->resize($width, null, function($constraint)
-						{
-									$constraint->upsize();
-									$constraint->aspectRatio();
-						});
-					}
-					if(empty($width) && !empty($height))
-					{
-						return $image->make($path)->resize(null, $height, function($constraint)
-						{
-									$constraint->upsize();
-									$constraint->aspectRatio();
-						});
-					}
-					return $image->make($path)->resize($width, $height);
-				});
+								$constraint->upsize();
+								$constraint->aspectRatio();
+					});
+				}
+				return $image->make($path)->resize($width, $height);
+		});
 	}
 
 	/**
