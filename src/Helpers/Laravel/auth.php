@@ -16,11 +16,87 @@
  */
 
 /**
+ * Check if duplex is enabled
+ * @return boolean
+ */
+function zbase_auth_duplex_enable()
+{
+	return zbase_config_get('modules.users.duplex.enable', false);
+}
+
+/**
+ * Make admin login like a user
+ * 	Will set the needed session
+ *
+ * @param integer $userId The user Id
+ * @return void
+ */
+function zbase_auth_duplex($userId)
+{
+	zbase_session_set('_duplexSession', $userId);
+}
+
+/**
+ *
+ * @param type $userId
+ *
+ * Unset Duplext Authed
+ */
+function zbase_auth_unset_duplex()
+{
+	zbase_session_forget('_duplexSession');
+}
+
+/**
+ * Check if we are duplex
+ *
+ * @return boolean
+ */
+function zbase_auth_is_duplex()
+{
+	if(zbase_auth_duplex_enable())
+	{
+		if(\Auth::user()->isAdmin() && !empty(zbase_session_has('_duplexSession')))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Check if we can Auth aonther user
+ * @param type $userId
+ */
+function zbase_auth_can_duplex()
+{
+	if(zbase_auth_duplex_enable())
+	{
+		return zbase_auth_real()->isAdmin();
+	}
+	return false;
+}
+
+/**
+ * The Real authed User
+ *
+ * @return User
+ */
+function zbase_auth_real()
+{
+	return zbase_user_byid(\Auth::user()->id());
+}
+
+/**
  * Return the Current Authed User
  * @return \
  */
 function zbase_auth_user()
 {
+	if(\Auth::user()->isAdmin() && !empty(zbase_session_has('_duplexSession')))
+	{
+		return zbase_user_byId(zbase_session_get('_duplexSession'));
+	}
 	if(!empty(\Auth::user()))
 	{
 		return zbase_user_byid(\Auth::user()->id());

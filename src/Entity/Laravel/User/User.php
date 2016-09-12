@@ -54,6 +54,18 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	protected $remember_token = null;
 
 	/**
+	 * LoginAs Button
+	 * @return type
+	 */
+	public function loginAs()
+	{
+		if(zbase_auth_can_duplex())
+		{
+			return '<a class="btn btn-sm btn-danger" href="' . zbase_url_from_route('admin.duplex', ['action' => 'duplex', 'id' => $this->id()]) . '" title="Login As ' . $this->displayName(). '">Login As ' . $this->displayName(). '</a>';
+		}
+	}
+
+	/**
 	 * The Entity Id
 	 * @return integer
 	 */
@@ -205,6 +217,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function roleName()
 	{
+		$roles = $this->getAttribute('roles');
+		if(!empty($roles))
+		{
+			$role = json_decode($roles, true);
+			if(!empty($role[0]))
+			{
+				$this->roleName = $role[0];
+				return $this->roleName;
+			}
+		}
 		if(is_null($this->roleName))
 		{
 			$this->roleName = $this->roles()->first()->role_name;
@@ -1162,6 +1184,35 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		if(strtolower($method) == 'post')
 		{
 			$isAdmin = zbase_auth_user()->isAdmin();
+			if($action == 'status' && !empty($isAdmin))
+			{
+				if(!empty($data['role']))
+				{
+					$role = $this->roles()->getRelated()->repository()->by('role_name', $data['role'])->first();
+					if(!empty($role))
+					{
+						\DB::table('users_roles')->where('user_id', $this->id())->delete();
+						\DB::table('users_roles')->insert(['user_id' => $this->id(), 'role_id' => $role->id()]);
+						$userRoles = [$role->role_name];
+						$this->roles = json_encode($userRoles);
+						$this->save();
+						$this->notify('Role were changed into ' . $role->role_name);
+						zbase()->json()->setVariable('_html_selector_replace', ['.userDisplayName' . $this->id() => $this->roleTitle() . ' - ' . $this->id() .': ' . $this->displayName() ], true);
+						$this->clearEntityCacheByTableColumns();
+						$this->clearEntityCacheById();
+					}
+				}
+				if(!empty($data['status']))
+				{
+					$this->status = $data['status'];
+					$this->save();
+					zbase()->json()->setVariable('_html_selector_replace', ['#status' . $this->id() => $this->statusText()], true);
+				}
+				$this->clearEntityCacheById();
+				$this->clearEntityCacheByTableColumns();
+				zbase_alert('info', _zt('User Account Updated.'));
+				return true;
+			}
 			if($action == 'image')
 			{
 				$profileImage = $this->uploadProfileImage();

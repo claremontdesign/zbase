@@ -36,7 +36,7 @@ if(file_exists($pathToLaravel . '/storage/maintenance'))
 		}
 		header('HTTP/1.1 503 Service Temporarily Unavailable');
 		header('Status: 503 Service Temporarily Unavailable');
-		header('Retry-After: 3600');
+		header('Retry-After: ' . 3600 * 5);
 		include __DIR__ . '/maintenance.html';
 		exit;
 	}

@@ -158,6 +158,9 @@ return [
 									'json-view' => [
 										'admin-user' => null
 									],
+									'json-status' => [
+										'admin-user-status' => null
+									],
 									'json-email' => function(){
 											return zbase_config_get('modules.account.widgets.controller.email', ['admin-user-email' => null]);
 										},

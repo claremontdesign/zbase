@@ -128,6 +128,14 @@ $widgetConfig = ['config' => ['entity' => ['entity' => $selectedUser]]];
 		<?php endif; ?>
 
 		<div class="zbase-ui-wrapper zbase-ui-tab tab-pane fade" id="accounttabsaccount">
+			<?php if(!empty($adminView)): ?>
+				<?php if(zbase_auth_can_duplex()):?>
+					<?php echo $selectedUser->loginAs();?>
+					<hr />
+				<?php endif;?>
+				<?php echo zbase_widget($moduleName . '-status', [],true, $widgetConfig); ?>
+				<hr />
+			<?php endif; ?>
 			<?php if(!empty($username)): ?>
 			<?php echo zbase_widget($moduleName . '-username', [],true, $widgetConfig); ?>
 			<hr />

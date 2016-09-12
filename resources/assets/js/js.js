@@ -1053,7 +1053,7 @@ var Zbase = function () {
 	var initAjaxForm = function () {
 		if (jQuery('.zbase-ajax-form').length > 0)
 		{
-			jQuery('.zbase-ajax-form').submit(function (e) {
+			jQuery('.zbase-ajax-form').unbind('submit').submit(function (e) {
 				e.preventDefault();
 				var ele = jQuery(this);
 				var url = ele.attr('action');
@@ -1072,8 +1072,9 @@ var Zbase = function () {
 	var initBtnActionConfirm = function () {
 		if (jQuery('.zbase-btn-action-confirm').length > 0)
 		{
-			jQuery('.zbase-btn-action-confirm').click(function (e) {
+			jQuery('.zbase-btn-action-confirm').unbind('click').click(function (e) {
 				e.preventDefault();
+				e.stopPropagation();
 				var btn = jQuery(this);
 				var dataConfig = zbase_get_element_config(btn);
 				var dataMode = dataConfig.mode !== undefined ? dataConfig.mode : 'yesno';
@@ -1097,13 +1098,13 @@ var Zbase = function () {
 						var btnNo = jQuery('<button type="button" class="btn btn-no btn-success ' + zbase_get_element_size(btn) + '">No</button>');
 						var btnYes = jQuery('<button type="button" class="btn btn-yes btn-danger ' + zbase_get_element_size(btn) + '">Yes</button>');
 						var btnDiv = jQuery('<div>').html(btnNo.outerHtml() + btnYes.outerHtml());
-						jQuery(btnDiv).find('.btn-no').click(function () {
+						jQuery(btnDiv).find('.btn-no').unbind('click').click(function () {
 							btnDiv.remove();
 							divAlert.remove();
 							jQuery(btn).show();
 							jQuery(btn).siblings().show();
 						});
-						jQuery(btnDiv).find('.btn-yes').click(function () {
+						jQuery(btnDiv).find('.btn-yes').unbind('click').click(function () {
 							zbase_ajax_post(url, {}, callback, {});
 						});
 						zbase_dom_insert_html(btnDiv, btn, 'insertbefore');
@@ -1153,21 +1154,21 @@ var Zbase = function () {
 	{
 		if (jQuery('.zbase-ajax-url').length > 0)
 		{
-			jQuery('.zbase-ajax-url').click(function (e) {
+			jQuery('.zbase-ajax-url').unbind('click').click(function (e) {
 				e.preventDefault();
 				zbase_ajax(zbase_get_element_config(jQuery(this)));
 			});
 		}
 		if (jQuery('.zbase-ajax-anchor').length > 0)
 		{
-			jQuery('.zbase-ajax-anchor').click(function (e) {
+			jQuery('.zbase-ajax-anchor').unbind('click').click(function (e) {
 				e.preventDefault();
 				zbase_ajax_get(jQuery(this).attr('href'), {}, function () {}, {});
 			});
 		}
 		if (jQuery('.zbase-ajax-update-main-content').length > 0)
 		{
-			jQuery('.zbase-ajax-update-main-content').click(function (e) {
+			jQuery('.zbase-ajax-update-main-content').unbind('click').click(function (e) {
 				e.preventDefault();
 				zbase_ajax_get(jQuery(this).attr('href'), {maincontent: 1}, function () {}, {});
 			});
@@ -1182,7 +1183,7 @@ var Zbase = function () {
 	{
 		if (jQuery('.zbase-btn-clickable-url').length > 0)
 		{
-			jQuery('.zbase-btn-clickable-url').click(function (e) {
+			jQuery('.zbase-btn-clickable-url').unbind('click').click(function (e) {
 				var ele = jQuery(this);
 				var dataConfig = zbase_get_element_config(ele);
 				var url = dataConfig.url !== undefined ? dataConfig.url : ele.attr('href');

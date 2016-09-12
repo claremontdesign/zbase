@@ -168,6 +168,14 @@ return [
 					'index' => 'created_at'
 				],
 			],
+			'login' => [
+				'label' => 'Login',
+				'enable' => true,
+				'data' => [
+					'type' => 'string',
+					'index' => 'loginAs'
+				],
+			],
 		],
 	],
 ];

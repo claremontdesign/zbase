@@ -989,6 +989,10 @@ function zbase_view_render_body()
 	$str .= zbase_view_placeholder_render('body_footer_html');
 	$str .= EOF . '<script type="text/javascript">';
 	$str .= EOF . zbase_view_compile(zbase_view_placeholder_render('body_scripts'));
+	if(!empty(zbase_auth_is_duplex()))
+	{
+		$onloadScripts .= 'jQuery(\'body\').append(\'<div style="margin:0px auto;z-index:999999;background:yellow;width: auto;position:absolute;top:0px;padding:5px;margin-top:2px;margin-left:2px;">You are loggedin as: ' . zbase_auth_user()->displayFullDetails() . ' <a class="btn btn-danger btn-sm" href="'.zbase_url_from_route('admin.duplex',['action' => 'unduplex']).'">SignOut</a></div>\');';
+	}
 	if(!empty($onloadScripts))
 	{
 		$str .= EOF . 'jQuery(document).ready(function(){'
