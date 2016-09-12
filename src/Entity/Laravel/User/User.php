@@ -184,14 +184,19 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function profile()
 	{
-		if(is_null($this->userProfile))
+		if(!empty($this->id()))
 		{
-			$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_profile_' . $this->id());
-			$this->userProfile = zbase_cache($cacheKey, function(){
-				return zbase_entity('user_profile')->repo()->by('user_id', $this->id())->first();
-			}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+			if(is_null($this->userProfile))
+			{
+				$cacheKey = zbase_cache_key(zbase_entity($this->entityName()), 'byrelation_profile_' . $this->id());
+				$id = $this->id();
+				$this->userProfile = zbase_cache($cacheKey, function() use ($id){
+					return zbase_entity('user_profile')->repo()->by('user_id', $id)->first();
+				}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+			}
+			return $this->userProfile;
 		}
-		return $this->userProfile;
+		return null;
 	}
 
 	/**
@@ -262,9 +267,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		if(!empty($linkable) && zbase_auth_is('admin'))
 		{
-			return '<a href="'.zbase_url_from_route('admin.users', ['action' => 'view', 'id' => $this->id()]).'" target="_blank">' . $this->displayName() . ' [ID#' . $this->id() . '|'.$this->username().'|' . $this->email() . '|'.$this->roleName().']</a>';
+			return '<a href="' . zbase_url_from_route('admin.users', ['action' => 'view', 'id' => $this->id()]) . '" target="_blank">' . $this->displayName() . ' [ID#' . $this->id() . '|' . $this->username() . '|' . $this->email() . '|' . $this->roleName() . ']</a>';
 		}
-		return $this->displayName() . ' [ID#' . $this->id() . '|'.$this->username().'|' . $this->email() . '|'.$this->roleName().']';
+		return $this->displayName() . ' [ID#' . $this->id() . '|' . $this->username() . '|' . $this->email() . '|' . $this->roleName() . ']';
 	}
 
 	public function getFirstNameAttribute()
@@ -891,7 +896,10 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					$attributesAddress['is_default'] = 1;
 					$attributesAddress['type'] = 'home';
 					$attributesAddress['user_id'] = $model->id();
-					$model->location = $attributesAddress['city'] . ', ' . $attributesAddress['state'] . ', ' . $attributesAddress['country'];
+					if(!empty($attributesAddress['state']) && !empty($attributesAddress['country']) && !empty($attributesAddress['city']))
+					{
+						$model->location = $attributesAddress['city'] . ', ' . $attributesAddress['state'] . ', ' . $attributesAddress['country'];
+					}
 					zbase_entity('user_address')->fill($attributesAddress)->save();
 					$logMsg[] = 'Address saved!';
 				}
