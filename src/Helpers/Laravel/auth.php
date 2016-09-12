@@ -70,11 +70,7 @@ function zbase_auth_is_duplex()
  */
 function zbase_auth_can_duplex()
 {
-	if(zbase_auth_duplex_enable())
-	{
-		return zbase_auth_real()->isAdmin();
-	}
-	return false;
+	return zbase_auth_real()->isAdmin();
 }
 
 /**
