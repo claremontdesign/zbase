@@ -11,7 +11,7 @@
     <testsuites>
         <testsuite name="Zbase Test Suite">
             <directory>./tests</directory>
-            <directory>./../dermasecrets/tests</directory>
+            <directory>./../Agse/tests</directory>
         </testsuite>
     </testsuites>
     <filter>

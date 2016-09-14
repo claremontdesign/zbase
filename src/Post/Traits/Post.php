@@ -349,7 +349,8 @@ trait Post
 			}
 			return $this->user_id;
 		}
-		throw new Exceptions\PropertyNotFoundException('Post is not userable. No ownership found in ' . __CLASS__);
+		return false;
+		// throw new Exceptions\PropertyNotFoundException('Post is not userable. No ownership found in ' . __CLASS__);
 	}
 
 	/**
@@ -988,6 +989,7 @@ trait Post
 						zbase()->json()->setVariable('_html_selector_hide', ['.zbase-page-title' => ''], true);
 						$script = 'jQuery(\'#' . $innerContentId . '\').closest(\'.zbase-widget-wrapper-datatable\').hide();jQuery(\'.breadcrumb li\').eq(2).find(\'a\').click(function(e){
 								e.preventDefault();
+								window.history.pushState(\'\',\''.zbase()->view()->title().'\',\''. zbase_url_previous().'\');
 								jQuery(\'#' . $innerContentId . '\').closest(\'.zbase-widget-wrapper-datatable\').show();
 								jQuery(\'#' . $innerContentId . '\').closest(\'.zbase-widget-wrapper-datatable\').siblings().remove();
 								jQuery(\'h3.page-title span.' . $this->postHtmlCommonId() . '\').remove();
@@ -2296,7 +2298,7 @@ trait Post
 	{
 		if(method_exists($this, 'fileUrl'))
 		{
-			return $this->fileUrl();
+			return $this->fileUrl($file, $action, $options);
 		}
 		$task = null;
 		if(is_object($file) && !empty($file->name))
@@ -2323,7 +2325,12 @@ trait Post
 //			$width = !empty($options['w']) ? $options['w'] : (!empty($width) ? $width : null);
 //			$height = !empty($options['h']) ? $options['h'] : (!empty($height) ? $height : null);
 		}
-		return zbase_url_from_route('admin.file', ['table' => $this->postTableName(), 'action' => $action, 'id' => $this->postId(), 'file' => $task]);
+		if(zbase_auth_user()->isAdmin())
+		{
+			return zbase_url_from_route('admin.file', ['table' => $this->postTableName(), 'action' => $action, 'id' => $this->postId(), 'file' => $task]);
+		} else {
+			return zbase_url_from_route('file', ['table' => $this->postTableName(), 'action' => $action, 'id' => $this->postId(), 'file' => $task]);
+		}
 	}
 
 	/**
@@ -2334,6 +2341,10 @@ trait Post
 	 */
 	public function postFileAdd($file)
 	{
+		if(method_exists($this, 'fileAdd'))
+		{
+			return $this->fileAdd($file);
+		}
 		try
 		{
 			zbase_db_transaction_start();
@@ -2390,6 +2401,10 @@ trait Post
 	 */
 	public function postFileDelete($file)
 	{
+		if(method_exists($this, 'fileDelete'))
+		{
+			return $this->fileDelete($file);
+		}
 		try
 		{
 			$file = (object) $file;
@@ -2499,6 +2514,10 @@ trait Post
 	 */
 	public function postFiles()
 	{
+		if(method_exists($this, 'files'))
+		{
+			return $this->files();
+		}
 		return $this->postGetOption('_files');
 	}
 
@@ -2509,6 +2528,33 @@ trait Post
 	 */
 	public function postFileByFilename($filename)
 	{
+		if(method_exists($this, 'fileByFilename'))
+		{
+			return $this->fileByFilename($filename);
+		}
+		$files = $this->postFiles();
+		if(!empty($files))
+		{
+			foreach ($files as $file)
+			{
+				if($file['filename'] == $filename)
+				{
+					if(file_exists($this->postFileUploadFolder() . $filename))
+					{
+						return $file;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	public function postFileByFilenameTmp($filename)
+	{
+		if(method_exists($this, 'fileByFilenameTmp'))
+		{
+			return $this->fileByFilenameTmp($filename);
+		}
 		$files = $this->postFiles();
 		if(!empty($files))
 		{
@@ -2549,8 +2595,12 @@ trait Post
 	 *
 	 * @return string
 	 */
-	public function postFileUploadFolder()
+	public function postFileUploadFolder($tmp = false)
 	{
+		if(method_exists($this, 'fileUploadFolder'))
+		{
+			return $this->fileUploadFolder($tmp);
+		}
 		return zbase_storage_path() . '/' . zbase_tag() . '/' . $this->postTableName() . '/' . $this->postId() . '/';
 	}
 
@@ -2654,6 +2704,10 @@ trait Post
 	 */
 	public function postUserHasAccess(User $user = null)
 	{
+		if(method_exists($this, 'userHasAccess'))
+		{
+			return $this->userHasAccess($user);
+		}
 		$user = !empty($user) ? $user : zbase_auth_user();
 		if($user->id() == $this->postOwnerId())
 		{

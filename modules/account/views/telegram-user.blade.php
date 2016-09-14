@@ -36,7 +36,7 @@ $code = zbase()->telegram()->userCode($user);
 			<strong>
 					A new window will open and it will prompt you to open or install the Telegram App.
 					<br />
-					Follow the instruction until you will receive the first message from the DermaSecrets.
+					Follow the instruction until you will receive the first message from the Agse.
 			</strong>
 			<br />
 			<br />
@@ -46,7 +46,7 @@ $code = zbase()->telegram()->userCode($user);
 				<p>
 					A new window will open and it will prompt you to open or install the Telegram App.
 					<br />
-					Follow the instruction until you will receive the first message from the DermaSecrets.
+					Follow the instruction until you will receive the first message from the Agse.
 					<br />
 					<br />
 					Don't close this window yet.

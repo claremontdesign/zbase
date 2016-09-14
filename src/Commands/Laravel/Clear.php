@@ -71,6 +71,7 @@ class Clear extends Command
 		echo shell_exec($phpCommand . ' artisan config:clear');
 		echo shell_exec($phpCommand . ' artisan route:clear');
 		\File::cleanDirectory(zbase_storage_path('tmp/images'));
+		\File::cleanDirectory(zbase_storage_path(zbase_tag() . '_tmp/images'));
 		$commands = []; // zbase()->commands('clear');
 		if(!empty($commands))
 		{

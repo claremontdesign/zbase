@@ -56,9 +56,12 @@ function zbase_auth_is_duplex()
 {
 	if(zbase_auth_duplex_enable())
 	{
-		if(\Auth::user()->isAdmin() && !empty(zbase_session_has('_duplexSession')))
+		if(zbase_auth_has())
 		{
-			return true;
+			if(\Auth::user()->isAdmin() && !empty(zbase_session_has('_duplexSession')))
+			{
+				return true;
+			}
 		}
 	}
 	return false;

@@ -9,6 +9,7 @@ $formId = $ui->form()->htmlId();
 
 if(!empty($multiple))
 {
+	// https://github.com/blueimp/jQuery-File-Upload
 	zbase_view_plugin_load('fileupload');
 	$onFormSubmit = $ui->uploadOnFormSubmit();
 }
@@ -37,13 +38,49 @@ if(!empty($multiple))
 		?>
 		<?php ob_start()?>
 		<script type="text/javascript">
-		jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').fileupload({
+			jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').fileupload({
                 disableImageResize: false,
                 autoUpload: false,
-				limitMultiFileUploads: 1,
+				limitMultiFileUploads: <?php echo empty($onFormSubmit) ? '1' : '99999';?>,
 				sequentialUploads: true,
+				<?php echo empty($onFormSubmit) ? 'sequentialUploads: true,' : null;?>
                 url: jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').attr('action')
-            });
+				});
+				<?php if(!empty($onFormSubmit)):?>
+				jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').fileupload().bind('fileuploadadd', function(e, data){
+					jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').find('[type="submit"]').attr('type','button');
+					jQuery('#<?php echo $ui->getHtmlId()?>UploaderSubmitButton').on("click", function () {
+						var failed = false;
+						jQuery('input,textarea,select').filter('[required]:visible').each(function(){
+							jQuery(this).closest('.form-group').removeClass('has-error');
+							if(jQuery(this).val() == '')
+							{
+								failed = true;
+								jQuery(this).closest('.form-group').addClass('has-error');
+							}
+						});
+						if(!failed)
+						{
+							zbase_ajax_preloader();
+							data.submit();
+						}
+					});
+				}).bind('fileuploaddone', function (e, data) {
+					jQuery.each(data.files, function (i, file) {
+						if(jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').find('[value="'+file.name+'"]').length < 1)
+						{
+							jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').append('<input type="hidden" name="uploaded[]" value="'+file.name+'" />');
+						}
+                    });
+					var activeUploads = jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').fileupload('active');
+					if(activeUploads == 1) {
+						jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').submit();
+					}
+				});
+				<?php endif;?>
+			<?php if(!empty($onFormSubmit)):?>
+				jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').find('[type="submit"]').attr('id','<?php echo $ui->getHtmlId()?>UploaderSubmitButton');
+			<?php endif;?>
 		</script>
 		<?php
 		if(zbase_request_is_ajax())
@@ -98,7 +135,7 @@ if(!empty($multiple))
                 <td>
                     <span class="preview">
                         {% if (file.thumbnailUrl) { %}
-                            <a href="{%=file.url%}" title="{%=file.name%}" class="fancybox-button" data-rel="fancybox-button" download="{%=file.name%}"><img class="thumbnail" src="{%=file.thumbnailUrl%}"></a>
+                            <a href="{%=file.url%}" title="{%=file.name%}" class="fancybox-button" data-rel="fancybox-button" download="{%=file.name%}"><img style="width:80px !important;" class="thumbnail" src="{%=file.thumbnailUrl%}"></a>
                         {% } %}
                     </span>
                 </td>
@@ -143,18 +180,18 @@ if(!empty($multiple))
 					<input type="file" name="files[]" multiple="">
 				</span>
 				<?php if(empty($onFormSubmit)):?>
-				<button type="submit" class="btn blue start">
-					<i class="fa fa-upload"></i>
-					<span>
-						Start upload
-					</span>
-				</button>
-				<button type="reset" class="btn warning cancel">
-					<i class="fa fa-ban-circle"></i>
-					<span>
-						Cancel upload
-					</span>
-				</button>
+					<button type="submit" class="btn blue start">
+						<i class="fa fa-upload"></i>
+						<span>
+							Start upload
+						</span>
+					</button>
+					<button type="reset" class="btn warning cancel">
+						<i class="fa fa-ban-circle"></i>
+						<span>
+							Cancel upload
+						</span>
+					</button>
 				<?php endif;?>
 				<span class="fileupload-process">
 				</span>

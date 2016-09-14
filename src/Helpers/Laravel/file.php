@@ -430,6 +430,18 @@ function zbase_file_serve_image($path, $width, $height, $quality = 80, $download
 }
 
 /**
+ * Return file mimetype
+ *
+ * @return boolean
+ */
+function zbase_file_mimetype($path)
+{
+	$info = $path !== null ? getimagesize($path) : getimagesizefromstring($path);
+	$mime = image_type_to_mime_type($info[2]);
+	return $mime;
+}
+
+/**
  * easy image resize function
  * @param  $file - file name to resize
  * @param  $string - The image data, as a string

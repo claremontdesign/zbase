@@ -109,8 +109,28 @@ return [
 					'middleware' => [
 						'auth' => true,
 					],
-					'httpVerb' => ['post','get'],
+					'httpVerb' => ['post', 'get'],
 					'url' => 'post-file/{table?}/{action?}/{id?}/{file?}',
+					'backend' => true,
+					'enable' => true,
+				],
+				'filetmp' => [
+					'controller' => [
+						'name' => 'post',
+						'method' => 'filetmp',
+						'enable' => true,
+						'params' => [
+							'table' => null,
+							'action' => null,
+							'id' => null,
+							'file' => null
+						]
+					],
+					'middleware' => [
+						'auth' => true,
+					],
+					'httpVerb' => ['post', 'get'],
+					'url' => 'post-file/{table?}/{action?}/{file?}',
 					'backend' => true,
 					'enable' => true,
 				],
@@ -366,6 +386,38 @@ return [
 			'httpVerb' => ['post'],
 			'url' => '/telegram/hook',
 			'enable' => true
+		],
+		'file' => [
+			'controller' => [
+				'name' => 'post',
+				'method' => 'file',
+				'enable' => true,
+				'params' => [
+					'table' => null,
+					'action' => null,
+					'id' => null,
+					'file' => null
+				]
+			],
+			'httpVerb' => ['post', 'get'],
+			'url' => 'post-file/{table?}/{action?}/{id?}/{file?}',
+			'enable' => true,
+		],
+		'filetmp' => [
+			'controller' => [
+				'name' => 'post',
+				'method' => 'filetmp',
+				'enable' => true,
+				'params' => [
+					'table' => null,
+					'action' => null,
+					'id' => null,
+					'file' => null
+				]
+			],
+			'httpVerb' => ['post', 'get'],
+			'url' => 'post-file-tmp/{table?}/{action?}/{file?}',
+			'enable' => true,
 		],
 	],
 ];

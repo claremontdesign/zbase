@@ -25,7 +25,7 @@ class ApiController extends Controller implements Interfaces\AttributeInterface
 
 	/**
 	 * Telegram Hook
-	 * http://dermasecrets-local.biz/telegram/237861793:AAFW6v2ZRg5oPHiQWuedtXuqs2GAguCSZU8
+	 * http://Agse-local.biz/telegram/237861793:AAFW6v2ZRg5oPHiQWuedtXuqs2GAguCSZU8
 	 */
 	public function telegramHook()
 	{

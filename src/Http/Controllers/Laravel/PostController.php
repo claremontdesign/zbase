@@ -85,16 +85,52 @@ class PostController extends Controller
 			}
 		}
 		return $this->notfound();
+	}
 
-		if(!empty($node) && !empty($id))
+	public function filetmp()
+	{
+		$table = zbase_route_input('table', null);
+		$action = zbase_route_input('action', null);
+		$file = zbase_route_input('file', null);
+
+		if(!empty($table) && !empty($action) &&  !empty($file))
 		{
-			$entity = zbase_entity($node . '_files', [], true);
-			$entityFile = $entity->repository()->byAlphaId($id);
-			if(!empty($entityFile))
+			$entity = zbase_entity($table);
+			if($entity instanceof \Zbase\Post\PostInterface)
 			{
-				return $entityFile->serveImage(zbase_route_input('w'), zbase_route_input('h'), zbase_route_input('q'));
+				if($action == 'view')
+				{
+					$width = null;
+					$height = null;
+					if(preg_match('/_/', $file) > 0)
+					{
+						$filex = explode('_', $file);
+						if((count($filex) == 1) && !empty($filex[0]))
+						{
+							$filename = $filex[0];
+						}
+						if((count($filex) == 2) && !empty($filex[1]))
+						{
+							$sizeX = explode('x', $filex[0]);
+							$width = $sizeX[0];
+							$height = $sizeX[1];
+							$filename = $filex[1];
+						}
+					}
+					else
+					{
+						$filename = $file;
+					}
+					if(!empty($filename))
+					{
+						$file = $entity->postFileByFilenameTmp($filename);
+						if(!empty($file))
+						{
+							return $entity->postFileServe($file, $width, $height);
+						}
+					}
+				}
 			}
-			return $entity->serveImage(zbase_route_input('w'), zbase_route_input('h'), zbase_route_input('q'), false, true);
 		}
 		return $this->notfound();
 	}

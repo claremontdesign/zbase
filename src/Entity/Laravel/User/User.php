@@ -1494,6 +1494,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				{
 					$filters['users.name'] = function($q) use ($query){
 						return $q->orWhere('users.name', 'LIKE', '%' . $query . '%')
+										->orWhere('users.location', 'LIKE', '%' . $query . '%')
 										->orWhere('users.email', 'LIKE', '%' . $query . '%')
 										->orWhere('users.username', 'LIKE', '%' . $query . '%');
 					};
