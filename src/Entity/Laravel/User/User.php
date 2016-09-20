@@ -61,7 +61,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		if(zbase_auth_can_duplex())
 		{
-			return '<a class="btn btn-sm btn-danger" href="' . zbase_url_from_route('admin.duplex', ['action' => 'duplex', 'id' => $this->id()]) . '" title="Login As ' . $this->displayName(). '">Login As ' . $this->displayName(). '</a>';
+			return '<a class="btn btn-sm btn-danger" href="' . zbase_url_from_route('admin.duplex', ['action' => 'duplex', 'id' => $this->id()]) . '" title="Login As ' . $this->displayName() . '">Login As ' . $this->displayName() . '</a>';
 		}
 	}
 
@@ -1136,6 +1136,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		{
 			$path = $folder . $this->avatar;
 		}
+
+		if(!class_exists('\Image'))
+		{
+			$image = zbase_file_serve_image($path, $width, $height, $quality, $download);
+			if(!empty($image))
+			{
+				return \Response::make(readfile($image['src'], $image['size'])->header('Content-Type', $image['mime']));
+			}
+			return zbase_abort(404);
+		}
+
 		// dd($this, $path, file_exists($path));
 		if(file_exists($path))
 		{
@@ -1197,7 +1208,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 						$this->roles = json_encode($userRoles);
 						$this->save();
 						$this->notify('Role were changed into ' . $role->role_name);
-						zbase()->json()->setVariable('_html_selector_replace', ['.userDisplayName' . $this->id() => $this->roleTitle() . ' - ' . $this->id() .': ' . $this->displayName() ], true);
+						zbase()->json()->setVariable('_html_selector_replace', ['.userDisplayName' . $this->id() => $this->roleTitle() . ' - ' . $this->id() . ': ' . $this->displayName()], true);
 						$this->clearEntityCacheByTableColumns();
 						$this->clearEntityCacheById();
 					}
@@ -1264,6 +1275,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					if(zbase_bcrypt_check($data['password'], $this->password))
 					{
 						$this->updateRequestPassword();
+						zbase()->json()->addVariable('redirect', zbase_url_from_route('logout'));
 						$this->clearEntityCacheById();
 						$this->clearEntityCacheByTableColumns();
 						return true;
@@ -1281,8 +1293,18 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			if($action == 'profile')
 			{
 				$this->updateProfile($data);
-				$this->clearEntityCacheById();
-				$this->clearEntityCacheByTableColumns();
+				return true;
+			}
+			if($action == 'phone')
+			{
+				$this->updateAddress($data);
+				zbase_alert('info', _zt('Contact Info saved.'));
+				return true;
+			}
+			if($action == 'address')
+			{
+				$this->updateAddress($data);
+				zbase_alert('info', _zt('Address Info saved.'));
 				return true;
 			}
 		}
@@ -1505,7 +1527,35 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	}
 
 	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Address">
+	public function updateAddress($data)
+	{
+		try
+		{
+			zbase_db_transaction_start();
+			if(!empty($data))
+			{
+				$address = $this->address();
+				$saved = $address->update($data);
+				if(!empty($saved))
+				{
+					$this->clearEntityCacheByTableColumns();
+					$this->clearEntityCacheById();
+					$this->log('user::updateAddress');
+					zbase_db_transaction_commit();
+					return true;
+				}
+			}
+		} catch (\Zbase\Exceptions\RuntimeException $e)
+		{
+			zbase_db_transaction_rollback();
+			return false;
+		}
+	}
+
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="UPDATE PRofile">
+
 	/**
 	 * Update Profile
 	 * @param $data
@@ -1514,33 +1564,6 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		try
 		{
-			zbase_db_transaction_start();
-			if(zbase_auth_user()->isAdmin())
-			{
-				if(!empty($data['role']))
-				{
-					$role = $this->roles()->getRelated()->repository()->by('role_name', $data['role'])->first();
-					if(!empty($role))
-					{
-						\DB::table('users_roles')->where('user_id', $this->id())->delete();
-						\DB::table('users_roles')->insert(['user_id' => $this->id(), 'role_id' => $role->id()]);
-						$userRoles = [$role->role_name];
-						$this->roles = json_encode($userRoles);
-						$this->save();
-						$this->notify('Your Role were changed into ' . $role->role_name);
-						$this->clearEntityCacheByTableColumns();
-						$this->clearEntityCacheById();
-					}
-				}
-				if(!empty($data['status']))
-				{
-					$this->status = $data['status'];
-					$this->save();
-					zbase()->json()->setVariable('_html_selector_replace', ['#status' . $this->id() => $this->statusText()], true);
-					zbase()->json()->setVariable('_html_selector_replace', ['#statusxxx' . $this->id() => $this->statusText()], true);
-				}
-			}
-			zbase_db_transaction_commit();
 			zbase_db_transaction_start();
 			$fillables = $this->profile()->getFillable();
 			if(!empty($fillables))

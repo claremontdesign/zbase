@@ -100,7 +100,7 @@ $widgetConfig = ['config' => ['entity' => ['entity' => $selectedUser]]];
 			<?php echo zbase_module_widget_render_contents($accountContents, 'information');?>
 		</div>
 		<?php if(!empty($accountTabs)):?>
-			<?php foreach($accountTabs as $accounTab):?>
+			<?php foreach($accountTabs as $accountTab):?>
 				<?php $accountTabId = !empty($accountTab['id']) ? $accountTab['id'] : null;?>
 				<?php if(!empty($accountTabId)):?>
 					<div class="zbase-ui-wrapper zbase-ui-tab tab-pane fade" id="accounttabs<?php echo $accountTabId?>">

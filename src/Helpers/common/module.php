@@ -60,7 +60,7 @@ function zbase_module_widget_render_contents($contents, $groupId = null)
 		foreach ($contents as $content)
 		{
 			$gId = !empty($content['groupId']) ? $content['groupId'] : null;
-			if(!empty($groupId))
+			if(!empty($groupId) && !empty($gId))
 			{
 				if($gId == $groupId)
 				{

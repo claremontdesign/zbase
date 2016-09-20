@@ -411,6 +411,10 @@ function zbase_route_response($name, $route)
 		$useUsernameRoute = false;
 	}
 	//if($usernameRoute === false && !empty($useUsernameRoute))
+	if($name == 'index' && zbase_auth_has() && !empty($useUsernameRoute))
+	{
+		return redirect()->to('/' . zbase_auth_real()->username);
+	}
 	if($usernameRoute === false && !empty($useUsernameRoute))
 	{
 		$uri = zbase_url_uri();

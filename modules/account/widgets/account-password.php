@@ -64,7 +64,7 @@ return [
 				'ui' => [
 					'type' => 'component.pageHeader',
 					'id' => 'header',
-					'text' => 'To update password, enter your current password.'
+					'text' => 'To update password, enter your current password. We will send you an email with a link to reset your password. You will then be logout automatically.'
 				],
 			],
 			'password' => [

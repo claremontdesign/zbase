@@ -60,9 +60,12 @@ trait Filterable
 	 * 				'value' => value
 	 * 			]
 	 * 		],
-	 * 		['null' => [
+	 * 		['isnull' => [
 	 * 				'field' => 'columnName',
-	 * 				'value' => value
+	 * 			]
+	 * 		],
+	 * 		['notnull' => [
+	 * 				'field' => 'columnName',
 	 * 			]
 	 * 		],
 	 * 		field_name REGEXP '"key_name":"([^"])key_word([^"])"'

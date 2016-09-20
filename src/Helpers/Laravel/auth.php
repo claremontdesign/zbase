@@ -92,6 +92,10 @@ function zbase_auth_real()
  */
 function zbase_auth_user()
 {
+	if(!zbase_auth_has())
+	{
+		return false;
+	}
 	if(\Auth::user()->isAdmin() && !empty(zbase_session_has('_duplexSession')))
 	{
 		return zbase_user_byId(zbase_session_get('_duplexSession'));

@@ -62,17 +62,17 @@ if(!empty($multiple))
 						if(!failed)
 						{
 							zbase_ajax_preloader();
-							data.submit();
+							data.submit()
 						}
 					});
 				}).bind('fileuploaddone', function (e, data) {
-					jQuery.each(data.files, function (i, file) {
+					var activeUploads = jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').fileupload('active');
+					jQuery.each(data._response.result.files, function (i, file) {
 						if(jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').find('[value="'+file.name+'"]').length < 1)
 						{
 							jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').append('<input type="hidden" name="uploaded[]" value="'+file.name+'" />');
 						}
-                    });
-					var activeUploads = jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').fileupload('active');
+					});
 					if(activeUploads == 1) {
 						jQuery('#<?php echo $ui->getHtmlId()?>Uploader').closest('form').submit();
 					}
