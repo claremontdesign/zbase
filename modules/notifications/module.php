@@ -36,7 +36,7 @@ return [
 				'title' => 'Notifications',
 				'viewAllText' => 'See all notifications',
 				'badgeCount' => function(){
-					$notifications = zbase_auth_user()->notificationsNotNotified();
+					$notifications = count(zbase_auth_user()->notificationsNotNotified());
 					if(!empty($notifications))
 					{
 						return $notifications;
@@ -44,7 +44,7 @@ return [
 					return null;
 				},
 				'defaultMessage' => function(){
-					$notifications = zbase_auth_user()->notificationsNotNotified();
+					$notifications = count(zbase_auth_user()->notificationsNotNotified());
 					if(!empty($notifications))
 					{
 						return 'You have ' . $notifications . ' new notifications.';
@@ -112,7 +112,7 @@ return [
 					'json-fetch' => [
 						'notifications-fetch' => function(){
 							$notifications = zbase_auth_user()->notificationsNotNotified();
-							if(!empty($notifs))
+							if(!empty($notifications))
 							{
 								$string = null;
 								foreach($notifications as $notification)

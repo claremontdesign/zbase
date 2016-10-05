@@ -24,7 +24,7 @@ class Install extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'zbase:install';
+	protected $signature = 'zbase:install {options}';
 
 	/**
 	 * The console command description.

@@ -24,7 +24,7 @@ class Assets extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'zbase:assets';
+	protected $signature = 'zbase:assets {options}';
 
 	/**
 	 * The console command description.

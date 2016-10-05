@@ -24,7 +24,7 @@ class Migrate extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'zbase:migrate';
+	protected $signature = 'zbase:migrate {options}';
 
 	/**
 	 * The console command description.

@@ -50,7 +50,7 @@ class Package extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'zbase:package';
+	protected $signature = 'zbase:package {options}';
 
 	/**
 	 * The console command description.

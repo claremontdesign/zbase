@@ -190,6 +190,15 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		return null;
 	}
 
+
+	/**
+	 * Display name and Location
+	 */
+	public function displayNameLocation()
+	{
+		return $this->displayName() . ' of ' . $this->cityStateCountry();
+	}
+
 	/**
 	 * Return the User Profile
 	 * @return type
@@ -291,7 +300,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		{
 			return '<a href="' . zbase_url_from_route('admin.users', ['action' => 'view', 'id' => $this->id()]) . '" target="_blank">' . $this->displayName() . ' [ID#' . $this->id() . '|' . $this->username() . '|' . $this->email() . '|' . $this->roleName() . ']</a>';
 		}
-		return $this->displayName() . ' [ID#' . $this->id() . '|' . $this->username() . '|' . $this->email() . '|' . $this->roleName() . ']';
+		return '[ID#' . $this->id() . '|' . $this->username() . '|' . $this->email() . '|' . $this->roleName() . ']';
 	}
 
 	public function getFirstNameAttribute()

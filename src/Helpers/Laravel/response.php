@@ -179,6 +179,7 @@ function zbase_exception_throw(\Exception $e)
 {
 	if(zbase_is_dev())
 	{
+		throw new \Exception($e);
 		dd($e);
 	}
 	zbase_alert('error', 'There was a problem. ' . $e->getMessage());

@@ -391,6 +391,11 @@ function zbase_route_response($name, $route)
 	{
 		return redirect()->to($redirect);
 	}
+	$response = zbase_value_get($route, 'response', false);
+	if(!empty($response))
+	{
+		return $response;
+	}
 	/**
 	 * If we are using username in routes,
 	 * 	we have to check if the username exists in DB.

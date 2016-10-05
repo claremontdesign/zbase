@@ -989,7 +989,7 @@ trait Post
 						zbase()->json()->setVariable('_html_selector_hide', ['.zbase-page-title' => ''], true);
 						$script = 'jQuery(\'#' . $innerContentId . '\').closest(\'.zbase-widget-wrapper-datatable\').hide();jQuery(\'.breadcrumb li\').eq(2).find(\'a\').click(function(e){
 								e.preventDefault();
-								window.history.pushState(\'\',\''.zbase()->view()->title().'\',\''. zbase_url_previous().'\');
+								window.history.pushState(\'\',\'' . zbase()->view()->title() . '\',\'' . zbase_url_previous() . '\');
 								jQuery(\'#' . $innerContentId . '\').closest(\'.zbase-widget-wrapper-datatable\').show();
 								jQuery(\'#' . $innerContentId . '\').closest(\'.zbase-widget-wrapper-datatable\').siblings().remove();
 								jQuery(\'h3.page-title span.' . $this->postHtmlCommonId() . '\').remove();
@@ -2328,7 +2328,9 @@ trait Post
 		if(zbase_auth_user()->isAdmin())
 		{
 			return zbase_url_from_route('admin.file', ['table' => $this->postTableName(), 'action' => $action, 'id' => $this->postId(), 'file' => $task]);
-		} else {
+		}
+		else
+		{
 			return zbase_url_from_route('file', ['table' => $this->postTableName(), 'action' => $action, 'id' => $this->postId(), 'file' => $task]);
 		}
 	}
@@ -2468,6 +2470,7 @@ trait Post
 			$image = zbase_file_serve_image($path, $width, $height, $q);
 			if(!empty($image))
 			{
+				header('Content-type: ' . $image['mime']);
 				return \Response::make(readfile($image['src'], $image['size'])->header('Content-Type', $image['mime']));
 			}
 			return zbase_abort(404);
@@ -2629,10 +2632,17 @@ trait Post
 	 */
 	public function postSetOption($key, $val)
 	{
-		$options = json_decode($this->options, true);
-		if(is_string($options))
+		if(!is_array($this->options))
 		{
-			$options = json_decode($options, true);
+			$options = json_decode($this->options, true);
+			if(is_string($options))
+			{
+				$options = json_decode($options, true);
+			}
+		}
+		else
+		{
+			$options = $this->options;
 		}
 		$options[$key] = $val;
 		$this->options = $options;
@@ -2648,10 +2658,17 @@ trait Post
 	 */
 	public function postGetOption($key, $default = null)
 	{
-		$options = json_decode($this->options, true);
-		if(is_string($options))
+		if(!is_array($this->options))
 		{
-			$options = json_decode($options, true);
+			$options = json_decode($this->options, true);
+			if(is_string($options))
+			{
+				$options = json_decode($options, true);
+			}
+		}
+		else
+		{
+			$options = $this->options;
 		}
 		if(isset($options[$key]))
 		{
@@ -2667,10 +2684,17 @@ trait Post
 	 */
 	public function postUnsetOption($key)
 	{
-		$options = json_decode($this->options, true);
-		if(is_string($options))
+		if(!is_array($this->options))
 		{
-			$options = json_decode($options, true);
+			$options = json_decode($this->options, true);
+			if(is_string($options))
+			{
+				$options = json_decode($options, true);
+			}
+		}
+		else
+		{
+			$options = $this->options;
 		}
 		if(isset($options[$key]))
 		{
@@ -2687,10 +2711,17 @@ trait Post
 	 */
 	public function postGetOptions()
 	{
-		$options = json_decode($this->options, true);
-		if(is_string($options))
+		if(!is_array($this->options))
 		{
-			$options = json_decode($options, true);
+			$options = json_decode($this->options, true);
+			if(is_string($options))
+			{
+				$options = json_decode($options, true);
+			}
+		}
+		else
+		{
+			$options = $this->options;
 		}
 		return $options;
 	}

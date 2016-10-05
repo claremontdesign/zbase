@@ -24,7 +24,7 @@ class Test extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'zbase:test';
+	protected $signature = 'zbase:test {options}';
 
 	/**
 	 * The console command description.

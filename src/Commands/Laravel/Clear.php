@@ -24,7 +24,7 @@ class Clear extends Command
 	 *
 	 * @var string
 	 */
-	protected $signature = 'zbase:clear';
+	protected $signature = 'zbase:clear {options}';
 
 	/**
 	 * The console command description.
