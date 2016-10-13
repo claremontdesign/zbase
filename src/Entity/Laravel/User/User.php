@@ -190,7 +190,6 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		return null;
 	}
 
-
 	/**
 	 * Display name and Location
 	 */
@@ -1208,19 +1207,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			{
 				if(!empty($data['role']))
 				{
-					$role = $this->roles()->getRelated()->repository()->by('role_name', $data['role'])->first();
-					if(!empty($role))
-					{
-						\DB::table('users_roles')->where('user_id', $this->id())->delete();
-						\DB::table('users_roles')->insert(['user_id' => $this->id(), 'role_id' => $role->id()]);
-						$userRoles = [$role->role_name];
-						$this->roles = json_encode($userRoles);
-						$this->save();
-						$this->notify('Role were changed into ' . $role->role_name);
-						zbase()->json()->setVariable('_html_selector_replace', ['.userDisplayName' . $this->id() => $this->roleTitle() . ' - ' . $this->id() . ': ' . $this->displayName()], true);
-						$this->clearEntityCacheByTableColumns();
-						$this->clearEntityCacheById();
-					}
+					$this->updateRole($data['role']);
 				}
 				if(!empty($data['status']))
 				{
@@ -1559,6 +1546,29 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		{
 			zbase_db_transaction_rollback();
 			return false;
+		}
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="UPDATE Role">
+	/**
+	 * Update role
+	 * @param string $role The Role Name
+	 */
+	public function updateRole($role)
+	{
+		$role = $this->roles()->getRelated()->repository()->by('role_name', $role)->first();
+		if(!empty($role))
+		{
+			\DB::table('users_roles')->where('user_id', $this->id())->delete();
+			\DB::table('users_roles')->insert(['user_id' => $this->id(), 'role_id' => $role->id()]);
+			$userRoles = [$role->role_name];
+			$this->roles = json_encode($userRoles);
+			$this->save();
+			$this->notify('Role changed into ' . $role->role_name);
+			zbase()->json()->setVariable('_html_selector_replace', ['.userDisplayName' . $this->id() => $this->roleTitle() . ' - ' . $this->id() . ': ' . $this->displayName()], true);
+			$this->clearEntityCacheByTableColumns();
+			$this->clearEntityCacheById();
 		}
 	}
 

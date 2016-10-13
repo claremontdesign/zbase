@@ -9,3 +9,28 @@
     border-bottom: 1px solid gray;
     margin-bottom: 20px;
 }
+@media (max-width: 1400px) and (min-width: 1000px)
+{
+	.dashboard-stat .visual i {
+		font-size: 28px;
+		line-height: 28px;
+	}
+	.dashboard-stat .details .number {
+		font-size: 25px;
+	}
+	.dashboard-stat .details .desc{
+		font-size: 14px;
+	}
+}
+@media (max-width: 1200px) and (min-width: 991px)
+{
+	.dashboard-stat .details{
+		left:17px;
+	}
+	.dashboard-stat .details .number {
+		font-size: 25px;
+	}
+	.dashboard-stat .details .desc{
+		font-size: 14px;
+	}
+}

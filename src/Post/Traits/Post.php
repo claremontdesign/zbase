@@ -392,6 +392,34 @@ trait Post
 	}
 
 	/**
+	 * Return the TypeDisplayConfiguration
+	 *
+	 * @return array
+	 */
+	public function postTypeDisplayConfiguration()
+	{
+		if(method_exists($this, 'typeDisplayConfiguration'))
+		{
+			return $this->typeDisplayConfiguration();
+		}
+		return $this->typeDisplayConfiguration;
+	}
+
+	/**
+	 * Return the StatusDisplayConfiguration
+	 *
+	 * @return array
+	 */
+	public function postStatusDisplayConfiguration()
+	{
+		if(method_exists($this, 'statusDisplayConfiguration'))
+		{
+			return $this->statusDisplayConfiguration();
+		}
+		return $this->statusDisplayConfiguration;
+	}
+
+	/**
 	 * Post Type Text
 	 *
 	 * @return string

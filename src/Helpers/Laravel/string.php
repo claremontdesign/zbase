@@ -42,7 +42,7 @@ function zbase_string_to_decimal($string)
  */
 function zbase_string_format_currency($number)
 {
-	return 'PHP ' . number_format($number, 2);
+	return zbase_currency_format($number);
 }
 
 

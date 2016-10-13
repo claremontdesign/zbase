@@ -175,7 +175,7 @@ use AuthenticatesAndRegistersUsers,
 		$messages['email.unique'] = 'Email address used already.';
 		if($userEntity->usernameEnabled())
 		{
-			$rules['username'] = 'required|min:5|max:32|regex:/^[a-z][a-z0-9]{5,32}$/|unique:' . zbase_config_get('entity.user.table.name') . '|not_in:' . implode(',', require zbase_path_library('notallowedusernames.php'));
+			$rules['username'] = 'required|min:5|max:32|regex:/^[a-z][a-z0-9]{3,32}$/|unique:' . zbase_config_get('entity.user.table.name') . '|not_in:' . implode(',', require zbase_path_library('notallowedusernames.php'));
 			$messages['username.unique'] = 'Username already exists.';
 			$messages['username.regex'] = 'Username should be of alphanumeric in small letters';
 			$messages['username.not_in'] = 'Username already exists.';
