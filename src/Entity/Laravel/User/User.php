@@ -214,9 +214,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					return zbase_entity('user_profile')->repo()->by('user_id', $id)->first();
 				}, [$this->entityName()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 			}
-			return $this->userProfile;
 		}
-		return null;
+		return $this->userProfile;
 	}
 
 	/**
@@ -225,6 +224,10 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function roleName()
 	{
+		if(!empty($this->roleName))
+		{
+			return $this->roleName;
+		}
 		$roles = $this->getAttribute('roles');
 		if(!empty($roles))
 		{
@@ -707,6 +710,50 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$this->delete();
 		$this->clearEntityCacheById();
 		$this->clearEntityCacheByTableColumns();
+	}
+
+	/**
+	 * SEt The User Profile
+	 * @param object $userProfile \stdClass
+	 * @return \Zbase\Entity\Laravel\User\User
+	 */
+	public function setUserProfile($userProfile)
+	{
+		$this->userProfile =  $userProfile;
+		return $this;
+	}
+
+	/**
+	 * SEt The User Profile
+	 * @param object $address \stdClass
+	 * @return \Zbase\Entity\Laravel\User\User
+	 */
+	public function setUserAddress($address)
+	{
+		$this->address =  $address;
+		return $this;
+	}
+
+	/**
+	 * NOT SAVED into DB
+	 * Create a user Object based from Array
+	 * @param type $user
+	 * @return User
+	 */
+	public function createUserObject($user)
+	{
+		$this->fill($user);
+		$userProfile = new \stdClass();
+		$userProfile->first_name = !empty($user['profile']['first_name']) ? $user['profile']['first_name'] : null;
+		$userProfile->last_name = !empty($user['profile']['last_name']) ? $user['profile']['last_name'] : null;
+		$this->userProfile = $userProfile;
+		$this->roleName = $user['role'];
+		$address = new \stdClass();
+		$address->city = !empty($user['address']['city']) ? $user['address']['city'] : null;
+		$address->state = !empty($user['address']['state']) ? $user['address']['state'] : null;
+		$address->country = !empty($user['address']['country']) ? $user['address']['country'] : null;
+		$this->address = $address;
+		return $this;
 	}
 
 	// <editor-fold defaultstate="collapsed" desc="Notifications">

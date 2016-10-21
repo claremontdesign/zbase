@@ -8,6 +8,16 @@ $queryJson = $ui->isSearchResultJson();
 $queryOnLoad = $ui->isQueryOnLoad();
 $searchOnLoad = $ui->isSearchOnLoad();
 $tableTemplate = !empty($dataTableTemplate) ? $dataTableTemplate : $ui->searchResultsTemplate();
+$paginationLoadMore = $ui->hasPaginationLoadMore();
+if(!empty($isSearchable))
+{
+	$searchableInputs = true;
+}
+if($paginationLoadMore)
+{
+	$searchableInputs = false;
+	$isSearchable = true;
+}
 if(empty($isSearchable))
 {
 	return;
@@ -171,7 +181,7 @@ ob_end_clean();
 zbase_view_script_add($prefix . 'search', $script, false);
 zbase_view_script_add($prefix . 'searchinit', $prefix . 'init();', true);
 ?>
-<?php if(!empty($isSearchable)): ?>
+<?php if(!empty($isSearchable) && !empty($searchableInputs)): ?>
 	<div id="<?php echo $prefix?>SearchWrapper">
 		<div class="form-group">
 			<input id="<?php echo $prefix?>query" type="text" class="form-control datatable-search-query" name="<?php echo $prefix?>Query" value="" placeholder="<?php echo $ui->searchTextPlaceholder()?>"/>

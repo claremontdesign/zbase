@@ -2,6 +2,7 @@
 /**
  * $template = will return the template only
  */
+$tableId = $ui->id();
 $columns = $ui->getProcessedColumns();
 $rows = $ui->getRows();
 $rowCount = count($rows);
@@ -10,7 +11,7 @@ $hasActions = $ui->hasActions();
 $isClickableRows = $ui->isRowsClickable();
 $isClickableToNextRow = $ui->isRowsClickableToNextRow();
 $isRowsToNextRowReplaceContent = $ui->isRowsToNextRowReplaceContent();
-$tableId = $ui->id();
+$paginationLoadMore = $ui->hasPaginationLoadMore();
 if(!empty($hasActions))
 {
 	$columnCount++;
@@ -33,13 +34,15 @@ if(!empty($columns))
 		}
 		if($isClickableToNextRow)
 		{
-			$clickableRow = ' class="pointer zbase-datatable-row-toggle" '. (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl(null, $template) . '"';
+			$clickableRow = ' class="pointer zbase-datatable-row-toggle" ' . (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl(null, $template) . '"';
 		}
 
 		if($ui->entity() instanceof \Zbase\Post\PostInterface)
 		{
 			$tBodys[] = '<tr' . $clickableRow . ' id="rowPostMainContentWrapper' . $ui->entity()->postHtmlTemplateId() . '">';
-		} else {
+		}
+		else
+		{
 			$tBodys[] = '<tr id="' . $prefix . 'RowId__' . $ui->rowValueIndex() . '__"' . $clickableRow . '>';
 		}
 		foreach ($columns as $column)
@@ -72,7 +75,7 @@ if(!empty($columns))
 				}
 				if($isClickableToNextRow)
 				{
-					$clickableRow = ' class="pointer zbase-datatable-row-toggle" '. (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl($row) . '"';
+					$clickableRow = ' class="pointer zbase-datatable-row-toggle" ' . (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl($row) . '"';
 				}
 				if($row instanceof \Zbase\Post\PostInterface)
 				{
@@ -103,6 +106,10 @@ if(!empty($columns))
 if(!empty($hasActions))
 {
 	$tHeads[] = '<th>&nbsp;</th>';
+}
+if($paginationLoadMore)
+{
+	$tFoots[] = '<tr><td colspan="' . $columnCount . '"><div class="alert alert-warning"><a href="" id="'.$tableId.'LoadMoreAnchor">Load more...</a></div></td></tr>';
 }
 ?>
 <?php if(!empty($template)): ?>
@@ -137,7 +144,7 @@ if(!empty($hasActions))
 					<?php endforeach; ?>
 				}
 			</style>
-			<table class="table table-hover zbase-table-responsive">
+			<table class="table table-hover zbase-table-responsive" id="<?php echo $tableId?>DataTable">
 				<thead>
 					<tr>
 						<?php echo implode("\n", $tHeads); ?>

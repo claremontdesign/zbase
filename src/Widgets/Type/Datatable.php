@@ -111,6 +111,26 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 		parent::__construct($widgetId, $configuration);
 	}
 
+	// <editor-fold defaultstate="collapsed" desc="LoadMore effect">
+	/**
+	 * Check if we have to use Pagination-load more effect
+	 * @return type
+	 */
+	public function hasPaginationLoadMore()
+	{
+		return $this->_v('pagination.loadmore.enable', false);
+	}
+
+	/**
+	 * Will get rows and append only mode
+	 * @return boolean
+	 */
+	public function paginationLoadMoreOnly()
+	{
+		return zbase_request_input('loadmore', false);
+	}
+
+	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Rows">
 
 	/**
@@ -155,7 +175,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 				$entityObject = $this->entityObject();
 				$entity = $this->_entity;
 				$entityName = $entity->postTableName();
-				$perPage = 10;
+				$perPage = $entity->postRowsPerPage();
 				$filters = [];
 				$sorting = [];
 				$joins = [];
@@ -172,7 +192,7 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 				$this->_repoPerPage = zbase_request_query_input('pp', $perPage);
 				if($this->isExporting())
 				{
-					$this->_repoPerPage = 99999999999;
+					$this->_repoPerPage = 9999999;
 				}
 				$repo = $entityObject->repository();
 				if($this->isNode())
@@ -1133,12 +1153,14 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 				{
 					foreach ($columns as $cIndexId => $cSettings)
 					{
-						$headers[] = !empty($cSettings['label']) ? $cSettings['label'] : $cIndexId;
+						$headers[] = !empty($cSettings['label']) ? $cSettings['label'] : '';
 					}
 					$datas[] = $headers;
 				}
+				$i = 0;
 				foreach ($rows as $row)
 				{
+					$i++;
 					if(method_exists($row, 'cast'))
 					{
 						$row = $row->cast();
@@ -1155,7 +1177,14 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 							$data = [];
 							foreach ($columns as $cIndexId => $cSettings)
 							{
-								$data[] = isset($rowData[$cIndexId]) ? $rowData[$cIndexId] : '';
+								if($cIndexId == 'counter')
+								{
+									$data[] = $i;
+								}
+								else
+								{
+									$data[] = isset($rowData[$cIndexId]) ? $rowData[$cIndexId] : '';
+								}
 							}
 							$datas[] = $data;
 						}

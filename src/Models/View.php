@@ -574,7 +574,7 @@ class View
 			{
 				if($script instanceof Interfaces\PlaceholderInterface)
 				{
-					if($javascript->isOnLoad())
+					if($script->isOnLoad())
 					{
 						$this->addToPlaceholder('body_scripts_onload', $script->id(), $script);
 					}

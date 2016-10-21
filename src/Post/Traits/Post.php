@@ -1579,6 +1579,10 @@ trait Post
 	 */
 	public function repository()
 	{
+		if(method_exists($this, '_repository'))
+		{
+			return $this->_repository();
+		}
 		if(!$this->repository instanceof Repository)
 		{
 			$this->repository = new Repository($this);
