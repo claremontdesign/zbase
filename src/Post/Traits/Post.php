@@ -1409,6 +1409,7 @@ trait Post
 	public function postSearchQueryFilters($query)
 	{
 		$queryFilters = [];
+		$theQuery = $query;
 		$queries = [];
 		if(preg_match('/\,/', $query) > 0)
 		{
@@ -1498,7 +1499,7 @@ trait Post
 		}
 		if(method_exists($this, 'searchQueryFilters'))
 		{
-			return $this->searchQueryFilters($queryFilters);
+			return $this->searchQueryFilters($queryFilters, $theQuery);
 		}
 		return $queryFilters;
 	}

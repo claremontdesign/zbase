@@ -60,6 +60,10 @@ trait Filterable
 	 * 				'value' => value
 	 * 			]
 	 * 		],
+	 * 		['raw' => [
+	 * 				'statement' => 'columnName',
+	 * 			]
+	 * 		],
 	 * 		field_name REGEXP '"key_name":"([^"])key_word([^"])"'
 	 * 		['json' => [
 	 * 				'field' => 'columnName',
@@ -173,6 +177,12 @@ trait Filterable
 							{
 								$query->where($v['field'], 'REGEXP', '"' . $v['keyName'] . '":"' . $v['value'] . '"');
 								// $query->where($v['field'], 'RLIKE', '"' . $v['keyName'] . '":"[[:<:]]' . $v['value'] . '[[:>:]]"');
+							}
+							break;
+						case 'raw':
+							if(!empty($v['statement']))
+							{
+								$query->whereRaw($v['statement']);
 							}
 							break;
 						default;

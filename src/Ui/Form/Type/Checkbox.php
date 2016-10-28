@@ -67,8 +67,13 @@ class Checkbox extends \Zbase\Ui\Form\Type\Radio
 		}
 		else
 		{
+			$required = '';
+			if($this->hasValidation('required'))
+			{
+				$required = ' required ';
+			}
 			$selected = $this->getValue() == $this->checkValue() ? ' checked="checked"' : null;
-			return '<label><input ' . $selected . ' type="checkbox" name="' . $this->inputName() . '" value="' . $this->checkValue() . '">' . $this->getLabel() . '</label>';
+			return '<label><input ' . $required . $selected . ' type="checkbox" name="' . $this->inputName() . '" value="' . $this->checkValue() . '">' . $this->getLabel() . '</label>';
 		}
 		return '';
 	}
