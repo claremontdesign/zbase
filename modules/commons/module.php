@@ -34,5 +34,17 @@ return [
 				}
 			],
 		],
+		'lib_geo_countries' => [
+			'usernameRouteCheck' => false,
+			'url' => 'lib/geo/countries.js',
+			'view' => [
+				'enable' => true,
+				'layout' => 'blank',
+				'name' => 'type.js',
+				'content' => function(){
+					return zbase_view_render(zbase_view_file_module('commons.views.lib.geo.countries', 'commons', 'zbase'));
+				}
+			],
+		],
 	]
 ];

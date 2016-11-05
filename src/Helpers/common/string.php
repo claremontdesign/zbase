@@ -56,7 +56,9 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 	if(is_object($obj))
 	{
 		$array = $obj->toArray();
-	} else {
+	}
+	else
+	{
 		$array = $obj;
 	}
 	if(!empty($array))
@@ -98,7 +100,19 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 			$propName = $prefix . 'country';
 			if(!empty($array[$propName]))
 			{
-				$s[] = $array[$propName];
+				$countryFile = zbase_path_library('/Geo/countries.php');
+				if(file_exists($countryFile))
+				{
+					$countries = require $countryFile;
+					if(!empty($countries[$array[$propName]]))
+					{
+						$s[] = $array[$propName] . ' (' . ucwords(strtolower($countries[$array[$propName]])) . ')';
+					}
+				}
+				else
+				{
+					$s[] = $array[$propName];
+				}
 			}
 			$strings[] = implode(', ', $s);
 		}
@@ -112,6 +126,7 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 		{
 			$strings[] = 'F: ' . $array[$propName];
 		}
+		//dd($array, $strings);
 		if(!empty($strings) && !empty($separator))
 		{
 			return '<address>' . implode($separator, $strings) . '</address>';

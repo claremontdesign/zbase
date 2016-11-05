@@ -973,6 +973,10 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					$attributesAddress['is_default'] = 1;
 					$attributesAddress['type'] = 'home';
 					$attributesAddress['user_id'] = $model->id();
+					if(!empty($attributes['cityb']))
+					{
+						$attributesAddress['city'] = $attributes['cityb'];
+					}
 					if(!empty($attributesAddress['state']) && !empty($attributesAddress['country']) && !empty($attributesAddress['city']))
 					{
 						$model->location = $attributesAddress['city'] . ', ' . $attributesAddress['state'] . ', ' . $attributesAddress['country'];
