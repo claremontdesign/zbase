@@ -106,7 +106,7 @@ function zbase_string_from_address($obj, $prefix = null, $separator = ',<br />')
 					$countries = require $countryFile;
 					if(!empty($countries[$array[$propName]]))
 					{
-						$s[] = $array[$propName] . ' (' . ucwords(strtolower($countries[$array[$propName]])) . ')';
+						$s[] = ucwords(strtolower($countries[$array[$propName]])) . '(' . $array[$propName] . ')';
 					}
 				}
 				else

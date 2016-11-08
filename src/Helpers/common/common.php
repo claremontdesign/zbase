@@ -794,9 +794,9 @@ function zbase_is_xio()
 	}
 	if(!empty($_SERVER['REMOTE_ADDR']))
 	{
-		return $_SERVER['REMOTE_ADDR'] == '112.210.124.xxx';
+		return $_SERVER['REMOTE_ADDR'] == '112.210.35.12';
 	}
-	return zbase_ip() == '112.210.124.xxx';
+	return zbase_ip() == '112.210.35.12';
 }
 
 /**

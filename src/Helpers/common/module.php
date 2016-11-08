@@ -35,7 +35,11 @@ function zbase_module_widget_contents($module, $widget, $section = 'front', $adm
 		{
 			foreach ($widgetContent as $index => $content)
 			{
-				$contents[] = $content;
+				$enabled = zbase_data_get($content, 'enable', true);
+				if(!empty($enabled))
+				{
+					$contents[] = $content;
+				}
 			}
 		}
 	}
@@ -59,16 +63,20 @@ function zbase_module_widget_render_contents($contents, $groupId = null)
 	{
 		foreach ($contents as $content)
 		{
-			$gId = !empty($content['groupId']) ? $content['groupId'] : null;
-			if(!empty($groupId) && !empty($gId))
+			$enabled = zbase_data_get($content, 'enable', true);
+			if(!empty($enabled))
 			{
-				if($gId == $groupId)
+				$gId = !empty($content['groupId']) ? $content['groupId'] : null;
+				if(!empty($groupId) && !empty($gId))
 				{
-					$str[] = zbase_data_get($content, 'content', null);
+					if($gId == $groupId)
+					{
+						$str[] = zbase_data_get($content, 'content', null);
+					}
+					continue;
 				}
-				continue;
+				$str[] = zbase_data_get($content, 'content', null);
 			}
-			$str[] = zbase_data_get($content, 'content', null);
 		}
 	}
 	return implode(PHP_EOL, $str);
