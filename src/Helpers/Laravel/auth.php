@@ -78,7 +78,7 @@ function zbase_auth_can_duplex()
 
 /**
  * The Real authed User
- *
+ *	if Duplex session, will return the Admin User
  * @return User
  */
 function zbase_auth_real()
@@ -88,6 +88,7 @@ function zbase_auth_real()
 
 /**
  * Return the Current Authed User
+ *	if Duplex session, will return the selected User
  * @return \
  */
 function zbase_auth_user()

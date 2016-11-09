@@ -99,6 +99,10 @@ class LaravelServiceProvider extends \Illuminate\Support\ServiceProvider
 			if(zbase_auth_has())
 			{
 				$user = zbase_auth_user();
+				if(zbase_auth_is_duplex())
+				{
+					$user = zbase_auth_real();
+				}
 				if(zbase_bcrypt_check($value, $user->password))
 				{
 					return true;

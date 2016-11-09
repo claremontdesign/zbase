@@ -286,7 +286,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$profile = $this->profile();
 		if(!empty($profile))
 		{
-			return $profile->first_name . ' ' . $profile->last_name;
+			return ucwords(strtolower($profile->first_name . ' ' . $profile->last_name));
 		}
 		return null;
 	}
