@@ -853,8 +853,8 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function notificationsNotNotified()
 	{
-		$cacheKey = zbase_cache_key(zbase_entity($this->entityName), 'notifications_not_notified_' . $this->id());
-		return zbase_cache($cacheKey, function(){
+		//$cacheKey = zbase_cache_key(zbase_entity($this->entityName), 'notifications_not_notified_' . $this->id());
+		//return zbase_cache($cacheKey, function(){
 			$filters = [
 				'user_id' => [
 					'eq' => [
@@ -869,8 +869,13 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					]
 				],
 			];
-			return zbase_entity('user_notifications')->repo()->all($filters);
-		}, [zbase_entity($this->entityName)->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
+			$rows = zbase_entity('user_notifications')->repo()->all(['*'],$filters);
+			if(count($rows) > 0)
+			{
+				$this->notificationClearCache();
+			}
+			return $rows;
+		//}, [zbase_entity($this->entityName)->getTable()], (60 * 24), ['forceCache' => true, 'driver' => 'file']);
 	}
 
 	// </editor-fold>

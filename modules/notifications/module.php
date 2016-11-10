@@ -112,7 +112,7 @@ return [
 					'json-fetch' => [
 						'notifications-fetch' => function(){
 							$notifications = zbase_auth_user()->notificationsNotNotified();
-							if(!empty($notifications))
+							if(count($notifications) > 0)
 							{
 								$string = null;
 								foreach($notifications as $notification)

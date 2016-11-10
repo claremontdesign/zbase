@@ -45,20 +45,26 @@ function zbase_messenger_sender($senderIndex)
  */
 function zbase_messenger_error($options = [])
 {
+	$send = false;
 	$viewOptions = [];
 	if(!empty($options['title']))
 	{
 		$viewOptions['title'] = 'ErrorLog: ' . zbase_site_name() . ' - ' . $options['title'];
+		$title = $viewOptions['title'];
 	}
 	if(!empty($options['error']))
 	{
 		$viewOptions['error'] = $options['error'];
+		$send = true;
 	}
 	if(!empty($options['message']))
 	{
 		$viewOptions['message'] = $options['message'];
 	}
-	zbase_messenger_email('developer', 'noreply', (!empty($title) ? $title : zbase_site_name() . ' Error'), zbase_view_file_contents('email.exceptions'), $viewOptions);
+	if($send)
+	{
+		zbase_messenger_email('developer', 'noreply', (!empty($title) ? $title : zbase_site_name() . ' Error'), zbase_view_file_contents('email.exceptions'), $viewOptions);
+	}
 }
 
 /**
