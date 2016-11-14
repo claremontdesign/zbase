@@ -113,74 +113,74 @@ trait Filterable
 					switch (strtolower($k))
 					{
 						case 'between':
-							if(!empty($v['field']) && isset($v['from']) && isset($v['to']))
+							if(isset($v['from']) && isset($v['to']))
 							{
 								$query->whereBetween($v['field'], array($v['from'], $v['to']));
 							}
 							break;
 						case 'in':
-							if(!empty($v['field']) && is_array($v['values']))
+							if(is_array($v['values']))
 							{
 								$query->whereIn($v['field'], $v['values']);
 							}
 							break;
 						case 'notin':
-							if(!empty($v['field']) && is_array($v['values']))
+							if(is_array($v['values']))
 							{
 								$query->whereNotIn($v['field'], $v['values']);
 							}
 							break;
 						case 'like':
-							if(!empty($v['field']) && isset($v['value']))
+							if(isset($v['value']))
 							{
 								$query->where($v['field'], 'LIKE', $v['value']);
 							}
 							break;
 						case 'gt':
-							if(!empty($v['field']) && isset($v['value']))
+							if(isset($v['value']))
 							{
 								$query->where($v['field'], '>', $v['value']);
 							}
 							break;
 						case 'gte':
-							if(!empty($v['field']) && isset($v['value']))
+							if(isset($v['value']))
 							{
 								$query->where($v['field'], '>=', $v['value']);
 							}
 							break;
 						case 'lt':
-							if(!empty($v['field']) && isset($v['value']))
+							if(isset($v['value']))
 							{
 								$query->where($v['field'], '<', $v['value']);
 							}
 							break;
 						case 'lte':
-							if(!empty($v['field']) && isset($v['value']))
+							if(isset($v['value']))
 							{
 								$query->where($v['field'], '<=', $v['value']);
 							}
 							break;
 						case 'eq':
-							if(!empty($v['field']) && isset($v['value']))
+							if(isset($v['value']))
 							{
 								$query->where($v['field'], '=', $v['value']);
 							}
 							break;
 						case 'neq':
-							if(!empty($v['field']) && isset($v['value']))
+							if(isset($v['value']))
 							{
 								$query->where($v['field'], '!=', $v['value']);
 							}
 							break;
 						case 'json':
-							if(!empty($v['field']) && isset($v['value']) && isset($v['keyName']))
+							if(isset($v['value']) && isset($v['keyName']))
 							{
 								$query->where($v['field'], 'REGEXP', '"' . $v['keyName'] . '":"' . $v['value'] . '"');
 								// $query->where($v['field'], 'RLIKE', '"' . $v['keyName'] . '":"[[:<:]]' . $v['value'] . '[[:>:]]"');
 							}
 							break;
 						case 'raw':
-							if(!empty($v['statement']))
+							if(isset($v['statement']))
 							{
 								$query->whereRaw($v['statement']);
 							}

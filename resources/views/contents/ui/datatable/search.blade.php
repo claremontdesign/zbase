@@ -9,6 +9,17 @@ $queryOnLoad = $ui->isQueryOnLoad();
 $searchOnLoad = $ui->isSearchOnLoad();
 $tableTemplate = !empty($dataTableTemplate) ? $dataTableTemplate : $ui->searchResultsTemplate();
 $paginationLoadMore = $ui->hasPaginationLoadMore();
+$hasFilters = false;
+$filterPrefix = $ui->getWidgetPrefix('filter');
+$columns = $ui->getProcessedColumns();
+foreach ($columns as $column)
+{
+	if($column->filterable())
+	{
+		$hasFilters = true;
+		break;
+	}
+}
 if(!empty($isSearchable))
 {
 	$searchableInputs = true;
@@ -18,7 +29,7 @@ if($paginationLoadMore)
 	$searchableInputs = false;
 	$isSearchable = true;
 }
-if(empty($isSearchable))
+if(empty($isSearchable) && empty($hasFilters))
 {
 	return;
 }
@@ -31,6 +42,10 @@ if(empty($isSearchable))
 		var rowString = <?php echo $prefix?>TemplateTableRow;
 		var idIndex = 'alpha_id';
 		jQuery.each(row, function(index, value){
+			if(value == null)
+			{
+				value = '';
+			}
 			rowString = str_replace('__' + index + '__', <?php echo $prefix?>DatatableRowCast(index, value), rowString);
 		});
 		if(jQuery('#<?php echo $prefix?>Table tbody') > 0)
@@ -51,10 +66,11 @@ if(empty($isSearchable))
 		{
 			// jQuery('#<?php echo $prefix?>Wrapper .btn-toolbar').remove();
 		}
-		jQuery('#<?php echo $prefix?>Table').remove();
-		// jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.btn-toolbar').eq(0).remove();
+		jQuery('#<?php echo $prefix?>Table tbody').empty();
 		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.datatable-empty-message').eq(0).remove();
-		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('table').eq(0).remove();
+		<?php if(empty($hasFilters)):?>
+			jQuery('#<?php echo $prefix?>SearchWrapper').siblings('table').eq(0).remove();
+		<?php endif;?>
 		var <?php echo $prefix?>Toolbar = jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.btn-toolbar').eq(0);
 		var <?php echo $prefix?>Pagination = <?php echo $prefix?>Toolbar.find('.pagination-pages');
 		if(r.<?php echo $dataPrefix?> !== undefined && r.<?php echo $dataPrefix?>.totalRows > 0)
@@ -62,7 +78,9 @@ if(empty($isSearchable))
 			<?php echo $prefix?>Toolbar.show();
 			if(<?php echo $prefix?>Toolbar.length > 0)
 			{
-				<?php echo $prefix?>Toolbar.after(<?php echo $prefix?>TemplateTable);
+				<?php if(empty($hasFilters)):?>
+					<?php echo $prefix?>Toolbar.after(<?php echo $prefix?>TemplateTable);
+				<?php endif;?>
 			} else {
 				jQuery(<?php echo $prefix?>TemplateTable).insertAfter('#<?php echo $prefix?>SearchWrapper')
 			}
@@ -87,22 +105,43 @@ if(empty($isSearchable))
 				<?php echo $prefix?>Toolbar.find('.pagination-perpage').show();
 				var <?php echo $prefix?>CurPage = r.<?php echo $dataPrefix?>.currentPage;
 				<?php echo $prefix?>Pagination.find('li').remove();
+				var maxPageToDisplay = 8;
+				var pageStarts = 1;
+				var pageEnds = r.<?php echo $dataPrefix?>.maxPage;
+				pageStarts = <?php echo $prefix?>CurPage - 4;
+				pageEnds = <?php echo $prefix?>CurPage + 4;
+				if(pageStarts < 1)
+				{
+					pageStarts = 1;
+				}
+				if(pageEnds > r.<?php echo $dataPrefix?>.maxPage)
+				{
+					pageEnds = r.<?php echo $dataPrefix?>.maxPage;
+				}
+				if(<?php echo $prefix?>CurPage > 5)
+				{
+					<?php echo $prefix?>Pagination.append('<li><a data-page="1" href="?page=1" class="<?php echo $dataPrefix?>page">1</a></li>');
+				}
 				if(<?php echo $prefix?>CurPage > 1)
 				{
 					<?php echo $prefix?>Pagination.append('<li><a data-page="'+ (<?php echo $prefix?>CurPage-1) +' "href="?page=' + (<?php echo $prefix?>CurPage-1) + '" class="<?php echo $dataPrefix?>page">&laquo;</a></li>');
 				}
-				for(var page = 1; page <= r.<?php echo $dataPrefix?>.maxPage; page++)
+				for(var page = pageStarts; page <= pageEnds; page++)
 				{
 					if(page == r.<?php echo $dataPrefix?>.currentPage)
 					{
 						<?php echo $prefix?>Pagination.append('<li class="active"><span>' + page + '</span></li>');
 					} else {
-						<?php echo $prefix?>Pagination.append('<li><a data-page="'+page+' "href="?page=' + page + '" class="<?php echo $dataPrefix?>page">' + page + '</a></li>');
+						<?php echo $prefix?>Pagination.append('<li><a data-page="'+page+'" href="?page=' + page + '" class="<?php echo $dataPrefix?>page">' + page + '</a></li>');
 					}
 				}
 				if(<?php echo $prefix?>CurPage < r.<?php echo $dataPrefix?>.maxPage)
 				{
-					<?php echo $prefix?>Pagination.append('<li><a data-page="'+ (<?php echo $prefix?>CurPage+1) +' "href="?page=' + (<?php echo $prefix?>CurPage+1) + '" class="<?php echo $dataPrefix?>page">&raquo;</a></li>');
+					<?php echo $prefix?>Pagination.append('<li><a data-page="'+ (<?php echo $prefix?>CurPage+1) +'" href="?page=' + (<?php echo $prefix?>CurPage+1) + '" class="<?php echo $dataPrefix?>page">&raquo;</a></li>');
+				}
+				if(r.<?php echo $dataPrefix?>.maxPage > pageEnds)
+				{
+					<?php echo $prefix?>Pagination.append('<li><a data-page="'+ (r.<?php echo $dataPrefix?>.maxPage) +'" href="?page=' + (r.<?php echo $dataPrefix?>.maxPage) + '" class="<?php echo $dataPrefix?>page">'+ r.<?php echo $dataPrefix?>.maxPage +'</a></li>');
 				}
 				jQuery('.<?php echo $dataPrefix?>page').unbind('click').click(function(e){
 					e.preventDefault();
@@ -118,8 +157,22 @@ if(empty($isSearchable))
 			jQuery('.<?php echo $exportPrefix ?>Filters').remove();
 			if(jQuery('#<?php echo $exportPrefix ?>SearchQuery').length == 0)
 			{
+				<?php foreach ($columns as $column): ?>
+					<?php if($column->filterable()):?>
+						<?php foreach($column->filterIds() as $filterId):?>
+							jQuery('#<?php echo $exportPrefix ?>Wrapper').find('form').append('<input id="<?php echo $exportPrefix . $filterId ?>" type="hidden" value="' + jQuery('#<?php echo $filterId?>').val() + '" name="<?php echo $filterId?>" />');
+						<?php endforeach;?>
+					<?php endif;?>
+				<?php endforeach;?>
 				jQuery('#<?php echo $exportPrefix ?>Wrapper').find('form').append('<input id="<?php echo $exportPrefix ?>SearchQuery" type="hidden" value="' + jQuery('#<?php echo $prefix?>query').val() + '" name="<?php echo $prefix?>Query" />');
 			}
+			<?php foreach ($columns as $column): ?>
+				<?php if($column->filterable()):?>
+					<?php foreach($column->filterIds() as $filterId):?>
+						jQuery('#<?php echo $exportPrefix . $filterId?>').val(jQuery('#<?php echo $filterId?>').val());
+					<?php endforeach;?>
+				<?php endif;?>
+			<?php endforeach;?>
 			jQuery('#<?php echo $exportPrefix ?>SearchQuery').val(jQuery('#<?php echo $prefix?>query').val());
 		} else {
 			jQuery(<?php echo $prefix?>EmptyMessage).insertAfter('#<?php echo $prefix?>SearchWrapper');
@@ -147,6 +200,15 @@ if(empty($isSearchable))
 					callback: <?php echo $prefix?>,
 					elements: [
 							'#<?php echo $prefix?>query',
+							<?php if(!empty($hasFilters)):?>
+								<?php foreach ($columns as $column): ?>
+									<?php if($column->filterable()):?>
+										<?php foreach($column->filterIds() as $filterId):?>
+											'<?php echo '#' . $filterId?>',
+										<?php endforeach;?>
+									<?php endif;?>
+									<?php endforeach;?>
+							<?php endif;?>
 							'#<?php echo $prefix?>json',
 						]
 					};
@@ -172,7 +234,47 @@ if(empty($isSearchable))
 				<?php echo $prefix?>GoSearch();
 				jQuery(this).closest('form').submit(function(e){e.preventDefault();});
 			 }
-	   });
+		});
+		<?php if(!empty($hasFilters)):?>
+			var hasFilters = false;
+			jQuery('#<?php echo $filterPrefix?>FilterBtn').click(function(){
+				<?php foreach ($columns as $column): ?>
+					<?php if($column->filterable()):?>
+						<?php foreach($column->filterIds() as $filterId):?>
+							saveToLocalStorage('<?php echo $filterId?>', jQuery('#<?php echo $filterId?>').val());
+						<?php endforeach;?>
+					<?php endif;?>
+				<?php endforeach;?>
+				<?php echo $prefix?>GoSearch();
+			});
+			jQuery('#<?php echo $filterPrefix?>FilterClearBtn').click(function(){
+				<?php foreach ($columns as $column): ?>
+					<?php if($column->filterable()):?>
+						<?php foreach($column->filterIds() as $filterId):?>
+							jQuery('#<?php echo $filterId?>').val('');
+							removeFromLocalStorage('<?php echo $filterId?>');
+						<?php endforeach;?>
+					<?php endif;?>
+				<?php endforeach;?>
+				location.reload();
+			});
+			<?php foreach ($columns as $column): ?>
+				<?php if($column->filterable()):?>
+					<?php foreach($column->filterIds() as $filterId):?>
+						var fV = getFromLocalStorage('<?php echo $filterId?>');
+						if(!empty(fV))
+						{
+							hasFilters = true;
+							jQuery('#<?php echo $filterId?>').val(fV);
+						}
+					<?php endforeach;?>
+				<?php endif;?>
+			<?php endforeach;?>
+			if(hasFilters)
+			{
+				jQuery('#<?php echo $filterPrefix?>FilterBtn').trigger('click');
+			}
+		<?php endif;?>
 	}
 </script>
 <?php
@@ -181,7 +283,7 @@ ob_end_clean();
 zbase_view_script_add($prefix . 'search', $script, false);
 zbase_view_script_add($prefix . 'searchinit', $prefix . 'init();', true);
 ?>
-<?php if(!empty($isSearchable) && !empty($searchableInputs)): ?>
+<?php if((!empty($isSearchable) && !empty($searchableInputs))): ?>
 	<div id="<?php echo $prefix?>SearchWrapper">
 		<div class="form-group">
 			<input id="<?php echo $prefix?>query" type="text" class="form-control datatable-search-query" name="<?php echo $prefix?>Query" value="" placeholder="<?php echo $ui->searchTextPlaceholder()?>"/>
@@ -192,4 +294,8 @@ zbase_view_script_add($prefix . 'searchinit', $prefix . 'init();', true);
 		</div>
 	</div>
 <hr />
+<?php else: ?>
+	<?php if(!empty($hasFilters)):?>
+	<div id="<?php echo $prefix?>SearchWrapper"></div>
+	<?php endif; ?>
 <?php endif; ?>

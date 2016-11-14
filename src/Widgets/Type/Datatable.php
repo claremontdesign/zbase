@@ -420,6 +420,8 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 						else
 						{
 							$this->_rows = $repo->setDebug(false)->all($this->_repoSelects, $this->_repoFilters, $this->_repoSorts, $this->_repoJoins, $this->_repoPerPage);
+
+							// dd(count($this->_rows));
 						}
 						// dd($this->_repoFilters, $this->_rows);
 					}
@@ -1137,71 +1139,90 @@ class Datatable extends Widgets\Widget implements Widgets\WidgetInterface, Widge
 	 */
 	public function export()
 	{
+		set_time_limit(0);
+		ini_set('memory_limit', -1);
 		$rows = $this->getRows();
 		if(!empty($rows))
 		{
 			$datas = [];
-			if(!empty($rows))
+			$format = strtolower($this->exportFormat());
+			$columns = $this->exportColumns();
+			$prefix = $this->exportFilename();
+			$name = $this->exportName();
+			$filename = $prefix . date('Ymdhisa');
+			$headers = [];
+			if(!empty($columns))
 			{
-				$format = strtolower($this->exportFormat());
-				$columns = $this->exportColumns();
-				$prefix = $this->exportFilename();
-				$name = $this->exportName();
-				$filename = $prefix . date('Ymdhisa');
-				$headers = [];
-				if(!empty($columns))
+				foreach ($columns as $cIndexId => $cSettings)
 				{
-					foreach ($columns as $cIndexId => $cSettings)
-					{
-						$headers[] = !empty($cSettings['label']) ? $cSettings['label'] : '';
-					}
-					$datas[] = $headers;
+					$headers[] = !empty($cSettings['label']) ? $cSettings['label'] : '';
 				}
-				$i = 0;
-				foreach ($rows as $row)
+				$datas[] = $headers;
+			}
+			$i = 0;
+			if($format == 'csv')
+			{
+				//file_put_contents(zbase_public_download_link($filename . '.csv'), '');
+				//$fp = fopen(zbase_public_download_link($filename . '.csv'), 'w');
+				// $fp = fopen('php://output', 'w');
+			}
+			foreach ($rows as $row)
+			{
+				$i++;
+				if(method_exists($row, 'cast'))
 				{
-					$i++;
-					if(method_exists($row, 'cast'))
+					$row = $row->cast();
+				}
+				if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
+				{
+					$row->setBrowseCategory($this->entity());
+				}
+				if($row instanceof \Zbase\Post\Interfaces\ExportInterface)
+				{
+					$rowData = $row->exportToArray($columns, []);
+					if(!empty($columns))
 					{
-						$row = $row->cast();
-					}
-					if($this->isNodeCategory() && $this->_entity instanceof \Zbase\Entity\Laravel\Node\Nested)
-					{
-						$row->setBrowseCategory($this->entity());
-					}
-					if($row instanceof \Zbase\Post\Interfaces\ExportInterface)
-					{
-						$rowData = $row->exportToArray($columns, []);
-						if(!empty($columns))
+						$data = [];
+						foreach ($columns as $cIndexId => $cSettings)
 						{
-							$data = [];
-							foreach ($columns as $cIndexId => $cSettings)
+							if($cIndexId == 'counter')
 							{
-								if($cIndexId == 'counter')
-								{
-									$data[] = $i;
-								}
-								else
-								{
-									$data[] = isset($rowData[$cIndexId]) ? $rowData[$cIndexId] : '';
-								}
+								$data[] = $i;
 							}
-							$datas[] = $data;
+							else
+							{
+								$data[] = isset($rowData[$cIndexId]) ? $rowData[$cIndexId] : '';
+							}
 						}
+//						if($format == 'csv')
+//						{
+//							fputcsv($fp, $data);
+//						}
+//						else
+//						{
+							$datas[] = $data;
+//						}
 					}
 				}
-				if(!empty($datas))
+			}
+			if(!empty($datas))
+			{
+				if($format == 'csv')
 				{
-					if($format == 'excel')
-					{
-						$excel = \Excel::create($filename, function($excel) use ($datas, $name) {
-									$excel->sheet($name, function($sheet) use ($datas) {
-										$sheet->freezeFirstRowAndColumn();
-										$sheet->fromArray($datas, null, 'A1', false, false);
-							});
-						})->store('xlsx');
-						return redirect()->to(zbase_public_download_link($filename . '.xlsx'));
-					}
+					$fp = fopen('php://output', 'w');
+					fputcsv($fp, $datas);
+					fclose($fp);
+					// return redirect()->to(zbase_public_download_link($filename . '.csv'));
+				}
+				if($format == 'excel')
+				{
+					$excel = \Excel::create($filename, function($excel) use ($datas, $name) {
+								$excel->sheet($name, function($sheet) use ($datas) {
+									$sheet->freezeFirstRowAndColumn();
+									$sheet->fromArray($datas, null, 'A1', false, false);
+						});
+					})->store('xlsx');
+					return redirect()->to(zbase_public_download_link($filename . '.xlsx'));
 				}
 			}
 		}

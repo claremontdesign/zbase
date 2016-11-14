@@ -12,6 +12,8 @@ $isClickableRows = $ui->isRowsClickable();
 $isClickableToNextRow = $ui->isRowsClickableToNextRow();
 $isRowsToNextRowReplaceContent = $ui->isRowsToNextRowReplaceContent();
 $paginationLoadMore = $ui->hasPaginationLoadMore();
+$hasFilters = false;
+$tHeadsFilters = [];
 if(!empty($hasActions))
 {
 	$columnCount++;
@@ -59,6 +61,10 @@ if(!empty($columns))
 		$tBodys[] = '</tr>';
 		foreach ($columns as $column)
 		{
+			if($column->filterable())
+			{
+				$hasFilters = true;
+			}
 			$tHeads[] = '<th ' . $column->renderTagAttribute('th') . '>' . $column->getLabel() . '</th>';
 		}
 	}
@@ -99,9 +105,34 @@ if(!empty($columns))
 		}
 		foreach ($columns as $column)
 		{
+			if($column->filterable())
+			{
+				$hasFilters = true;
+			}
 			$tHeads[] = '<th ' . $column->renderTagAttribute('th') . '>' . $column->getLabel() . '</th>';
 		}
 	}
+}
+if(!empty($hasFilters))
+{
+	$tableId = $ui->getWidgetPrefix('search');
+	$filterPrefix = $ui->getWidgetPrefix('filter');
+	foreach ($columns as $column)
+	{
+		if($column->filterable())
+		{
+			$tHeadsFilters[] = '<th ' . $column->renderTagAttribute('th') . '>' . $column->renderFilterElement() . '</th>';
+		} else {
+			$tHeadsFilters[] = '<th ' . $column->renderTagAttribute('th') . '>&nbsp;</th>';
+		}
+	}
+	$tHeads[] = '';
+	$tHeadsFilters[] = '<th class="th-filter-btn" style="vertical-align:middle;">'
+			. '<button type="submit" id="'.$filterPrefix.'FilterClearBtn" class="btn btn-sm gray btn-data-filter_clear">Reset</button>'
+			. '<button type="submit" id="'.$filterPrefix.'FilterBtn" class="btn btn-sm blue btn-data-filter">Search</button>'
+			. '</th>';
+	$columnCount = count($tHeads);
+	$tBodys[] = '';
 }
 if(!empty($hasActions))
 {
@@ -122,6 +153,11 @@ if($paginationLoadMore)
 			<tr>
 				<?php echo implode("\n", $tHeads); ?>
 			</tr>
+			<?php if(!empty($hasFilters)):?>
+				<tr class="zbase-data-filters" id="<?php echo $filterPrefix?>TrDataFilters">
+					<?php echo implode("\n", $tHeadsFilters); ?>
+				</tr>
+			<?php endif;?>
 		</thead>
 		<tfoot>
 			<tr>
@@ -144,11 +180,16 @@ if($paginationLoadMore)
 					<?php endforeach; ?>
 				}
 			</style>
-			<table class="table table-hover zbase-table-responsive" id="<?php echo $tableId?>DataTable">
+			<table class="table table-hover zbase-table-responsive" id="<?php echo $tableId?>Table">
 				<thead>
 					<tr>
 						<?php echo implode("\n", $tHeads); ?>
 					</tr>
+				<?php if(!empty($hasFilters)):?>
+					<tr class="zbase-data-filters">
+						<?php echo implode("\n", $tHeadsFilters); ?>
+					</tr>
+				<?php endif;?>
 				</thead>
 				<tfoot>
 					<tr>

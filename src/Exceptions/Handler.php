@@ -40,7 +40,7 @@ class Handler extends ExceptionHandler
 				$error = $e->getMessage();
 				if(preg_match('/failed to pass validation/', $error) == 0)
 				{
-					zbase_messenger_error(['error' => $error]);
+					// zbase_messenger_error(['error' => $error]);
 				}
 			}
 		}

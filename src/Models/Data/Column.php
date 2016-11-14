@@ -100,7 +100,7 @@ class Column extends Data implements Interfaces\IdInterface
 		if(!empty($tag))
 		{
 			$str = [];
-			$str[] = '<' . $tag . ' ' . $this->renderTagAttribute('td'). '>';
+			$str[] = '<' . $tag . ' ' . $this->renderTagAttribute('td') . '>';
 			if(!empty($this->_templateMode))
 			{
 				$str[] = '__' . $this->id() . '__';
@@ -116,6 +116,60 @@ class Column extends Data implements Interfaces\IdInterface
 	}
 
 	/**
+	 * The Filter Element
+	 */
+	public function renderFilterElement()
+	{
+		if($this->filterable())
+		{
+			$element = [
+				'html' => [
+					'attributes' => [
+						'input' => [
+							'class' => [
+								'element-data-filter'
+							]
+						]
+					]
+				]
+			];
+			$element['id'] = $this->filterId();
+			$element['enable'] = true;
+			$element['label'] = null;
+			$type = $this->filterType();
+			switch ($type)
+			{
+				case 'datetime':
+				case 'timestamp':
+				case 'date':
+					$type = 'date';
+					$element['type'] = 'date';
+					break;
+				case 'integer':
+					$element['type'] = 'integer';
+					break;
+				case 'select':
+					$element['type'] = 'select';
+					$element['multiOptions'] = zbase_data_get($this->getAttributes(), 'filter.selectOptions', []);;
+					break;
+				default;
+					$element['type'] = 'text';
+			}
+			if($type == 'date')
+			{
+				$element2 = $element;
+				$element['id'] = $element2['id'] . '_from';
+				$element2['id'] = $element2['id'] . '_to';
+				$e = \Zbase\Ui\Form\Element::factory($element);
+				$e2 = \Zbase\Ui\Form\Element::factory($element2);
+				return $e->render() . $e2->render();
+			}
+			$e = \Zbase\Ui\Form\Element::factory($element);
+			return $e->render();
+		}
+	}
+
+	/**
 	 * Prepare the Column
 	 */
 	public function prepare()
@@ -123,6 +177,57 @@ class Column extends Data implements Interfaces\IdInterface
 		if(empty($this->_prepared))
 		{
 			$this->_value();
+		}
+	}
+
+	/**
+	 * if filterable
+	 * @return boolean
+	 */
+	public function filterable()
+	{
+		return zbase_data_get($this->getAttributes(), 'filter.enable', false);
+	}
+
+	/**
+	 * Return the FilterType
+	 * @return string
+	 */
+	public function filterType()
+	{
+		return zbase_data_get($this->getAttributes(), 'filter.type', $this->getDataType());
+	}
+
+	/**
+	 * Return the FilterType
+	 * @return string
+	 */
+	public function filterId()
+	{
+		return zbase_string_camel_case($this->id() . '_filter');
+	}
+
+	/**
+	 * array of FilterIds
+	 * @return array
+	 */
+	public function filterIds()
+	{
+		$type = $this->filterType();
+		switch ($type)
+		{
+			case 'datetime':
+			case 'timestamp':
+			case 'date':
+				return [
+					zbase_string_camel_case($this->id() . '_filter_to'),
+					zbase_string_camel_case($this->id() . '_filter_from'),
+				];
+				break;
+			default;
+				return [
+					zbase_string_camel_case($this->id() . '_filter'),
+				];
 		}
 	}
 
