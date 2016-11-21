@@ -245,6 +245,10 @@ trait Entity
 		{
 			$options = json_decode($options, true);
 		}
+		if(is_string($options))
+		{
+			$options = json_decode($options, true);
+		}
 		return $options;
 	}
 
