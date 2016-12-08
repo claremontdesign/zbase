@@ -212,6 +212,10 @@ trait Html
 	 */
 	public function renderTagAttribute($tag)
 	{
+		if(method_exists($this, '__renderTagAttribute'))
+		{
+			return $this->__renderTagAttribute($tag);
+		}
 		$attributes = [];
 		if(method_exists($this, 'getAttributes'))
 		{

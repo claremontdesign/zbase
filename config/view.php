@@ -284,6 +284,85 @@ return [
 				]
 			],
 			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="BootstrapDateTime">
+			'bootstrap-datetime' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('metronic/plugins/data-tables/DT_bootstrap.js'),
+				'enable' => true,
+				'dependents' => [
+					[
+						'id' => 'bootstrap-datetime-init',
+						'type' => \Zbase\Models\View::SCRIPT,
+						'enable' => true,
+						'script' => 'jQuery(\'.date-picker\').datepicker({autoclose: true});',
+						'onLoad' => true,
+					],
+					[
+						'id' => 'bootstrap-datetime-datatables',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/data-tables/jquery.dataTables.js'),
+						'enable' => true,
+						'position' => 499,
+					],
+					[
+						'id' => 'bootstrap-datetime-picker',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js'),
+						'enable' => true,
+						'position' => 498,
+					],
+					[
+						'id' => 'bootstrap-datetimetime-picker',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/bootstrap-timepicker/js/bootstrap-timepicker.min.js'),
+						'enable' => true,
+						'position' => 497,
+					],
+					[
+						'id' => 'bootstrap-daterange-picker',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/bootstrap-daterangepicker/daterangepicker.js'),
+						'enable' => true,
+						'position' => 496,
+					],
+					[
+						'id' => 'bootstrap-daterange-picker',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js'),
+						'enable' => true,
+						'position' => 495,
+					],
+					[
+						'id' => 'bootstrap-datetime',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/data-tables/DT_bootstrap.css'),
+						'enable' => true,
+						'position' => 498,
+					],
+					[
+						'id' => 'bootstrap-datetime',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/bootstrap-datepicker/css/datepicker.css'),
+						'enable' => true,
+						'position' => 497,
+					],
+					[
+						'id' => 'bootstrap-datetimepicker',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/bootstrap-timepicker/css/bootstrap-timepicker.min.css'),
+						'enable' => true,
+						'position' => 497,
+					],
+					[
+						'id' => 'bootstrap-datetime-range',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/plugins/bootstrap-daterangepicker/daterangepicker-bs3.css'),
+						'enable' => true,
+						'position' => 497,
+					],
+				],
+			],
+			// </editor-fold>
 			// <editor-fold defaultstate="collapsed" desc="FileUpload">
 			'fileupload' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,

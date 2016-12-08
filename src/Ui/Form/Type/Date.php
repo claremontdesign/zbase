@@ -22,8 +22,16 @@ class Date extends \Zbase\Ui\Form\Element
 	 * Widget Type
 	 * @var string
 	 */
-	protected $_type = 'date';
+	protected $_type = 'text';
 	protected $_dateFormat = 'Y-m-d';
+
+
+
+	/**
+	 * The view File to use
+	 * @var string
+	 */
+	protected $_viewFile = 'ui.form.type.date';
 
 	public function getValue()
 	{

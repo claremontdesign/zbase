@@ -12,6 +12,7 @@ $isClickableRows = $ui->isRowsClickable();
 $isClickableToNextRow = $ui->isRowsClickableToNextRow();
 $isRowsToNextRowReplaceContent = $ui->isRowsToNextRowReplaceContent();
 $paginationLoadMore = $ui->hasPaginationLoadMore();
+$tableClasses = zbase_config_get('ui.table.html.attributes.class', 'table table-hover zbase-table-responsive');
 $hasFilters = false;
 $tHeadsFilters = [];
 if(!empty($hasActions))
@@ -122,17 +123,12 @@ if(!empty($hasFilters))
 		if($column->filterable())
 		{
 			$tHeadsFilters[] = '<th ' . $column->renderTagAttribute('th') . '>' . $column->renderFilterElement() . '</th>';
-		} else {
+		}
+		else
+		{
 			$tHeadsFilters[] = '<th ' . $column->renderTagAttribute('th') . '>&nbsp;</th>';
 		}
 	}
-	$tHeads[] = '';
-	$tHeadsFilters[] = '<th class="th-filter-btn" style="vertical-align:middle;">'
-			. '<button type="submit" id="'.$filterPrefix.'FilterClearBtn" class="btn btn-sm gray btn-data-filter_clear">Reset</button>'
-			. '<button type="submit" id="'.$filterPrefix.'FilterBtn" class="btn btn-sm blue btn-data-filter">Search</button>'
-			. '</th>';
-	$columnCount = count($tHeads);
-	$tBodys[] = '';
 }
 if(!empty($hasActions))
 {
@@ -140,7 +136,7 @@ if(!empty($hasActions))
 }
 if($paginationLoadMore)
 {
-	$tFoots[] = '<tr><td colspan="' . $columnCount . '"><div class="alert alert-warning"><a href="" id="'.$tableId.'LoadMoreAnchor">Load more...</a></div></td></tr>';
+	$tFoots[] = '<tr><td colspan="' . $columnCount . '"><div class="alert alert-warning"><a href="" id="' . $tableId . 'LoadMoreAnchor">Load more...</a></div></td></tr>';
 }
 ?>
 <?php if(!empty($template)): ?>
@@ -148,20 +144,20 @@ if($paginationLoadMore)
 		var <?php echo $prefix ?>Columns = <?php echo json_encode($columnConfig, true) ?>;
 	<?php endif; ?>
 	var <?php echo $prefix ?>TemplateToolbar = '<?php echo zbase_view_render(zbase_view_file_contents('ui.datatable.toolbar'), ['ui' => $ui, 'template' => true]); ?>';
-	var <?php echo $prefix ?>TemplateTable = '<table class="table table-hover flip-content" id="<?php echo $prefix ?>Table">
+	var <?php echo $prefix ?>TemplateTable = '<table class="table table-hover flip-content <?php echo $tableClasses?>" id="<?php echo $prefix ?>Table">
 		<thead class="flip-content">
 			<tr>
-				<?php echo implode("\n", $tHeads); ?>
+			<?php echo implode("\n", $tHeads); ?>
 			</tr>
-			<?php if(!empty($hasFilters)):?>
-				<tr class="zbase-data-filters" id="<?php echo $filterPrefix?>TrDataFilters">
-					<?php echo implode("\n", $tHeadsFilters); ?>
+				<?php if(!empty($hasFilters)): ?>
+				<tr role="row" class="filter zbase-data-filters" id="<?php echo $filterPrefix ?>TrDataFilters">
+				<?php echo implode("\n", $tHeadsFilters); ?>
 				</tr>
-			<?php endif;?>
+	<?php endif; ?>
 		</thead>
 		<tfoot>
 			<tr>
-				<?php echo implode("\n", $tFoots); ?>
+	<?php echo implode("\n", $tFoots); ?>
 			</tr>
 		</tfoot>
 		<tbody></tbody>
@@ -171,33 +167,33 @@ if($paginationLoadMore)
 
 <?php else: ?>
 	<?php if(!empty($rowCount)): ?>
-		<?php if(!empty($columns)): ?>
+				<?php if(!empty($columns)): ?>
 			<style type="text/css">
 				@media screen and (max-width: 767px){
 					<?php $colCounter = 1; ?>
 					<?php foreach ($columns as $column): ?>
 						td:nth-of-type(<?php echo $colCounter++; ?>):before { content: "<?php echo $column->getLabel() ?>:";  }
-					<?php endforeach; ?>
+			<?php endforeach; ?>
 				}
 			</style>
-			<table class="table table-hover zbase-table-responsive" id="<?php echo $tableId?>Table">
+			<table class="<?php echo $tableClasses?>" id="<?php echo $tableId ?>Table">
 				<thead>
 					<tr>
-						<?php echo implode("\n", $tHeads); ?>
+					<?php echo implode("\n", $tHeads); ?>
 					</tr>
-				<?php if(!empty($hasFilters)):?>
-					<tr class="zbase-data-filters">
+						<?php if(!empty($hasFilters)): ?>
+						<tr role="row" class="filter zbase-data-filters">
 						<?php echo implode("\n", $tHeadsFilters); ?>
-					</tr>
-				<?php endif;?>
+						</tr>
+			<?php endif; ?>
 				</thead>
 				<tfoot>
 					<tr>
-						<?php echo implode("\n", $tFoots); ?>
+			<?php echo implode("\n", $tFoots); ?>
 					</tr>
 				</tfoot>
 				<tbody>
-					<?php echo implode("\n", $tBodys); ?>
+			<?php echo implode("\n", $tBodys); ?>
 				</tbody>
 			</table>
 		<?php endif; ?>

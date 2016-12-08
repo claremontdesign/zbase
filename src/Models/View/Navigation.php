@@ -18,7 +18,14 @@ use Zbase\Traits;
 class Navigation
 {
 
-	use Traits\Attribute, Traits\Html;
+	use Traits\Attribute,
+	 Traits\Html;
+
+	/**
+	 * If Child
+	 * @var boolean
+	 */
+	protected $isChild = false;
 
 	/**
 	 * The HTML Prefix
@@ -148,6 +155,20 @@ class Navigation
 	}
 
 	/**
+	 * set Is Child
+	 * @param type $flag
+	 */
+	public function setIsChild($flag)
+	{
+		$this->isChild = $flag;
+	}
+
+	public function isChild()
+	{
+		return $this->isChild;
+	}
+
+	/**
 	 * Check if navigation is Active
 	 * @return boolean
 	 */
@@ -210,7 +231,8 @@ class Navigation
 //		$str .= $childStr;
 //		$str .= '</li>' . EOF;
 		$str = '';
-		$classIsActive = (!empty($this->active) ? 'active' : '');
+		$childStr = $this->_childrenMenu();
+		$classIsActive = $this->isActive() && !$this->isChild() ? 'active' : '';
 		$aPre = '';
 		$aPost = '';
 		$url = $this->getRouteUrl();
@@ -218,7 +240,6 @@ class Navigation
 		$aAttributes = $this->renderHtmlAttributes();
 		$label = '';
 //
-		$childStr = $this->_childrenMenu();
 		$label .= '<i class="' . $this->icon . '"></i>' . EOF;
 		$label .= '<span class="title">' . $this->label . '</span>' . EOF;
 		if(!empty($this->children))
@@ -241,9 +262,14 @@ class Navigation
 			foreach ($this->children as $k => $nav)
 			{
 				$n = new Navigation($nav);
+				$n->setIsChild(true);
 				if($n->isActive())
 				{
 					$this->active = true;
+				}
+				else
+				{
+					$this->active = false;
 				}
 				$str .= $n;
 			}

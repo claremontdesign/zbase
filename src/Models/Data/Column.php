@@ -122,12 +122,14 @@ class Column extends Data implements Interfaces\IdInterface
 	{
 		if($this->filterable())
 		{
+			$inputAttributes = zbase_data_get($this->getAttributes(), 'filter.input', []);
+			$type = $this->filterType();
 			$element = [
 				'html' => [
 					'attributes' => [
 						'input' => [
 							'class' => [
-								'element-data-filter'
+								'form-filter input-sm element-data-filter element-data-filter-' . $type
 							]
 						]
 					]
@@ -135,8 +137,9 @@ class Column extends Data implements Interfaces\IdInterface
 			];
 			$element['id'] = $this->filterId();
 			$element['enable'] = true;
-			$element['label'] = null;
-			$type = $this->filterType();
+			$element['label'] = false;
+			$element['option'] = ['inputWrapper' => false];
+			$element = array_replace_recursive($element, $inputAttributes);
 			switch ($type)
 			{
 				case 'datetime':
@@ -150,7 +153,8 @@ class Column extends Data implements Interfaces\IdInterface
 					break;
 				case 'select':
 					$element['type'] = 'select';
-					$element['multiOptions'] = zbase_data_get($this->getAttributes(), 'filter.selectOptions', []);;
+					$element['multiOptions'] = zbase_data_get($this->getAttributes(), 'filter.selectOptions', []);
+					;
 					break;
 				default;
 					$element['type'] = 'text';
@@ -160,6 +164,8 @@ class Column extends Data implements Interfaces\IdInterface
 				$element2 = $element;
 				$element['id'] = $element2['id'] . '_from';
 				$element2['id'] = $element2['id'] . '_to';
+				$element['html']['attributes']['input']['placeholder'] = 'From';
+				$element2['html']['attributes']['input']['placeholder'] = 'To';
 				$e = \Zbase\Ui\Form\Element::factory($element);
 				$e2 = \Zbase\Ui\Form\Element::factory($element2);
 				return $e->render() . $e2->render();
@@ -330,6 +336,32 @@ class Column extends Data implements Interfaces\IdInterface
 	public function getRow()
 	{
 		return $this->_row;
+	}
+
+	public function __renderTagAttribute($tag)
+	{
+		$attributes = [];
+		if(method_exists($this, 'getAttributes'))
+		{
+			$attributes = $this->getAttributes();
+		}
+		$attributes = zbase_value_get($attributes, 'html.attributes.' . $tag, []);
+		if($tag == 'th')
+		{
+			$attributes['id'] = 'datatable_th_' .$this->id();
+		}
+		if($tag == 'td')
+		{
+			if($this->getDataType() == 'integer' || $this->getDataType() == 'date' || $this->getDataType() == 'currency' || $this->getDataType() == 'timestamp')
+			{
+				$attributes['style'] = 'text-align:right;';
+			}
+			if($this->getDataType() == 'boolean')
+			{
+				$attributes['style'] = 'text-align:center;';
+			}
+		}
+		return $this->renderHtmlAttributes($attributes);
 	}
 
 }

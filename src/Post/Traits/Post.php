@@ -366,29 +366,39 @@ trait Post
 			{
 				return $this->statusText();
 			}
-			if(property_exists($this, 'statusDisplayConfiguration'))
-			{
-				if(!empty($this->statusDisplayConfiguration[$this->status]))
-				{
-					$text = !empty($this->statusDisplayConfiguration[$this->status]['text']) ? $this->statusDisplayConfiguration[$this->status]['text'] : $this->status;
-					$color = !empty($this->statusDisplayConfiguration[$this->status]['color']) ? $this->statusDisplayConfiguration[$this->status]['color'] : 'gray';
-					$colorMap = [
-						'red' => 'danger',
-						'yellow' => 'warning',
-						'green' => 'success',
-						'gray' => 'default',
-						'blue' => 'info',
-					];
-					if(array_key_exists($color, $colorMap))
-					{
-						$color = $colorMap[$color];
-					}
-					return '<span class="label label-' . $color . ' postStatusText' . $this->postHtmlId() . '">' . $text . '</span>';
-				}
-			}
-			return $this->status;
+			return $this->postStatusTextByValue($this->status);
 		}
 		return null;
+	}
+
+	/**
+	 * Post Status Text by Value
+	 * @param string|int $status
+	 * @return string|HTML
+	 */
+	public function postStatusTextByValue($status)
+	{
+		if(property_exists($this, 'statusDisplayConfiguration'))
+		{
+			if(!empty($this->statusDisplayConfiguration[$status]))
+			{
+				$text = !empty($this->statusDisplayConfiguration[$status]['text']) ? $this->statusDisplayConfiguration[$status]['text'] : $status;
+				$color = !empty($this->statusDisplayConfiguration[$status]['color']) ? $this->statusDisplayConfiguration[$status]['color'] : 'gray';
+				$colorMap = [
+					'red' => 'danger',
+					'yellow' => 'warning',
+					'green' => 'success',
+					'gray' => 'default',
+					'blue' => 'info',
+				];
+				if(array_key_exists($color, $colorMap))
+				{
+					$color = $colorMap[$color];
+				}
+				return '<span class="label label-' . $color . ' postStatusText' . $this->postHtmlId() . '">' . $text . '</span>';
+			}
+		}
+		return $status;
 	}
 
 	/**
@@ -2925,6 +2935,145 @@ trait Post
 			return $this->parentColumnName;
 		}
 		return 'post_id';
+	}
+
+	// </editor-fold>
+	// <editor-fold defaultstate="collapsed" desc="Filters ">
+
+	/**
+	 * Return the Data Filters from Datatable
+	 * @param Widget $datatable
+	 * @return array
+	 */
+	public function postGetDataFiltersFromDatatable($datatable)
+	{
+		$filters = [];
+		if($datatable instanceof \Zbase\Widgets\Type\Datatable)
+		{
+			foreach ($datatable->getProcessedColumns() as $column)
+			{
+				if($column->filterable())
+				{
+					$filterName = zbase_string_camel_case($column->id());
+					$filters[$filterName] = zbase_data_get($column->getAttributes(), 'filter.query', []);
+					if(empty($filters[$filterName]['type']))
+					{
+						$filters[$filterName]['type'] = $column->filterType();
+					}
+				}
+			}
+		}
+		return $filters;
+	}
+
+	/**
+	 * REturn Dates from the Date RAnge Filter
+	 * @param type $name Name of the Field
+	 * @return array
+	 */
+	public function postGetFilterDateRangeFromPost($name)
+	{
+		$dateTo = zbase_request_input($name . 'Filter_to', zbase_request_input($name . 'FilterTo', false));
+		$dateFrom = zbase_request_input($name . 'Filter_from', zbase_request_input($name . 'FilterFrom', false));
+
+		if(!empty($dateFrom))
+		{
+			$dateFrom = zbase_date_from_format('d/m/Y', $dateFrom);
+		}
+		if(!empty($dateTo))
+		{
+			$dateFrom = zbase_date_from_format('d/m/Y', $dateTo);
+		}
+
+		if($dateFrom instanceof \DateTime && !$dateTo instanceof \DateTime)
+		{
+			$dateTo = new \DateTime();
+		}
+
+		if(!$dateFrom instanceof \DateTime && $dateTo instanceof \DateTime)
+		{
+			$dateFrom = zbase_date_from_format('Y-m-d', '2000-01-01');
+		}
+		return [
+			'from' => $dateFrom,
+			'to' => $dateTo
+		];
+	}
+
+	/**
+	 * REturn Query Filters based on the Post
+	 * @param array $queryFilters
+	 * @param type $filters
+	 * @return array
+	 */
+	public function postGetFiltersFromPost($queryFilters, $filters)
+	{
+		if(!zbase_is_post())
+		{
+			return $queryFilters;
+		}
+		foreach ($filters as $filterName => $option)
+		{
+			$type = !empty($option['type']) ? $option['type'] : 'text';
+			$columnName = !empty($option['column']) ? $option['column'] : null;
+			$operation = !empty($option['operation']) ? $option['operation'] : 'eq';
+			if(!empty($columnName))
+			{
+				if($type == 'date')
+				{
+					$dates = $this->postGetFilterDateRangeFromPost($filterName);
+					if($dates['from'] instanceof \DateTime && $dates['to'] instanceof \DateTime)
+					{
+						$queryFilters[$filterName] = [
+							'between' => [
+								'field' => $columnName,
+								'from' => $dates['from']->format('Y-m-d'),
+								'to' => $dates['to']->format('Y-m-d')
+							]
+						];
+					}
+				}
+				else
+				{
+					$postValue = zbase_request_input($filterName . 'Filter', zbase_request_input($filterName . 'Filter', false));
+					if($postValue != '' && $postValue != 'null')
+					{
+						switch (strtolower($operation))
+						{
+							case 'like':
+								if(is_array($columnName))
+								{
+									$queryFilters[$filterName] = function($q) use ($postValue, $columnName){
+										foreach ($columnName as $column)
+										{
+											$q->orWhere($column, 'LIKE', '%' . $postValue . '%');
+										}
+										return $q;
+										};
+								}
+								else
+								{
+									$queryFilters[$filterName] = [
+										$operation => [
+											'field' => $columnName,
+											'value' => '%' . $postValue . '%',
+										]
+									];
+								}
+								break;
+							default:
+								$queryFilters[$filterName] = [
+									$operation => [
+										'field' => $columnName,
+										'value' => $postValue,
+									]
+								];
+						}
+					}
+				}
+			}
+		}
+		return $queryFilters;
 	}
 
 	// </editor-fold>

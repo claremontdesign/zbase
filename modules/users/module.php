@@ -155,6 +155,9 @@ return [
 									'view' => [
 										'admin-user' => null
 									],
+									'status' => [
+										'admin-user' => null
+									],
 									'json-view' => [
 										'admin-user' => null
 									],

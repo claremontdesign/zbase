@@ -84,6 +84,16 @@ function zbase_tag()
 }
 
 /**
+ * Return the Main Package
+ * @return string
+ */
+function zbase_main_package()
+{
+	return strtolower(env('ZBASE_MAIN_PACKAGE', 'zbase'));
+}
+
+
+/**
  * Dump the passed variables
  *
  * @param  mixed $x

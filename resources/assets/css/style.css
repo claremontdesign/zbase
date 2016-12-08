@@ -38,6 +38,12 @@
 	margin-bottom: 20px;
 }
 
+.zbase-data-filters th{
+	vertical-align: top !important;
+}
+.zbase-data-filters .date-picker{
+	width:130px;
+}
 /* Responsive CSS Document */
 
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {

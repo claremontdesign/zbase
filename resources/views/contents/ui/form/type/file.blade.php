@@ -216,7 +216,9 @@ if(!empty($multiple))
 		<?php if(zbase_is_angular_template()): ?>
 			<span class="btn btn-primary" flow-btn><?php echo $label ?></span>
 		<?php else: ?>
+		<?php if($label !== false):?>
 			<label <?php echo $labelAttributes ?>><?php echo $label ?></label>
+		<?php endif;?>
 			<input <?php echo $inputAttributes ?> />
 		<?php endif; ?>
 		{!! view(zbase_view_file_contents('ui.form.helpblock'), compact('ui')) !!}

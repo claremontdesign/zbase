@@ -227,13 +227,18 @@ if(empty($isSearchable) && empty($hasFilters))
 				<?php echo $prefix?>GoSearch();
 			}
 		<?php endif;?>
-		jQuery('#<?php echo $prefix?>submitbutton').click(function(){<?php echo $prefix?>GoSearch();});
-		jQuery('#<?php echo $prefix?>resetbutton').click(function(){jQuery('#<?php echo $prefix?>query').val('');<?php echo $prefix?>GoSearch();});
-		jQuery('#<?php echo $prefix?>query').on('keypress', function (event) {
-			 if(event.which === 13){
+		jQuery('.element-data-filter-date').parent().datepicker().on('changeDate', function(e) {
+			<?php echo $prefix?>GoSearch();
+		});
+		jQuery('select.element-data-filter').not('.element-data-filter-date').change(function(e){
+			e.preventDefault();
+			<?php echo $prefix?>GoSearch();
+		});
+		jQuery('input.element-data-filter').not('.element-data-filter-date').keypress(function(e){
+			if (e.which == 13) {
+				e.preventDefault();
 				<?php echo $prefix?>GoSearch();
-				jQuery(this).closest('form').submit(function(e){e.preventDefault();});
-			 }
+			}
 		});
 		<?php if(!empty($hasFilters)):?>
 			var hasFilters = false;
@@ -272,7 +277,7 @@ if(empty($isSearchable) && empty($hasFilters))
 			<?php endforeach;?>
 			if(hasFilters)
 			{
-				jQuery('#<?php echo $filterPrefix?>FilterBtn').trigger('click');
+				<?php echo $prefix?>GoSearch();
 			}
 		<?php endif;?>
 	}

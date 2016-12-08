@@ -175,6 +175,10 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	public function getNavigation($section = 'back')
 	{
 		$nav = $this->_v('navigation.' . $section . '.nav', []);
+		if(empty($nav))
+		{
+			$nav = $this->_v('navigation.backfront.nav', []);
+		}
 		if(!empty($nav))
 		{
 			$nav['id'] = $this->id();
@@ -202,7 +206,12 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	{
 		if($this->isEnable() && $this->hasAccess())
 		{
-			return (bool) $this->_v('navigation.' . $section . '.enable', false);
+			$nav = (bool) $this->_v('navigation.' . $section . '.enable', false);
+			if(empty($nav))
+			{
+				$nav = (bool) $this->_v('navigation.backfront.enable', false);
+			}
+			return $nav;
 		}
 		return false;
 	}

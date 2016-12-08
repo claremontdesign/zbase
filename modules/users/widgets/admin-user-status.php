@@ -33,7 +33,7 @@ return [
 			'status' => [
 				'post' => [
 					'redirect' => [
-						'enable' => false
+						'enable' => true,
 					]
 				]
 			],

@@ -508,6 +508,9 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			 * only::sudo,user,moderator
 			 * comma separated values
 			 *
+			 * not::sudo,
+			 * not for a given rolename
+			 *
 			 * only::sudo,
 			 * will only be for rolename given access
 			 *
@@ -545,6 +548,21 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 					}
 				}
 				return 0;
+			}
+			if(preg_match('/not\:\:/', $access) > 0)
+			{
+				$access = str_replace('not::', '', $access);
+				$role = zbase_entity('user_roles')->getRoleByName(trim($access));
+				$roleClassname = get_class(zbase_entity('user_roles'));
+				if($role instanceof $roleClassname)
+				{
+					$userHighestRole = $this->getUserHighestRole();
+					if($userHighestRole->name() == $role->name())
+					{
+						return 0;
+					}
+				}
+				return 1;
 			}
 			if(preg_match('/below\:\:/', $access) > 0)
 			{
@@ -1518,11 +1536,16 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 				 */
 				if(preg_match('/country\:/', $query) > 0)
 				{
+					$country = trim(str_replace('country:', '', $query));
+					if(strlen($country) > 2)
+					{
+						$country = \Zbase\Utility\Geo::countryNameToCountryCode($country);
+					}
 					$stringFound = true;
 					$filters['address.country'] = [
 						'like' => [
 							'field' => 'address.country',
-							'value' => '%' . trim(str_replace('country:', '', $query)) . '%'
+							'value' => '%' . $country . '%'
 						]
 					];
 				}
@@ -1561,6 +1584,17 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 						'eq' => [
 							'field' => 'users.user_id',
 							'value' => intval($query)
+						]
+					];
+				}
+				$country = \Zbase\Utility\Geo::countryNameToCountryCode($query);
+				if(!empty($country))
+				{
+					$stringFound = true;
+					$filters['address.country'] = [
+						'like' => [
+							'field' => 'address.country',
+							'value' => '%' . $country . '%'
 						]
 					];
 				}
