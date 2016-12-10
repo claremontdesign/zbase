@@ -346,21 +346,31 @@ class Column extends Data implements Interfaces\IdInterface
 			$attributes = $this->getAttributes();
 		}
 		$attributes = zbase_value_get($attributes, 'html.attributes.' . $tag, []);
+		$styles = !empty($attributes['style']) ? $attributes['style'] : [];
+		if(!is_array($styles))
+		{
+			$styles = [$styles];
+		}
 		if($tag == 'th')
 		{
-			$attributes['id'] = 'datatable_th_' .$this->id();
+			$attributes['id'] = 'datatable_th_' . $this->id();
+			if($this->getDataType() == 'date' || $this->getDataType() == 'timestamp')
+			{
+				$styles[] = 'width:150px;';
+			}
 		}
 		if($tag == 'td')
 		{
 			if($this->getDataType() == 'integer' || $this->getDataType() == 'date' || $this->getDataType() == 'currency' || $this->getDataType() == 'timestamp')
 			{
-				$attributes['style'] = 'text-align:right;';
+				$styles[] = 'text-align:right;';
 			}
 			if($this->getDataType() == 'boolean')
 			{
-				$attributes['style'] = 'text-align:center;';
+				$styles[] = 'text-align:center;';
 			}
 		}
+		$attributes['style'] = implode('', $styles);
 		return $this->renderHtmlAttributes($attributes);
 	}
 

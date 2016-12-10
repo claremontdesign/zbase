@@ -14,7 +14,7 @@
  */
 return [
 	'id' => 'notifications',
-	'enable' => true,
+	'enable' => function(){return zbase_config_get('modules.notifications.enable', true);},
 	'access' => 'users',
 	'class' => null,
 	'backend' => true,

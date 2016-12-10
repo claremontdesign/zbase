@@ -174,7 +174,7 @@ class Module implements ModuleInterface, Interfaces\AttributeInterface
 	 */
 	public function getNavigation($section = 'back')
 	{
-		$nav = $this->_v('navigation.' . $section . '.nav', []);
+		$nav = array_merge($this->_v('navigation.' . $section . '.nav', []), $this->_v('navigation.' . $section . '.nav.navs', []));
 		if(empty($nav))
 		{
 			$nav = $this->_v('navigation.backfront.nav', []);

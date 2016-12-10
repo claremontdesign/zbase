@@ -28,7 +28,7 @@
 				}
 			}
 			$navs = zbase_collection($navs)->sortByDesc(function ($itm) {
-						return $itm->getNavigationOrder();
+						return $itm->getNavigationOrder(zbase_section());
 					})->toArray();
 
 			if(!empty($navs))

@@ -150,7 +150,7 @@ if($paginationLoadMore)
 			<?php echo implode("\n", $tHeads); ?>
 			</tr>
 				<?php if(!empty($hasFilters)): ?>
-				<tr role="row" class="filter zbase-data-filters" id="<?php echo $filterPrefix ?>TrDataFilters">
+				<tr style="border-bottom: 2px solid black;" role="row" class="filter zbase-data-filters" id="<?php echo $filterPrefix ?>TrDataFilters">
 				<?php echo implode("\n", $tHeadsFilters); ?>
 				</tr>
 	<?php endif; ?>
@@ -182,7 +182,7 @@ if($paginationLoadMore)
 					<?php echo implode("\n", $tHeads); ?>
 					</tr>
 						<?php if(!empty($hasFilters)): ?>
-						<tr role="row" class="filter zbase-data-filters">
+						<tr style="border-bottom: 2px solid black;" role="row" class="filter zbase-data-filters">
 						<?php echo implode("\n", $tHeadsFilters); ?>
 						</tr>
 			<?php endif; ?>

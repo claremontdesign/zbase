@@ -1567,6 +1567,20 @@ trait Post
 	}
 
 	/**
+	 * Return a Items By attribute
+	 * @param type $attribute
+	 * @param type $value
+	 */
+	public function postAllBy($attribute, $value)
+	{
+		$tableName = $this->postTableName();
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'allby_' . $attribute . '_' . $value);
+		return zbase_cache($cacheKey, function() use ($attribute, $value){
+			return $this->repo()->by($attribute, $value);
+		}, [$tableName], $this->postCacheMinutes(), ['forceCache' => $this->postCacheForce(), 'driver' => $this->postCacheDriver()]);
+	}
+
+	/**
 	 * Return the Rows Per Page
 	 *
 	 * @return integer
