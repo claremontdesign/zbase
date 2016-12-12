@@ -53,6 +53,7 @@ class Migrate extends Command
 		zbase_maintenance_set();
 		zbase()->setConsoleCommand($this);
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
+		$artisanFile = env('ZBASE_ARTISAN_FILE', 'artisan');
 		$packages = zbase()->packages();
 		if(!empty($packages))
 		{
@@ -73,9 +74,9 @@ class Migrate extends Command
 		\File::cleanDirectory(storage_path() . '/framework/cache');
 		\File::cleanDirectory(storage_path() . '/framework/views');
 		\File::cleanDirectory(storage_path() . '/logs');
-		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=migrations --force');
-		echo shell_exec($phpCommand . ' artisan optimize');
-		echo shell_exec($phpCommand . ' artisan migrate:refresh --seed --force');
+		echo shell_exec($phpCommand . ' ' . $artisanFile . ' vendor:publish --tag=migrations --force');
+		echo shell_exec($phpCommand . ' ' . $artisanFile . ' optimize');
+		echo shell_exec($phpCommand . ' ' . $artisanFile . ' migrate:refresh --seed --force');
 		$commands = []; // zbase()->commands('migrate');
 		if(!empty($commands))
 		{

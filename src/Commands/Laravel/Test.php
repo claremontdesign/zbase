@@ -52,6 +52,7 @@ class Test extends Command
 	{
 		zbase()->setConsoleCommand($this);
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
+		$artisanFile = env('ZBASE_ARTISAN_FILE', 'artisan');
 		$packages = zbase()->packages();
 		if(!empty($packages))
 		{

@@ -1,4 +1,5 @@
 <?php
+zbase_view_plugin_load('bootstrap-datetime');
 $dataPrefix = $ui->getWidgetPrefix();
 $prefix = $ui->getWidgetPrefix('search');
 $exportPrefix = $ui->getWidgetPrefix('export');
@@ -240,6 +241,7 @@ if(empty($isSearchable) && empty($hasFilters))
 				<?php echo $prefix?>GoSearch();
 			}
 		});
+		jQuery('#<?php echo $prefix?>submitbutton').click(function(){<?php echo $prefix?>GoSearch();});
 		<?php if(!empty($hasFilters)):?>
 			var hasFilters = false;
 			jQuery('#<?php echo $filterPrefix?>FilterBtn').click(function(){

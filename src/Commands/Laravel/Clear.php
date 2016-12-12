@@ -52,6 +52,7 @@ class Clear extends Command
 	{
 		zbase()->setConsoleCommand($this);
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
+		$artisanFile = env('ZBASE_ARTISAN_FILE', 'artisan');
 		$packages = zbase()->packages();
 		if(!empty($packages))
 		{
@@ -65,11 +66,11 @@ class Clear extends Command
 				}
 			}
 		}
-		echo shell_exec($phpCommand . ' artisan clear-compiled');
-		echo shell_exec($phpCommand . ' artisan cache:clear');
-		echo shell_exec($phpCommand . ' artisan view:clear');
-		echo shell_exec($phpCommand . ' artisan config:clear');
-		echo shell_exec($phpCommand . ' artisan route:clear');
+		echo shell_exec($phpCommand . ' ' . $artisanFile . ' clear-compiled');
+		echo shell_exec($phpCommand . ' ' . $artisanFile . ' cache:clear');
+		echo shell_exec($phpCommand . ' ' . $artisanFile . ' view:clear');
+		echo shell_exec($phpCommand . ' ' . $artisanFile . ' config:clear');
+		echo shell_exec($phpCommand . ' ' . $artisanFile . ' route:clear');
 		\File::cleanDirectory(zbase_storage_path('tmp/images'));
 		\File::cleanDirectory(zbase_storage_path(zbase_tag() . '_tmp/images'));
 		$commands = []; // zbase()->commands('clear');

@@ -52,6 +52,7 @@ class Assets extends Command
 	{
 		zbase()->setConsoleCommand($this);
 		$phpCommand = env('ZBASE_PHP_COMMAND', 'php');
+		$artisanFile = env('ZBASE_ARTISAN_FILE', 'artisan');
 		$packages = zbase()->packages();
 		if(!empty($packages))
 		{
@@ -65,7 +66,7 @@ class Assets extends Command
 				}
 			}
 		}
-		echo shell_exec($phpCommand . ' artisan vendor:publish --tag=public --force');
+		echo shell_exec($phpCommand . ' ' . $artisanFile . '  vendor:publish --tag=public --force');
 		$commands = [];
 		if(!empty($commands))
 		{
@@ -77,7 +78,7 @@ class Assets extends Command
 				}
 				else
 				{
-					echo shell_exec($phpCommand . ' artisan ' . $command);
+					echo shell_exec($phpCommand . ' ' . $artisanFile . ' ' . $command);
 				}
 			}
 		}
