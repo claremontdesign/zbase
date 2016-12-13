@@ -1248,7 +1248,9 @@ var Zbase = function () {
 					if (r.next().is(':visible'))
 					{
 						r.next().hide();
+						r.find('span.row-details').removeClass('row-details-open').addClass('row-details-close');
 					} else {
+                        r.find('span.row-details').removeClass('row-details-close').addClass('row-details-open');
 						r.next().show();
 					}
 					return;
@@ -1262,6 +1264,7 @@ var Zbase = function () {
 					{
 						zbase_ajax_post(url, {_innercontent: 1, _innerContentId: rId, _datatableRow: 1}, function () {}, {});
 					} else {
+                        r.find('span.row-details').removeClass('row-details-close').addClass('row-details-open');
 						var tdCount = r.find('td').length;
 						var rId = r.attr('id');
 						var newRTpl = '<tr class="zbase-datatable-row-toggle-copy"><td colspan="' + tdCount + '"><div class="zbase-datatable-row-toggle-copy-wrapper" id="rowCopy' + rId + '"></div></td></tr>';

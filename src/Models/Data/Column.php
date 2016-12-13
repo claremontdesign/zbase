@@ -89,6 +89,14 @@ class Column extends Data implements Interfaces\IdInterface
 		return zbase_value_get($this->getAttributes(), 'json', false);
 	}
 
+    /**
+     * Is column hidden?
+     */
+	public function isHidden()
+    {
+        return zbase_value_get($this->getAttributes(), 'hidden', false);
+    }
+
 	/**
 	 * Render the Value
 	 * @param string $tag The HTML Tag
@@ -347,6 +355,16 @@ class Column extends Data implements Interfaces\IdInterface
 		}
 		$attributes = zbase_value_get($attributes, 'html.attributes.' . $tag, []);
 		$styles = !empty($attributes['style']) ? $attributes['style'] : [];
+		$classes = [];
+		if(!empty($attributes['class']))
+        {
+            if(is_array($attributes['class']))
+            {
+                $classes = $attributes['class'];
+            } else {
+                $classes[] = $attributes['class'];
+            }
+        }
 		if(!is_array($styles))
 		{
 			$styles = [$styles];
@@ -354,23 +372,14 @@ class Column extends Data implements Interfaces\IdInterface
 		if($tag == 'th')
 		{
 			$attributes['id'] = 'datatable_th_' . $this->id();
-			if($this->getDataType() == 'date' || $this->getDataType() == 'timestamp')
-			{
-				$styles[] = 'width:150px;';
-			}
 		}
-		if($tag == 'td')
-		{
-			if($this->getDataType() == 'integer' || $this->getDataType() == 'date' || $this->getDataType() == 'currency' || $this->getDataType() == 'timestamp')
-			{
-				$styles[] = 'text-align:right;';
-			}
-			if($this->getDataType() == 'boolean')
-			{
-				$styles[] = 'text-align:center;';
-			}
-		}
+		if($this->isHidden())
+        {
+            $styles[] = 'display:none;';
+        }
+        $classes[] = 'column-' . $tag . '-' . $this->getDataType();
 		$attributes['style'] = implode('', $styles);
+		$attributes['class'] = implode(' ', $classes);
 		return $this->renderHtmlAttributes($attributes);
 	}
 

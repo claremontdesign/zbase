@@ -67,7 +67,15 @@ if(empty($isSearchable) && empty($hasFilters))
 		{
 			// jQuery('#<?php echo $prefix?>Wrapper .btn-toolbar').remove();
 		}
-		jQuery('#<?php echo $prefix?>Table tbody').empty();
+		if(jQuery('#<?php echo $prefix?>Table tbody').length > 0)
+		{
+			jQuery('#<?php echo $prefix?>Table tbody').empty();
+		} else {
+			if(jQuery('#<?php echo $prefix?>Table').length > 0)
+			{
+				jQuery('#<?php echo $prefix?>Table').remove();
+			}
+		}
 		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.datatable-empty-message').eq(0).remove();
 		<?php if(empty($hasFilters)):?>
 			jQuery('#<?php echo $prefix?>SearchWrapper').siblings('table').eq(0).remove();
@@ -76,6 +84,7 @@ if(empty($isSearchable) && empty($hasFilters))
 		var <?php echo $prefix?>Pagination = <?php echo $prefix?>Toolbar.find('.pagination-pages');
 		if(r.<?php echo $dataPrefix?> !== undefined && r.<?php echo $dataPrefix?>.totalRows > 0)
 		{
+			<?php echo $prefix?>TemplateTable = str_replace('__totalRows__',r.<?php echo $dataPrefix?>.totalRows,<?php echo $prefix?>TemplateTable);
 			<?php echo $prefix?>Toolbar.show();
 			if(<?php echo $prefix?>Toolbar.length > 0)
 			{
@@ -154,6 +163,7 @@ if(empty($isSearchable) && empty($hasFilters))
 					e.preventDefault();
 					 <?php echo $prefix?>GoSearch('?pp=' + r.<?php echo $dataPrefix?>.totalRows);
 				});
+				jQuery('#<?php echo $prefix ?>totalRows').text(r.<?php echo $dataPrefix?>.totalRows);
 			}
 			jQuery('.<?php echo $exportPrefix ?>Filters').remove();
 			if(jQuery('#<?php echo $exportPrefix ?>SearchQuery').length == 0)

@@ -22,7 +22,6 @@ if(!empty($hasActions))
 
 $tHeads = [];
 $tBodys = [];
-// $tFoots = ['<td colspan="' . $columnCount . '">&nbsp;</td>'];
 $tFoots = [];
 if(!empty($columns))
 {
@@ -37,7 +36,7 @@ if(!empty($columns))
 		}
 		if($isClickableToNextRow)
 		{
-			$clickableRow = ' class="pointer zbase-datatable-row-toggle" ' . (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl(null, $template) . '"';
+			$clickableRow = ' class="zbase-datatable-row-toggle" ' . (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl(null, $template) . '"';
 		}
 
 		if($ui->entity() instanceof \Zbase\Post\PostInterface)
@@ -48,6 +47,10 @@ if(!empty($columns))
 		{
 			$tBodys[] = '<tr id="' . $prefix . 'RowId__' . $ui->rowValueIndex() . '__"' . $clickableRow . '>';
 		}
+        if($isClickableToNextRow)
+        {
+            $tBodys[] = '<td class="row-details-toggler"><span class="row-details row-details-close"></span></td>';
+        }
 		foreach ($columns as $column)
 		{
 			$column->setTemplateMode(true)->prepare();
@@ -60,6 +63,10 @@ if(!empty($columns))
 			$tBodys[] = '<td>' . $ui->renderRowActions(null, true) . '</td>';
 		}
 		$tBodys[] = '</tr>';
+        if($isClickableToNextRow)
+        {
+            $tHeads[] = '<th class="clickableColumn" style="width:10px;">&nbsp;</th>';
+        }
 		foreach ($columns as $column)
 		{
 			if($column->filterable())
@@ -78,11 +85,11 @@ if(!empty($columns))
 				$clickableRow = '';
 				if($isClickableRows)
 				{
-					$clickableRow = ' class="pointer" onclick="zbase_to_url(this);" data-href="' . $ui->getRowClickableUrl($row) . '"';
+					$clickableRow = ' class="pointer zbase-datatable-clickable-row" onclick="zbase_to_url(this);" data-href="' . $ui->getRowClickableUrl($row) . '"';
 				}
 				if($isClickableToNextRow)
 				{
-					$clickableRow = ' class="pointer zbase-datatable-row-toggle" ' . (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl($row) . '"';
+					$clickableRow = ' class="zbase-datatable-row-toggle" ' . (!empty($isRowsToNextRowReplaceContent) ? 'data-content="1"' : null) . ' data-href="' . $ui->getRowClickableUrl($row) . '"';
 				}
 				if($row instanceof \Zbase\Post\PostInterface)
 				{
@@ -92,6 +99,10 @@ if(!empty($columns))
 				{
 					$tBodys[] = '<tr' . $clickableRow . '>';
 				}
+                if($isClickableToNextRow)
+                {
+                    $tBodys[] = '<td class="row-details-toggler"><span class="pointer row-details row-details-close"></span></td>';
+                }
 				foreach ($columns as $column)
 				{
 					$column->setRow($row)->prepare();
@@ -104,6 +115,10 @@ if(!empty($columns))
 				$tBodys[] = '</tr>';
 			}
 		}
+        if($isClickableToNextRow)
+        {
+            $tHeads[] = '<th class="clickableColumn" style="width:10px;">&nbsp;</th>';
+        }
 		foreach ($columns as $column)
 		{
 			if($column->filterable())
@@ -118,6 +133,10 @@ if(!empty($hasFilters))
 {
 	$tableId = $ui->getWidgetPrefix('search');
 	$filterPrefix = $ui->getWidgetPrefix('filter');
+    if($isClickableToNextRow)
+    {
+        $tHeadsFilters[] = '<th>&nbsp;</th>';
+    }
 	foreach ($columns as $column)
 	{
 		if($column->filterable())
@@ -136,6 +155,7 @@ if(!empty($hasActions))
 }
 if($paginationLoadMore)
 {
+    $columnCount = count($tHeads);
 	$tFoots[] = '<tr><td colspan="' . $columnCount . '"><div class="alert alert-warning"><a href="" id="' . $tableId . 'LoadMoreAnchor">Load more...</a></div></td></tr>';
 }
 ?>
