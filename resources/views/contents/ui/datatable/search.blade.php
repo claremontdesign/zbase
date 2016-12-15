@@ -75,6 +75,10 @@ if(empty($isSearchable) && empty($hasFilters))
 			{
 				jQuery('#<?php echo $prefix?>Table').remove();
 			}
+			if(jQuery('.<?php echo $prefix?>TableRemovable').length > 0)
+			{
+				jQuery('.<?php echo $prefix?>TableRemovable').remove();
+			}
 		}
 		jQuery('#<?php echo $prefix?>SearchWrapper').siblings('.datatable-empty-message').eq(0).remove();
 		<?php if(empty($hasFilters)):?>
@@ -85,6 +89,7 @@ if(empty($isSearchable) && empty($hasFilters))
 		if(r.<?php echo $dataPrefix?> !== undefined && r.<?php echo $dataPrefix?>.totalRows > 0)
 		{
 			<?php echo $prefix?>TemplateTable = str_replace('__totalRows__',r.<?php echo $dataPrefix?>.totalRows,<?php echo $prefix?>TemplateTable);
+			$(<?php echo $prefix?>TemplateTable).find('#<?php echo $prefix ?>totalRows').text(r.<?php echo $dataPrefix?>.totalRows);
 			<?php echo $prefix?>Toolbar.show();
 			if(<?php echo $prefix?>Toolbar.length > 0)
 			{
@@ -102,6 +107,10 @@ if(empty($isSearchable) && empty($hasFilters))
 				zbase_call_function('<?php echo $prefix?>Callback', r.<?php echo $dataPrefix?>.rows);
 			} else {
 				zbase_call_function('<?php echo $prefix?>Callback', r.<?php echo $dataPrefix?>.rows);
+			}
+			if($('#<?php echo $prefix ?>totalRows').length > 0)
+			{
+				$('#<?php echo $prefix ?>totalRows').text(r.<?php echo $dataPrefix?>.totalRows);
 			}
 			/**
 			 * pagination
