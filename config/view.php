@@ -333,7 +333,7 @@ return [
 						'position' => 495,
 					],
 					[
-						'id' => 'bootstrap-datetime',
+						'id' => 'bootstrap-DT-datetime',
 						'type' => \Zbase\Models\View::STYLESHEET,
 						'href' => zbase_path_asset('metronic/plugins/data-tables/DT_bootstrap.css'),
 						'enable' => true,

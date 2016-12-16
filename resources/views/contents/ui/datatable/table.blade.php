@@ -135,17 +135,17 @@ if(!empty($hasFilters))
 	$filterPrefix = $ui->getWidgetPrefix('filter');
     if($isClickableToNextRow)
     {
-        $tHeadsFilters[] = '<th>&nbsp;</th>';
+        $tHeadsFilters[] = '<td>&nbsp;</td>';
     }
 	foreach ($columns as $column)
 	{
 		if($column->filterable())
 		{
-			$tHeadsFilters[] = '<th ' . $column->renderTagAttribute('th') . '>' . $column->renderFilterElement() . '</th>';
+			$tHeadsFilters[] = '<td ' . $column->renderTagAttribute('td') . '>' . $column->renderFilterElement() . '</td>';
 		}
 		else
 		{
-			$tHeadsFilters[] = '<th ' . $column->renderTagAttribute('th') . '>&nbsp;</th>';
+			$tHeadsFilters[] = '<td ' . $column->renderTagAttribute('td') . '>&nbsp;</th>';
 		}
 	}
 }

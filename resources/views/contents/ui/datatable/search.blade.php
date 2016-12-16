@@ -37,6 +37,12 @@ if(empty($isSearchable) && empty($hasFilters))
 ?>
 <?php ob_start(); ?>
 <script type="text/javascript">
+	var <?php echo $prefix?>dataCurrentSortings = [];
+	<?php foreach ($columns as $column): ?>
+		<?php if($column->sortable() && !empty($column->sortableDirection())):?>
+			<?php echo $prefix?>dataCurrentSortings.push('<?php echo $column->sortRequestString();?>');
+		<?php endif;?>
+	<?php endforeach;?>
 	<?php echo zbase_view_compile(zbase_view_render($tableTemplate, ['ui' => $ui, 'template' => true, 'prefix' => $prefix])); ?>
 	function <?php echo $prefix?>DatatableRow(i, row)
 	{
@@ -214,6 +220,7 @@ if(empty($isSearchable) && empty($hasFilters))
 	function <?php echo $prefix?>GoSearch(url)
 	{
 		var c = {url: url !== undefined ? url : '<?php echo $searchUrl?>',
+					formData: {sorting: <?php echo $prefix?>dataCurrentSortings},
 					form: true,
 					method: 'post',
 					beforeSendCheck: <?php echo $prefix?>beforeSendCheck,
@@ -259,6 +266,40 @@ if(empty($isSearchable) && empty($hasFilters))
 				e.preventDefault();
 				<?php echo $prefix?>GoSearch();
 			}
+		});
+		jQuery('th.zbase-td-sorting').dblclick(function(){
+			var sorting = null;
+			if(jQuery(this).hasClass('sorting_asc'))
+			{
+				sorting = jQuery(this).attr('data-sorting') + '_asc';
+			}
+			else
+			{
+				sorting = jQuery(this).attr('data-sorting') + '_des';
+			}
+			jQuery(this).addClass('sorting_asc').removeClass('sorting_desc').addClass('sorting');
+			<?php echo $prefix?>dataCurrentSortings = unsetFromArray(<?php echo $prefix?>dataCurrentSortings, sorting);
+			<?php echo $prefix?>GoSearch();
+		});
+		jQuery('th.zbase-td-sorting').click(function(){
+			var sorting = null;
+			if(jQuery(this).hasClass('sorting_asc'))
+			{
+				sorting = jQuery(this).attr('data-sorting') + '_desc';
+				<?php echo $prefix?>dataCurrentSortings = unsetFromArray(<?php echo $prefix?>dataCurrentSortings, jQuery(this).attr('data-sorting') + '_asc');
+				jQuery(this).removeClass('sorting_asc').addClass('sorting_desc');
+			}
+			else
+			{
+				sorting = jQuery(this).attr('data-sorting') + '_asc';
+				<?php echo $prefix?>dataCurrentSortings = unsetFromArray(<?php echo $prefix?>dataCurrentSortings, jQuery(this).attr('data-sorting') + '_desc');
+				jQuery(this).removeClass('sorting').removeClass('sorting_desc').addClass('sorting_asc');
+			}
+			if(!in_array(sorting,<?php echo $prefix?>dataCurrentSortings))
+			{
+				<?php echo $prefix?>dataCurrentSortings.push(sorting);
+			}
+			<?php echo $prefix?>GoSearch();
 		});
 		jQuery('#<?php echo $prefix?>submitbutton').click(function(){<?php echo $prefix?>GoSearch();});
 		<?php if(!empty($hasFilters)):?>

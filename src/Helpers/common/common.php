@@ -92,7 +92,6 @@ function zbase_main_package()
 	return strtolower(env('ZBASE_MAIN_PACKAGE', 'zbase'));
 }
 
-
 /**
  * Dump the passed variables
  *
@@ -798,6 +797,10 @@ function zbase_currency_format($number)
  */
 function zbase_is_xio()
 {
+	if(env('ZBASE_XIO', false))
+	{
+		return true;
+	}
 	if(env('APP_ENV', 'production') == 'local')
 	{
 		return true;

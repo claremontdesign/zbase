@@ -89,13 +89,13 @@ class Column extends Data implements Interfaces\IdInterface
 		return zbase_value_get($this->getAttributes(), 'json', false);
 	}
 
-    /**
-     * Is column hidden?
-     */
+	/**
+	 * Is column hidden?
+	 */
 	public function isHidden()
-    {
-        return zbase_value_get($this->getAttributes(), 'hidden', false);
-    }
+	{
+		return zbase_value_get($this->getAttributes(), 'hidden', false);
+	}
 
 	/**
 	 * Render the Value
@@ -192,6 +192,75 @@ class Column extends Data implements Interfaces\IdInterface
 		{
 			$this->_value();
 		}
+	}
+
+	/**
+	 * Is column sortable
+	 */
+	public function sortable()
+	{
+		return zbase_data_get($this->getAttributes(), 'sorting.enable', false);
+	}
+
+	/**
+	 * Sort Id
+	 * @return string
+	 */
+	public function sortableId()
+	{
+		return zbase_string_camel_case($this->id() . '_sort');
+	}
+
+	/**
+	 * Return the sort queryString
+	 * @return string
+	 */
+	public function sortRequestString()
+	{
+		$sort = 'asc';
+		$sortDirection = $this->sortableDirection();
+		if(!empty($sortDirection))
+		{
+			$sort = $sortDirection;
+		}
+		return strtolower($this->id() . '_' . $sort);
+	}
+
+	/**
+	 * Column current sort direction
+	 * @return null|string asc or desc; null if no sorting
+	 */
+	public function sortableDirection()
+	{
+		$sorts = zbase_request_input('sort', zbase_request_query_input('sort', []));
+		/**
+		 * sorts[]=id_desc&sort[]=id2_asc
+		 */
+		$dirs = ['asc', 'desc'];
+		if(!empty($sorts))
+		{
+			/**
+			 * Each sort is: id2_asc
+			 */
+			foreach ($sorts as $sort)
+			{
+				$sort = explode('_', $sort);
+				if($sort[0] == $this->id() && in_array($sort[1], $dirs))
+				{
+					return $sort[1];
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Return the Sortable Index. The DB column to index
+	 * @return string column name like: COLUMNANME or TABLE.COLUMNANME or TABLE_ALIAS.COLUMNANME
+	 */
+	public function sortableIndex()
+	{
+		return zbase_data_get($this->getAttributes(), 'sorting.column', zbase_data_get($this->getAttributes(), 'sorting.index', $this->id()));
 	}
 
 	/**
@@ -356,30 +425,62 @@ class Column extends Data implements Interfaces\IdInterface
 		$attributes = zbase_value_get($attributes, 'html.attributes.' . $tag, []);
 		$styles = !empty($attributes['style']) ? $attributes['style'] : [];
 		$classes = [];
+		$ariaLabel = $this->getLabel();
 		if(!empty($attributes['class']))
-        {
-            if(is_array($attributes['class']))
-            {
-                $classes = $attributes['class'];
-            } else {
-                $classes[] = $attributes['class'];
-            }
-        }
+		{
+			if(is_array($attributes['class']))
+			{
+				$classes = $attributes['class'];
+			}
+			else
+			{
+				$classes[] = $attributes['class'];
+			}
+		}
 		if(!is_array($styles))
 		{
 			$styles = [$styles];
 		}
 		if($tag == 'th')
 		{
+			if($this->sortable())
+			{
+				$sortDirection = $this->sortableDirection();
+				$classes[] = 'zbase-td-sorting';
+				if(!empty($sortDirection))
+				{
+					$classes[] = 'sorting_' . $sortDirection;
+					if($sortDirection == 'asc')
+					{
+						$ariaLabel .= ' Activate to sort column ascending.';
+					}
+					else
+					{
+						$ariaLabel .= ' Activate to sort column descending.';
+					}
+				}
+				else
+				{
+					$ariaLabel .= ' Activate to sort ascending.';
+					$classes[] = 'sorting';
+				}
+				$attributes['data-sorting'] = $this->id();
+			}
 			$attributes['id'] = 'datatable_th_' . $this->id();
 		}
 		if($this->isHidden())
-        {
-            $styles[] = 'display:none;';
-        }
-        $classes[] = 'column-' . $tag . '-' . $this->getDataType();
+		{
+			$styles[] = 'display:none;';
+		}
+		$classes[] = 'column-' . $tag . '-' . $this->getDataType();
 		$attributes['style'] = implode('', $styles);
 		$attributes['class'] = implode(' ', $classes);
+		if($tag == 'th')
+		{
+			$attributes['role'] = 'columnheader';
+			$attributes['aria-controls'] = 'datatable_orders';
+			$attributes['aria-label'] = $ariaLabel;
+		}
 		return $this->renderHtmlAttributes($attributes);
 	}
 

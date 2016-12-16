@@ -812,7 +812,7 @@ trait Post
 	public function postDatatableQuerySorting($sorting, $datatable)
 	{
 		$tableName = $this->postTableName();
-		$querySorting = $this->postQuerySorting();
+		$querySorting = $this->postQuerySorting($datatable);
 		if(method_exists($this, 'datatableQuerySorting'))
 		{
 			return $this->datatableQuerySorting($sorting, $querySorting, $datatable);
@@ -1230,9 +1230,10 @@ trait Post
 	{
 		$tableName = $this->postTableName();
 		$querySorting = [$tableName . '.created_at' => 'DESC'];
+		$requestSortings = zbase_request_input('sorting', zbase_request_query_input('sorting', []));
 		if(method_exists($this, 'querySorting'))
 		{
-			return $this->querySorting($querySorting, $datatable);
+			return $this->querySorting($querySorting, $datatable, $requestSortings);
 		}
 		return $querySorting;
 	}

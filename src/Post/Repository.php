@@ -312,6 +312,10 @@ class Repository
 		}
 		$model->from($this->getModel()->getTable() . ' as ' . $this->getModel()->getTable());
 		$model->select($columns);
+		if(zbase_is_xio())
+		{
+			zbase()->json()->addVariable('_db', $model->getQuery()->toSql());
+		}
 		if(!empty($this->getDebug()))
 		{
 			var_dump($model->getQuery()->toSql(), $model->getQuery()->getBindings());
