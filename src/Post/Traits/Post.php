@@ -1518,18 +1518,46 @@ trait Post
 	// </editor-fold>
 	// <editor-fold defaultstate="collapsed" desc="Repository">
 	/**
+	 * Acount all rows
+	 *
+	 * @return Integer
+	 */
+	public function countAll()
+	{
+		$cachePrefix = '';
+		if(method_exists($this, 'cachePrefix'))
+		{
+			$cachePrefix = $this->cachePrefix();
+		}
+		if(method_exists($this, 'countAllRows'))
+		{
+			return $this->countAllRows();
+		}
+		$tableName = $this->postTableName();
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_all_count');
+		return zbase_cache($cacheKey, function(){
+			return $this->repo()->count([], $this->postQuerySorting(), $this->postQueryJoins(), false);
+		}, [$tableName], $this->postCacheMinutes(), ['forceCache' => $this->postCacheForce(), 'driver' => $this->postCacheDriver()]);
+	}
+
+	/**
 	 * Return all rows
 	 *
 	 * @return Collection
 	 */
 	public function postAll()
 	{
+		$cachePrefix = '';
+		if(method_exists($this, 'cachePrefix'))
+		{
+			$cachePrefix = $this->cachePrefix();
+		}
 		if(method_exists($this, 'allRows'))
 		{
 			return $this->allRows();
 		}
 		$tableName = $this->postTableName();
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'all_');
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_all_');
 		return zbase_cache($cacheKey, function(){
 			return $this->repo()->all($this->postQuerySelects(), [], $this->postQuerySorting(), $this->postQueryJoins(), false);
 		}, [$tableName], $this->postCacheMinutes(), ['forceCache' => $this->postCacheForce(), 'driver' => $this->postCacheDriver()]);
@@ -1542,12 +1570,17 @@ trait Post
 	 */
 	public function postById($postId)
 	{
+		$cachePrefix = '';
+		if(method_exists($this, 'cachePrefix'))
+		{
+			$cachePrefix = $this->cachePrefix();
+		}
 		if(method_exists($this, 'byId'))
 		{
 			return $this->byId();
 		}
 		$tableName = $this->postTableName();
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $postId);
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_byId_' . $postId);
 		return zbase_cache($cacheKey, function() use ($postId, $cacheKey){
 			return $this->repo()->byId($postId);
 		}, [$tableName], $this->postCacheMinutes(), ['forceCache' => $this->postCacheForce(), 'driver' => $this->postCacheDriver()]);
@@ -1560,8 +1593,13 @@ trait Post
 	 */
 	public function postBy($attribute, $value)
 	{
+		$cachePrefix = '';
+		if(method_exists($this, 'cachePrefix'))
+		{
+			$cachePrefix = $this->cachePrefix();
+		}
 		$tableName = $this->postTableName();
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'by_' . $attribute . '_' . $value);
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_by_' . $attribute . '_' . $value);
 		return zbase_cache($cacheKey, function() use ($attribute, $value){
 			return $this->repo()->by($attribute, $value)->first();
 		}, [$tableName], $this->postCacheMinutes(), ['forceCache' => $this->postCacheForce(), 'driver' => $this->postCacheDriver()]);
@@ -1574,8 +1612,13 @@ trait Post
 	 */
 	public function postAllBy($attribute, $value)
 	{
+		$cachePrefix = '';
+		if(method_exists($this, 'cachePrefix'))
+		{
+			$cachePrefix = $this->cachePrefix();
+		}
 		$tableName = $this->postTableName();
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'allby_' . $attribute . '_' . $value);
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_allby_' . $attribute . '_' . $value);
 		return zbase_cache($cacheKey, function() use ($attribute, $value){
 			return $this->repo()->by($attribute, $value);
 		}, [$tableName], $this->postCacheMinutes(), ['forceCache' => $this->postCacheForce(), 'driver' => $this->postCacheDriver()]);
@@ -1675,16 +1718,22 @@ trait Post
 	 */
 	public function clearPostCache()
 	{
+		$cachePrefix = '';
+		if(method_exists($this, 'cachePrefix'))
+		{
+			$cachePrefix = $this->cachePrefix();
+		}
 		if(method_exists($this, 'clearCache'))
 		{
-			$this->clearCache();
+			$this->clearCache($cachePrefix);
 		}
 		$tableName = $this->postTableName();
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'all_');
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_all_');
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_all_count');
 		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'all_onlytrashed');
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_all_onlytrashed');
 		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'all_withtrashed');
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_all_withtrashed');
 		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
 	}
 
@@ -1695,16 +1744,21 @@ trait Post
 	 */
 	public function clearPostCacheById()
 	{
+		$cachePrefix = '';
+		if(method_exists($this, 'cachePrefix'))
+		{
+			$cachePrefix = $this->cachePrefix();
+		}
 		if(method_exists($this, 'clearCacheById'))
 		{
-			$this->clearCacheById();
+			$this->clearCacheById($cachePrefix);
 		}
 		$tableName = $this->postTableName();
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $this->postId());
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_byId_' . $this->postId());
 		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $this->postId() . '_withtrashed');
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_byId_' . $this->postId() . '_withtrashed');
 		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), 'byId_' . $this->postId() . '_onlytrashed');
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_byId_' . $this->postId() . '_onlytrashed');
 		zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
 	}
 
@@ -1715,14 +1769,19 @@ trait Post
 	 */
 	public function clearPostCacheByTableColumns()
 	{
+		$cachePrefix = '';
+		if(method_exists($this, 'cachePrefix'))
+		{
+			$cachePrefix = $this->cachePrefix();
+		}
 		if(method_exists($this, 'clearCacheByTableColumns'))
 		{
-			$this->clearCacheByTableColumns();
+			$this->clearCacheByTableColumns($cachePrefix);
 		}
 		$tableName = $this->postTableName();
 		foreach ($this->postTableColumns() as $columnName => $columnConfig)
 		{
-			$cacheKey = zbase_cache_key(zbase_entity($tableName), 'by_' . $columnName . '_' . $this->{$columnName});
+			$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_by_' . $columnName . '_' . $this->{$columnName});
 			zbase_cache_remove($cacheKey, [$tableName], ['driver' => $this->postCacheDriver()]);
 		}
 	}
@@ -1830,6 +1889,15 @@ trait Post
 			return $this->moduleName;
 		}
 		return $this->postTableName();
+	}
+
+	/**
+	 * Return Table Prefix
+	 * @return string
+	 */
+	public function postTablePrefix()
+	{
+		return \DB::getTablePrefix();
 	}
 
 	/**

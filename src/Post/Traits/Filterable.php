@@ -176,7 +176,6 @@ trait Filterable
 							if(isset($v['value']) && isset($v['keyName']))
 							{
 								$query->where($v['field'], 'REGEXP', '"' . $v['keyName'] . '":"' . $v['value'] . '"');
-								// $query->where($v['field'], 'RLIKE', '"' . $v['keyName'] . '":"[[:<:]]' . $v['value'] . '[[:>:]]"');
 							}
 							break;
 						case 'raw':
@@ -185,6 +184,33 @@ trait Filterable
 								$query->whereRaw($v['statement']);
 							}
 							break;
+						case 'json':
+							if(isset($v['value']) && isset($v['keyName']))
+							{
+								$query->where($v['field'], 'REGEXP', '"' . $v['keyName'] . '":"' . $v['value'] . '"');
+							}
+							break;
+						case 'notnull':
+							if(isset($v['field']))
+							{
+								$query->whereNotNull($v['field']);
+							}
+						case 'isnull':
+							if(isset($v['field']))
+							{
+								$query->whereNull($v['field']);
+							}
+							break;
+						case 'notempty':
+							if(isset($v['field']))
+							{
+								function($query){
+									$column = $v['field'];
+									return $query
+										->where($v['field'], '<>', "''")
+										->orWhereNotNull($column);
+								};
+							}
 						default;
 					}
 				}

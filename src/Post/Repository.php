@@ -194,7 +194,7 @@ class Repository
 		{
 			$paginate = intval($paginate);
 		}
-		if(is_bool($paginate))
+		if(is_bool($paginate) && !empty($paginate))
 		{
 			$paginate = $this->model->postRowsPerPage();
 		}
@@ -308,6 +308,15 @@ class Repository
 				{
 					$model = $model->union($union);
 				}
+				else
+				{
+					$selects = !empty($union['columns']) ? $union['columns'] : ['*'];
+					$filters = !empty($union['filters']) ? $union['filters'] : [];
+					$sorting = !empty($union['sorting']) ? $union['sorting'] : [];
+					$joins = !empty($union['joins']) ? $union['joins'] : [];
+					$group = !empty($union['group']) ? $union['group'] : [];
+					$model = $model->union($this->_query($selects, $filters, $sorting, $joins, $group));
+				}
 			}
 		}
 		$model->from($this->getModel()->getTable() . ' as ' . $this->getModel()->getTable());
@@ -320,6 +329,7 @@ class Repository
 		{
 			var_dump($model->getQuery()->toSql(), $model->getQuery()->getBindings());
 		}
+		// dd($model->getQuery()->toSql(), $model->getQuery()->getBindings());
 		return $model;
 	}
 
