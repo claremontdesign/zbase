@@ -40,7 +40,7 @@ if(empty($isSearchable) && empty($hasFilters))
 	var <?php echo $prefix?>dataCurrentSortings = [];
 	<?php foreach ($columns as $column): ?>
 		<?php if($column->sortable() && !empty($column->sortableDirection())):?>
-			<?php echo $prefix?>dataCurrentSortings.push('<?php echo $column->sortRequestString();?>');
+			<?php // echo $prefix?>dataCurrentSortings.push('<?php echo $column->sortRequestString();?>');
 		<?php endif;?>
 	<?php endforeach;?>
 	<?php echo zbase_view_compile(zbase_view_render($tableTemplate, ['ui' => $ui, 'template' => true, 'prefix' => $prefix])); ?>
@@ -275,14 +275,16 @@ if(empty($isSearchable) && empty($hasFilters))
 			}
 			else
 			{
-				sorting = jQuery(this).attr('data-sorting') + '_des';
+				sorting = jQuery(this).attr('data-sorting') + '_desc';
 			}
 			jQuery(this).addClass('sorting_asc').removeClass('sorting_desc').addClass('sorting');
 			<?php echo $prefix?>dataCurrentSortings = unsetFromArray(<?php echo $prefix?>dataCurrentSortings, sorting);
 			<?php echo $prefix?>GoSearch();
 		});
 		jQuery('th.zbase-td-sorting').click(function(){
+			<?php echo $prefix?>dataCurrentSortings = [];
 			var sorting = null;
+			jQuery('th.zbase-td-sorting').not(this).removeClass('sorting_asc').removeClass('sorting_desc').addClass('sorting');
 			if(jQuery(this).hasClass('sorting_asc'))
 			{
 				sorting = jQuery(this).attr('data-sorting') + '_desc';

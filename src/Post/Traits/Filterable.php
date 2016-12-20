@@ -204,12 +204,14 @@ trait Filterable
 						case 'notempty':
 							if(isset($v['field']))
 							{
-								function($query){
-									$column = $v['field'];
-									return $query
-										->where($v['field'], '<>', "''")
-										->orWhereNotNull($column);
-								};
+								$query->whereNotNull($v['field']);
+								$query->where($v['field'],'<>', '');
+//								function($query){
+//									$column = $v['field'];
+//									return $query
+//										->where($v['field'], '<>', "''")
+//										->orWhereNotNull($column);
+//								};
 							}
 						default;
 					}
