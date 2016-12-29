@@ -188,6 +188,51 @@ return [
 				],
 			],
 			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="Charts by Flot">
+			'flotCharts' => [
+				'position' => 200,
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('metronic/plugins/flot/jquery.flot.min.js'),
+				'enable' => true,
+				'dependents' => [
+					[
+						'position' => 100,
+						'id' => 'jquery.flot.resize',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/flot/jquery.flot.resize.min.js'),
+						'enable' => true,
+					],
+					[
+						'position' => 101,
+						'id' => 'jquery.flot.pie',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/flot/jquery.flot.pie.min.js'),
+						'enable' => true,
+					],
+					[
+						'position' => 102,
+						'id' => 'jquery.flot.stack',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/flot/jquery.flot.stack.min.js'),
+						'enable' => true,
+					],
+					[
+						'position' => 103,
+						'id' => 'jquery.flot.crosshair',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/flot/jquery.flot.crosshair.min.js'),
+						'enable' => true,
+					],
+					[
+						'position' => 104,
+						'id' => 'jquery.flot.categories',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/flot/jquery.flot.categories.min.js'),
+						'enable' => true,
+					],
+				]
+			],
+			// </editor-fold>
 			// <editor-fold defaultstate="collapsed" desc="Widget:Tree">
 			'bootstrap-treeview' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,

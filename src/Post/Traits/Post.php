@@ -3065,9 +3065,8 @@ trait Post
 		}
 		if(!empty($dateTo))
 		{
-			$dateFrom = zbase_date_from_format('d/m/Y', $dateTo);
+			$dateTo = zbase_date_from_format('d/m/Y', $dateTo);
 		}
-
 		if($dateFrom instanceof \DateTime && !$dateTo instanceof \DateTime)
 		{
 			$dateTo = new \DateTime();
