@@ -248,6 +248,52 @@ return [
 				]
 			],
 			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="Metronic:Login:Soft">
+			'login-soft' => [
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('metronic/plugins/jquery-validation/dist/jquery.validate.min.js'),
+				'enable' => true,
+				'dependents' => [
+					[
+						'id' => 'login-softBackstretch',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('metronic/plugins/backstretch/jquery.backstretch.min.js'),
+						'enable' => true
+					],
+					[
+						'id' => 'login-soft',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('metronic/css/pages/login-soft.css'),
+						'enable' => true,
+					],
+					[
+						'id' => 'login-soft',
+						'type' => \Zbase\Models\View::STYLE,
+						'style' => '	body.login hr{display:none;}
+	body.login .alert{
+		width: 360px;
+		margin: 0px auto;
+		margin-top: 20px;
+	}
+	.logo a{display:block}
+	.logo a img{margin:0px auto;width:320px !important;}',
+						'enable' => true,
+					],
+					[
+						'id' => 'zbase-app-init',
+						'type' => \Zbase\Models\View::SCRIPT,
+						'enable' => true,
+						'script' => '$.backstretch([
+							"'.zbase_path_asset('metronic/img/bg/1.jpg').'",
+							"'.zbase_path_asset('metronic/img/bg/2.jpg').'",
+							"'.zbase_path_asset('metronic/img/bg/3.jpg').'",
+							"'.zbase_path_asset('metronic/img/bg/4.jpg').'",
+							], {fade: 1000,duration: 8000});',
+						'onLoad' => true,
+					],
+				]
+			],
+			// </editor-fold>
 			// <editor-fold defaultstate="collapsed" desc="Widget:JStree">
 			'jstree' => [
 				'type' => \Zbase\Models\View::JAVASCRIPT,
