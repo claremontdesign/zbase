@@ -36,7 +36,14 @@ class UserController extends Controller
 		$id = zbase_route_input('id', null);
 		if(!empty($id))
 		{
-			$entity = zbase_user_by('alpha_id', $id);
+			if(is_numeric($id))
+			{
+				$entity = zbase_user_byid($id);
+			}
+			else
+			{
+				$entity = zbase_user_by('alpha_id', $id);
+			}
 			if(!empty($entity))
 			{
 				return $entity->serveImage(zbase_route_input('w'), zbase_route_input('h'), zbase_route_input('q'), false, zbase_route_input('image'));
@@ -44,4 +51,5 @@ class UserController extends Controller
 		}
 		return $this->notfound();
 	}
+
 }

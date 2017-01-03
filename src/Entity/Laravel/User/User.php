@@ -94,6 +94,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		{
 			$this->alpha_id = zbase_generate_hash([$this->user_id, rand(1, 1000), time()], $this->getTable());
 			$this->save();
+			return $this->user_id;
 		}
 		return $this->alpha_id;
 	}
@@ -1180,6 +1181,10 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function avatarUrl($options = [])
 	{
+		if(empty($this->avatar))
+		{
+			return 'http://api.adorable.io/avatars/150/' . $this->email();
+		}
 		if(preg_match('/http/', $this->avatar) == 1)
 		{
 			return str_replace('http://', '//', $this->avatar);
