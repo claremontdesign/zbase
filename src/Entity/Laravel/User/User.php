@@ -90,6 +90,11 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	 */
 	public function alphaId()
 	{
+		if(empty($this->alpha_id))
+		{
+			$this->alpha_id = zbase_generate_hash([$this->user_id, rand(1, 1000), time()], $this->getTable());
+			$this->save();
+		}
 		return $this->alpha_id;
 	}
 
@@ -1157,7 +1162,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$uploadedFile = zbase_file_upload_image($index, $folder, $filename, zbase_config_get('node.files.image.format', 'png'));
 			if(!empty($uploadedFile) && zbase_file_exists($uploadedFile))
 			{
-				if(file_exists($folder . $this->avatar))
+				if(!empty($this->avatar) && is_dir($folder) && file_exists($folder . $this->avatar))
 				{
 					unlink($folder . $this->avatar);
 				}
@@ -1224,7 +1229,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 			$image = zbase_file_serve_image($path, $width, $height, $quality, $download);
 			if(!empty($image))
 			{
-				return \Response::make(readfile($image['src'], $image['size'])->header('Content-Type', $image['mime']));
+				return \Response::make(readfile($image['src'], $image['size']))->header('Content-Type', $image['mime']);
 			}
 			return zbase_abort(404);
 		}

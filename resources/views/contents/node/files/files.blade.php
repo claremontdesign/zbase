@@ -49,10 +49,10 @@ if(!empty($node))
 <?php endif; ?>
 <?php if(!empty($isUser)): ?>
 	<?php if(!empty($isAngularTemplate)): ?>
-		<img ng-src="<% avatar %>" class="img-thumbnail user-img-thumbnail" style="width:150px;" flow-img="$flow.files[0]" src="<?php echo $node->avatarUrl(['thumbnail => true']) ?>" alt="<?php echo $node->displayName() ?>" />
+		<img ng-src="<% avatar %>" class="img-thumbnail user-img-thumbnail" style="width:150px;" flow-img="$flow.files[0]" src="<?php echo $node->avatarUrl() ?>" alt="<?php echo $node->displayName() ?>" />
 	<?php else: ?>
 		<div class="col-xs-12 col-md-12" style="margin-bottom: 20px;">
-			<img class="img-thumbnail" src="<?php echo $node->avatarUrl(['thumbnail => true']) ?>" alt="<?php echo $node->displayName() ?>" />
+			<img class="img-thumbnail" src="<?php echo $node->avatarUrl() ?>" alt="<?php echo $node->displayName() ?>" />
 		</div>
 		<?php endif; ?>
 	<?php endif; ?>
