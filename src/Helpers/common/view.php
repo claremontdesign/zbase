@@ -995,9 +995,9 @@ function zbase_view_render_body()
 	}
 	if(!empty($onloadScripts))
 	{
-		$str .= EOF . 'jQuery(document).ready(function(){'
+		$str .= str_replace(array("\n","\t"),'',EOF . 'jQuery(document).ready(function(){'
 				. EOF . $onloadScripts
-				. EOF . '});';
+				. EOF . '});');
 	}
 	$str .= EOF . '</script>';
 	return $str;

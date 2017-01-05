@@ -115,7 +115,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 <script type="text/javascript">
 	<?php if(!empty($saveToLocalStorage)): ?>
 		$("#<?php echo $prefix ?>ChartConfigurableForm").find(':input').each(function () {
-			if (jQuery(this).attr('name') !== undefined && getFromLocalStorage('<?php echo $prefix ?>ChartConfigurableForm_' + jQuery(this).attr('name')) !== undefined)
+			if (jQuery(this).attr('name') !== undefined && getFromLocalStorage('<?php echo $prefix ?>ChartConfigurableForm_' + jQuery(this).attr('name')) !== null)
 			{
 				jQuery(this).val(getFromLocalStorage('<?php echo $prefix ?>ChartConfigurableForm_' + jQuery(this).attr('name')));
 			}
