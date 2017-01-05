@@ -40,6 +40,30 @@ class Geo
 	}
 
 	/**
+	 * GeoCode a LatLng into an Address
+	 * @param float $lat
+	 * @param float $lng
+	 * @return array
+	 *
+	 * dd(\Zbase\Utility\Geo::geocodeLatLngToAddress($lat, $lng));
+	 */
+	public static function geocodeLatLngToAddress($lat, $lng, $options = [])
+	{
+		$api = !empty($options['api']) ? $options['api'] : 'google';
+		$apiKey = !empty($options['apiKey']) ? $options['apiKey'] : zbase_config_get('geo.' . $api . '.geocoding.apikey', false);
+		$url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' . $lat . ',' . $lng . '&key=' . $apiKey;
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_PROXYPORT, 3128);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		$response = curl_exec($ch);
+		curl_close($ch);
+		return self::extractGoogleMapAddressFromGeocoding(json_decode($response));
+	}
+
+	/**
 	 * https://developers.google.com/maps/documentation/geocoding/intro
 	 * Convert an Address to LatLng
 	 * 	$array = [
@@ -166,12 +190,24 @@ class Geo
 			{
 				$return['city'] = $address['locality'];
 			}
+			if(isset($address['postal_code']) && !empty($address['postal_code']))
+			{
+				$return['zip'] = $address['postal_code'];
+			}
 			if(!empty($address['administrative_area_level_1']))
 			{
 				$return['state'] = $address['administrative_area_level_1'];
 				if(!empty($address['administrative_area_level_1_longname']))
 				{
 					$return['state_name'] = $address['administrative_area_level_1_longname'];
+				}
+			}
+			if(!empty($address['administrative_area_level_2']))
+			{
+				$return['county'] = $address['administrative_area_level_2'];
+				if(!empty($address['administrative_area_level_2_longname']))
+				{
+					$return['county_name'] = $address['administrative_area_level_2_longname'];
 				}
 			}
 			if(!empty($address['country']))

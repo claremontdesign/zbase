@@ -189,7 +189,7 @@ class Repository
 	 */
 	public function all($columns = ['*'], $filters = null, $sorting = null, $joins = null, $paginate = null, $unions = null, $group = null, $options = null)
 	{
-		$builder = $this->_query($columns, $filters, $sorting, $joins, $unions, $group);
+		$builder = $this->_query($columns, $filters, $sorting, $joins, $unions, $group, $options);
 		if(is_numeric($paginate))
 		{
 			$paginate = intval($paginate);
@@ -258,7 +258,7 @@ class Repository
 	 * @param array $group
 	 * @return Builder
 	 */
-	protected function _query($columns, $filters, $sorting, $joins, $unions, $group)
+	protected function _query($columns, $filters, $sorting, $joins, $unions, $group, $options = [])
 	{
 		$model = $this->getModel();
 		if($model->hasSoftDelete())
@@ -318,6 +318,14 @@ class Repository
 					$model = $model->union($this->_query($selects, $filters, $sorting, $joins, $group));
 				}
 			}
+		}
+		if(!empty($options['limit']))
+		{
+			$model->limit($options['limit']);
+		}
+		if(!empty($options['random']))
+		{
+			$model->inRandomOrder();
 		}
 		$model->from($this->getModel()->getTable() . ' as ' . $this->getModel()->getTable());
 		$model->select($columns);

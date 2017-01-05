@@ -92,8 +92,6 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 	{
 		if(empty($this->alpha_id))
 		{
-			$this->alpha_id = zbase_generate_hash([$this->user_id, rand(1, 1000), time()], $this->getTable());
-			$this->save();
 			return $this->user_id;
 		}
 		return $this->alpha_id;
@@ -1414,7 +1412,7 @@ AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, WidgetE
 		$orderEntityName = $this->getOrderEntityName();
 		$joins = [];
 		$joins[] = [
-			'type' => 'join',
+			'type' => 'left',
 			'model' => 'users_address as address',
 			'foreign_key' => 'users.user_id',
 			'local_key' => 'address.user_id',

@@ -102,3 +102,14 @@ function zbase_generate_hash_reverse($hashedValue, $salt = null)
 	$hash = new \Zbase\Utility\Hash\Hash($salt);
 	return $hash->decode($hashedValue);
 }
+
+/**
+ * Function that converts an array into the JSON Object to be used for Javascript
+ *
+ * @param array $var
+ * @return string
+ */
+function zbase_json_to_javascript($var)
+{
+	return str_ireplace(array("'function", '"function', "}'", '}"'), array("function", 'function', "}", '}'), json_encode($var, JSON_UNESCAPED_SLASHES));
+}

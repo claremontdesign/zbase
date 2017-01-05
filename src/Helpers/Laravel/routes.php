@@ -642,14 +642,21 @@ function zbase_route_response($name, $route)
 	if(!empty($view) && !empty($view['name']) && !empty($route['view']['enable']))
 	{
 		zbase_view_page_details($route);
+		$viewName = zbase_data_get($view['name']);
+		$responseType = zbase_data_get($view['type'], null, 'html'); // json|html|javascript
 		if(!empty($route['view']['content']))
 		{
 			$params['content'] = zbase_data_get($route['view']['content'], null);
 		}
-		if($view['name'] == 'type.js')
+		if($viewName == 'type.js')
 		{
 			zbase_response_format_set('javascript');
 		}
-		return zbase_response(zbase_view_render(zbase_view_file($view['name']), $params));
+		if($responseType == 'json')
+		{
+			header('Content-Type: application/json');
+			return zbase_view_render(zbase_view_file($viewName), $params);
+		}
+		return zbase_response(zbase_view_render(zbase_view_file($viewName), $params));
 	}
 }

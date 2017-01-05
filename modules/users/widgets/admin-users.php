@@ -26,7 +26,7 @@ return [
 				return zbase_url_from_route('admin.users');
 			},
 			'input' => [
-				'placeholder' => 'Enter UserID, email address or name:Lenton; city:Davao; state:Davao del sur; role:stockist;'
+				'placeholder' => 'Enter UserID, email address;'
 			],
 			'onload' => true,
 		],
@@ -170,7 +170,7 @@ return [
 			],
 			'login' => [
 				'label' => 'Login',
-				'enable' => true,
+				'enable' => function(){return zbase_auth_duplex_enable();},
 				'data' => [
 					'type' => 'string',
 					'index' => 'loginAs'

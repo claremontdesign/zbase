@@ -129,7 +129,7 @@ $widgetConfig = ['config' => ['entity' => ['entity' => $selectedUser]]];
 
 		<div class="zbase-ui-wrapper zbase-ui-tab tab-pane fade" id="accounttabsaccount">
 			<?php if(!empty($adminView)): ?>
-				<?php if(zbase_auth_can_duplex()):?>
+				<?php if(zbase_auth_can_duplex() && zbase_auth_duplex_enable()):?>
 					<?php echo $selectedUser->loginAs();?>
 					<hr />
 				<?php endif;?>
