@@ -643,7 +643,7 @@ function zbase_route_response($name, $route)
 	{
 		zbase_view_page_details($route);
 		$viewName = zbase_data_get($view['name']);
-		$responseType = zbase_data_get($view['type'], null, 'html'); // json|html|javascript
+		$responseType = zbase_data_get($view, 'type', 'html'); // json|html|javascript
 		if(!empty($route['view']['content']))
 		{
 			$params['content'] = zbase_data_get($route['view']['content'], null);

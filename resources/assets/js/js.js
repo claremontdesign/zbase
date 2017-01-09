@@ -189,6 +189,7 @@ var n = this,
    return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
  };
 //</editor-fold>
+
 //<editor-fold defaultstate="collapsed" desc="ZBASE COMMONS START">
 
 /**
@@ -1253,6 +1254,13 @@ var Zbase = function () {
 					});
 				} else {
 					localStorage.setItem(_this.prefix + 'firstTab', jQuery(this).attr('href'));
+				}
+				/**
+				 * Chart On Tabs
+				 */
+				if(jQuery(this).attr('data-showcallback') !== undefined && jQuery(this).attr('data-showcallback') !== null)
+				{
+					eval(jQuery(this).attr('data-showcallback') + '();');
 				}
 			});
 			var firstTab = localStorage.getItem(_this.prefix + 'firstTab');
