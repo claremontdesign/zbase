@@ -178,20 +178,19 @@ jQuery.fn.outerHtml = function (s) {
 //
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="extensions">
-Number.prototype.formatMoney = function(c, d, t){
-var n = this,
-    c = isNaN(c = Math.abs(c)) ? 2 : c,
-    d = d == undefined ? "." : d,
-    t = t == undefined ? "," : t,
-    s = n < 0 ? "-" : "",
-    i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))),
-    j = (j = i.length) > 3 ? j % 3 : 0;
-   return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
- };
+Number.prototype.formatMoney = function (c, d, t) {
+	var n = this,
+			c = isNaN(c = Math.abs(c)) ? 2 : c,
+			d = d == undefined ? "." : d,
+			t = t == undefined ? "," : t,
+			s = n < 0 ? "-" : "",
+			i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))),
+			j = (j = i.length) > 3 ? j % 3 : 0;
+	return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+};
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="ZBASE COMMONS START">
-
 /**
  * Laravel dd type. I'm used of using dd
  * @param {string} v
@@ -339,7 +338,7 @@ function zbase_get_form_element_value(ele)
 		{
 			return jQuery(ele).val();
 		} else {
-			if(jQuery(ele).is(':checked'))
+			if (jQuery(ele).is(':checked'))
 			{
 				return jQuery(ele).val();
 			} else {
@@ -616,6 +615,25 @@ function zbase_toggle_element(e)
 	}
 }
 
+/**
+ * Return the Current ViewPort
+ * @returns {getViewPort.jsAnonym$10}
+ */
+function getViewPort() {
+	var e = window,
+			a = 'inner';
+	if (!('innerWidth' in window)) {
+		a = 'client';
+		e = document.documentElement || document.body;
+	}
+
+	return {
+		width: e[a + 'Width'],
+		height: e[a + 'Height']
+	};
+}
+;
+
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="LOCALStorage">
 /**
@@ -803,7 +821,7 @@ function zbase_ajax(dataConfig)
 				name = jQuery(ele).attr('name');
 			}
 			var val = zbase_get_form_element_value(jQuery(ele));
-			if(val !== undefined && name !== undefined)
+			if (val !== undefined && name !== undefined)
 			{
 				eval('data.' + name + ' = \'' + val + '\';');
 			}
@@ -1258,7 +1276,7 @@ var Zbase = function () {
 				/**
 				 * Chart On Tabs
 				 */
-				if(jQuery(this).attr('data-showcallback') !== undefined && jQuery(this).attr('data-showcallback') !== null)
+				if (jQuery(this).attr('data-showcallback') !== undefined && jQuery(this).attr('data-showcallback') !== null)
 				{
 					eval(jQuery(this).attr('data-showcallback') + '();');
 				}
@@ -1292,9 +1310,9 @@ var Zbase = function () {
 					if (r.next().is(':visible'))
 					{
 						r.next().hide();
-                        r.find('span.row-details').removeClass('row-details-open').addClass('row-details-close');
+						r.find('span.row-details').removeClass('row-details-open').addClass('row-details-close');
 					} else {
-                        r.find('span.row-details').removeClass('row-details-close').addClass('row-details-open');
+						r.find('span.row-details').removeClass('row-details-close').addClass('row-details-open');
 						r.next().show();
 					}
 					return;
@@ -1308,7 +1326,7 @@ var Zbase = function () {
 					{
 						zbase_ajax_post(url, {_innercontent: 1, _innerContentId: rId, _datatableRow: 1}, function () {}, {});
 					} else {
-                        r.find('span.row-details').removeClass('row-details-close').addClass('row-details-open');
+						r.find('span.row-details').removeClass('row-details-close').addClass('row-details-open');
 						var tdCount = r.find('td').length;
 						var rId = r.attr('id');
 						var newRTpl = '<tr class="zbase-datatable-row-toggle-copy"><td colspan="' + tdCount + '"><div class="zbase-datatable-row-toggle-copy-wrapper" id="rowCopy' + rId + '"></div></td></tr>';
@@ -1354,10 +1372,47 @@ var Zbase = function () {
 		}
 	}
 
+	var initPortlets = function ()
+	{
+		$('body').unbind('click').on('click', '.portlet > .portlet-title .fullscreen', function (e) {
+			e.preventDefault();
+			var portlet = $(this).closest(".portlet");
+			if (portlet.hasClass('portlet-fullscreen')) {
+				$(this).removeClass('on');
+				portlet.removeClass('portlet-fullscreen');
+				$('body').removeClass('page-portlet-fullscreen');
+				portlet.children('.portlet-body').css('height', 'auto');
+			} else {
+				var height = getViewPort().height -
+						portlet.children('.portlet-title').outerHeight() -
+						parseInt(portlet.children('.portlet-body').css('padding-top')) -
+						parseInt(portlet.children('.portlet-body').css('padding-bottom'));
+
+				$(this).addClass('on');
+				$('body').addClass('page-portlet-fullscreen');
+				portlet.addClass('portlet-fullscreen');
+				portlet.children('.portlet-body').css('height', height);
+			}
+
+			if (portlet.find('.chart').length > 0)
+			{
+				var chart = portlet.find('.chart');
+				if (portlet.hasClass('portlet-fullscreen'))
+				{
+					var chartHeight = parseInt(portlet.children('.portlet-body').height());
+					chart.css('height', chartHeight - 170 + 'px');
+				} else {
+					chart.css('height', '365px');
+				}
+			}
+		});
+	}
+
 	return {
 		init: function () {
 			var_dump('Zbase Initializing...');
 			initIntervalUpdates();
+			initPortlets();
 			jQuery('.equalHeight').equalHeights();
 			initTabs();
 			initDatatable();

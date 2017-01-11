@@ -22,6 +22,9 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 			<div class="caption">
 				<i class="fa fa-reorder"></i><?php echo $reportTitle ?>
 			</div>
+			<div class="tools">
+				<a href="#" class="fullscreen"></a>
+			</div>
 		</div>
 		<div class="portlet-body">
 			<div class="tabbable portlet-tabs">
@@ -33,15 +36,18 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 							</a>
 						</li>
 					<?php endif; ?>
+					<?php $tabCounter = 0; ?>
 					<?php foreach ($tabs as $tabPrefix => $tabConfig): ?>
 						<?php
 						$tabLabel = $tabConfig['label'];
+						$tabActive = $tabCounter == (count($tabs) - 1) ? true : false;
 						?>
-						<li>
+						<li class="<?php echo $tabActive ? 'active' : null?>">
 							<a href="#<?php echo $tabPrefix ?>" data-toggle="tab" data-showcallback="<?php echo $tabPrefix ?>ChartTabbable">
 								<?php echo $tabLabel ?>
 							</a>
 						</li>
+						<?php $tabCounter++; ?>
 					<?php endforeach; ?>
 				</ul>
 				<div class="tab-content">
@@ -49,7 +55,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 					<?php foreach ($tabs as $tabPrefix => $tabConfig): ?>
 						<?php
 						$tabUrl = $tabConfig['url'];
-						$tabActive = $tabCounter == 0 ? true : false;
+						$tabActive = $tabCounter == (count($tabs) - 1) ? true : false;
 						?>
 						<div class="tab-pane <?php echo $tabActive ? 'active' : null?>" id="<?php echo $tabPrefix ?>">
 							<h2 style="display:none;text-align:center;" id="<?php echo $tabPrefix ?>ChartTitle" class="chartTitle"></h2>
@@ -89,6 +95,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 					<?php endforeach; ?>
 					<?php if($configurable && !empty($configurableForms)): ?>
 						<div class="tab-pane" id="<?php echo $prefix ?>ConfigurableTab">
+							<button type="button" style="display:none;position:absolute;" id="<?php echo $prefix ?>ChartConfigurableBtnCustomize" onclick="jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').toggle();jQuery('#<?php echo $prefix ?>ChartConfigurableBtnCustomize').hide();" class="btn default btn-chart-customize">Customize</button>
 							<form method="post" action="" id="<?php echo $prefix ?>ChartConfigurableTabForm" style="display:block;border-bottom:2px solid #EBEBEB;">
 								<?php foreach ($configurableForms as $element): ?>
 									<?php
@@ -128,6 +135,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 									<?php endif; ?>
 								<?php endforeach; ?>
 								<button type="submit" id="<?php echo $prefix ?>ChartConfigurableSubmit" class="btn blue">Submit</button>
+								<button type="button" onclick="jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').toggle();jQuery('#<?php echo $prefix ?>ChartConfigurableBtnCustomize').show();" class="btn default">Close</button>
 								<br />
 								<br />
 							</form>
@@ -203,6 +211,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 						<?php if($refreshable): ?>
 							<a href="javascript:<?php echo $prefix ?>Chart(jQuery('#<?php echo $prefix ?>ChartConfigurableForm').serialize());" class="reload"></a>
 						<?php endif; ?>
+						<a href="#" class="fullscreen"></a>
 					</div>
 				<?php endif; ?>
 			</div>
