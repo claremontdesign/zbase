@@ -48,7 +48,13 @@ elseif($chartPlugin == 'amCharts')
 			];
 		$chartOptions['labelsEnabled'] = !empty($amChartsLabelsEnabled) ? $amChartsLabelsEnabled : false;
 		$chartOptions['innerRadius'] = !empty($amChartsInnerRadius) ? $amChartsInnerRadius : '30%';
-		$chartOptions['responsive']['rules'] = ['maxWidth' => 400, 'overrides' => ['legend' => ['enabled' => false]]];
+		$chartOptions['responsive']['rules'][] = ['maxWidth' => 400, 'overrides' => ['legend' => ['enabled' => false]]];
+		// 3d
+		if(!empty($threeDEffect))
+		{
+			$chartOptions['angle'] = !empty($amChartsAngle) ? $amChartsAngle : 15;
+			$chartOptions['depth3D'] = !empty($amChartsDepth) ? $amChartsDepth : 10;
+		}
 	}
 	if(!empty($exporttable))
 	{
