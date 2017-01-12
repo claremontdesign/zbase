@@ -220,6 +220,21 @@ class Repository
 	}
 
 	/**
+	 * REturn TOTAL/SUM
+	 * @param string $column
+	 * @param array $filters
+	 * @param array $joins
+	 * @param array $unions
+	 * @param array $group
+	 * @param array $options
+	 */
+	public function sum($column, $filters = null, $joins = null, $unions = null, $group = null, $options = null)
+	{
+		$builder = $this->_query([$column], $filters, null, $joins, $unions, $group, $options);
+		return $builder->sum($column);
+	}
+
+	/**
 	 * Return the SQL statement
 	 * @param object $builder
 	 * @return string

@@ -2,6 +2,46 @@
 zbase_view_plugin_load('bootstrap-datetime');
 zbase_view_plugin_load('bootstrap-select');
 zbase_view_plugin_load('flotCharts');
+$chartPlugin = !empty($chartPlugin) ? $chartPlugin : 'flotCharts';
+$chartType = !empty($chartType) ? $chartType : 'pie';
+$exportTable = !empty($exportTable) ? $exportTable : false;
+$chartOptions = !empty($chartOptions) ? $chartOptions : [];
+if($chartPlugin == 'flotCharts')
+{
+	zbase_view_plugin_load('flotCharts');
+}
+elseif($chartPlugin == 'amCharts')
+{
+	$amChartTheme = !empty($amChartTheme) ? $amChartTheme : 'light';
+
+	$chartOptions['type'] = $chartType;
+	$chartOptions['theme'] = !empty($amChartsTheme) ? $amChartsTheme : 'none';
+	$chartOptions['titleField'] = !empty($amChartsTheme) ? $amChartsTheme : 'title';
+	$chartOptions['valueField'] = !empty($amChartsValueField) ? $amChartsValueField : 'value';
+	$chartOptions['marginRight'] = !empty($amChartsMarginRight) ? $amChartsMarginRight : 120;
+	$chartOptions['marginLeft'] = !empty($amChartsMarginLeft) ? $amChartsMarginLeft : 0;
+	$chartOptions['labelPosition'] = !empty($amChartsLabelPosition) ? $amChartsLabelPosition : 'right';
+	$chartOptions['startX'] = !empty($amChartsStartX) ? $amChartsStartX : 0;
+	$chartOptions['balloonText'] = !empty($amChartsBaloonText) ? $amChartsBaloonText : '[[title]]: [[value]]</b>';
+	$chartOptions['startAlpha'] = !empty($amChartsStartAlpha) ? $amChartsStartAlpha : 0;
+	$chartOptions['outlineThickness'] = !empty($amChartsOutlineThickness) ? $amChartsOutlineThickness : 1;
+	if($chartType == 'funnel')
+	{
+		$chartOptions['funnelAlpha'] = !empty($amChartsFunnelAlpha) ? $amChartsFunnelAlpha : 0.9;
+		$chartOptions['neckWidth'] = !empty($amChartsNeckWidth) ? $amChartsNeckWidth : '40%';
+		$chartOptions['neckHeight'] = !empty($amChartsNeckHeight) ? $amChartsNeckHeight : '30%';
+		$chartOptions['legend'] = !empty($chartLegend) ? $chartLegend : false;
+		zbase_view_javascript_add('amchartsFunnel', zbase_path_asset('amcharts/funnel.js'));
+	}
+	if(!empty($exportTable))
+	{
+		$chartOptions['export'] = ['enabled' => true];
+	}
+	zbase_view_javascript_add('amcharts', zbase_path_asset('amcharts/amcharts.js'));
+	zbase_view_javascript_add('amchartsExport', zbase_path_asset('amcharts/plugins/export/export.js'));
+	zbase_view_stylesheet_add('amchartsExport', zbase_path_asset('amcharts/plugins/export/export.css'));
+	zbase_view_javascript_add('amchartTheme', zbase_path_asset('amcharts/themes/'. $amChartTheme .'.js'));
+}
 // Content by Tabs
 $tabs = !empty($tabs) ? $tabs : null;
 // If true, will return the chart only
@@ -42,7 +82,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 						$tabLabel = $tabConfig['label'];
 						$tabActive = $tabCounter == (count($tabs) - 1) ? true : false;
 						?>
-						<li class="<?php echo $tabActive ? 'active' : null?>">
+						<li class="<?php echo $tabActive ? 'active' : null ?>">
 							<a href="#<?php echo $tabPrefix ?>" data-toggle="tab" data-showcallback="<?php echo $tabPrefix ?>ChartTabbable">
 								<?php echo $tabLabel ?>
 							</a>
@@ -57,7 +97,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 						$tabUrl = $tabConfig['url'];
 						$tabActive = $tabCounter == (count($tabs) - 1) ? true : false;
 						?>
-						<div class="tab-pane <?php echo $tabActive ? 'active' : null?>" id="<?php echo $tabPrefix ?>">
+						<div class="tab-pane <?php echo $tabActive ? 'active' : null ?>" id="<?php echo $tabPrefix ?>">
 							<h2 style="display:none;text-align:center;" id="<?php echo $tabPrefix ?>ChartTitle" class="chartTitle"></h2>
 							<div id="<?php echo $tabPrefix ?>Chart" class="chart"></div>
 						</div>
@@ -74,9 +114,15 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 										url: '<?php echo $tabUrl; ?>',
 										success: function (data) {
 											App.unblockUI($('#<?php echo $tabPrefix ?>Chart').parent());
+											<?php if($chartPlugin == 'flotCharts'):?>
 											$.plot($("#<?php echo $tabPrefix ?>Chart"), data.data, <?php echo zbase_json_to_javascript($chartOptions) ?>);
+											<?php endif;?>
+											<?php if($chartPlugin == 'amCharts'):?>
+												<?php $chartOptions['dataProvider'] = 'data.data';?>
+												AmCharts.makeChart( "<?php echo $tabPrefix ?>Chart", <?php echo zbase_json_to_javascript($chartOptions) ?>);
+											<?php endif;?>
 											$("#<?php echo $tabPrefix ?>Chart").addClass('chartLoaded');
-											if(data.title !== undefined)
+											if (data.title !== undefined)
 											{
 												jQuery("#<?php echo $tabPrefix ?>ChartTitle").text(data.title).show();
 											}
@@ -86,11 +132,11 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 							}
 						</script>
 						<?php zbase_view_script_add($tabPrefix . 'Chart', ob_get_clean(), false); ?>
-							<?php ob_start(); ?>
-							<script type="text/javascript">
-								<?php echo $tabPrefix ?>ChartTabbable();
-							</script>
-							<?php zbase_view_script_add($tabPrefix . 'ChartOnload', ob_get_clean(), true); ?>
+						<?php ob_start(); ?>
+						<script type="text/javascript">
+							<?php echo $tabPrefix ?>ChartTabbable();
+						</script>
+						<?php zbase_view_script_add($tabPrefix . 'ChartOnload', ob_get_clean(), true); ?>
 						<?php $tabCounter++; ?>
 					<?php endforeach; ?>
 					<?php if($configurable && !empty($configurableForms)): ?>
@@ -141,7 +187,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 							</form>
 							<h2 style="display:none;text-align:center;" id="<?php echo $prefix ?>ChartConfigurableTitle" class="chartTitle"></h2>
 							<div id="<?php echo $prefix ?>ChartConfigurableTab" class="chart"></div>
-						<?php ob_start(); ?>
+							<?php ob_start(); ?>
 							<script type="text/javascript">
 								function <?php echo $prefix ?>ChartConfigurableTab(formData)
 								{
@@ -153,19 +199,26 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 										data: formData,
 										success: function (data) {
 											App.unblockUI($('#<?php echo $prefix ?>ChartConfigurableTab').parent());
+											<?php if($chartPlugin == 'flotCharts'):?>
 											$.plot($("#<?php echo $prefix ?>ChartConfigurableTab"), data.data, <?php echo zbase_json_to_javascript($chartOptions) ?>);
-											if(data.title !== undefined)
+											<?php endif; ?>
+											<?php if($chartPlugin == 'amCharts'):?>
+												<?php $chartOptions['dataProvider'] = 'data.data';?>
+												AmCharts.makeChart( "<?php echo $prefix ?>ChartConfigurableTab", <?php echo zbase_json_to_javascript($chartOptions) ?>);
+											<?php endif;?>
+											if (data.title !== undefined)
 											{
 												jQuery("#<?php echo $prefix ?>ChartConfigurableTitle").text(data.title).show();
 											}
 											<?php if(!empty($saveToLocalStorage)): ?>
-											$('#<?php echo $prefix ?>ChartConfigurableTabForm').find(':input').each(function () {
-												if (jQuery(this).attr('name') !== undefined)
-												{
-													saveToLocalStorage('<?php echo $prefix ?>ChartConfigurableTabForm_' + jQuery(this).attr('name'), jQuery(this).val());
-												}
-											});
-											<?php endif; ?>
+												$('#<?php echo $prefix ?>ChartConfigurableTabForm').find(':input').each(function () {
+													if (jQuery(this).attr('name') !== undefined)
+													{
+														saveToLocalStorage('<?php echo $prefix ?>ChartConfigurableTabForm_' + jQuery(this).attr('name'), jQuery(this).val());
+													}
+												});
+											</script>
+										<?php endif; ?>
 										}
 									});
 								}
@@ -173,20 +226,20 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 							<?php zbase_view_script_add($prefix . 'ChartConfigurableTab', ob_get_clean(), false); ?>
 							<?php ob_start(); ?>
 							<script type="text/javascript">
-								<?php if(!empty($saveToLocalStorage)): ?>
+									<?php if(!empty($saveToLocalStorage)): ?>
 									$("#<?php echo $prefix ?>ChartConfigurableTabForm").find(':input').each(function () {
 										if (jQuery(this).attr('name') !== undefined && getFromLocalStorage('<?php echo $prefix ?>ChartConfigurableTabForm_' + jQuery(this).attr('name')) !== null)
 										{
 											jQuery(this).val(getFromLocalStorage('<?php echo $prefix ?>ChartConfigurableTabForm_' + jQuery(this).attr('name')));
 										}
 									});
-								<?php endif; ?>
+									<?php endif; ?>
 								jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').submit(function (e) {
 									e.preventDefault();
+											<?php echo $prefix ?>ChartConfigurableTab(jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').serialize());
+											return false;
+										});
 									<?php echo $prefix ?>ChartConfigurableTab(jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').serialize());
-									return false;
-								});
-								<?php echo $prefix ?>ChartConfigurableTab(jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').serialize());
 							</script>
 							<?php zbase_view_script_add($prefix . 'ChartConfigurableTabOnload', ob_get_clean(), true); ?>
 						</div>
@@ -281,15 +334,21 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 				data: formData,
 				success: function (data) {
 					App.unblockUI($('#<?php echo $prefix ?>Chart').parent());
+					<?php if($chartPlugin == 'flotCharts'):?>
 					$.plot($("#<?php echo $prefix ?>Chart"), data, <?php echo zbase_json_to_javascript($chartOptions) ?>);
-	<?php if(!empty($saveToLocalStorage)): ?>
+					<?php endif;?>
+					<?php if($chartPlugin == 'amCharts'):?>
+						<?php $chartOptions['dataProvider'] = 'data.data';?>
+						AmCharts.makeChart( "<?php echo $prefix ?>Chart", <?php echo zbase_json_to_javascript($chartOptions) ?>);
+					<?php endif;?>
+						<?php if(!empty($saveToLocalStorage)): ?>
 						$("#<?php echo $prefix ?>ChartConfigurableForm").find(':input').each(function () {
 							if (jQuery(this).attr('name') !== undefined)
 							{
 								saveToLocalStorage('<?php echo $prefix ?>ChartConfigurableForm_' + jQuery(this).attr('name'), jQuery(this).val());
 							}
 						});
-	<?php endif; ?>
+						<?php endif; ?>
 				}
 			});
 		}
@@ -297,18 +356,18 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 	<?php zbase_view_script_add($prefix . 'Chart', ob_get_clean(), false); ?>
 	<?php ob_start(); ?>
 	<script type="text/javascript">
-	<?php if(!empty($saveToLocalStorage)): ?>
+			<?php if(!empty($saveToLocalStorage)): ?>
 			$("#<?php echo $prefix ?>ChartConfigurableForm").find(':input').each(function () {
 				if (jQuery(this).attr('name') !== undefined && getFromLocalStorage('<?php echo $prefix ?>ChartConfigurableForm_' + jQuery(this).attr('name')) !== null)
 				{
 					jQuery(this).val(getFromLocalStorage('<?php echo $prefix ?>ChartConfigurableForm_' + jQuery(this).attr('name')));
 				}
 			});
-	<?php endif; ?>
+			<?php endif; ?>
 	<?php echo $prefix ?>Chart(jQuery('#<?php echo $prefix ?>ChartConfigurableForm').serialize());
 		jQuery('#<?php echo $prefix ?>ChartConfigurableForm').submit(function (e) {
 			e.preventDefault();
-	<?php echo $prefix ?>Chart(jQuery('#<?php echo $prefix ?>ChartConfigurableForm').serialize());
+			<?php echo $prefix ?>Chart(jQuery('#<?php echo $prefix ?>ChartConfigurableForm').serialize());
 			return false;
 		});
 	</script>
