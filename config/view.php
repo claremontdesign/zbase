@@ -188,6 +188,50 @@ return [
 				],
 			],
 			// </editor-fold>
+			// <editor-fold defaultstate="collapsed" desc="AmCharts">
+			'amCharts' => [
+				'position' => 300,
+				'type' => \Zbase\Models\View::JAVASCRIPT,
+				'src' => zbase_path_asset('amcharts/amcharts.js'),
+				'enable' => true,
+				'dependents' => [
+					[
+						'position' => 299,
+						'id' => 'amChartsFunnel',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('amcharts/funnel.js'),
+						'enable' => true,
+					],
+					[
+						'position' => 298,
+						'id' => 'amChartsPie',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('amcharts/pie.js'),
+						'enable' => true,
+					],
+					[
+						'position' => 297,
+						'id' => 'amChartsExport',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('amcharts/plugins/export/export.js'),
+						'enable' => true,
+					],
+					[
+						'position' => 296,
+						'id' => 'amChartsResponsive',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('amcharts/plugins/responsive/responsive.min.js'),
+						'enable' => true,
+					],
+					[
+						'id' => 'amChartsExport',
+						'type' => \Zbase\Models\View::STYLESHEET,
+						'href' => zbase_path_asset('amcharts/plugins/export/export.css'),
+						'enable' => true,
+					],
+				],
+			],
+			// </editor-fold>
 			// <editor-fold defaultstate="collapsed" desc="Charts by Flot">
 			'flotCharts' => [
 				'position' => 200,

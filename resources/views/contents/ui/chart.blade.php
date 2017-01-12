@@ -12,35 +12,49 @@ if($chartPlugin == 'flotCharts')
 }
 elseif($chartPlugin == 'amCharts')
 {
+	zbase_view_plugin_load('amCharts');
 	$amChartTheme = !empty($amChartTheme) ? $amChartTheme : 'light';
-
 	$chartOptions['type'] = $chartType;
+	$chartOptions['responsive'] = ['enabled' => true];
+	$chartOptions['autoTransform'] = true;
 	$chartOptions['theme'] = !empty($amChartsTheme) ? $amChartsTheme : 'none';
-	$chartOptions['titleField'] = !empty($amChartsTheme) ? $amChartsTheme : 'title';
-	$chartOptions['valueField'] = !empty($amChartsValueField) ? $amChartsValueField : 'value';
-	$chartOptions['marginRight'] = !empty($amChartsMarginRight) ? $amChartsMarginRight : 120;
+	$chartOptions['titleField'] = !empty($amChartsTheme) ? $amChartsTheme : 'label';
+	$chartOptions['valueField'] = !empty($amChartsValueField) ? $amChartsValueField : 'data';
+	$chartOptions['marginRight'] = !empty($amChartsMarginRight) ? $amChartsMarginRight : 0;
 	$chartOptions['marginLeft'] = !empty($amChartsMarginLeft) ? $amChartsMarginLeft : 0;
 	$chartOptions['labelPosition'] = !empty($amChartsLabelPosition) ? $amChartsLabelPosition : 'right';
 	$chartOptions['startX'] = !empty($amChartsStartX) ? $amChartsStartX : 0;
-	$chartOptions['balloonText'] = !empty($amChartsBaloonText) ? $amChartsBaloonText : '[[title]]: [[value]]</b>';
+	$chartOptions['baloonText'] = isset($amChartsBaloonText) ? $amChartsBaloonText : '[[label]]: [[data]]</b>';
+	if(empty($chartOptions['baloonText']))
+	{
+		unset($chartOptions['baloonText']);
+	}
 	$chartOptions['startAlpha'] = !empty($amChartsStartAlpha) ? $amChartsStartAlpha : 0;
 	$chartOptions['outlineThickness'] = !empty($amChartsOutlineThickness) ? $amChartsOutlineThickness : 1;
+	$chartOptions['addClassNames'] = !empty($amChartsAddClassNames) ? $amChartsAddClassNames : false;
 	if($chartType == 'funnel')
 	{
 		$chartOptions['funnelAlpha'] = !empty($amChartsFunnelAlpha) ? $amChartsFunnelAlpha : 0.9;
 		$chartOptions['neckWidth'] = !empty($amChartsNeckWidth) ? $amChartsNeckWidth : '40%';
 		$chartOptions['neckHeight'] = !empty($amChartsNeckHeight) ? $amChartsNeckHeight : '30%';
 		$chartOptions['legend'] = !empty($chartLegend) ? $chartLegend : false;
-		zbase_view_javascript_add('amchartsFunnel', zbase_path_asset('amcharts/funnel.js'));
 	}
-	if(!empty($exportTable))
+	if($chartType == 'pie')
+	{
+		$chartOptions['legend'] = !empty($chartLegend) ? $chartLegend : [
+				'position' => 'right',
+				'marginRight' => 100,
+				'autoMargins' => true
+			];
+		$chartOptions['labelsEnabled'] = !empty($amChartsLabelsEnabled) ? $amChartsLabelsEnabled : false;
+		$chartOptions['innerRadius'] = !empty($amChartsInnerRadius) ? $amChartsInnerRadius : '30%';
+		$chartOptions['responsive']['rules'] = ['maxWidth' => 400, 'overrides' => ['legend' => ['enabled' => false]]];
+	}
+	if(!empty($exporttable))
 	{
 		$chartOptions['export'] = ['enabled' => true];
 	}
-	zbase_view_javascript_add('amcharts', zbase_path_asset('amcharts/amcharts.js'));
-	zbase_view_javascript_add('amchartsExport', zbase_path_asset('amcharts/plugins/export/export.js'));
-	zbase_view_stylesheet_add('amchartsExport', zbase_path_asset('amcharts/plugins/export/export.css'));
-	zbase_view_javascript_add('amchartTheme', zbase_path_asset('amcharts/themes/'. $amChartTheme .'.js'));
+	zbase_view_javascript_add('amchartTheme', zbase_path_asset('amcharts/themes/'. $amChartTheme .'.js'),null, null, 705);
 }
 // Content by Tabs
 $tabs = !empty($tabs) ? $tabs : null;
