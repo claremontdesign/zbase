@@ -4,7 +4,7 @@ zbase_view_plugin_load('bootstrap-select');
 zbase_view_plugin_load('flotCharts');
 $chartPlugin = !empty($chartPlugin) ? $chartPlugin : 'flotCharts';
 $chartType = !empty($chartType) ? $chartType : 'pie';
-$exportTable = !empty($exportTable) ? $exportTable : false;
+$exportTable = !empty($exportTable) ? $exportTable : true;
 $chartOptions = !empty($chartOptions) ? $chartOptions : [];
 if($chartPlugin == 'flotCharts')
 {
@@ -24,7 +24,7 @@ elseif($chartPlugin == 'amCharts')
 	$chartOptions['marginLeft'] = !empty($amChartsMarginLeft) ? $amChartsMarginLeft : 0;
 	$chartOptions['labelPosition'] = !empty($amChartsLabelPosition) ? $amChartsLabelPosition : 'right';
 	$chartOptions['startX'] = !empty($amChartsStartX) ? $amChartsStartX : 0;
-	$chartOptions['baloonText'] = isset($amChartsBaloonText) ? $amChartsBaloonText : '[[label]]: [[data]]</b>';
+	$chartOptions['baloonText'] = isset($amChartsBaloonText) ? $amChartsBaloonText : '[[label]]:[[data]]</b>';
 	if(empty($chartOptions['baloonText']))
 	{
 		unset($chartOptions['baloonText']);
@@ -34,6 +34,7 @@ elseif($chartPlugin == 'amCharts')
 	$chartOptions['addClassNames'] = !empty($amChartsAddClassNames) ? $amChartsAddClassNames : false;
 	if($chartType == 'funnel')
 	{
+		$chartOptions['marginRight'] = !empty($amChartsMarginRight) ? $amChartsMarginRight : '150';
 		$chartOptions['funnelAlpha'] = !empty($amChartsFunnelAlpha) ? $amChartsFunnelAlpha : 0.9;
 		$chartOptions['neckWidth'] = !empty($amChartsNeckWidth) ? $amChartsNeckWidth : '40%';
 		$chartOptions['neckHeight'] = !empty($amChartsNeckHeight) ? $amChartsNeckHeight : '30%';
@@ -56,7 +57,7 @@ elseif($chartPlugin == 'amCharts')
 			$chartOptions['depth3D'] = !empty($amChartsDepth) ? $amChartsDepth : 10;
 		}
 	}
-	if(!empty($exporttable))
+	if(!empty($exportTable))
 	{
 		$chartOptions['export'] = ['enabled' => true];
 	}
@@ -119,7 +120,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 						?>
 						<div class="tab-pane <?php echo $tabActive ? 'active' : null ?>" id="<?php echo $tabPrefix ?>">
 							<h2 style="display:none;text-align:center;" id="<?php echo $tabPrefix ?>ChartTitle" class="chartTitle"></h2>
-							<div id="<?php echo $tabPrefix ?>Chart" class="chart"></div>
+							<div id="<?php echo $tabPrefix ?>Chart" class="chart <?php echo $chartPlugin?>"></div>
 						</div>
 						<?php ob_start(); ?>
 						<script type="text/javascript">
@@ -206,7 +207,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 								<br />
 							</form>
 							<h2 style="display:none;text-align:center;" id="<?php echo $prefix ?>ChartConfigurableTitle" class="chartTitle"></h2>
-							<div id="<?php echo $prefix ?>ChartConfigurableTab" class="chart"></div>
+							<div id="<?php echo $prefix ?>ChartConfigurableTab" class="chart <?php echo $chartPlugin?>"></div>
 							<?php ob_start(); ?>
 							<script type="text/javascript">
 								function <?php echo $prefix ?>ChartConfigurableTab(formData)
@@ -336,11 +337,11 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 						</form>
 					</div>
 				<?php endif; ?>
-				<div id="<?php echo $prefix ?>Chart" class="chart"></div>
+				<div id="<?php echo $prefix ?>Chart" class="chart <?php echo $chartPlugin?>"></div>
 			</div>
 		</div>
 	<?php else: ?>
-		<div id="<?php echo $prefix ?>Chart" class="chart"></div>
+		<div id="<?php echo $prefix ?>Chart" class="chart <?php echo $chartPlugin?>"></div>
 	<?php endif; ?>
 	<?php ob_start(); ?>
 	<script type="text/javascript">
