@@ -58,8 +58,10 @@
 .tabbable.portlet-tabs{
 	margin-top:40px;
 }
-
-.portlet-tabs > .nav-tabs > li > a {
+.portlet-tabs .nav-tabs li {
+    float: left !important;
+}
+.chartTabbable .portlet-tabs > .nav-tabs > li > a {
     padding: 10px 8px;
 }
 /* Page Portlet Fullscreen */
@@ -119,6 +121,31 @@
 .chartTabbable h2{
 	font-size: 25px;
 }
+.amcharts-export-menu, .amcharts-export-canvas .canvas-container{
+	top: -115px !important;
+    right: -10px !important;;
+}
+
+.portlet.exporttable .nav.nav-tabs {
+	margin-right:0px;
+	padding-right: 50px;
+}
+
+.amChartsLegend.amcharts-legend-div {
+    overflow: auto !important;
+	overflow-x: hidden !important;
+    position: relative;
+    text-align: left;
+    min-width: 166.5px !important;
+    height: 100% !important;
+    top: 0px;
+    left: 622.5px;
+}
+
+@media print
+{
+}
+
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
 
 }
@@ -142,7 +169,7 @@
 /* 800px */
 @media only screen and (max-width: 959px) {
 	.portlet>.portlet-title>.tools>a.fullscreen {
-		display: none;
+		/*display: none;*/
 	}
 	.chartTabbable h2{
 		font-size: 20px;
@@ -168,7 +195,10 @@
 
 /* 540px */
 @media only screen and (max-width: 639px) {
-
+	.amcharts-export-menu, .amcharts-export-canvas .canvas-container{
+		top: -110px !important;
+		right: -10px !important;;
+	}
 }
 
 /* 480px */

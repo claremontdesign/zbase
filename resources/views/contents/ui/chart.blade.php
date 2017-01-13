@@ -6,6 +6,7 @@ $chartPlugin = !empty($chartPlugin) ? $chartPlugin : 'flotCharts';
 $chartType = !empty($chartType) ? $chartType : 'pie';
 $exportTable = !empty($exportTable) ? $exportTable : true;
 $chartOptions = !empty($chartOptions) ? $chartOptions : [];
+$reportTitle = !empty($reportTitle) ? $reportTitle : '';
 if($chartPlugin == 'flotCharts')
 {
 	zbase_view_plugin_load('flotCharts');
@@ -25,6 +26,10 @@ elseif($chartPlugin == 'amCharts')
 	$chartOptions['labelPosition'] = !empty($amChartsLabelPosition) ? $amChartsLabelPosition : 'right';
 	$chartOptions['startX'] = !empty($amChartsStartX) ? $amChartsStartX : 0;
 	$chartOptions['baloonText'] = isset($amChartsBaloonText) ? $amChartsBaloonText : '[[label]]:[[data]]</b>';
+	if(!empty($reportTitle))
+	{
+		//$chartOptions['titles'][] = ['text' => $reportTitle];
+	}
 	if(empty($chartOptions['baloonText']))
 	{
 		unset($chartOptions['baloonText']);
@@ -66,7 +71,6 @@ elseif($chartPlugin == 'amCharts')
 // Content by Tabs
 $tabs = !empty($tabs) ? $tabs : null;
 // If true, will return the chart only
-$reportTitle = !empty($reportTitle) ? $reportTitle : '';
 $chartOnly = !empty($chartOnly) ? $chartOnly : false;
 // If true chart data can be configured
 $configurable = !empty($configurable) ? $configurable : true;
@@ -78,7 +82,7 @@ $portletColor = !empty($portletColor) ? $portletColor : 'blue';
 $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 ?>
 <?php if(!empty($tabs)): ?>
-	<div class="portlet box <?php echo $portletColor ?> tabbable chartTabbable" id="<?php echo $prefix ?>">
+	<div class="portlet box <?php echo $portletColor ?> tabbable chartTabbable <?php echo !empty($exportTable) ? 'exporttable' : ''?>" id="<?php echo $prefix ?>">
 		<div class="portlet-title">
 			<div class="caption">
 				<i class="fa fa-reorder"></i><?php echo $reportTitle ?>

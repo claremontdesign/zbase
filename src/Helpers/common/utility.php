@@ -111,5 +111,5 @@ function zbase_generate_hash_reverse($hashedValue, $salt = null)
  */
 function zbase_json_to_javascript($var)
 {
-	return str_ireplace(array("'function", '"function', "}'", '}"','"data.data"'), array("function", 'function', "}", '}','data.data'), json_encode($var, JSON_UNESCAPED_SLASHES));
+	return str_ireplace(array("'function", '"function', "}'", '}"','"data.data"','"data.title"'), array("function", 'function', "}", '}','data.data','data.title'), json_encode($var, JSON_UNESCAPED_SLASHES));
 }
