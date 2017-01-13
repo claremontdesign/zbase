@@ -2,8 +2,8 @@
 
 $countries = require __DIR__ . '/countriesData.php';
 $data = [];
-foreach ($countries as $countryCode => $country)
+foreach ($countries as $countryCodex => $countryx)
 {
-	$data[$countryCode] = $country['name'];
+	$data[$countryCodex] = $countryx['name'];
 }
 return $data;

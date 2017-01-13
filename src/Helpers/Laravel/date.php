@@ -47,6 +47,7 @@ function zbase_date_instance(\Datetime $date)
 
 /**
  * $second date should be before the $first date
+ * Compare dates that FIRST is GREATER THAN the SECOND
  *
  * @param \Datetime|\Carbon\Carbon $first
  * @param \Datetime|\Carbon\Carbon $second

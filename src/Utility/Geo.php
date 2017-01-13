@@ -7,14 +7,14 @@ class Geo
 
 	/**
 	 * Country Code to Name
-	 * @param string $countryCode the Country Code
+	 * @param string $countryCodeToSearch the Country Code
 	 */
-	public static function countryCodeToName($countryCode)
+	public static function countryCodeToName($countryCodeToSearch)
 	{
 		$countries = require zbase_path_library('Geo/countries.php');
-		if(!empty($countries) && !empty($countries[strtoupper($countryCode)]))
+		if(!empty($countries) && !empty($countries[strtoupper($countryCodeToSearch)]))
 		{
-			return $countries[strtoupper($countryCode)];
+			return $countries[strtoupper($countryCodeToSearch)];
 		}
 		return null;
 	}
