@@ -206,6 +206,35 @@ class Repository
 	}
 
 	/**
+	 * Return the Builder
+	 * @param type $columns
+	 * @param type $filters
+	 * @param type $sorting
+	 * @param type $joins
+	 * @param type $paginate
+	 * @param type $unions
+	 * @param type $group
+	 * @param type $options
+	 */
+	public function builder($columns = ['*'], $filters = null, $sorting = null, $joins = null, $paginate = null, $unions = null, $group = null, $options = null)
+	{
+		$builder = $this->_query($columns, $filters, $sorting, $joins, $unions, $group, $options);
+		if(is_numeric($paginate))
+		{
+			$paginate = intval($paginate);
+		}
+		if(is_bool($paginate) && !empty($paginate))
+		{
+			$paginate = $this->model->postRowsPerPage();
+		}
+		if(!empty($paginate))
+		{
+			return $builder;
+		}
+		return $builder;
+	}
+
+	/**
 	 * REturn the number of rows
 	 * @param array $filters
 	 * @param array $joins
@@ -330,7 +359,8 @@ class Repository
 					$sorting = !empty($union['sorting']) ? $union['sorting'] : [];
 					$joins = !empty($union['joins']) ? $union['joins'] : [];
 					$group = !empty($union['group']) ? $union['group'] : [];
-					$model = $model->union($this->_query($selects, $filters, $sorting, $joins, $group));
+					$unionOptions = !empty($union['options']) ? $union['options'] : [];
+					$model = $model->union($this->_query($selects, $filters, $sorting, $joins, $group, $unionOptions));
 				}
 			}
 		}
