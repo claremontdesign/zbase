@@ -1196,7 +1196,7 @@ return [
 		'subRegion' => 'South America'
 	],
 	'VN' => [
-		'name' => 'Viet Nam',
+		'name' => 'Vietnam',
 		'region' => 'Asia',
 		'subRegion' => 'South-Eastern Asia'
 	],

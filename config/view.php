@@ -210,6 +210,13 @@ return [
 						'enable' => true,
 					],
 					[
+						'position' => 298,
+						'id' => 'amChartSerial',
+						'type' => \Zbase\Models\View::JAVASCRIPT,
+						'src' => zbase_path_asset('amcharts/serial.js'),
+						'enable' => true,
+					],
+					[
 						'position' => 297,
 						'id' => 'amChartsExport',
 						'type' => \Zbase\Models\View::JAVASCRIPT,

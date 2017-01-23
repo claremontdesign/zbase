@@ -1545,7 +1545,7 @@ trait Post
 	 *
 	 * @return Collection
 	 */
-	public function postAll()
+	public function postAll($filters = [])
 	{
 		$cachePrefix = '';
 		if(method_exists($this, 'cachePrefix'))
@@ -1557,9 +1557,9 @@ trait Post
 			return $this->allRows();
 		}
 		$tableName = $this->postTableName();
-		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_all_');
-		return zbase_cache($cacheKey, function(){
-			return $this->repo()->all($this->postQuerySelects(), [], $this->postQuerySorting(), $this->postQueryJoins(), false);
+		$cacheKey = zbase_cache_key(zbase_entity($tableName), $cachePrefix . '_all_' . md5($filters));
+		return zbase_cache($cacheKey, function() use ($filters){
+			return $this->repo()->all($this->postQuerySelects(), $filters, $this->postQuerySorting(), $this->postQueryJoins(), false);
 		}, [$tableName], $this->postCacheMinutes(), ['forceCache' => $this->postCacheForce(), 'driver' => $this->postCacheDriver()]);
 	}
 

@@ -7,18 +7,99 @@ $chartType = !empty($chartType) ? $chartType : 'pie';
 $exportTable = !empty($exportTable) ? $exportTable : true;
 $chartOptions = !empty($chartOptions) ? $chartOptions : [];
 $reportTitle = !empty($reportTitle) ? $reportTitle : '';
+$ajaxMethod = !empty($ajaxMethod) ? $ajaxMethod : 'post';
+$loadChartOnLoad = isset($loadChartOnLoad) ? $loadChartOnLoad : true;
+$configurableExpand = !empty($configurableExpand) ? $configurableExpand : false;
+$fullScreenOnLoad = !empty($fullScreenOnLoad) ? $fullScreenOnLoad : false;
+$chartTypeSelections = !empty($chartTypeSelections) ? $chartTypeSelections : [$chartType];
 if($chartPlugin == 'flotCharts')
 {
 	zbase_view_plugin_load('flotCharts');
 }
 elseif($chartPlugin == 'amCharts')
 {
+	/**
+	 * Pie
+	 */
+	$chartOptionsPie = [];
+	$chartOptionsPie['type'] = 'pie';
+	$chartOptionsPie['legend'] = !empty($chartLegend) ? $chartLegend : [
+			'position' => 'right',
+			'marginRight' => 100,
+			'autoMargins' => true
+		];
+	$chartOptionsPie['labelsEnabled'] = !empty($amChartsLabelsEnabled) ? $amChartsLabelsEnabled : false;
+	$chartOptionsPie['innerRadius'] = !empty($amChartsInnerRadius) ? $amChartsInnerRadius : '30%';
+	$chartOptionsPie['responsive']['rules'][] = ['maxWidth' => 400, 'overrides' => ['legend' => ['enabled' => false]]];
+	// 3d
+	if(!empty($threeDEffect))
+	{
+		$chartOptionsPie['angle'] = !empty($amChartsAngle) ? $amChartsAngle : 15;
+		$chartOptionsPie['depth3D'] = !empty($amChartsDepth) ? $amChartsDepth : 10;
+	}
+
+	/**
+	 * Funnel
+	 */
+	$chartOptionsFunnel = [];
+	$chartOptionsFunnel['type'] = 'funnel';
+	$chartOptionsFunnel['marginRight'] = !empty($amChartsMarginRight) ? $amChartsMarginRight : '150';
+	$chartOptionsFunnel['funnelAlpha'] = !empty($amChartsFunnelAlpha) ? $amChartsFunnelAlpha : 0.9;
+	$chartOptionsFunnel['neckWidth'] = !empty($amChartsNeckWidth) ? $amChartsNeckWidth : '40%';
+	$chartOptionsFunnel['neckHeight'] = !empty($amChartsNeckHeight) ? $amChartsNeckHeight : '30%';
+	$chartOptionsFunnel['legend'] = !empty($chartLegend) ? $chartLegend : false;
+
+	/**
+	 * Column | Serial
+	 */
+	$chartOptionsColumn = $chartOptions;
+	$chartOptionsColumn['type'] = 'serial';
+	$chartOptionsColumn['gridAboveGraphs'] = true;
+	$chartOptionsColumn['startDuration'] = 1;
+	$chartOptionsColumn['categoryField'] = 'label';
+	if(empty($chartOptions['valueAxes']))
+	{
+		$chartOptionsColumn['valueAxes'] = [[
+			"gridColor" => "#FFFFFF",
+			"gridAlpha" => 0.2,
+			"dashLength" => 0
+		]];
+	}
+	if(empty($chartOptions['graphs']))
+	{
+		$chartOptionsColumn['graphs'] = [[
+			"balloonText" => "[[label]]: <b>[[value]]</b>",
+			"fillAlphas" => 0.8,
+			"lineAlpha" => 0.2,
+			"fillColorsField" => "color",
+			"type" => "column",
+			"valueField" => "value"
+		]];
+	}
+	if(empty($chartOptions['chartCursor']))
+	{
+		$chartOptionsColumn['chartCursor'] = [
+			"labelBalloonEnabled" => false,
+			"cursorAlpha" => 0,
+			"zoomable" => false
+		];
+	}
+	if(empty($chartOptions['labelAxis']))
+	{
+		$chartOptionsColumn['labelAxis'] = [
+			"gridPosition" => "start",
+			"gridAlpha" => 0,
+			"tickPosition" => "start",
+			"tickLength" => 20
+		];
+	}
+
 	zbase_view_plugin_load('amCharts');
 	$amChartTheme = !empty($amChartTheme) ? $amChartTheme : 'light';
 	$chartOptions['type'] = $chartType;
 	$chartOptions['responsive'] = ['enabled' => true];
 	$chartOptions['autoTransform'] = true;
-	$chartOptions['theme'] = !empty($amChartsTheme) ? $amChartsTheme : 'none';
+	$chartOptions['theme'] = $amChartTheme;
 	$chartOptions['titleField'] = !empty($amChartsTheme) ? $amChartsTheme : 'label';
 	$chartOptions['valueField'] = !empty($amChartsValueField) ? $amChartsValueField : 'data';
 	$chartOptions['marginRight'] = !empty($amChartsMarginRight) ? $amChartsMarginRight : 0;
@@ -37,35 +118,27 @@ elseif($chartPlugin == 'amCharts')
 	$chartOptions['startAlpha'] = !empty($amChartsStartAlpha) ? $amChartsStartAlpha : 0;
 	$chartOptions['outlineThickness'] = !empty($amChartsOutlineThickness) ? $amChartsOutlineThickness : 1;
 	$chartOptions['addClassNames'] = !empty($amChartsAddClassNames) ? $amChartsAddClassNames : false;
+
+	$pieChartOptions = array_replace_recursive($chartOptions, $chartOptionsPie);
+	$funnelChartOptions = array_replace_recursive($chartOptions, $chartOptionsFunnel);
+
 	if($chartType == 'funnel')
 	{
-		$chartOptions['marginRight'] = !empty($amChartsMarginRight) ? $amChartsMarginRight : '150';
-		$chartOptions['funnelAlpha'] = !empty($amChartsFunnelAlpha) ? $amChartsFunnelAlpha : 0.9;
-		$chartOptions['neckWidth'] = !empty($amChartsNeckWidth) ? $amChartsNeckWidth : '40%';
-		$chartOptions['neckHeight'] = !empty($amChartsNeckHeight) ? $amChartsNeckHeight : '30%';
-		$chartOptions['legend'] = !empty($chartLegend) ? $chartLegend : false;
+		$chartOptions = array_merge($chartOptions, $chartOptionsFunnel);
 	}
 	if($chartType == 'pie')
 	{
-		$chartOptions['legend'] = !empty($chartLegend) ? $chartLegend : [
-				'position' => 'right',
-				'marginRight' => 100,
-				'autoMargins' => true
-			];
-		$chartOptions['labelsEnabled'] = !empty($amChartsLabelsEnabled) ? $amChartsLabelsEnabled : false;
-		$chartOptions['innerRadius'] = !empty($amChartsInnerRadius) ? $amChartsInnerRadius : '30%';
-		$chartOptions['responsive']['rules'][] = ['maxWidth' => 400, 'overrides' => ['legend' => ['enabled' => false]]];
-		// 3d
-		if(!empty($threeDEffect))
-		{
-			$chartOptions['angle'] = !empty($amChartsAngle) ? $amChartsAngle : 15;
-			$chartOptions['depth3D'] = !empty($amChartsDepth) ? $amChartsDepth : 10;
-		}
+		$chartOptions = array_merge($chartOptions, $chartOptionsPie);
+	}
+	if($chartType == 'column' || $chartType == 'serial')
+	{
+		$chartOptions = array_replace($chartOptions, $chartOptionsColumn);
 	}
 	if(!empty($exportTable))
 	{
 		$chartOptions['export'] = ['enabled' => true];
 	}
+	// dd($chartOptions);
 	zbase_view_javascript_add('amchartTheme', zbase_path_asset('amcharts/themes/'. $amChartTheme .'.js'),null, null, 705);
 }
 // Content by Tabs
@@ -135,7 +208,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 									App.blockUI({target: $('#<?php echo $tabPrefix ?>Chart').parent(), boxed: true});
 									$.ajax({
 										dataType: 'json',
-										type: 'post',
+										type: '<?php echo $ajaxMethod?>',
 										url: '<?php echo $tabUrl; ?>',
 										success: function (data) {
 											App.unblockUI($('#<?php echo $tabPrefix ?>Chart').parent());
@@ -159,7 +232,9 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 						<?php zbase_view_script_add($tabPrefix . 'Chart', ob_get_clean(), false); ?>
 						<?php ob_start(); ?>
 						<script type="text/javascript">
-							<?php echo $tabPrefix ?>ChartTabbable();
+							<?php if(!empty($loadChartOnLoad)):?>
+								<?php echo $tabPrefix ?>ChartTabbable();
+							<?php endif;?>
 						</script>
 						<?php zbase_view_script_add($tabPrefix . 'ChartOnload', ob_get_clean(), true); ?>
 						<?php $tabCounter++; ?>
@@ -205,6 +280,8 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 										</div>
 									<?php endif; ?>
 								<?php endforeach; ?>
+								<input type="hidden" value="<?php echo $reportType?>" name="reportType">
+								<input type="hidden" value="json" name="format">
 								<button type="submit" id="<?php echo $prefix ?>ChartConfigurableSubmit" class="btn blue">Submit</button>
 								<button type="button" onclick="jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').toggle();jQuery('#<?php echo $prefix ?>ChartConfigurableBtnCustomize').show();" class="btn default">Close</button>
 								<br />
@@ -219,7 +296,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 									App.blockUI({target: $('#<?php echo $prefix ?>ChartConfigurableTab').parent(), boxed: true});
 									$.ajax({
 										dataType: 'json',
-										type: 'post',
+										type: '<?php echo $ajaxMethod?>',
 										url: '<?php echo $jsonBaseUrl ?>',
 										data: formData,
 										success: function (data) {
@@ -264,7 +341,9 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 											<?php echo $prefix ?>ChartConfigurableTab(jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').serialize());
 											return false;
 										});
-									<?php echo $prefix ?>ChartConfigurableTab(jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').serialize());
+									<?php if(!empty($loadChartOnLoad)):?>
+										<?php echo $prefix ?>ChartConfigurableTab(jQuery('#<?php echo $prefix ?>ChartConfigurableTabForm').serialize());
+									<?php endif;?>
 							</script>
 							<?php zbase_view_script_add($prefix . 'ChartConfigurableTabOnload', ob_get_clean(), true); ?>
 						</div>
@@ -273,7 +352,6 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 			</div>
 		</div>
 	</div>
-
 <?php else: ?>
 	<?php if(!$chartOnly): ?>
 		<div class="portlet box <?php echo $portletColor ?>">
@@ -284,7 +362,7 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 				<?php if($configurable || $refreshable): ?>
 					<div class="tools">
 						<?php if($configurable && !empty($configurableForms)): ?>
-							<a href="javascript:jQuery('#<?php echo $prefix ?>ChartConfigurable').toggle();" class="config"></a>
+							<a href="#" class="config  <?php echo $prefix ?>ChartConfigurableClose"></a>
 						<?php endif; ?>
 						<?php if($refreshable): ?>
 							<a href="javascript:<?php echo $prefix ?>Chart(jQuery('#<?php echo $prefix ?>ChartConfigurableForm').serialize());" class="reload"></a>
@@ -292,56 +370,89 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 						<a href="#" class="fullscreen"></a>
 					</div>
 				<?php endif; ?>
+				<?php if(!empty($actionHtmls)):?>
+					<div class="actions">
+						<?php foreach($actionHtmls as $actionHtml):?>
+							<?php if(!empty($actionHtml['dropdown'])):?>
+								<div class="btn-group open">
+									<a data-toggle="dropdown" href="<?php echo !empty($actionHtml['href']) ? $actionHtml['href'] : '#'?>" class="btn <?php echo !empty($actionHtml['color']) ? $actionHtml['color'] : 'blue'?> btn-sm">
+										<i class="fa <?php echo !empty($actionHtml['icon']) ? $actionHtml['icon'] : ''?>"></i> <?php echo !empty($actionHtml['label']) ? $actionHtml['label'] : 'Action'?> <i class="fa fa-angle-down"></i>
+									</a>
+									<ul class="dropdown-menu pull-right">
+										<?php foreach($actionHtml['dropdown'] as $subActionHtml):?>
+											<li>
+												<a href="<?php echo !empty($subActionHtml['href']) ? $subActionHtml['href'] : ''?>">
+													<i class="fa <?php echo !empty($subActionHtml['icon']) ? $subActionHtml['icon'] : ''?>"></i> <?php echo !empty($subActionHtml['label']) ? $subActionHtml['label'] : ''?>
+												</a>
+											</li>
+										<?php endforeach;?>
+									</ul>
+								</div>
+							<?php else:?>
+								<a href="<?php echo !empty($actionHtml['href']) ? $actionHtml['href'] : '#'?>" class="btn <?php echo !empty($actionHtml['color']) ? $actionHtml['color'] : 'blue'?> btn-sm">
+									<i class="fa <?php echo !empty($actionHtml['icon']) ? $actionHtml['icon'] : ''?>"></i> <?php echo !empty($actionHtml['label']) ? $actionHtml['label'] : 'Action'?>
+								</a>
+							<?php endif;?>
+						<?php endforeach;?>
+					</div>
+				<?php endif;?>
 			</div>
-			<div class="portlet-body">
+			<div class="portlet-body" id="<?php echo $prefix?>-portlet-body">
 				<?php if($configurable && !empty($configurableForms)): ?>
-					<div class="portlet-configurable" id="<?php echo $prefix ?>ChartConfigurable" style="display:none;border-bottom:1px solid #e5e5e5;margin-bottom:20px;">
+					<div class="portlet-configurable" id="<?php echo $prefix ?>ChartConfigurable" style="display:<?php echo $configurableExpand ? 'block' : 'none'?>;border-bottom:1px solid #e5e5e5;margin-bottom:20px;">
 						<form method="post" action="" id="<?php echo $prefix ?>ChartConfigurableForm">
-							<?php foreach ($configurableForms as $element): ?>
-								<?php
-								$elementName = !empty($element['name']) ? $element['name'] : null;
-								$elementType = !empty($element['type']) ? $element['type'] : 'text';
-								$elementLabel = !empty($element['label']) ? $element['label'] : null;
-								$elementPlaceholder = !empty($element['placeholder']) ? $element['placeholder'] : null;
-								$elementValue = !empty($element['value']) ? $element['value'] : null;
-								$elementAttributes = [
-									'value="' . $elementValue . '"',
-									'placeholder="' . $elementPlaceholder . '"',
-									'type="' . $elementType . '"',
-								];
-								?>
-								<?php if($elementType == 'daterange'): ?>
-									<?php
-									$elementValueFrom = !empty($element['valuefrom']) ? $element['valuefrom'] : (!empty($startDate) && $startDate instanceof \DateTime ? $startDate->format('m/d/Y') : '');
-									$elementValueTo = !empty($element['valueto']) ? $element['valueto'] : (!empty($endDate) && $endDate instanceof \DateTime ? $endDate->format('m/d/Y') : '');
-									?>
-									<div class="form-group">
-										<label for="<?php echo $prefix . '_' . $elementName ?>">Date Range</label>
-										<div class="input-group input-large date-picker input-daterange" data-date-format="mm/dd/yyyy">
-											<input type="text" value="<?php echo $elementValueFrom ?>" class="form-control" id="<?php echo $prefix . '_' . $elementName ?>filter_from" name="from">
-											<span class="input-group-addon">
-												to
-											</span>
-											<input type="text" value="<?php echo $elementValueTo ?>"  class="form-control" id="<?php echo $prefix . '_' . $elementName ?>filter_from" name="to">
-										</div>
-									</div>
-								<?php elseif($elementType == 'select'): ?>
-
-								<?php else: ?>
-									<div class="form-group">
-										<label for="<?php echo $prefix . '_' . $elementName ?>"><?php echo $elementLabel ?></label>
-										<input <?php echo implode(' ', $elementAttributes); ?> id="<?php echo $prefix . '_' . $elementName ?>" class="form-control" name="<?php echo $elementName ?>">
-									</div>
-								<?php endif; ?>
-							<?php endforeach; ?>
-							<button type="submit" id="<?php echo $prefix ?>ChartConfigurableSubmit" class="btn blue">Submit</button>
-							<button type="button" onclick="jQuery('#<?php echo $prefix ?>ChartConfigurable').toggle();" class="btn default">Close</button>
-							<br />
-							<br />
+							@include(zbase_view_file_contents('ui.chart.configurable'))
 						</form>
 					</div>
 				<?php endif; ?>
-				<div id="<?php echo $prefix ?>Chart" class="chart <?php echo $chartPlugin?>"></div>
+				<?php if(!empty($chartTypeSelections) && count($chartTypeSelections) > 1):?>
+
+					<div class="form-group" id="<?php echo $prefix . 'chartTypeFormGroup' ?>" style="display:none;">
+						<p class="form-control-static">
+							<a href="#" class="<?php echo $prefix ?>ChartConfigurableClose">Customize</a> |
+							Chart Type:
+							<?php $chartTypeSelectionsHtml = [];?>
+							<?php foreach ($chartTypeSelections as $chartTypeSelection): ?>
+								<?php
+								if(is_array($chartTypeSelection))
+								{
+									if(!empty($chartTypeSelection['subTypes']))
+									{
+										$chartTypeSelectionSubTypes = $chartTypeSelection['subTypes'];
+										$chartTypeSelection = $chartTypeSelection['type'];
+										foreach($chartTypeSelectionSubTypes as $chartTypeSelectionSubType)
+										{
+											$chartTypeSelectionSubTypeLabel = !empty($chartTypeSelectionSubType['label']) ? $chartTypeSelectionSubType['label'] : ucfirst($chartTypeSelectionSubType);
+											$chartTypeSelectionSubTypeType = !empty($chartTypeSelectionSubType['type']) ? $chartTypeSelectionSubType['type'] : $chartTypeSelectionSubType;
+											$chartTypeSelectionsHtml[] = '<a onclick="'.$prefix.'Chart'.$chartTypeSelection.'(\''.$chartTypeSelectionSubType.'\')" href="javascript:void(0)">' . $chartTypeSelectionSubTypeLabel . '</a>';
+										}
+										continue;
+									}
+								}
+								else
+								{
+									$chartTypeSelectionsHtml[] = '<a onclick="'.$prefix.'Chart'.$chartTypeSelection.'()" href="javascript:void(0)">'.ucwords(strtolower($chartTypeSelection)).'</a>';
+								}
+								?>
+							<?php endforeach; ?>
+							<?php echo implode(' | ', $chartTypeSelectionsHtml);?>
+						</p>
+					</div>
+				<?php endif;?>
+				<div id="<?php echo $prefix ?>Chart<?php echo $chartType?>" class="chart <?php echo $prefix ?>Charts <?php echo $chartPlugin?>"></div>
+				<?php if(!empty($chartTypeSelections)):?>
+					<?php foreach ($chartTypeSelections as $chartTypeSelection): ?>
+						<?php
+						if(is_array($chartTypeSelection))
+						{
+							$chartTypeSelection = $chartTypeSelection['type'];
+						}
+						?>
+						<?php if($chartType !== $chartTypeSelection):?>
+						<div style="display:none;" id="<?php echo $prefix ?>Chart<?php echo $chartTypeSelection?>" class="chart <?php echo $prefix ?>Charts <?php echo $chartPlugin?>"></div>
+						<?php endif;?>
+					<?php endforeach;?>
+				<?php endif;?>
 			</div>
 		</div>
 	<?php else: ?>
@@ -349,22 +460,27 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 	<?php endif; ?>
 	<?php ob_start(); ?>
 	<script type="text/javascript">
+		var <?php echo $prefix ?>data = null;
 		function <?php echo $prefix ?>Chart(formData)
 		{
-			App.blockUI({target: $('#<?php echo $prefix ?>Chart').parent(), boxed: true});
+			App.blockUI({target: $('#<?php echo $prefix?>-portlet-body'), boxed: true});
 			$.ajax({
 				dataType: 'json',
-				type: 'post',
+				type: '<?php echo $ajaxMethod?>',
 				url: '<?php echo $jsonDataUrl ?>',
 				data: formData,
+				beforeSend: function(){
+					$('#<?php echo $prefix . 'chartTypeFormGroup' ?>').hide();
+				},
 				success: function (data) {
-					App.unblockUI($('#<?php echo $prefix ?>Chart').parent());
+					$('#<?php echo $prefix . 'chartTypeFormGroup' ?>').show();
+					<?php echo $prefix ?>data = data;
+					App.unblockUI($('#<?php echo $prefix?>-portlet-body'));
 					<?php if($chartPlugin == 'flotCharts'):?>
 					$.plot($("#<?php echo $prefix ?>Chart"), data, <?php echo zbase_json_to_javascript($chartOptions) ?>);
 					<?php endif;?>
 					<?php if($chartPlugin == 'amCharts'):?>
-						<?php $chartOptions['dataProvider'] = 'data.data';?>
-						AmCharts.makeChart( "<?php echo $prefix ?>Chart", <?php echo zbase_json_to_javascript($chartOptions) ?>);
+						<?php echo $prefix ?>Chart<?php echo $chartType?>();
 					<?php endif;?>
 						<?php if(!empty($saveToLocalStorage)): ?>
 						$("#<?php echo $prefix ?>ChartConfigurableForm").find(':input').each(function () {
@@ -373,10 +489,41 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 								saveToLocalStorage('<?php echo $prefix ?>ChartConfigurableForm_' + jQuery(this).attr('name'), jQuery(this).val());
 							}
 						});
-						<?php endif; ?>
+					<?php endif; ?>
 				}
 			});
 		}
+		<?php if(!empty($chartTypeSelections)):?>
+			<?php foreach ($chartTypeSelections as $chartTypeSelection): ?>
+				<?php
+				if(is_array($chartTypeSelection))
+				{
+					$chartTypeSelection = $chartTypeSelection['type'];
+				}
+				?>
+				function <?php echo $prefix ?>Chart<?php echo $chartTypeSelection?>(subType)
+				{
+					<?php if($chartTypeSelection == 'pie'):?>
+						<?php $chartTypeSelectionOptions = $pieChartOptions; ?>
+					<?php elseif($chartTypeSelection == 'funnel'):?>
+						<?php $chartTypeSelectionOptions = $funnelChartOptions; ?>
+					<?php elseif($chartTypeSelection == 'serial' || $chartTypeSelection == 'column'):?>
+						<?php $chartTypeSelectionOptions = $chartOptionsColumn; ?>
+					<?php endif;?>
+					<?php $chartTypeSelectionOptions['dataProvider'] = '@@' . $prefix . 'data.data@@';?>
+					jQuery('.<?php echo $prefix ?>Charts').hide();
+					jQuery('#<?php echo $prefix ?>Chart<?php echo $chartTypeSelection?>').show();
+					var chart = AmCharts.makeChart("<?php echo $prefix ?>Chart<?php echo $chartTypeSelection?>", <?php echo zbase_json_to_javascript($chartTypeSelectionOptions) ?>);
+					if(subType !== undefined)
+					{
+						chart.graphs[0].type = subType;
+					}
+					chart.validateNow();
+					chart.invalidateSize();
+					chart.animateAgain();
+				}
+			<?php endforeach;?>
+		<?php endif;?>
 	</script>
 	<?php zbase_view_script_add($prefix . 'Chart', ob_get_clean(), false); ?>
 	<?php ob_start(); ?>
@@ -389,11 +536,18 @@ $saveToLocalStorage = !empty($saveToLocalStorage) ? $saveToLocalStorage : true;
 				}
 			});
 			<?php endif; ?>
+	<?php if(!empty($loadChartOnLoad)):?>
 	<?php echo $prefix ?>Chart(jQuery('#<?php echo $prefix ?>ChartConfigurableForm').serialize());
+	<?php endif;?>
 		jQuery('#<?php echo $prefix ?>ChartConfigurableForm').submit(function (e) {
 			e.preventDefault();
 			<?php echo $prefix ?>Chart(jQuery('#<?php echo $prefix ?>ChartConfigurableForm').serialize());
 			return false;
+		});
+		<?php echo !empty($fullScreenOnLoad) ? 'jQuery(\'.fullscreen\').trigger(\'click\');' : ''?>
+		jQuery('.<?php echo $prefix ?>ChartConfigurableClose').click(function(e){
+			e.preventDefault();
+			jQuery('#<?php echo $prefix ?>ChartConfigurable').toggle();
 		});
 	</script>
 	<?php zbase_view_script_add($prefix . 'ChartOnload', ob_get_clean(), true); ?>
