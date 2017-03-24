@@ -289,6 +289,7 @@ class UploadHandler
         if ($this->is_valid_file_object($file_name)) {
             $file = new stdClass();
             $file->name = $file_name;
+			$file->upload_path = $this->get_upload_path($file_name);
             $file->size = $this->get_file_size(
                 $this->get_upload_path($file_name)
             );
@@ -1092,7 +1093,7 @@ class UploadHandler
     protected function body($str) {
         echo $str;
     }
-    
+
     protected function header($str) {
         header($str);
     }

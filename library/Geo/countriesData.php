@@ -1170,6 +1170,11 @@ return [
 		'region' => 'Europe',
 		'subRegion' => 'Northern Europe'
 	],
+	'UK' => [
+		'name' => 'United Kingdom',
+		'region' => 'Europe',
+		'subRegion' => 'Northern Europe'
+	],
 	'UM' => [
 		'name' => 'United States Minor Outlying Islands',
 		'region' => 'Oceania',

@@ -6,6 +6,7 @@ $labelAttributes = $ui->renderHtmlAttributes($ui->labelAttributes());
 $inputAttributes = $ui->renderHtmlAttributes($ui->inputAttributes());
 $multiple = $ui->isMultiple();
 $formId = $ui->form()->htmlId();
+$fileInputName = $ui->getFileInputName();
 
 if(!empty($multiple))
 {
@@ -177,7 +178,7 @@ if(!empty($multiple))
 					<span>
 						Add files...
 					</span>
-					<input type="file" name="files[]" multiple="">
+					<input type="file" name="<?php echo $fileInputName?>" multiple="">
 				</span>
 				<?php if(empty($onFormSubmit)):?>
 					<button type="submit" class="btn blue start">
@@ -209,8 +210,7 @@ if(!empty($multiple))
 		</div>
 		<!-- The table listing the files available for upload/download -->
 		<table role="presentation" class="table table-striped clearfix">
-			<tbody class="files">
-			</tbody>
+			<tbody class="files"></tbody>
 		</table>
 	<?php else: ?>
 		<?php if(zbase_is_angular_template()): ?>

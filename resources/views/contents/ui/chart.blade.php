@@ -1,7 +1,6 @@
 <?php
-zbase_view_plugin_load('bootstrap-datetime');
 zbase_view_plugin_load('bootstrap-select');
-zbase_view_plugin_load('flotCharts');
+zbase_view_plugin_load('bootstrap-datetime');
 $chartPlugin = !empty($chartPlugin) ? $chartPlugin : 'flotCharts';
 $chartType = !empty($chartType) ? $chartType : 'pie';
 $exportTable = !empty($exportTable) ? $exportTable : true;
@@ -26,9 +25,10 @@ elseif($chartPlugin == 'amCharts')
 	$chartOptionsPie['legend'] = !empty($chartLegend) ? $chartLegend : [
 			'position' => 'right',
 			'marginRight' => 100,
-			'autoMargins' => true
+			'autoMargins' => true,
+			'valueWidth' => !empty($chartLegendValueWidth) ? $chartLegendValueWidth : 100,
 		];
-	$chartOptionsPie['labelsEnabled'] = !empty($amChartsLabelsEnabled) ? $amChartsLabelsEnabled : false;
+	$chartOptionsPie['labelsEnabled'] = !empty($chartOptions['labelsEnabled']) ? $chartOptions['labelsEnabled'] : false;
 	$chartOptionsPie['innerRadius'] = !empty($amChartsInnerRadius) ? $amChartsInnerRadius : '30%';
 	$chartOptionsPie['responsive']['rules'][] = ['maxWidth' => 400, 'overrides' => ['legend' => ['enabled' => false]]];
 	// 3d
@@ -56,7 +56,7 @@ elseif($chartPlugin == 'amCharts')
 	$chartOptionsColumn['type'] = 'serial';
 	$chartOptionsColumn['gridAboveGraphs'] = true;
 	$chartOptionsColumn['startDuration'] = 1;
-	$chartOptionsColumn['categoryField'] = 'label';
+	$chartOptionsColumn['categoryField'] = !empty($chartOptions['categoryField']) ? $chartOptions['categoryField'] : 'label';
 	if(empty($chartOptions['valueAxes']))
 	{
 		$chartOptionsColumn['valueAxes'] = [[

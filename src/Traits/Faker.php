@@ -89,6 +89,10 @@ trait Faker
 						return $faker->phoneNumber();
 					case 'password':
 						return bcrypt('password');
+						break;
+					case 'rawPassword':
+						return $faker->regexify('[A-Z0-9._%+-][A-Z0-9.-][A-Z]{2,4}');
+						break;
 					case 'avatarurl':
 						return 'http://api.adorable.io/avatars/285/' . $faker->email() . '.png';
 					default;

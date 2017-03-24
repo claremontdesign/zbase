@@ -29,6 +29,11 @@ class Zbase implements Interfaces\ZbaseInterface, Interfaces\InstallCommandInter
 	const ALERT_SUCCESS = 'success';
 
 	/**
+	 * Just return a success json response
+	 */
+	const RESPONSE_JSON = 'json';
+
+	/**
 	 * Commands
 	 * @var array
 	 */
